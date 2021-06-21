@@ -306,6 +306,7 @@ c
       f=0
       is=11
       do f=is,nbuf
+        write(*,*)'nextfn ',f,mode,itbuf(f)
         if(itbuf(f) .eq. modeclose)then
           inquire(f,IOSTAT=ios,err=9000,OPENED=od)
           if( .not. od) then
@@ -361,7 +362,9 @@ c
       use tfstk
       use tfshare
       implicit none
+      type (sad_string) ,pointer :: str
       integer*4 lfn,irtc
+      character*128 cm
       select case (itbuf(lfn))
       case (modewrite)
         close(lfn)
@@ -387,6 +390,14 @@ c
       lbuf(lfn)=0
       mbuf(lfn)=1
       itbuf(lfn)=modeclose
+      if(ktfstringq(ntable(lfn),str))then
+c        call tfdebugprint(ntable(lfn),'trbclose',1)
+        cm='rm '//str%str(1:str%nch)
+c        write(*,*)'trbclose ',cm(1:str%nch+3)
+        call system(cm)
+        call tflocald(ntable(lfn))
+      endif
+      ntable(lfn)%k=0
       return
       end subroutine
 

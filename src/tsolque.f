@@ -413,8 +413,8 @@ c     $       al,ak,trans(5,1:6)
           cod(5)=cod(5)-0.25d0*(
      $         w1*(xi**2*xs1-yi**2*xsh2)
      $         +(pxi**2+pyi**2)*aln
-     $         +u1*(u2+pxi)+xi*pxi*dc1
-     $         +v1*(v2+pyi)+yi*pyi*dch2)
+     $         +u1*pxf+xi*pxi*dc1
+     $         +v1*pyf+yi*pyi*dch2)
      $         -dv*aln
           trans1(1,1)=c1
           trans1(1,2)=s1/w1

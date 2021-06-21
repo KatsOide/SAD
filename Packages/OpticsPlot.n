@@ -197,6 +197,7 @@ With[{def={PlotRange->Automatic,
     lf=Length[f1];
     fopt=Override[fopt,opt,def];
     {plt,pra,fl,leg}={Plot,PlotRange,FrameLabel,Legend}/.fopt;
+!    Print["OP$1 ",leg];
     {fl,fly}=If[ListQ[fl],
       {fl=Take[Join[fl,{"","","",""}],4],
       If[right,fl[[4]],fl[[2]]]},
@@ -216,6 +217,7 @@ With[{def={PlotRange->Automatic,
       Message[OpticsPlot::units,Evaluate[#[[1,2]]],Evaluate[unit]]]&,l];
     l=Cases[l,{{_,unit,_,_,_},_,_},1];
     v=l[[,3]];
+!    Print["OP$1-v ",{ss,l[[,3]]}];
     opv=l[[,2]];
     {min,max}=MinMax[#[[,2]]&/@v];
     am=Switch[pra,
