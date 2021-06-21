@@ -813,7 +813,7 @@ c
        kytbl(kwDP  ,0)=sethtb('DP      ',icKWRD,kwDP  )
        kytbl(kwSIGZ,0)=sethtb('SIGZ    ',icKWRD,kwSIGZ)
        kytbl(kwSIGZ,0)=sethtb('SIGMAZ  ',icKWRD,kwSIGZ)
-       kytbl(kwSIGE,0)=sethtb('SIGE    ',icKWRD,kwSIGZ)
+       kytbl(kwSIGE,0)=sethtb('SIGE    ',icKWRD,kwSIGE)
        kytbl(kwGEO ,0)=sethtb('GEO     ',icKWRD,kwGEO )
        kytbl(kwR1  ,0)=sethtb('R1      ',icKWRD,kwR1  )
        kytbl(kwR2  ,0)=sethtb('R2      ',icKWRD,kwR2  )

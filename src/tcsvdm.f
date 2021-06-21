@@ -328,7 +328,7 @@ c     write(*,*)it,ibegin,iend,v(iend-1)
             f=0.d0
           else
             g=h*y
-            y=f+sign(abs(dcmplx(f,g)),f)
+            y=f+sign(hypot(f,g),f)
             if(y .ne. 0.d0)then
               f=((w-z)*(w+z)-h**2+g**2/y)/w
             else
@@ -340,7 +340,7 @@ c     write(*,*)it,ibegin,iend,v(iend-1)
           do1221: do kkk=1,1
             do 1140 i=ibegin,iend-1
               i1=i+1
-              z=abs(dcmplx(f,g))
+              z=hypot(f,g)
               v(i-1)=z
               if(z .ne. 0.d0)then
                 c=f/z
@@ -354,7 +354,7 @@ c     write(*,*)it,ibegin,iend,v(iend-1)
               g=-w*s+h*c
               h= x(i1)*s
               y= x(i1)*c
-              z=abs(dcmplx(f,h))
+              z=hypot(f,h)
               x(i)=z
               if(z .ne. 0.d0)then
                 c=f/z

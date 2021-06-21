@@ -284,7 +284,7 @@ c          ilist( ipn+(j-1)*npz+1:ipn+(j-1)*npz+npp,ikptblm)=
 c     $         ilist((j-1)*npp+1:    (j-1)*npp+npp,ikptblw)
 c        enddo
 c        write(*,*)'tftrack-wait ',npz,npa,ipn,zx(npa,3)
-        call tffswait(iprid,npr+1,ipr,i00,'tftrack',irtc)
+        call tffswait(iprid,npr+1,ipr,i00,100000,'tftrack',irtc)
 c        write(*,*)'tftrack-afterwait ',npz,npa,ipn,zx(npz,3),zx(npa,3)
         kaxl=ktfresetparticles(zx0,jptbl,npz,nlat,nend,mc)
         call tfreeshared(ikptblm)

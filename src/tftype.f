@@ -163,8 +163,12 @@ c      endif
           endif
           real=.true.
           if(.not. k64)then
-            if(ioff .eq. mfitaz .or. ioff .eq. mfitbz .or.
-     $           ioff .eq. mfitnz)then
+            if(ioff == mfitdetr .or. ioff == mfitbz .or.
+     $           ioff == mfitnz .or. ioff == mfitdz
+     $           .or. ioff == ky_EMIZ_MARK
+     $           .or. ioff == ky_SIGZ_MARK
+     $           .or. ioff == ky_SIGE_MARK
+     $           )then
               v=0.d0
             endif
           endif

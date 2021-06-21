@@ -311,54 +311,6 @@ Put[x__,file_String]:=With[{f=OpenWrite[file]},
   Close[f]];
 SetAttributes[{Close,Put},Constant];
 
-Shared[`n_Real]:=ReadShared[`n];
-(Shared[n_]=`v_)^:=WriteShared[n,v];
-(Shared[n_]:=v_)^:=WriteShared[n,Unevaluated$[v]];
-(Shared[n_]+=v_)^:=With[{x=ReadShared[n]+Unevaluated$[v]},
-  WriteShared[n,x];x];
-(Shared[n_]-=v_)^:=With[{x=ReadShared[n]-Unevaluated$[v]},
-  WriteShared[n,x];x];
-(Shared[n_]*=v_)^:=With[{x=ReadShared[n]*Unevaluated$[v]},
-  WriteShared[n,x];x];
-(Shared[n_]/=v_)^:=With[{x=ReadShared[n]/Unevaluated$[v]},
-  WriteShared[n,x];x];
-(Shared[n_]++)^:=With[{x=ReadShared[n]},
-  WriteShared[n,x+1];x];
-(Shared[n_]--)^:=With[{x=ReadShared[n]},
-  WriteShared[n,x-1];x];
-(++Shared[n_])^:=With[{x=ReadShared[n]+1},
-  WriteShared[n,x];x];
-(--Shared[n_])^:=With[{x=ReadShared[n]-1},
-  WriteShared[n,x];x];
-CloseShared=Close;
-Parallelize[`f_,`n_,`lshare_,`npara_,`fcomp_:Identity]:=Module[{`shared,`sharedpid,`l={},`fk,`r,`k,`i,`np},
-  np=OpenShared[16];
-  Shared[np]=0;
-  Do[
-    While[Shared[np]>=npara,Sleep[1]];
-    Shared[np]++;
-    shared[k]=OpenShared[lshare];
-    Shared[shared[k]]=Undefined;
-    If[fk=Fork[],
-      sharedpid[k]=fk;
-      Sleep[0.01],
-      FFS$InterruptMask=-1;
-      Shared[shared[k]]=Check[f[k],$Failed];
-      Shared[np]--;
-      Exit[]],
-    {k,n}];
-  Do[
-    r=Undefined;
-    Check[While[(r=Shared[shared[k]])===Undefined,Sleep[1]],];
-    Close[shared[k]];
-    AppendTo[l,r];
-    fcomp[l];
-    Check[Wait[],],
-    {k,n}];
-  Close[np];
-  l];
-SetAttributes[{Parallelize,CloseShared},{HoldFirst,Constant}];
-
 $WildCardID=0;
 $WildCard:=Switch[$WildCardID,
   0,"SAD",
@@ -609,6 +561,9 @@ AutoLoad[Class,This,Constructor,Destructor,Clone,Object,
   PackagesDirectory//"Class.n"];
 AutoLoad[NearlySameQ,FixedPoint,FixedPoinstList,FunctionDefinition,
   PackagesDirectory//"Misc.n"];
+AutoLoad[Shared,Parallelize,CloseShared,
+  PackagesDirectory//"shared.n"];
+
 AutoLoad[CaOpen,CaRead,CaWrite,CaGet,CaPut,CaClose,
   PackagesDirectory//"CaSad.n"];
 AutoLoad[CaOpenMonitor,PackagesDirectory//"CaSad2.n"];

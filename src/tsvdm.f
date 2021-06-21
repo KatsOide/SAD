@@ -79,7 +79,7 @@ c              enddo
           do j=i1+1,m
             r1=x(i1)*a(i,i1)
             r2=x(j )*a(i,j )
-            r=sign(abs(dcmplx(r1,r2)),r1)
+            r=sign(hypot(r1,r2),r1)
             if(r .ne. 0.d0)then
               c=r1/r
               s=r2/r
@@ -213,7 +213,7 @@ c      enddo
         v(iend)=0.d0
         do i=iend,ibegin,-1
           if(abs(f)+abs(x(i)) .ne. abs(x(i)))then
-            p=abs(dcmplx(x(i),f))
+            p=hypot(x(i),f)
             vv=v(i-1)/p
             v(i-1)=vv*x(i)
             x(i  )=p
@@ -263,7 +263,7 @@ c            an=max(abs(x(i)),abs(x(i+1)))
             f=0.d0
           else
             g=h*y
-            y=f+sign(abs(dcmplx(f,g)),f)
+            y=f+sign(hypot(f,g),f)
             f=merge(((w-z)*(w+z)-h**2+g**2/y)/w,
      $           ((w-z)*(w+z)-h**2)/w,y .ne. 0.d0)
           endif
@@ -272,7 +272,7 @@ c            an=max(abs(x(i)),abs(x(i+1)))
           do1221: do kkk=1,1
             do i=ibegin,iend-1
               i1=i+1
-              z=abs(dcmplx(f,g))
+              z=hypot(f,g)
               v(i-1)=z
               if(z .ne. 0.d0)then
                 c=f/z
@@ -286,7 +286,7 @@ c            an=max(abs(x(i)),abs(x(i+1)))
               g=-w*s+h*c
               h= x(i1)*s
               y= x(i1)*c
-              z=abs(dcmplx(f,h))
+              z=hypot(f,h)
               x(i)=z
               if(z .ne. 0.d0)then
                 c=f/z

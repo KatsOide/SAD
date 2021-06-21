@@ -3,6 +3,8 @@
 !!! File Dialog 4/21/2008
 !!! File Dialog 3/15/2005
 
+Shared;
+
 (* Initialize buffer pointer symbol and sub-process id *)
 KBF$LFShare=Null;
 KBF$LFPid=Null;

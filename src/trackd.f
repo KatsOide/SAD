@@ -12,7 +12,7 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       use iso_c_binding
       implicit none
       integer*4 ,parameter ::n1p0=256,n2p=51,maxturn=2**29,
-     $     maxpara=256,nw=16,nkptbl = 6, minnp=16
+     $     maxpara=256,nw=16,nkptbl = 6, minnp=16,limw=600
       real*8, parameter :: big=1.d300
       character*15 ,parameter ::vname='`ResultOfDAPERT'
       character ,parameter ::label(3)=['X','Y','Z']
@@ -26,7 +26,8 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       integer*4 ,allocatable::kptbl(:,:),mturn(:)
       integer*4 n1p,j,n,jzout,np1,k,np,kp,kx,kz,irw,nsc,iw,
      $     jj,ip,isw,kseed,npmax,npara,nxm(n1p0),np00,
-     $     muls,irtc,i,fork_worker,waitpid,ncons,nscore,ivar3
+     $     muls,irtc,i,fork_worker,waitpid_nohang,ncons,nscore,ivar3,
+     $     iwtime
       integer*8 intlm
       real*8 ,allocatable ::x(:),px(:),y(:),py(:),z(:),g(:),dv(:),
      $     spx(:),spy(:),spz(:),aenox(:),aenoy(:),aenoz(:)
@@ -39,6 +40,7 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
 c     begin initialize for preventing compiler warning
       ipr=0
 c     end   initialize for preventing compiler warning
+      iwtime=-1
       damp=dampr .ne. 0.d0
 c      write(*,*)'trackd ',damp
       if(damp)then
@@ -363,13 +365,33 @@ c        stop
       np0=np00
 c      write(*,*)'trackd-wait ',npr,n1p,n2p,np0
       loop_j: do j=1,npr-1
-        irw=waitpid(-1,isw)
+        do 
+          irw=waitpid_nohang(-1,isw)
+          if(irw .eq. 0)then
+            call tpause(1000000)
+            if(iwtime .ge. 0)then
+              iwtime=iwtime+1
+              if(iwtime .gt. limw)then
+                do k=1,npr-1
+                  if(ipr(k) .ne. 0)then
+                    call tkill(ipr(k))
+                    write(*,*)'???trackd-wait timeout-kill: ',k
+                  endif
+                enddo
+                exit loop_j
+              endif
+            endif
+            cycle
+          endif
+          exit
+        enddo
 c        write(*,*)'trackd-wait-j ',j,irw
         do k=1,npr-1
           if(irw .eq. ipr(k))then
 c            write(*,*)'trackd-wait-k ',k
             n=k
             ipr(k)=0
+            iwtime=0
             cycle loop_j
           endif
         enddo

@@ -28,7 +28,7 @@ With[{default={OneTurnInformation->False,
 
   Emittance[opt___]:=Module[{
     e,r,op,mode,ex0=EMITX,ey0=EMITY,ez0=EMITZ,sz0=SIGZ,se0=SIGE,
-    iniorbit,inibeam,out,reg},
+    iniorbit,inibeam,out,reg,codpl0=?CODPLOT},
     Check[
       op=Override[opt,default];
       If[ExpandElementValues/.op,Element["EXPAND"]];
@@ -41,6 +41,7 @@ With[{default={OneTurnInformation->False,
       reg=LINE["POSITION",reg];
       If[inibeam<=>Null,
         inibeam=Flatten[Table[inibeam[[i,j]],{i,6},{j,i}]]];
+      If[mode>=2,FFS["CODPLOT;"]];
       e=CalculateEmittance[mode,out,{iniorbit,inibeam},reg];
       r={Stable->e[[1]],Region->reg,Tunes->e[[2,{ipnx,ipny,ipnz}]],
         EnergyLossU0->e[[2,ipu0]],RfVoltageVc->e[[2,ipvceff]],
@@ -74,6 +75,7 @@ With[{default={OneTurnInformation->False,
             AppendTo[r,TransferMatrices->e[[5]]];
             If[?INTRA,
               AppendTo[r,IntrabeamExcitation->e[[6]]]]]]];
+      If[codpl0,FFS["CODPLOT;"],FFS["NOCODPLOT;"]];
       If[~(SaveEMIT/.op),EMITX=ex0;EMITY=ey0;EMITZ=ez0;SIGE=se0;SIGZ=sz0];
       r,
       EMITX=ex0;EMITY=ey0;EMITZ=ez0;SIGE=se0;SIGZ=sz0;{}]]
