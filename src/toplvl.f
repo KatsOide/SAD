@@ -306,7 +306,7 @@ c
       f=0
       is=11
       do f=is,nbuf
-        write(*,*)'nextfn ',f,mode,itbuf(f)
+c        write(*,*)'nextfn ',f,mode,itbuf(f)
         if(itbuf(f) .eq. modeclose)then
           inquire(f,IOSTAT=ios,err=9000,OPENED=od)
           if( .not. od) then
@@ -363,14 +363,14 @@ c
       use tfshare
       implicit none
       type (sad_string) ,pointer :: str
-      integer*4 lfn,irtc
-      character*128 cm
+      integer*4 lfn,irtc,unixclose
+      character*256 cm
       select case (itbuf(lfn))
       case (modewrite)
         close(lfn)
         if(ibuf(lfn) .gt. 0)then
           if(ilist(2,ibuf(lfn)-1) .ne. 0)then
-            call unixclose(ilist(2,ibuf(lfn)-1))
+            irtc=unixclose(ilist(2,ibuf(lfn)-1))
             ilist(2,ibuf(lfn)-1)=0
           endif
           call tfree(ibuf(lfn))
@@ -385,16 +385,19 @@ c
         ibuf(lfn)=0
       case default
         call unmapfile(klist(ibuf(lfn)),int8(lenbuf(lfn)))
-        call unixclose(ifd(lfn))
+        irtc=unixclose(ifd(lfn))
+c        write(*,'(a,5i10)')'trbclose ',lfn,itbuf(lfn),
+c     $       lenbuf(lfn),ifd(lfn),irtc
       end select
+      ifd(lfn)=0
       lbuf(lfn)=0
       mbuf(lfn)=1
       itbuf(lfn)=modeclose
       if(ktfstringq(ntable(lfn),str))then
 c        call tfdebugprint(ntable(lfn),'trbclose',1)
-        cm='rm '//str%str(1:str%nch)
+        cm(:str%nch+3)='rm '//str%str(:str%nch)
 c        write(*,*)'trbclose ',cm(1:str%nch+3)
-        call system(cm)
+        call system(cm(:str%nch+3))
         call tflocald(ntable(lfn))
       endif
       ntable(lfn)%k=0
@@ -846,6 +849,7 @@ c          write(*,*)'writeshared-string ',kas,klist(kas+1)
         call trbopen(lfn,kfile/8,ksize+modemapped,ifd)
         kx%x(1)=dble(lfn)
       else
+c        write(*,*)'trbopenmap ',irtc,ifd,ksize,str
         kx%x(1)=-1.d0
       endif
       return

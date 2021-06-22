@@ -1162,6 +1162,7 @@ c          enddo
           disp=.true.
           kx1=kx
           call loc_string(ktfaddr(kx1),str)
+          nc=str%nch
         else
           if(nc .gt. 2) then
              if (str%str(nc-1:nc) .eq. '.z' .or.
@@ -1197,14 +1198,17 @@ c          enddo
         endif
         call trbopenmap(str%str(1:nc),kx,irtc)
         if(Irtc .ne. 0)then
+c          write(*,*)'openread ',nc,str%str(:str%nch)
           irtc=itfmessagestr(999,'General::fileopen',str%str(1:nc))
           kx=dxfailed
+          return
         endif
         lf=ifromd(kx)
         call tflocald(ntable(lf))
         ntable(lf)%k=0
         if(temp)then
           ntable(lf)=dtfcopy(kx1)
+c          write(*,*)'openread-fd ',lf,ifd(lf)
 c          call tfdebugprint(kx1,'tfopenread',1)
         endif
       endif

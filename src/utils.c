@@ -163,6 +163,8 @@ integer4 tftmpnam_(character s, ftnlen slen) {
     return 0;
   }
 
+  close(fd);
+
   blen = strlen(s);
   if(slen < blen) {
     return 0;
