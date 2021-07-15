@@ -1161,6 +1161,7 @@ c        dpm2=rlist(ktlookup('DPM'))
       nwakep=0
       if(wake)then
         call tffssetupwake(lfno,irtc)
+c        write(*,*)'tffsa-setupwake-done ',nwakep
         if(irtc .ne. 0)then
           call termes(lfno,'?Error in WakeFunction.',' ')
           go to 8810
