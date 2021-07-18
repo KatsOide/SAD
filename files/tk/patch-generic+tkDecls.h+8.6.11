@@ -1,0 +1,54 @@
+--- generic/tkDecls.h.orig	2021-07-17 16:19:30.000000000 +0900
++++ generic/tkDecls.h	2021-07-17 16:09:39.000000000 +0900
+@@ -143,7 +143,7 @@
+ EXTERN Tk_TextLayout	Tk_ComputeTextLayout(Tk_Font font, const char *str,
+ 				int numChars, int wrapLength,
+ 				Tk_Justify justify, int flags, int *widthPtr,
+-				int *heightPtr);
++                                             int *heightPtr);
+ /* 32 */
+ EXTERN Tk_Window	Tk_CoordsToWindow(int rootX, int rootY,
+ 				Tk_Window tkwin);
+@@ -915,7 +915,7 @@
+     int (*tk_ConfigureValue) (Tcl_Interp *interp, Tk_Window tkwin, const Tk_ConfigSpec *specs, char *widgRec, const char *argvName, int flags); /* 28 */
+     int (*tk_ConfigureWidget) (Tcl_Interp *interp, Tk_Window tkwin, const Tk_ConfigSpec *specs, int argc, CONST84 char **argv, char *widgRec, int flags); /* 29 */
+     void (*tk_ConfigureWindow) (Tk_Window tkwin, unsigned int valueMask, XWindowChanges *valuePtr); /* 30 */
+-    Tk_TextLayout (*tk_ComputeTextLayout) (Tk_Font font, const char *str, int numChars, int wrapLength, Tk_Justify justify, int flags, int *widthPtr, int *heightPtr); /* 31 */
++  Tk_TextLayout (*tk_ComputeTextLayout) (Tk_Font font, const char *str, int numChars, int wrapLength, Tk_Justify justify, int flags, int *widthPtr, int *heightPtr); /* 31 */
+     Tk_Window (*tk_CoordsToWindow) (int rootX, int rootY, Tk_Window tkwin); /* 32 */
+     unsigned long (*tk_CreateBinding) (Tcl_Interp *interp, Tk_BindingTable bindingTable, ClientData object, const char *eventStr, const char *script, int append); /* 33 */
+     Tk_BindingTable (*tk_CreateBindingTable) (Tcl_Interp *interp); /* 34 */
+@@ -1309,8 +1309,10 @@
+ 	(tkStubsPtr->tk_Fill3DRectangle) /* 63 */
+ #define Tk_FindPhoto \
+ 	(tkStubsPtr->tk_FindPhoto) /* 64 */
++#ifndef Tk_FontId
+ #define Tk_FontId \
+ 	(tkStubsPtr->tk_FontId) /* 65 */
++#endif
+ #define Tk_Free3DBorder \
+ 	(tkStubsPtr->tk_Free3DBorder) /* 66 */
+ #define Tk_FreeBitmap \
+@@ -1365,14 +1367,22 @@
+ 	(tkStubsPtr->tk_GetCursor) /* 91 */
+ #define Tk_GetCursorFromData \
+ 	(tkStubsPtr->tk_GetCursorFromData) /* 92 */
++#ifndef Tk_GetFont
+ #define Tk_GetFont \
+ 	(tkStubsPtr->tk_GetFont) /* 93 */
++#endif
++#ifndef Tk_GetFontFromObj
+ #define Tk_GetFontFromObj \
+ 	(tkStubsPtr->tk_GetFontFromObj) /* 94 */
++#endif
++#ifndef Tk_GetFontMetrics
+ #define Tk_GetFontMetrics \
+ 	(tkStubsPtr->tk_GetFontMetrics) /* 95 */
++#endif
++#ifndef Tk_GetGC
+ #define Tk_GetGC \
+ 	(tkStubsPtr->tk_GetGC) /* 96 */
++#endif
+ #define Tk_GetImage \
+ 	(tkStubsPtr->tk_GetImage) /* 97 */
+ #define Tk_GetImageMasterData \

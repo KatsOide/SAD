@@ -1,0 +1,816 @@
+--- generic/tkFont.c.orig	2021-07-17 16:19:30.000000000 +0900
++++ generic/tkFont.c	2021-07-17 16:08:50.000000000 +0900
+@@ -87,6 +87,9 @@
+ 				 * characters in this chunk. Can be less than
+ 				 * width if extra space characters were
+ 				 * absorbed by the end of the chunk. */
++    Tk_Font tkfont;
++    GC gc;
++    int bovl;
+ } LayoutChunk;
+ 
+ typedef struct TextLayout {
+@@ -334,7 +337,7 @@
+ 			    const TkFontAttributes *faPtr, Tcl_Obj *objPtr);
+ static LayoutChunk *	NewChunk(TextLayout **layoutPtrPtr, int *maxPtr,
+ 			    const char *start, int numChars, int curX,
+-			    int newX, int y);
++                                 int newX, int y);
+ static int		ParseFontNameObj(Tcl_Interp *interp, Tk_Window tkwin,
+ 			    Tcl_Obj *objPtr, TkFontAttributes *faPtr);
+ static void		RecomputeWidgets(TkWindow *winPtr);
+@@ -342,6 +345,12 @@
+ static void		TheWorldHasChanged(ClientData clientData);
+ static void		UpdateDependentFonts(TkFontInfo *fiPtr,
+ 			    Tk_Window tkwin, Tcl_HashEntry *namedHashPtr);
++static LayoutChunk *	KGNewChunk(TextLayout **layoutPtrPtr,
++			    int *maxPtr, const char *start, int numChars,
++			    int curX, int newX, int y, Tk_Font, GC, int);
++extern int		XFreeFont(Display *display, XFontStruct *fs);
++extern int		XFreeFontInfo(char **names, XFontStruct *fs,
++			    int actual_count);
+ 
+ /*
+  * The following structure defines the implementation of the "font" Tcl
+@@ -1970,7 +1979,8 @@
+ 				 * newline characters should not cause a line
+ 				 * break. */
+     int *widthPtr,		/* Filled with width of string. */
+-    int *heightPtr)		/* Filled with height of string. */
++    int *heightPtr		/* Filled with height of string. */
++                     )
+ {
+     TkFont *fontPtr = (TkFont *) tkfont;
+     const char *start, *endp, *special;
+@@ -2064,7 +2074,7 @@
+ 	    flags &= ~TK_AT_LEAST_ONE;
+ 	    if (bytesThisChunk > 0) {
+ 		chunkPtr = NewChunk(&layoutPtr, &maxChunks, start,
+-			bytesThisChunk, curX, newX, baseline);
++                                    bytesThisChunk, curX, newX, baseline);
+ 
+ 		start += bytesThisChunk;
+ 		curX = newX;
+@@ -2084,7 +2094,7 @@
+ 		newX = curX + fontPtr->tabWidth;
+ 		newX -= newX % fontPtr->tabWidth;
+ 		NewChunk(&layoutPtr, &maxChunks, start, 1, curX, newX,
+-			baseline)->numDisplayChars = -1;
++                         baseline)->numDisplayChars = -1;
+ 		start++;
+ 		curX = newX;
+ 		flags &= ~TK_AT_LEAST_ONE;
+@@ -2098,7 +2108,7 @@
+ 		}
+ 	    } else {
+ 		NewChunk(&layoutPtr, &maxChunks, start, 1, curX, curX,
+-			baseline)->numDisplayChars = -1;
++                         baseline)->numDisplayChars = -1;
+ 		start++;
+ 		goto wrapLine;
+ 	    }
+@@ -2174,7 +2184,7 @@
+     if ((layoutPtr->numChunks > 0) && !(flags & TK_IGNORE_NEWLINES)) {
+ 	if (layoutPtr->chunks[layoutPtr->numChunks - 1].start[0] == '\n') {
+ 	    chunkPtr = NewChunk(&layoutPtr, &maxChunks, start, 0, curX,
+-		    curX, baseline);
++                                curX, baseline);
+ 	    chunkPtr->numDisplayChars = -1;
+ 	    Tcl_DStringAppend(&lineBuffer, (char *) &curX, sizeof(curX));
+ 	    baseline += height;
+@@ -2224,6 +2234,465 @@
+ 	    } else if (justify == TK_JUSTIFY_RIGHT) {
+ 		chunkPtr->x += extra;
+ 	    }
++            /*            printf("justify %d %d\n",chunkPtr->x,extra);*/
++	    chunkPtr++;
++	}
++    }
++
++    if (widthPtr != NULL) {
++	*widthPtr = layoutPtr->width;
++    }
++    if (heightPtr != NULL) {
++	*heightPtr = layoutHeight;
++    }
++    Tcl_DStringFree(&lineBuffer);
++
++    return (Tk_TextLayout) layoutPtr;
++}
++
++ /*
++ *---------------------------------------------------------------------------
++ *
++ * Tk_KGComputeTextLayout --
++ *
++ * Results:
++ *
++ * Side effects:
++ *
++ *---------------------------------------------------------------------------
++ */
++
++Tk_TextLayout
++Tk_KGComputeTextLayout(
++    Tk_Font tkfont,		/* Font that will be used to display text. */
++    const char *string,		/* String whose dimensions are to be
++				 * computed. */
++    int numChars,		/* Number of characters to consider from
++				 * string, or < 0 for strlen(). */
++    int wrapLength,		/* Longest permissible line length, in pixels.
++				 * <= 0 means no automatic wrapping: just let
++				 * lines get as long as needed. */
++    Tk_Justify justify,		/* How to justify lines. */
++    int flags,			/* Flag bits OR-ed together. TK_IGNORE_TABS
++				 * means that tab characters should not be
++				 * expanded. TK_IGNORE_NEWLINES means that
++				 * newline characters should not cause a line
++				 * break. */
++    int *widthPtr,		/* Filled with width of string. */
++    int *heightPtr,		/* Filled with height of string. */
++    Tk_Font tkaltfont, 
++    Tk_Font tkscriptfont, 
++    Tk_Font tkaltscriptfont,
++    GC gc, GC altGc, GC scriptGc, GC altScriptGc,
++    int brmdes)
++{
++    TkFont *fontPtr = (TkFont *) tkfont;
++    const char *start, *endp, *special, *lstl;
++    int n, y, bytesThisChunk, maxChunks, curLine, layoutHeight;
++    int baseline, height, curX, newX, maxWidth, *lineLengths;
++    TextLayout *layoutPtr;
++    LayoutChunk *chunkPtr;
++    const TkFontMetrics *fmPtr;
++    Tcl_DString lineBuffer;
++
++    Tk_Font currfont = tkfont;
++    Tk_FontMetrics tkaltfm, tkscriptfm;
++    GC currgc = gc;
++    int dysupsc, dysubsc, yScript = 0, bInScript = 0, bSubScr = 0, bInAltFont = 0;
++    int i, bfirstline = 1, xovl0 = 0, dysumax = 0, sqrtasc = 0, sqrtxoff = 1;
++    char *lowchars = "`,;@[]_gjpqy{}()";
++
++    Tcl_DStringInit(&lineBuffer);
++    
++    fontPtr = (TkFont *) tkfont;
++    fmPtr = &fontPtr->fm;
++    height = fmPtr->ascent + fmPtr->descent;
++    
++    /*printf("hi,asc,des:%d %d %d\n",height,fmPtr->ascent,fmPtr->descent);*/
++    if (tkaltfont != NULL)
++        /*        tkaltfm=*GetFontMetrics(tkaltfont);*/
++        Tk_GetFontMetrics(tkaltfont, &tkaltfm);
++    if (tkscriptfont!=NULL)
++        /*tkscriptfm=*GetFontMetrics(tkscriptfont);*/
++        Tk_GetFontMetrics(tkscriptfont, &tkscriptfm);
++    dysubsc = (tkscriptfm.descent-tkscriptfm.ascent)/2;
++    dysupsc = dysubsc + (int)(fmPtr->ascent*0.8);
++
++    if (numChars < 0) {
++	numChars = Tcl_NumUtfChars(string, -1);
++    }
++    if (wrapLength == 0) {
++	wrapLength = -1;
++    }
++
++    maxChunks = 1;
++
++    layoutPtr = (TextLayout *)ckalloc(Tk_Offset(TextLayout, chunks)
++	    + maxChunks * sizeof(LayoutChunk));
++    /*    layoutPtr = (TextLayout *) ckalloc(sizeof(TextLayout)
++          + (maxChunks - 1) * sizeof(LayoutChunk));*/
++    layoutPtr->tkfont	    = tkfont;
++    layoutPtr->string	    = string;
++    layoutPtr->numChunks    = 0;
++
++    baseline = fmPtr->ascent;
++    maxWidth = 0;
++
++    /*
++     * Divide the string up into simple strings and measure each string.
++     */
++
++    curX = 0;
++
++    endp = TkUtfAtIndex(string, numChars);
++    special = string;
++    /*    endp = Tcl_UtfAtIndex(string, numChars);
++          special = string; */
++
++    flags &= TK_IGNORE_TABS | TK_IGNORE_NEWLINES;
++    flags |= TK_WHOLE_WORDS | TK_AT_LEAST_ONE;	    
++    for (start = string; start < endp; ) {
++	if (start >= special) {
++	    /*
++	     * Find the next special character in the string.
++	     *
++	     * INTL: Note that it is safe to increment by byte, because we are
++	     * looking for 7-bit characters that will appear unchanged in
++	     * UTF-8.  At some point we may need to support the full Unicode
++	     * whitespace set.
++	     */
++
++	    for (special = start; special < endp; special++) {
++		if (!(flags & TK_IGNORE_NEWLINES)) {
++		    if ((*special == '\n') || (*special == '\r')) {
++			break;
++		    }
++		}
++		if (!(flags & TK_IGNORE_TABS)) {
++		    if (*special == '\t') {
++			break;
++		    }
++		}
++		if (*special == '`') {
++		    break;
++		}
++	    }
++	}
++
++	/*
++	 * Special points at the next special character (or the end of the
++	 * string).  Process characters between start and special.
++	 */
++
++	chunkPtr = NULL;
++	if (start < special) {
++	    bytesThisChunk = Tk_MeasureChars(currfont, start, special - start,
++		    wrapLength - curX, flags, &newX);
++	    newX += curX;
++	    flags &= ~TK_AT_LEAST_ONE;
++	    if (bytesThisChunk > 0) {
++		chunkPtr = KGNewChunk(&layoutPtr, &maxChunks, start,
++			bytesThisChunk, curX, newX, baseline-yScript, currfont, currgc, 0);
++			
++		start += bytesThisChunk;
++		curX = newX;
++	    }
++	}
++
++	if ((start == special) && (special < endp)) {
++	    /*
++	     * Handle the special character.
++	     *
++	     * INTL: Special will be pointing at a 7-bit character so we
++	     * can safely treat it as a single byte.
++	     */
++
++	    chunkPtr = NULL;
++	    if (*special == '\t') {
++		newX = curX + fontPtr->tabWidth;
++		newX -= newX % fontPtr->tabWidth;
++		KGNewChunk(&layoutPtr, &maxChunks, start, 1, curX, newX,
++			baseline-yScript, currfont, currgc, 0)->numDisplayChars = -1;
++		start++;
++		if ((start < endp) &&
++			((wrapLength <= 0) || (newX <= wrapLength))) {
++		    /*
++		     * More chars can still fit on this line.
++		     */
++
++		    curX = newX;
++		    flags &= ~TK_AT_LEAST_ONE;
++		    continue;
++		}
++	    } else if (*special == '`') {
++		start++;
++		switch (*start) {
++		case 'f':
++		    bInAltFont = 1;
++		    if (bInScript) {
++			currfont = tkaltscriptfont;
++			currgc = altScriptGc;
++		    } else {
++			currfont = tkaltfont;
++			currgc = altGc;
++		    }
++		    break;
++		case 'd':
++		    bSubScr = 1;
++		    if (bInAltFont) {
++			currfont = tkaltscriptfont;
++			currgc = altScriptGc;
++		    }else {
++			currfont = tkscriptfont;
++			currgc = scriptGc;
++		    }
++		    yScript = dysubsc;
++		    bInScript = 1;
++		    break;
++		case 'u':
++		    if (bInAltFont) {
++			currfont = tkaltscriptfont;
++			currgc = altScriptGc;
++		    }else {
++			currfont = tkscriptfont;
++			currgc = scriptGc;
++		    }
++		    yScript = dysupsc;
++		    bInScript = 1;
++		    if (bfirstline) {
++			int dysu = dysupsc + tkscriptfm.ascent - fmPtr->ascent;
++			/*printf("dysu@u:%d\n", dysu);*/
++			if (dysu > dysumax)
++			    dysumax = dysu;
++		    }
++		    break;
++		case 'n':
++		    bInAltFont = 0;
++		    bInScript = 0;
++		    currfont = tkfont;
++		    currgc = gc;
++		    yScript = 0;
++		    break;
++		case 'h':
++		    curX = xovl0;
++		    break;
++		case 'o':
++		    xovl0 = curX;
++		    break;
++		case 'O':
++		    if (sqrtasc == 0) {
++			Font fid = Tk_FontId(tkaltfont);
++			Display *dsp=DisplayOfScreen(((TkFont*)tkaltfont)->screen);
++            XFontStruct *fs;
++			/*printf("fid: %d\n", fid);*/
++#if !defined(MAC_OSX_TK)
++			fs = XQueryFont(dsp, fid);
++#else
++			fs = NULL;
++#endif
++			if (0 && fs != NULL) {
++			    /*printf("fs: %d\n", (int)fs);*/
++			    sqrtasc = fs->per_char[0xd6].ascent+1;
++			    sqrtxoff = fs->per_char[0xd6].width -1 - fs->per_char[0xd6].rbearing;
++			    /*printf("sqrtasc: %d %d %d\n", sqrtasc, , );*/
++			    XFreeFontInfo(NULL,fs,1);
++			} else {
++#if !defined(MAC_OSX_TK)
++			    sqrtasc = (int)(1.25*tkaltfm.ascent);
++#else
++			    sqrtasc = (int)(1.165*tkaltfm.ascent);
++#endif
++			    sqrtxoff = 1;
++			}
++		    }
++                    /*sqrtasc =(int)(1.2*fmPtr->ascent);*/
++		    KGNewChunk(&layoutPtr, &maxChunks, start, 1, xovl0-sqrtxoff, curX,
++			baseline-sqrtasc, tkfont, gc, 1)->numDisplayChars = -1;
++		    if (bfirstline) {
++			int dysu=sqrtasc-fmPtr->ascent;
++			/*printf("dysu@O:%d\n", dysu);*/
++			if (dysu>dysumax)
++			    dysumax = dysu;
++		    }
++		    break;
++		case '`':
++		    Tk_MeasureChars(currfont, start, 1, 10000, flags, &newX);
++		    newX += curX;
++		    flags &= ~TK_AT_LEAST_ONE;
++		    chunkPtr = KGNewChunk(&layoutPtr, &maxChunks, start, 1,
++			    curX, newX, baseline-yScript, currfont, currgc, 0);
++		    curX = newX;
++		    break;
++		}
++		start++;
++		if (start<endp)
++		  continue;
++	    } else {	
++		bSubScr = 0;
++		KGNewChunk(&layoutPtr, &maxChunks, start, 1, curX, 1000000000,
++			baseline-yScript, currfont, currgc, 0)->numDisplayChars = -1;
++		start++;
++		goto wrapLine;
++	    }
++	}
++
++	/*
++	 * No more characters are going to go on this line, either because
++	 * no more characters can fit or there are no more characters left.
++	 * Consume all extra spaces at end of line.  
++	 */
++
++	while ((start < endp) && isspace(UCHAR(*start))) { /* INTL: ISO space */
++	    if (!(flags & TK_IGNORE_NEWLINES)) {
++		if ((*start == '\n') || (*start == '\r')) {
++		    break;
++		}
++	    }
++	    if (!(flags & TK_IGNORE_TABS)) {
++		if (*start == '\t') {
++		    break;
++		}
++	    }
++	    start++;
++	}
++	if (chunkPtr != NULL) {
++	    CONST char *endp;
++
++	    /*
++	     * Append all the extra spaces on this line to the end of the
++	     * last text chunk.  This is a little tricky because we are
++	     * switching back and forth between characters and bytes.
++	     */
++
++	    endp = chunkPtr->start + chunkPtr->numBytes;
++	    bytesThisChunk = start - endp;
++	    if (bytesThisChunk > 0) {
++		bytesThisChunk = Tk_MeasureChars(tkfont, endp, bytesThisChunk,
++			-1, 0, &chunkPtr->totalWidth);
++		chunkPtr->numBytes += bytesThisChunk;
++		chunkPtr->numChars += Tcl_NumUtfChars(endp, bytesThisChunk);
++		chunkPtr->totalWidth += curX;
++	    }
++	}
++
++        wrapLine: 
++	flags |= TK_AT_LEAST_ONE;
++
++	if (bfirstline) {
++	    if (dysumax>0) {
++		int i;
++		/*printf("dysumax:%d\n",dysumax);*/
++		baseline += dysumax;
++		for (i=0; i<layoutPtr->numChunks; i++) {
++		    layoutPtr->chunks[i].y += dysumax;
++		}
++	    }
++	    bfirstline = 0;
++	}
++
++	/*
++	 * Save current line length, then move current position to start of
++	 * next line.
++	 */
++
++	if (curX > maxWidth) {
++	    maxWidth = curX;
++	}
++
++	/*
++	 * Remember width of this line, so that all chunks on this line
++	 * can be centered or right justified, if necessary.
++	 */
++
++	Tcl_DStringAppend(&lineBuffer, (char *) &curX, sizeof(curX));
++
++	curX = 0;
++	baseline += height;
++    }
++
++    /*
++     * If last line ends with a newline, then we need to make a 0 width
++     * chunk on the next line.  Otherwise "Hello" and "Hello\n" are the
++     * same height.
++     */
++
++
++    if ((layoutPtr->numChunks > 0) && !(flags & TK_IGNORE_NEWLINES)) {
++	if (layoutPtr->chunks[layoutPtr->numChunks - 1].start[0] == '\n') {
++	    chunkPtr = KGNewChunk(&layoutPtr, &maxChunks, start, 0, curX,
++                                curX, baseline, tkfont, gc, 0);
++	    chunkPtr->numDisplayChars = -1;
++	    Tcl_DStringAppend(&lineBuffer, (char *) &curX, sizeof(curX));
++	    baseline += height;
++	}
++    }
++
++    layoutPtr->width = maxWidth;
++    layoutHeight = baseline - fmPtr->ascent;
++
++    if (bSubScr) {
++	int dhsb = dysupsc + tkscriptfm.descent - fmPtr->descent;
++	/*printf("dhsb:%d\n",dhsb);*/
++	if (dhsb>0)
++	    layoutHeight += dhsb;
++    }
++    /*
++    if (brmdes)
++	layoutHeight -= fmPtr->descent;
++    */
++    lstl = string;
++    if (lstl!=NULL) {
++	for (i=0; i<strlen(lowchars); i++)
++	    if (strchr(lstl,(int)lowchars[i])!=NULL) {
++		lstl = NULL;
++		break;
++	    }
++	if (lstl!=NULL)
++	    layoutHeight -= fmPtr->descent;
++    }
++
++    if (layoutPtr->numChunks == 0) {
++	layoutHeight = height;
++
++	/*
++	 * This fake chunk is used by the other functions so that they can
++	 * pretend that there is a chunk with no chars in it, which makes the
++	 * coding simpler.
++	 */
++
++	layoutPtr->numChunks = 1;
++	layoutPtr->chunks[0].start		= string;
++	layoutPtr->chunks[0].numBytes		= 0;
++	layoutPtr->chunks[0].numChars		= 0;
++	layoutPtr->chunks[0].numDisplayChars	= -1;
++	layoutPtr->chunks[0].x			= 0;
++	layoutPtr->chunks[0].y			= fmPtr->ascent;
++	layoutPtr->chunks[0].totalWidth		= 0;
++	layoutPtr->chunks[0].displayWidth	= 0;
++    } else {
++	/*
++	 * Using maximum line length, shift all the chunks so that the lines
++	 * are all justified correctly.
++	 */
++
++	curLine = 0;
++	chunkPtr = layoutPtr->chunks;
++	y = chunkPtr->y;
++	lineLengths = (int *) Tcl_DStringValue(&lineBuffer);
++	for (n = 0; n < layoutPtr->numChunks; n++) {
++	    int extra;
++
++	    if (chunkPtr->y >= y+height) {
++		curLine++;
++		y = chunkPtr->y;
++	    }
++	    extra = maxWidth - lineLengths[curLine];
++	    if (justify == TK_JUSTIFY_CENTER) {
++		chunkPtr->x += extra / 2;
++	    } else if (justify == TK_JUSTIFY_RIGHT) {
++		chunkPtr->x += extra;
++	    }
++            /*	    printf("extra: %d %d %d %d\n", extra, maxWidth, curLine, lineLengths[curLine]);*/
+ 	    chunkPtr++;
+ 	}
+     }
+@@ -2376,14 +2845,25 @@
+ 				 * means to draw all characters. */
+ {
+     TextLayout *layoutPtr = (TextLayout *) layout;
+-    int i, numDisplayChars, drawX;
++    int i, numDisplayChars, drawX, height;
+     const char *firstByte, *lastByte;
+     LayoutChunk *chunkPtr;
+-    double sinA = sin(angle * PI/180.0), cosA = cos(angle * PI/180.0);
++    double sinA = sin(angle * PI/180.0), cosA = cos(angle * PI/180.0), dx, dy, xx, width;
++    TkFont *fontPtr;
++    GC gc1;
+ 
+     if (layoutPtr == NULL) {
+ 	return;
+     }
++    fontPtr = (TkFont *) layoutPtr->tkfont;
++    /*    d = fontPtr->fa.size * 25.4 / 72.0;
++    d *= (fontPtr->fa.weight+1)*WidthOfScreen(fontPtr->screen);
++    d /= WidthMMOfScreen(fontPtr->screen);
++    height = (int) (d + 0.5) / 10; */
++    height=fontPtr->underlineHeight;
++    if (height < 1) {
++      height = 1;
++    }
+ 
+     if (lastChar < 0) {
+ 	lastChar = 100000000;
+@@ -2391,8 +2871,45 @@
+     chunkPtr = layoutPtr->chunks;
+     for (i = 0; i < layoutPtr->numChunks; i++) {
+ 	numDisplayChars = chunkPtr->numDisplayChars;
++        /*        printf("TDATL bovl %d %d\n",chunkPtr->bovl,numDisplayChars);*/
++	if (chunkPtr->bovl)
++            {
++                width=chunkPtr->totalWidth;
++                gc1=chunkPtr->gc;
++                if(gc1==NULL) gc1=gc;
++                if(angle == 0.0){
++                    XFillRectangle(display, drawable, gc1, x+chunkPtr->x+drawX, 
++                                   y+chunkPtr->y, width, height);
++                } else {
++                    XPoint points[5];
++                    xx=chunkPtr->x+drawX;
++                    dy=chunkPtr->y;
++                    /*                    printf("TDATL bovl angle %f %f %f\n",xx,dy,angle);*/
++                    points[0].x = x + ROUND16(xx*cosA + dy*sinA);
++                    points[0].y = y + ROUND16(dy*cosA - xx*sinA);
++                    points[1].x = x + ROUND16(xx*cosA + dy*sinA + width*cosA);
++                    points[1].y = y + ROUND16(dy*cosA - xx*sinA - width*sinA);
++
++                    if (height == 1) {
++                        XDrawLines(display, drawable, gc1, points, 2, CoordModeOrigin);
++                    } else {
++                        points[2].x = x + ROUND16(xx*cosA + dy*sinA + width*cosA
++                                                  + height*sinA);
++                        points[2].y = y + ROUND16(dy*cosA - xx*sinA - width*sinA
++                                                  + height*cosA);
++                        points[3].x = x + ROUND16(xx*cosA + dy*sinA
++                                                  + height*sinA);
++                        points[3].y = y + ROUND16(dy*cosA - xx*sinA
++                                                  + height*cosA);
++                        points[4].x = points[0].x;
++                        points[4].y = points[0].y;
++                        XFillPolygon(display, drawable, gc1, points, 5, Complex,
++                                     CoordModeOrigin);
++                        /*                   XDrawLines(display, drawable, chunkPtr->gc, points, 5, CoordModeOrigin);*/
++                    }
++                }
++            }
+ 	if ((numDisplayChars > 0) && (firstChar < numDisplayChars)) {
+-	    double dx, dy;
+ 
+ 	    if (firstChar <= 0) {
+ 		drawX = 0;
+@@ -2400,37 +2917,45 @@
+ 		firstByte = chunkPtr->start;
+ 	    } else {
+ 		firstByte = TkUtfAtIndex(chunkPtr->start, firstChar);
+-		Tk_MeasureChars(layoutPtr->tkfont, chunkPtr->start,
+-			firstByte - chunkPtr->start, -1, 0, &drawX);
++                Tk_MeasureChars(chunkPtr->tkfont, chunkPtr->start,
++                                firstByte - chunkPtr->start, -1, 0, &drawX);
++                /*		Tk_MeasureChars(layoutPtr->tkfont, chunkPtr->start,
++                                firstByte - chunkPtr->start, -1, 0, &drawX);*/
+ 	    }
++            /*            printf("TDATL %d %d\n",firstByte,chunkPtr->start);*/
+ 	    if (lastChar < numDisplayChars) {
+ 		numDisplayChars = lastChar;
+ 	    }
+ 	    lastByte = TkUtfAtIndex(chunkPtr->start, numDisplayChars);
++            gc1=chunkPtr->gc;
++            if(gc1==NULL) gc1=gc;
+ #if TK_DRAW_IN_CONTEXT
+-	    dx = cosA * (chunkPtr->x) + sinA * (chunkPtr->y);
+-	    dy = -sinA * (chunkPtr->x) + cosA * (chunkPtr->y);
+ 	    if (angle == 0.0) {
+-		TkpDrawCharsInContext(display, drawable, gc,
+-			layoutPtr->tkfont, chunkPtr->start, chunkPtr->numBytes,
+-			firstByte - chunkPtr->start, lastByte - firstByte,
+-			(int)(x + dx), (int)(y + dy));
++		TkpDrawCharsInContext(display, drawable, gc1,
++                                      chunkPtr->tkfont, chunkPtr->start, chunkPtr->numBytes,
++                                      firstByte - chunkPtr->start, lastByte - firstByte,
++                                      x+chunkPtr->x + drawX, y+chunkPtr->y);
+ 	    } else {
+-		TkpDrawAngledCharsInContext(display, drawable, gc,
+-			layoutPtr->tkfont, chunkPtr->start, chunkPtr->numBytes,
++                dx = (cosA * (chunkPtr->x) + sinA * (chunkPtr->y));
++                dy = (-sinA * (chunkPtr->x) + cosA * (chunkPtr->y));
++		TkpDrawAngledCharsInContext(display, drawable, gc1,
++			chunkPtr->tkfont, chunkPtr->start, chunkPtr->numBytes,
+ 			firstByte - chunkPtr->start, lastByte - firstByte,
+ 			x+dx, y+dy, angle);
+ 	    }
+ #else /* !TK_DRAW_IN_CONTEXT */
+-	    dx = cosA * (chunkPtr->x + drawX) + sinA * (chunkPtr->y);
+-	    dy = -sinA * (chunkPtr->x + drawX) + cosA * (chunkPtr->y);
++            /*            printf("no TK_DRAW_IN_CONTEXT %s %d %d %d %f\n", *firstByte, lastByte - firstByte,
++                          x,y,angle);*/
+ 	    if (angle == 0.0) {
+-		Tk_DrawChars(display, drawable, gc, layoutPtr->tkfont,
+-			firstByte, lastByte - firstByte,
+-			(int)(x + dx), (int)(y + dy));
+-	    } else {
+-		TkDrawAngledChars(display, drawable, gc, layoutPtr->tkfont,
+-			firstByte, lastByte - firstByte, x+dx, y+dy, angle);
++                Tk_DrawChars(display, drawable, gc1, chunkPtr->tkfont, 
++                             firstByte, lastByte - firstByte, 
++                             x+chunkPtr->x + drawX, y+chunkPtr->y);
++            } else {
++                dx = (cosA * (chunkPtr->x + drawX) + sinA * (chunkPtr->y));
++                dy = (-sinA * (chunkPtr->x + drawX) + cosA * (chunkPtr->y));
++		TkDrawAngledChars(display, drawable, gc1, chunkPtr->tkfont,
++                                  firstByte, lastByte - firstByte, 
++                                  x+dx, y+dy, angle);
+ 	    }
+ #endif /* TK_DRAW_IN_CONTEXT */
+ 	}
+@@ -2442,6 +2967,90 @@
+ 	chunkPtr++;
+     }
+ }
++
++void
++Tk_KGDrawTextLayout(display, drawable, gc, layout, x, y, firstChar, lastChar)
++    Display *display;		/* Display on which to draw. */
++    Drawable drawable;		/* Window or pixmap in which to draw. */
++    GC gc;			/* Graphics context to use for drawing text. */
++    Tk_TextLayout layout;	/* Layout information, from a previous call
++				 * to Tk_ComputeTextLayout(). */
++    int x, y;			/* Upper-left hand corner of rectangle in
++				 * which to draw (pixels). */
++    int firstChar;		/* The index of the first character to draw
++				 * from the given text item.  0 specfies the
++				 * beginning. */
++    int lastChar;		/* The index just after the last character
++				 * to draw from the given text item.  A number
++				 * < 0 means to draw all characters. */
++{
++    TextLayout *layoutPtr;
++    TkFont	   *fontPtr;
++    int i, numDisplayChars, drawX=0, height;
++    CONST char *firstByte;
++    CONST char *lastByte;
++    LayoutChunk *chunkPtr;
++    double d;
++
++    layoutPtr = (TextLayout *) layout;
++    if (layoutPtr == NULL) {
++	return;
++    }
++
++    fontPtr = (TkFont *) layoutPtr->tkfont;
++
++    d = fontPtr->fa.size * 25.4 / 72.0;
++    d *= (fontPtr->fa.weight+1)*WidthOfScreen(fontPtr->screen);
++    d /= WidthMMOfScreen(fontPtr->screen);
++    height = (int) (d + 0.5) / 14;
++    if (height == 0) {
++      height = 1;
++    }
++    /*    printf("KGDTL size height: %d %d\n", fontPtr->fa.size, height);*/
++
++    if (lastChar < 0) {
++	lastChar = 100000000;
++    }
++    chunkPtr = layoutPtr->chunks;
++    for (i = 0; i < layoutPtr->numChunks; i++) {
++	numDisplayChars = chunkPtr->numDisplayChars;
++	if (chunkPtr->bovl)
++        /*
++	    XDrawLine(display, drawable, chunkPtr->gc, x+chunkPtr->x+drawX,
++		y+chunkPtr->y, x+chunkPtr->x+chunkPtr->totalWidth+drawX,
++		    y+chunkPtr->y);
++        */
++            {
++                /*            printf("bovl %d %d\n",chunkPtr->totalWidth,height);*/
++	    XFillRectangle(display, drawable, chunkPtr->gc, x+chunkPtr->x+drawX, 
++                           y+chunkPtr->y, chunkPtr->totalWidth, height);}
++
++	else if ((numDisplayChars > 0) && (firstChar < numDisplayChars)) {
++	    if (firstChar <= 0) {
++		drawX = 0;
++		firstChar = 0;
++		firstByte = chunkPtr->start;
++	    } else {
++		firstByte = Tcl_UtfAtIndex(chunkPtr->start, firstChar);
++		Tk_MeasureChars(layoutPtr->tkfont, chunkPtr->start,
++			firstByte - chunkPtr->start, -1, 0, &drawX);
++	    }
++	    if (lastChar < numDisplayChars) {
++		numDisplayChars = lastChar;
++	    }
++	    lastByte = Tcl_UtfAtIndex(chunkPtr->start, numDisplayChars);
++	    Tk_DrawChars(display, drawable, chunkPtr->gc, chunkPtr->tkfont,
++		    firstByte, lastByte - firstByte,
++		    x + chunkPtr->x + drawX, y + chunkPtr->y);
++	}
++	firstChar -= chunkPtr->numChars;
++	lastChar -= chunkPtr->numChars;
++	if (lastChar <= 0) {
++	    break;
++	}
++	chunkPtr++;
++    }
++}
+ 
+ /*
+  *---------------------------------------------------------------------------
+@@ -3759,6 +4368,29 @@
+  *
+  *---------------------------------------------------------------------------
+  */
++static LayoutChunk *
++KGNewChunk(
++    TextLayout **layoutPtrPtr,
++    int *maxPtr,
++    const char *start,
++    int numBytes,
++    int curX,
++    int newX,
++    int y,
++    Tk_Font tkfont,
++    GC gc,
++    int bov)
++{
++    LayoutChunk *chunkPtr;
++
++    chunkPtr= NewChunk(layoutPtrPtr,maxPtr,start,
++                       numBytes,curX,newX,y);
++    chunkPtr->tkfont = tkfont;
++    chunkPtr->gc = gc;
++    chunkPtr->bovl = bov;
++
++    return chunkPtr;
++}
+ 
+ static LayoutChunk *
+ NewChunk(
+@@ -3795,6 +4427,9 @@
+     chunkPtr->y			= y;
+     chunkPtr->totalWidth	= newX - curX;
+     chunkPtr->displayWidth	= newX - curX;
++    chunkPtr->tkfont = layoutPtr->tkfont;
++    chunkPtr->gc = NULL;
++    chunkPtr->bovl = 0;
+     layoutPtr->numChunks++;
+ 
+     return chunkPtr;

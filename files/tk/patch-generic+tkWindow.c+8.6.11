@@ -1,0 +1,11 @@
+--- generic/tkWindow.c.orig	2020-12-12 02:48:53.000000000 +0900
++++ generic/tkWindow.c	2021-07-18 02:58:29.000000000 +0900
+@@ -73,7 +73,7 @@
+     0,				/* border_pixel */
+     NorthWestGravity,		/* bit_gravity */
+     NorthWestGravity,		/* win_gravity */
+-    NotUseful,			/* backing_store */
++    WhenMapped,			/* backing_store */
+     (unsigned) ~0,		/* backing_planes */
+     0,				/* backing_pixel */
+     False,			/* save_under */

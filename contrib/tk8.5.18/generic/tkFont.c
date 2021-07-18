@@ -2468,12 +2468,14 @@ Tk_KGComputeTextLayout(tkfont, string, numChars, wrapLength, justify, flags,
 #else
 			fs = NULL;
 #endif
+                        fs=NULL;
 			if (fs != NULL) {
 			    /*printf("fs: %d\n", (int)fs);*/
-			    sqrtasc = fs->per_char[0x56].ascent+1;
-			    sqrtxoff = fs->per_char[0x56].width -1 - fs->per_char[0x56].rbearing;
+			    sqrtasc = fs->per_char[0xd6].ascent+1;
+			    sqrtxoff = fs->per_char[0xd6].width -1 - fs->per_char[0xd6].rbearing;
 			    /*printf("sqrtasc: %d %d %d\n", sqrtasc, , );*/
 			    XFreeFontInfo(NULL,fs,1);
+                            printf("sqrtasc: %d\n", sqrtasc);
 			} else {
 #if !defined(MAC_OSX_TK)
 			    sqrtasc = (int)(1.25*tkaltfm.ascent);
@@ -2483,7 +2485,7 @@ Tk_KGComputeTextLayout(tkfont, string, numChars, wrapLength, justify, flags,
 			    sqrtxoff = 1;
 			}
 		    }
-                    sqrtasc =(int)(1.12*fmPtr->ascent);
+                    /*                    sqrtasc =(int)(1.12*fmPtr->ascent);*/
 		    KGNewChunk(&layoutPtr, &maxChunks, start, 1, xovl0-sqrtxoff, curX,
 			baseline-sqrtasc, tkfont, gc, 1)->numDisplayChars = -1;
 		    if (bfirstline) {
@@ -2666,7 +2668,7 @@ Tk_KGComputeTextLayout(tkfont, string, numChars, wrapLength, justify, flags,
 		y = chunkPtr->y;
 	    }
 	    extra = maxWidth - lineLengths[curLine];
-	    /*printf("extra: %d %d %d\n", extra, maxWidth, lineLengths[curLine]);*/
+	    printf("extra: %d %d %d %d\n", extra, maxWidth, curLine, lineLengths[curLine]);
 	    if (justify == TK_JUSTIFY_CENTER) {
 		chunkPtr->x += extra / 2;
 	    } else if (justify == TK_JUSTIFY_RIGHT) {

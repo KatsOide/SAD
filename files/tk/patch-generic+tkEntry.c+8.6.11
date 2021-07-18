@@ -1,0 +1,16 @@
+--- generic/tkEntry.c.orig	2021-07-17 16:19:30.000000000 +0900
++++ generic/tkEntry.c	2021-07-17 16:09:52.000000000 +0900
+@@ -1963,9 +1963,10 @@
+     }
+ 
+     Tk_FreeTextLayout(entryPtr->textLayout);
+-    entryPtr->textLayout = Tk_ComputeTextLayout(entryPtr->tkfont,
+-	    entryPtr->displayString, entryPtr->numChars, 0,
+-	    entryPtr->justify, TK_IGNORE_NEWLINES, &totalLength, &height);
++    entryPtr->textLayout = 
++        Tk_ComputeTextLayout(entryPtr->tkfont,
++                             entryPtr->displayString, entryPtr->numChars, 0,
++                             entryPtr->justify, TK_IGNORE_NEWLINES, &totalLength, &height);
+ 
+     entryPtr->layoutY = (Tk_Height(entryPtr->tkwin) - height) / 2;
+ 

@@ -44,7 +44,8 @@ CanvasGraphics=Class[{},
     $DefaultCanvasSize={13,10},
     $DefaultCanvasAspectRatio=13/10,
     EPS=1e-300,
-    CanvasObject},
+    CanvasObject,
+    TkAngle=Times@@(Tk$Version>={8,6}),RotSym=`Angle},
 
   {DPI=72,
     Canvas$PlotRange={{0,1},{0,1}},
@@ -155,7 +156,8 @@ CanvasGraphics=Class[{},
               Max[First[#],CanvasLastID1]]&
               [CanvasWidget[Find$Below[Floor[2E9]]]])];
       RawWindowAspectRatio=StandardAspectRatio[];
-      SetCanvas$Scale[Automatic]
+      SetCanvas$Scale[Automatic];
+      RotSym=If[TkAngle,`Angle,`Rotation,`Rotation];
       )
 
     ];
@@ -667,8 +669,8 @@ CanvasGraphics=Class[{},
   TitleTag["TOP"]:="T$T"//Canvas$Frame;
   TitleTag["TOP HIGH"]:="T$TH"//Canvas$Frame;
 
-  TitleRotate["LEFT CENTER"]:={Rotation->90,Anchor->"e",Tags->"FL$Y1"//Canvas$Frame};
-  TitleRotate["RIGHT CENTER"]:={Rotation->270,Anchor->"w",Tags->"FL$Y2"//Canvas$Frame};
+  TitleRotate["LEFT CENTER"]:={RotSym->90,Anchor->"e",Tags->"FL$Y1"//Canvas$Frame};
+  TitleRotate["RIGHT CENTER"]:={RotSym->270,Anchor->"w",Tags->"FL$Y2"//Canvas$Frame};
   TitleRotate["BOTTOM"]:={Anchor->"n",Tags->"FL$X1"//Canvas$Frame};
   TitleRotate["TOP"]:={Anchor->"s",Tags->"FL$X2"//Canvas$Frame};
   TitleRotate["TOP HIGH"]:={Anchor->"s",Tags->"PL"//Canvas$Frame};
@@ -750,7 +752,7 @@ CanvasGraphics=Class[{},
       Anchor->anc,
       Justify->"center",
       Tags->TitleTag[p],
-      Null@@(TitleRotate[p]/.Rotation->TextRotate),
+      Null@@(TitleRotate[p]/.RotSym->TextRotate),
       UseBG->False]]];
   MakeTitle[t_List,size_,p_]:=MakeTitle[First[t],size,p];
 
@@ -1312,7 +1314,7 @@ CanvasGraphics=Class[{},
       (CanvasWidget[Create$Text] = {
         {Canvas$Coord1[{#,0}][[1]],yy},
         Null@@Override[Null@@(FtOption/@Flatten[{##2}]),
-          If[WindowAspectRatio<XTRth,Rotation->270,Null[],Null[]],
+          If[WindowAspectRatio<XTRth,RotSym->270,Null[],Null[]],
           Anchor->anc,Tags->{fltag,FrameTag},
           Font->font]})&@@[fun,{1}],
       Log,
@@ -1359,7 +1361,7 @@ CanvasGraphics=Class[{},
             CanvasWidget[Create$Text] = {
               {Canvas$Coord1[{#,0}][[1]],yy},
               Null@@Override[Null@@fun[#,exp,s],
-                If[WindowAspectRatio<XTRth,Rotation->270,Null[],Null[]],
+                If[WindowAspectRatio<XTRth,RotSym->270,Null[],Null[]],
                 Anchor->anc,Text->s,Tags->{fltag,FrameTag},
                 Font->font]})&,Mt];
           If[exp<>1,
@@ -1632,7 +1634,8 @@ CanvasGraphics=Class[{},
       {z={TextCoord[body[[2,1]],1],TextCoord[body[[2,2]],2]},
         {size,al,pos,font,tag,tj,ca,pc,rot,ubg,clip,rota,anch,just}=
           {TextSize,TextAlign,TextPosition,TextFont,Tags,TextJustify,
-            TextCases,PlotColor,TextRotate,UseBG,Clip,Rotation,Anchor,Justify}/.Override[opt,def]},
+            TextCases,PlotColor,TextRotate,UseBG,Clip,Rotation,Anchor,
+            Justify}/.Override[opt,def]},
       If[~clip || (Canvas$Window[[1,1]]<=First[z]<=Canvas$Window[[1,2]]
         && Canvas$Window[[2,1]]<=Second[z]<=Canvas$Window[[2,2]]),
         ,
@@ -1640,10 +1643,14 @@ CanvasGraphics=Class[{},
       CanvasWidget[Create$Text] = {WindowCoord[z],
         Fill->pc,Text->First[body],
         Font->TextFont[Null@@font,Round[15*size*StandardScale]],
-        Rotation->Switch[rota,
+        rot=Mod[Switch[rota,
           _Real,rota,
-          _,rot],
-        Rotation->rot,UseBG->ubg,
+          _,rot],360];
+        If[rot,
+          RotSym->rot,
+          Null[],
+          Null[]],
+        UseBG->ubg,
         If[StringQ[tag],Tags->tag,Null[]],
         If[tj<=>Null,Justify->tj,Switch[just,_String,Justify->just,_,Null[]]],
         Anchor->Switch[anch,

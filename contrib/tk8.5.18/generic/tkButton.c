@@ -2210,22 +2210,22 @@ TkKGDisplayText(display, drawable, butPtr, tkfont, tkaltfont, tkscriptfont,
 	}
 	numLines++;
 	if (bIsMeas) {
-      if (lengthThisLine > maxWidth)
+            if (lengthThisLine > maxWidth)
 		maxWidth = lengthThisLine;
 	} else {
-      if (justify == TK_JUSTIFY_LEFT) {
+            if (justify == TK_JUSTIFY_LEFT) {
 		xThisLine = x;
-      } else if (justify == TK_JUSTIFY_CENTER) {
+            } else if (justify == TK_JUSTIFY_CENTER) {
 		xThisLine = x + (length - lengthThisLine)/2;
-      } else {
+            } else {
 		xThisLine = x + (length - lengthThisLine);
-      }
-      for (i=0; i<iel; i++) {
+            }
+            for (i=0; i<iel; i++) {
         /*printf("[%s]%d,%d\n",pChars[i],nChars[i],xThisLine+xStart[i]);*/
 		Tk_DrawChars(display, pixmap, currGc[i], pTkFont[i], pChars[i],
                      nChars[i], xThisLine+xStart[i], y-yScript[i]);
         /*if (nChars[i]==0) return;*/
-      }
+            }
       /*
 	    if ((underline >= 0) && (underline < charsThisLine)) {
 		TkUnderlineChars(display, pixmap, gc, tkfont, p,
@@ -2233,7 +2233,7 @@ TkKGDisplayText(display, drawable, butPtr, tkfont, tkaltfont, tkscriptfont,
 	    }
 	    underline -= charsThisLine;
       */
-      y += tkfm.ascent + tkfm.descent;
+            y += tkfm.ascent + tkfm.descent;
 	}
 
 	/*if (isspace(UCHAR(*p))) {

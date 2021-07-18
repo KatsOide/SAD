@@ -22,6 +22,9 @@ for symbol in processor architecture; do
 	amd64|x86_64)
 	    cpu_arch=AMD64
 	    ;;
+        arm64)
+            cpu_arch=arm
+            ;;
 	ia64)
 	    cpu_arch=IA64
 	    ;;
