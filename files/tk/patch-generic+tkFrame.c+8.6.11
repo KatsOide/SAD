@@ -1,5 +1,5 @@
---- generic/tkFrame.c.orig	2021-07-17 16:19:30.000000000 +0900
-+++ generic/tkFrame.c	2021-07-17 16:10:12.000000000 +0900
+--- generic/tkFrame.c.orig	2021-07-20 01:24:41.000000000 +0900
++++ generic/tkFrame.c	2021-07-20 01:07:21.000000000 +0900
 @@ -15,6 +15,20 @@
  #include "default.h"
  #include "tkInt.h"
@@ -152,18 +152,31 @@
  	    labelframePtr->labelReqWidth += 2 * LABELSPACING;
  	    labelframePtr->labelReqHeight += 2 * LABELSPACING;
  	} else if (anyWindowLabel) {
-@@ -1558,7 +1639,13 @@
+@@ -1558,11 +1639,22 @@
  			clipRegion);
  	    }
  
 -	    Tk_DrawTextLayout(framePtr->display, pixmap,
+-		    labelframePtr->textGC, labelframePtr->textLayout,
+-		    labelframePtr->labelTextX + LABELSPACING,
+-		    labelframePtr->labelTextY + LABELSPACING, 0, -1);
+-
 +	    if (labelframePtr->bsmplw)
 +	      Tk_DrawTextLayout(framePtr->display, pixmap,
 +                    labelframePtr->textGC, labelframePtr->textLayout,
 +                    labelframePtr->labelTextX + LABELSPACING,
 +                    labelframePtr->labelTextY + LABELSPACING, 0, -1);
 +	    else
-+	      Tk_KGDrawTextLayout(framePtr->display, pixmap,
- 		    labelframePtr->textGC, labelframePtr->textLayout,
- 		    labelframePtr->labelTextX + LABELSPACING,
- 		    labelframePtr->labelTextY + LABELSPACING, 0, -1);
++                TkDrawAngledTextLayout(
++                                       framePtr->display, pixmap,
++                                       labelframePtr->textGC, labelframePtr->textLayout,
++                                       labelframePtr->labelTextX + LABELSPACING,
++                                       labelframePtr->labelTextY + LABELSPACING,
++                                       0.0, 0, -1);
++                    /* Tk_KGDrawTextLayout(framePtr->display, pixmap, */
++                    /*       labelframePtr->textGC, labelframePtr->textLayout, */
++                    /*       labelframePtr->labelTextX + LABELSPACING, */
++                    /*       labelframePtr->labelTextY + LABELSPACING, 0, -1); */
+ 	    if (clipRegion != NULL) {
+ 		XSetClipMask(framePtr->display, labelframePtr->textGC, None);
+ 		TkDestroyRegion(clipRegion);

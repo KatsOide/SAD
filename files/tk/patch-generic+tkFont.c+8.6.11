@@ -1,5 +1,5 @@
---- generic/tkFont.c.orig	2021-07-17 16:19:30.000000000 +0900
-+++ generic/tkFont.c	2021-07-17 16:08:50.000000000 +0900
+--- generic/tkFont.c.orig	2021-07-20 01:24:22.000000000 +0900
++++ generic/tkFont.c	2021-07-20 01:16:33.000000000 +0900
 @@ -87,6 +87,9 @@
  				 * characters in this chunk. Can be less than
  				 * width if extra space characters were
@@ -683,98 +683,7 @@
  	    }
  #endif /* TK_DRAW_IN_CONTEXT */
  	}
-@@ -2442,6 +2967,90 @@
- 	chunkPtr++;
-     }
- }
-+
-+void
-+Tk_KGDrawTextLayout(display, drawable, gc, layout, x, y, firstChar, lastChar)
-+    Display *display;		/* Display on which to draw. */
-+    Drawable drawable;		/* Window or pixmap in which to draw. */
-+    GC gc;			/* Graphics context to use for drawing text. */
-+    Tk_TextLayout layout;	/* Layout information, from a previous call
-+				 * to Tk_ComputeTextLayout(). */
-+    int x, y;			/* Upper-left hand corner of rectangle in
-+				 * which to draw (pixels). */
-+    int firstChar;		/* The index of the first character to draw
-+				 * from the given text item.  0 specfies the
-+				 * beginning. */
-+    int lastChar;		/* The index just after the last character
-+				 * to draw from the given text item.  A number
-+				 * < 0 means to draw all characters. */
-+{
-+    TextLayout *layoutPtr;
-+    TkFont	   *fontPtr;
-+    int i, numDisplayChars, drawX=0, height;
-+    CONST char *firstByte;
-+    CONST char *lastByte;
-+    LayoutChunk *chunkPtr;
-+    double d;
-+
-+    layoutPtr = (TextLayout *) layout;
-+    if (layoutPtr == NULL) {
-+	return;
-+    }
-+
-+    fontPtr = (TkFont *) layoutPtr->tkfont;
-+
-+    d = fontPtr->fa.size * 25.4 / 72.0;
-+    d *= (fontPtr->fa.weight+1)*WidthOfScreen(fontPtr->screen);
-+    d /= WidthMMOfScreen(fontPtr->screen);
-+    height = (int) (d + 0.5) / 14;
-+    if (height == 0) {
-+      height = 1;
-+    }
-+    /*    printf("KGDTL size height: %d %d\n", fontPtr->fa.size, height);*/
-+
-+    if (lastChar < 0) {
-+	lastChar = 100000000;
-+    }
-+    chunkPtr = layoutPtr->chunks;
-+    for (i = 0; i < layoutPtr->numChunks; i++) {
-+	numDisplayChars = chunkPtr->numDisplayChars;
-+	if (chunkPtr->bovl)
-+        /*
-+	    XDrawLine(display, drawable, chunkPtr->gc, x+chunkPtr->x+drawX,
-+		y+chunkPtr->y, x+chunkPtr->x+chunkPtr->totalWidth+drawX,
-+		    y+chunkPtr->y);
-+        */
-+            {
-+                /*            printf("bovl %d %d\n",chunkPtr->totalWidth,height);*/
-+	    XFillRectangle(display, drawable, chunkPtr->gc, x+chunkPtr->x+drawX, 
-+                           y+chunkPtr->y, chunkPtr->totalWidth, height);}
-+
-+	else if ((numDisplayChars > 0) && (firstChar < numDisplayChars)) {
-+	    if (firstChar <= 0) {
-+		drawX = 0;
-+		firstChar = 0;
-+		firstByte = chunkPtr->start;
-+	    } else {
-+		firstByte = Tcl_UtfAtIndex(chunkPtr->start, firstChar);
-+		Tk_MeasureChars(layoutPtr->tkfont, chunkPtr->start,
-+			firstByte - chunkPtr->start, -1, 0, &drawX);
-+	    }
-+	    if (lastChar < numDisplayChars) {
-+		numDisplayChars = lastChar;
-+	    }
-+	    lastByte = Tcl_UtfAtIndex(chunkPtr->start, numDisplayChars);
-+	    Tk_DrawChars(display, drawable, chunkPtr->gc, chunkPtr->tkfont,
-+		    firstByte, lastByte - firstByte,
-+		    x + chunkPtr->x + drawX, y + chunkPtr->y);
-+	}
-+	firstChar -= chunkPtr->numChars;
-+	lastChar -= chunkPtr->numChars;
-+	if (lastChar <= 0) {
-+	    break;
-+	}
-+	chunkPtr++;
-+    }
-+}
- 
- /*
-  *---------------------------------------------------------------------------
-@@ -3759,6 +4368,29 @@
+@@ -3759,6 +4284,29 @@
   *
   *---------------------------------------------------------------------------
   */
@@ -804,7 +713,7 @@
  
  static LayoutChunk *
  NewChunk(
-@@ -3795,6 +4427,9 @@
+@@ -3795,6 +4343,9 @@
      chunkPtr->y			= y;
      chunkPtr->totalWidth	= newX - curX;
      chunkPtr->displayWidth	= newX - curX;
