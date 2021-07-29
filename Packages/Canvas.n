@@ -141,6 +141,7 @@ CanvasGraphics=Class[{},
             oval$,poly$,rect$,line$]);
         CanvasLastID:=TkCanvasLastItem[p$]];
       RawWindowAspectRatio=StandardAspectRatio[];
+      RotSym=If[TkAngle,`Angle,`Rotation,`Rotation];
       SetCanvas$Scale[Automatic]
       ),
 
@@ -157,7 +158,6 @@ CanvasGraphics=Class[{},
               [CanvasWidget[Find$Below[Floor[2E9]]]])];
       RawWindowAspectRatio=StandardAspectRatio[];
       SetCanvas$Scale[Automatic];
-      RotSym=If[TkAngle,`Angle,`Rotation,`Rotation];
       )
 
     ];
