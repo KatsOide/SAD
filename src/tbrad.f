@@ -323,6 +323,8 @@ c     end   initialize for preventing compiler warning
           if(ipr .gt. 0)then
             ichpid(na1)=ipr
             na1=na1+1
+          else
+            call tfsetintm(-1.d0)
           endif
         enddo
       else

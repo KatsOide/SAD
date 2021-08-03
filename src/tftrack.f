@@ -178,6 +178,7 @@ c     $       ne,npnlatmin
               endif
               npr=-1
               npp=np1
+              call tsetintm(-1.d0)
               go to 10
             endif
             ipr(npr)=iprid

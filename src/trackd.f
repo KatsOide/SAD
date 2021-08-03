@@ -4,7 +4,7 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       use tfstk
       use ffs_flag
       use tmacro,only:np0,codin,dvfs,omega0,taurdx,taurdy,taurdz,
-     $     nparallel
+     $     nparallel,tsetintm
       use ffs_pointer, only:idelc
       use tftr
       use tfshare
@@ -140,6 +140,7 @@ c      write(*,*)'trackd-npara ',npara,np0
               write(*,*)'addseed-error ',irtc
               call exit_without_hooks(0)
             endif
+            call tsetintm(-1.d0)
             exit
           endif
           npr=npr+1

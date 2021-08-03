@@ -3,7 +3,8 @@
      $     r,rp,rstab,nstab,residual1,
      $     zcal,wcal,parallel,lout,error)
       use tfstk
-      use ffs, only:ndim,nlat,flv,maxcond,ffs_bound,nvevx,nelvx
+      use ffs, only:ndim,nlat,flv,maxcond,ffs_bound,nvevx,nelvx,
+     $     tsetintm
       use ffs_flag
       use ffs_pointer
       use ffs_fit
@@ -143,6 +144,7 @@ c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
             idir=1
             ifb=1
             ife=nfr
+            call tsetintm(-1.d0)
           endif
  2        i1=0
           i2=0

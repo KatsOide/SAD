@@ -1,11 +1,11 @@
---- generic/tkCmds.c.orig	2008-06-13 07:45:46.000000000 +0200
-+++ generic/tkCmds.c	2008-09-30 17:25:32.000000000 +0200
-@@ -1101,22 +1101,32 @@
+--- generic/tkCmds.c.orig	2021-08-04 05:48:07.000000000 +0900
++++ generic/tkCmds.c	2021-08-04 04:46:51.000000000 +0900
+@@ -1181,22 +1181,32 @@
      int objc,			/* Number of arguments. */
      Tcl_Obj *const objv[])	/* Argument objects. */
  {
 -    static const char *const updateOptions[] = {"idletasks", NULL};
-+    static const char *const updateOptions[] = {"windowtasks", "filetasks", "timertasks", "idletasks", NULL};
++    static const char *updateOptions[] = {"windowtasks", "filetasks", "timertasks", "idletasks", NULL};
      int flags, index;
      TkDisplay *dispPtr;
      int code = TCL_OK;
@@ -16,12 +16,10 @@
 -    } else if (objc == 2) {
 -	if (Tcl_GetIndexFromObj(interp, objv[1], updateOptions, "option", 0,
 -		&index) != TCL_OK) {
-                	    return TCL_ERROR;
-	}
 +    flags = TCL_DONT_WAIT;
 +    for (i=1; i<objc; i++) {
-+	if (Tcl_GetIndexFromObj(interp, objv[i], updateOptions, "option",
-+		0, &index) != TCL_OK) {
++ 	if (Tcl_GetIndexFromObj(interp, objv[i], updateOptions, "option",
++ 		0, &index) != TCL_OK) {
  	    return TCL_ERROR;
  	}
 -	flags = TCL_IDLE_EVENTS;
@@ -45,3 +43,35 @@
      }
  
      /*
+@@ -1209,10 +1219,10 @@
+ 
+     while (1) {
+ 	while (Tcl_DoOneEvent(flags) != 0) {
+-	    if (Tcl_Canceled(interp, TCL_LEAVE_ERR_MSG) == TCL_ERROR) {
++        	    if (Tcl_Canceled(interp, TCL_LEAVE_ERR_MSG) == TCL_ERROR) {
+ 		code = TCL_ERROR;
+-		break;
+-	    }
++		break; 
++                }
+ 	}
+ 
+ 	/*
+@@ -1224,7 +1234,7 @@
+ 
+ 	for (dispPtr = TkGetDisplayList(); dispPtr != NULL;
+ 		dispPtr = dispPtr->nextPtr) {
+-	    XSync(dispPtr->display, False);
++	    XSync(dispPtr->display, False); 
+ 	}
+ 
+ 	/*
+@@ -1250,7 +1260,7 @@
+      */
+ 
+     if (code == TCL_OK)
+-    Tcl_ResetResult(interp);
++        Tcl_ResetResult(interp);
+ 
+     return code;
+ }

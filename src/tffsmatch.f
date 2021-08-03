@@ -1,7 +1,8 @@
       subroutine tffsmatch(df,dp0,r,nparallel,lfno,irtc)
       use kyparam
       use tfstk
-      use ffs, only: flv,dpmax,nele,ndim,nlat,maxcond,nvevx,nelvx
+      use ffs, only: flv,dpmax,nele,ndim,nlat,maxcond,nvevx,nelvx,
+     $     tsetintm
       use ffs_pointer
       use ffs_flag
       use ffs_fit
@@ -49,7 +50,8 @@ c      include 'DEBUG.inc'
       character ch
       character*10 sexp
       integer*8 intffs,inumderiv,iexponent,inumw,iconvergence
-      data intffs,inumderiv,iexponent,inumw,iconvergence /0,0,0,0,0/
+      data intffs,inumderiv,iexponent,inumw,iconvergence
+     $     /0,0,0,0,0/
 c
       fuzz(x,a,b)=max(0.d0,min(1.d0,(x-a)/(b-a)))
 c     
@@ -322,6 +324,7 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                   call c_f_pointer(c_loc(rlist(iuta1)),utwiss,
      $                 [ntwissfun,2*nfam+1,nut])
                   utwiss(1:ntwissfun,-nfam:nfam,1:nut)=>utwiss
+                  call tsetintm(-1.d0)
                 endif
                 wcal1=wcal
                 zcal1=zcal
@@ -381,6 +384,8 @@ c     enddo
                     enddo
                     if(ipr .gt. 0)then
                       ip=ip+1
+                    else
+                      call tsetintm(-1.d0)
                     endif
                   else
                     ip=1
@@ -836,7 +841,7 @@ c        call tfdebugprint(kx,'varfun:',1)
      $     free,nlat,nele,nfam,nfam1,nut,
      $     nparallel,cell,lfno,irtc)
       use tfstk
-      use ffs, only:flv,ffs_bound,nvevx,nelvx
+      use ffs, only:flv,ffs_bound,nvevx,nelvx,tsetintm
       use ffs_pointer
       use tffitcode
       use tfshare
@@ -890,6 +895,8 @@ c        call tfdebugprint(kx,'varfun:',1)
           enddo
           if(ipr .ne. 0)then
             ip=ip+1
+          else
+            call tsetintm(-1.d0)
           endif
         else
           ip=1

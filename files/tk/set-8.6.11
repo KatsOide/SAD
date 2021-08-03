@@ -16,6 +16,7 @@ patch-generic+tkCanvImg.c+8.5a5
 patch-generic+tkCanvLine.c+8.6a3
 patch-generic+tkCanvPoly.c+8.6a3
 patch-generic+tkCanvas.h+8.4.14
+patch-generic+tkCmds.c+8.6.11
 patch-library+ttk+fonts.tcl+8.5.16
 #patch-macosx+tkMacOSXButton.c+8.5b3
 patch-macosx+tkMacOSXDefault.h+8.5b3

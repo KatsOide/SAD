@@ -252,6 +252,7 @@ c      write(*,*)ltbl,lpoint,katbl,ilist(1,katbl-1)
 
       subroutine tlspect(isp1,kx,nparallel,irtc)
       use tfstk
+      use tmacro, only:tsetintm
       use macphys
       implicit none
       type (sad_dlist), pointer :: klp,klx
@@ -321,6 +322,8 @@ c     end   initialize for preventing compiler warning
           if(ipr .gt. 0)then
             ichpid(na1)=ipr
             na1=na1+1
+          else
+            call tsetintm(-1.d0)
           endif
         enddo
       else

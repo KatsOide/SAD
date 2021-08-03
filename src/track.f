@@ -32,6 +32,7 @@ c      use tfcsi, only:ipoint,lrecl,lfni
         convcase=.true.
         call tfinitn
         call tfinittws
+        call tinitintm
         call tfevals('CONVERGENCE=1E-9;ExponentOfResidual=2;'//
      $       'OffMomentumWeight=1;MatchingResidual='//
      $       'NetResidual=StabilityLevel=0;'//

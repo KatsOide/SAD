@@ -114,12 +114,30 @@ c        el%elmv%k=0
      $       vcalpha,vceff,vcacc,dvcacc,ddvcacc,alphap,
      $       pspac_dx,pspac_dy,pspac_dz,dvfs,rcratio,rclassic,brhoz,
      $       bradprev,amom0,circ,hvc0,cuc
-        integer*8 ilattp,lspect,ipoltr,ipolb,ipoll,ipolid,ipolo
+        integer*8 ilattp,lspect,ipoltr,ipolb,ipoll,ipolid,ipolo,
+     $       intffsm
         integer*4 nflag0,nlat,np0,nturn,isynch,nspect,
      $       lplot,nplot,nuse,nclas,irad,novfl,npelm,ipelm,
      $       nparallel,pspac_nx,pspac_ny,pspac_nz,
      $       pspac_nturn,pspac_nturncalc,l_track
         logical*4 oldflagsdummy,tparaed
+
+        contains
+        subroutine tinitintm
+        use tfstk
+        implicit none
+        intffsm=ktfsymbolz('System`FFS$InterruptMask',24)-4
+        call tsetintm(0.d0)
+        return
+        end
+
+        subroutine tsetintm(x)
+        use tfstk
+        implicit none
+        real*8 ,intent(in):: x
+        rlist(intffsm)=x
+        return
+        end
 
       end module
 
