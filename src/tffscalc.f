@@ -32,7 +32,7 @@ c      include 'DEBUG.inc'
       logical*4 fam,beg,zerores
       integer*4 irw,isw,ipr,ifb,ife,idir,
      $     jjfam(-nfam:nfam),ifpe,ntfun
-      integer*4, external :: fork_worker,waitpid,
+      integer*4, external :: waitpid,
      $     itfdownlevel,itfuplevel,itgetfpe
       integer*8 iutm,jb
       integer*4 , parameter:: ivoid=9999
@@ -129,7 +129,7 @@ c     $         aint(twiss(nlat,0,mfitny)/pi2)
             iutm=ktfallocshared((2*nfam+1)*4)
 c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
             if(irtc .eq. 0)then
-              ipr=fork_worker()
+              ipr=itffork()
             else
               ipr=-1
             endif

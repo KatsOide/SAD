@@ -44,7 +44,7 @@ c      include 'DEBUG.inc'
       logical*4 chgmod,newton,imprv,limited,over,wcal,
      $     parallel,nderiv,outt,nderiv0,dlim
       integer*4 kkk,kkkk,npa
-      integer*4 , external :: itfgetrecl, fork_worker
+      integer*4 , external :: itfgetrecl
       integer*8 , external :: itmmapp
       real*8 , external :: tffsfmin, tweigh
       character ch
@@ -309,7 +309,7 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                   ip=0
                   do while(ipr .ne. 0 .and. ip .lt. npa-1)
                     ip=ip+1
-                    ipr=fork_worker()
+                    ipr=itffork()
                     npr(ip)=ipr
                   enddo
                   if(ipr .gt. 0)then
@@ -379,7 +379,7 @@ c     enddo
                     ip=0
                     do while(ipr .ne. 0 .and. ip .lt. npa-1)
                       ip=ip+1
-                      ipr=fork_worker()
+                      ipr=itffork()
                       npr(ip)=ipr
                     enddo
                     if(ipr .gt. 0)then
@@ -857,7 +857,7 @@ c        call tfdebugprint(kx,'varfun:',1)
       logical*4 ,intent(in):: free(nele),cell
       integer*4 nqu,k,kk,i,kq,j,kf,lp,kp,iv,kkf,kkq,kkk,
      $     ii,ltyp,jj,kc,ik1,iclast(-nfam:nfam),ik,nk,kk1,
-     $     ip,ipr,istep,npr(nparallel),fork_worker
+     $     ip,ipr,istep,npr(nparallel)
       real*8 s,dtwiss(mfittry),coup,posk,wk,ctrans(4,7,-nfam:nfam)
       logical*4 col(2,nqcol),disp,nzcod
       integer*4 , parameter :: minnqu=512
@@ -890,7 +890,7 @@ c        call tfdebugprint(kx,'varfun:',1)
           ip=0
           do while(ipr .ne. 0 .and. ip .lt. npp-1)
             ip=ip+1
-            ipr=fork_worker()
+            ipr=itffork()
             npr(ip)=ipr
           enddo
           if(ipr .ne. 0)then

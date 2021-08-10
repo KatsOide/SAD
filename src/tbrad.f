@@ -255,6 +255,7 @@ c      write(*,*)ltbl,lpoint,katbl,ilist(1,katbl-1)
       subroutine tlspect(isp1,kx,nparallel,irtc)
       use tfstk
       use macphys
+      use tfshare,only:itffork
       implicit none
       type (sad_dlist), pointer :: klp,klx
       type (sad_rlist), pointer :: kl1,kl2,klt
@@ -262,7 +263,7 @@ c      write(*,*)ltbl,lpoint,katbl,ilist(1,katbl-1)
       parameter (speedoflight=cveloc)
       integer*8 kx,k1,k2,kac,kas,kal,kack,kad
       integer*4 isp1,irtc,m,na,i,k,
-     $     na1,nastep,nparallel,ipr,fork_worker,getpid,j,
+     $     na1,nastep,nparallel,ipr,getpid,j,
      $     wait,irw,naa,isw,ipid,itfmessage
       real*8 al0,al1,dal,w,c,s,a0,a1,x,ak,ak0,ak1,dak
       integer*4 ichpid(100)
@@ -319,7 +320,7 @@ c     end   initialize for preventing compiler warning
         nastep=nparallel
         ipr=1
         do while(na1 .lt. nparallel .and. ipr .gt. 0)
-          ipr=fork_worker()
+          ipr=itffork()
           if(ipr .gt. 0)then
             ichpid(na1)=ipr
             na1=na1+1

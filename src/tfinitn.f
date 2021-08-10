@@ -437,6 +437,7 @@ c      call tfdebugprint(kx,'setcontextpath',1)
 
       subroutine tfexit(isp1,kx,irtc)
       use tfstk
+      use tfshare, only:tfresetsharedmap
       implicit none
       type (sad_descriptor) kx
       integer*4 isp1,irtc,itfmessage,istatus

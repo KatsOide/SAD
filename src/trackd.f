@@ -4,7 +4,7 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       use tfstk
       use ffs_flag
       use tmacro,only:np0,codin,dvfs,omega0,taurdx,taurdy,taurdz,
-     $     nparallel,tsetintm
+     $     nparallel,tsetintm,intffsm
       use ffs_pointer, only:idelc
       use tftr
       use tfshare
@@ -26,8 +26,7 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       integer*4 ,allocatable::kptbl(:,:),mturn(:)
       integer*4 n1p,j,n,jzout,np1,k,np,kp,kx,kz,irw,nsc,iw,
      $     jj,ip,isw,kseed,npmax,npara,nxm(n1p0),np00,
-     $     muls,irtc,i,fork_worker,waitpid_nohang,ncons,nscore,ivar3,
-     $     iwtime
+     $     muls,irtc,i,waitpid_nohang,ncons,nscore,ivar3,iwtime
       integer*8 intlm
       real*8 ,allocatable ::x(:),px(:),y(:),py(:),z(:),g(:),dv(:),
      $     spx(:),spy(:),spz(:),aenox(:),aenoy(:),aenoz(:)
@@ -128,24 +127,22 @@ c      lp0=latt(1)+kytbl(kwmax,idtype(idelc(1)))+1
       npara=min(nparallel,nprmax,np0/minnp)
       npr=0
       ipn=0
-c      write(*,*)'trackd-npara ',npara,np0
       if(npara .gt. 1)then
         kseed=0
         do while(npr .lt. npara-1)
           npri=npr
-          iprid=fork_worker()
+          iprid=itffork()
           if(iprid .eq. 0)then
+            call tsetintm(-1.d0)
             call tfaddseed(kseed,irtc)
             if(irtc .ne. 0)then
               write(*,*)'addseed-error ',irtc
               call exit_without_hooks(0)
             endif
-            call tsetintm(-1.d0)
             exit
           endif
           npr=npr+1
           ipr(npr)=iprid
-c          write(*,*)'trackd-ipr ',npara,npr,iprid,muls
         enddo
         npr=npr+1
         npri=npr

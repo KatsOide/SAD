@@ -17,6 +17,7 @@
       use tparastat
       use temw, only:nparams
       use tfrbuf
+      use tfshare, only:tfresetsharedmap
       use ffsfile
       use radint
       use geolib

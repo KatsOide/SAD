@@ -98,49 +98,6 @@ c        el%elmv%k=0
 
       end module
 
-      module tmacro
-        use mackw
-        use macphys
-        use macfile
-        real*8, parameter :: c=cveloc,hp=plankr,e=elemch,epsrad=1.d-6,
-     $       emminv=1.d-15,eps00m=0.005d0,ampmaxm=0.05d0
-        integer*4 ,parameter :: ndivmaxm=1000
-        real*8 amass,charge,h0,p0,omega0,trf0,crad,erad,
-     $       codin(6),dleng,anrad,urad,u0,vc0,wrfeff,dp0,brho,
-     $       ccintr,cintrb,pbunch,coumin,re0,pgev,emidiv,
-     $       emidib,emidiq,emidis,ctouck,dvemit,h1emit,
-     $       anbunch,tdummy(6),zlost,alost,
-     $       taurdx,taurdy,taurdz,fridiv,beamin(21),
-     $       vcalpha,vceff,vcacc,dvcacc,ddvcacc,alphap,
-     $       pspac_dx,pspac_dy,pspac_dz,dvfs,rcratio,rclassic,brhoz,
-     $       bradprev,amom0,circ,hvc0,cuc
-        integer*8 ilattp,lspect,ipoltr,ipolb,ipoll,ipolid,ipolo,
-     $       intffsm
-        integer*4 nflag0,nlat,np0,nturn,isynch,nspect,
-     $       lplot,nplot,nuse,nclas,irad,novfl,npelm,ipelm,
-     $       nparallel,pspac_nx,pspac_ny,pspac_nz,
-     $       pspac_nturn,pspac_nturncalc,l_track
-        logical*4 oldflagsdummy,tparaed
-
-        contains
-        subroutine tinitintm
-        use tfstk
-        implicit none
-        intffsm=ktfsymbolz('System`FFS$InterruptMask',24)-4
-        call tsetintm(0.d0)
-        return
-        end
-
-        subroutine tsetintm(x)
-        use tfstk
-        implicit none
-        real*8 ,intent(in):: x
-        rlist(intffsm)=x
-        return
-        end
-
-      end module
-
       module tffitcode
       implicit none
       integer*4, parameter ::

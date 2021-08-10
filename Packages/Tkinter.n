@@ -1707,7 +1707,7 @@ With[{dt=0.2},
   TkSense[t_:dt]:=Module[{t0=FromDate[Tick->0.01]+t,r=t},
     Tk$Result=Null;
     While[
-      Tcl["update"];
+      If[~System`FFS$InterruptMask,Tcl["update"]];
       Tk$Result===Null&&
         (Pause[Min[r,dt]];(r=t0-FromDate[Tick->0.01])>0),];
     Tk$Result]];
@@ -1789,19 +1789,20 @@ ToReturnForm[s_,f_]:=Module[
 
 Bell[]:=TclEval["bell"];
 Unprotect[Update,Focus,Raise,Lower,Popup];
-Update[]:=TclEval["update"];
-Update[IdleTasks]:=TclEval["update idletasks"];
-Update[WindowTasks]:=TclEval["update windowtasks"];
-Update[FileTasks]:=TclEval["update filetasks"];
-Update[TimerTasks]:=TclEval["update timertasks"];
-Update[TkTasks]:=TclEval["update windowtasks timertasks idletasks"];
+UpdateM[x_:""]:=If[~System`FFS$InterruptMask,TclEval["update "//x]];
+Update[]:=If[~System`FFS$InterruptMask,TclEval["update"]];
+Update[IdleTasks]:=UpdateM["idletasks"];
+Update[WindowTasks]:=UpdateM["windowtasks"];
+Update[FileTasks]:=UpdateM["filetasks"];
+Update[TimerTasks]:=UpdateM["timertasks"];
+Update[TkTasks]:=UpdateM["windowtasks timertasks idletasks"];
 Update[x_,y__]:=Scan[Update,{x,y}];
 Update[_]=Null;
 Focus[]:=TclReturn["focus",Widget];
 Raise[Widget[w_,_]]:=TclEval["raise "//TkPathName[w]];
 Lower[Widget[w_,_]]:=TclEval["lower "//TkPathName[w]];
 Popup[Widget[m_,Menu[__]],{x_,y_},ent_:1]:=StandardForm[TclEval["tk_popup "//TkPathName[m]//" "//TclArg[{x,y}]//TclArg[SpecialIndex[ent]]]];
-SetAttributes[{Update,Bell,TclReturn,ToReturnForm,
+SetAttributes[{Update,UpdateM,Bell,TclReturn,ToReturnForm,
   WindowTasks,FileTasks,TimerTasks,IdleTasks,Focus,Raise,Lower,Popup},
   Constant];
 TkChooseColor[c_:"white",t_:"Color"]:=StandardForm[TclReturn[
