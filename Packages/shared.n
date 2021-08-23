@@ -21,7 +21,7 @@ Shared[`n_Real]:=ReadShared[`n];
   WriteShared[n,x];x];
 CloseShared=Close;
 With[{`tfork=0.01,`tsupdate=0.1,`nwu=100,`twcomp=1, nos=32,
-  def={`Timeout->600}},
+  def={`Timeout->2000}},
   Parallelize[`f_,`n_,`lshare_,`npara_,`opt0___]:=
       Module[{`shared,`sharedpid,`l={},`fk,`r,`k,`i,`np,`w,
         `nw, `nwm, {`opt, `fcomp}=SwitchCases[{opt0}, {_Rule|_RuleDelayed,_}]},
@@ -68,10 +68,11 @@ With[{`tfork=0.01,`tsupdate=0.1,`nwu=100,`twcomp=1, nos=32,
             If[nw>=0,nw++];
             If[nw>=nwm,
               Do[If[sharedpid[k],
-                Print["Parallelize Killed (Shared timeout): ",{k,sharedpid[k]}];
+                Print["Parallelize-Killed (Shared timeout): ",{k,sharedpid[k]}];
                 Kill[sharedpid[k]]],{k,n}];
               Break[]];
             Sleep[twcomp]]];
+!        Print["Parallelize-While-end ",{nw,nwm}];
         l=Table[{Shared[shared[k]],
           Close[shared[k]]}[[1]],{k,n}];
         If[fcomp<=>{},fcomp[l]];
