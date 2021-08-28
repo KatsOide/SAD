@@ -178,9 +178,11 @@ c      endif
             coeff=1.d0/errk(1,l)
           endif
         endif
-        if(kw .eq. 'ROTATE')then
+        if(kw(1:7 ) .eq. 'ROTATE ')then
           coeff=coeff*180.d0/m_pi
           unit=' DEG'
+        elseif(kw(1:7) .eq. 'SIGMAZ ' .and. .not. k64)then
+          kw(1:6)='SIGZ  '
         else
           unit=' '
         endif
