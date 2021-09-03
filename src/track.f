@@ -39,6 +39,7 @@ c      use tfcsi, only:ipoint,lrecl,lfni
      $       'FFS$NumericalDerivative=False;'//
      $       'DP=0.01;DPM=XIX=XIY=0;TITLE=CASE="";NFAMP=4;'//
      $       '(DP0=v_)^:=(LINE["DDP",1]=v);'//
+     $       'DP0:=LINE["DDP",1];'//
      $       'System$Names=Select[Names["*"],'//
      $       'ToUpperCase[#[1]]==#[1]&];Protect[DP0];',
      $       kx,irtc)
