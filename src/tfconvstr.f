@@ -833,32 +833,32 @@ c      include 'DEBUG.inc'
       character(len=*), intent(out) :: buffer
       if(ucode .lt. 0)then
         Unicode2UTF8 = 0
-      elseif(len(buffer) .ge. 1 .and. ucode .le. Z'0000007F')then
+      elseif(len(buffer) .ge. 1 .and. ucode .le. ior(Z'0000007F',0))then
         buffer(1:1)  = char(            iand(Z'07F', ucode)         )
         Unicode2UTF8 = 1
-      elseif(len(buffer) .ge. 2 .and. ucode .le. Z'000007FF')then
+      elseif(len(buffer) .ge. 2 .and. ucode .le. ior(Z'000007FF',0))then
         buffer(1:1)  = char(ior(Z'0C0', iand(Z'01F', ucode / 2**6 )))
         buffer(2:2)  = char(ior(Z'080', iand(Z'03F', ucode        )))
         Unicode2UTF8 = 2
-      elseif(len(buffer) .ge. 3 .and. ucode .le. Z'0000FFFF')then
+      elseif(len(buffer) .ge. 3 .and. ucode .le. ior(Z'0000FFFF',0))then
         buffer(1:1)  = char(ior(Z'0E0', iand(Z'00F', ucode / 2**12)))
         buffer(2:2)  = char(ior(Z'080', iand(Z'03F', ucode / 2**6 )))
         buffer(3:3)  = char(ior(Z'080', iand(Z'03F', ucode        )))
         Unicode2UTF8 = 3
-      elseif(len(buffer) .ge. 4 .and. ucode .le. Z'001FFFFF')then
+      elseif(len(buffer) .ge. 4 .and. ucode .le. ior(Z'001FFFFF',0))then
         buffer(1:1)  = char(ior(Z'0F0', iand(Z'007', ucode / 2**18)))
         buffer(2:2)  = char(ior(Z'080', iand(Z'03F', ucode / 2**12)))
         buffer(3:3)  = char(ior(Z'080', iand(Z'03F', ucode / 2**6 )))
         buffer(4:4)  = char(ior(Z'080', iand(Z'03F', ucode        )))
         Unicode2UTF8 = 4
-      elseif(len(buffer) .ge. 5 .and. ucode .le. Z'03FFFFFF')then
+      elseif(len(buffer) .ge. 5 .and. ucode .le. ior(Z'03FFFFFF',0))then
         buffer(1:1)  = char(ior(Z'0F8', iand(Z'003', ucode / 2**24)))
         buffer(2:2)  = char(ior(Z'080', iand(Z'03F', ucode / 2**18)))
         buffer(3:3)  = char(ior(Z'080', iand(Z'03F', ucode / 2**12)))
         buffer(4:4)  = char(ior(Z'080', iand(Z'03F', ucode / 2**6 )))
         buffer(5:5)  = char(ior(Z'080', iand(Z'03F', ucode        )))
         Unicode2UTF8 = 5
-      elseif(len(buffer) .ge. 6 .and. ucode .le. Z'7FFFFFFF')then
+      elseif(len(buffer) .ge. 6 .and. ucode .le. ior(Z'7FFFFFFF',0))then
         buffer(1:1)  = char(ior(Z'0FC', iand(Z'001', ucode / 2**30)))
         buffer(2:2)  = char(ior(Z'080', iand(Z'03F', ucode / 2**24)))
         buffer(3:3)  = char(ior(Z'080', iand(Z'03F', ucode / 2**18)))

@@ -18,7 +18,7 @@ void tftclupdate_(integer4 *mode0) {
   int mode, mask;
 
   if(itfInterruptMask == 0) {
-    itfInterruptMask = ktfsymbolz("FFS$InterruptMask") - 4;
+    itfInterruptMask = ktfsymbolz("System`FFS$InterruptMask") - 4;
   }
 
   mode = *mode0 & TCL_UPDATE_TASK_MASK;

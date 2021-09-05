@@ -1,0 +1,24 @@
+--- macosx/tclMacOSXNotify.c.orig	2021-08-11 05:52:11.000000000 +0900
++++ macosx/tclMacOSXNotify.c	2021-08-11 05:53:36.000000000 +0900
+@@ -1975,8 +1975,8 @@
+ {
+     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
+ 
+-    LOCK_NOTIFIER_INIT;
+-    LOCK_NOTIFIER;
++    /* LOCK_NOTIFIER_INIT; */
++    /* LOCK_NOTIFIER; */
+     LOCK_NOTIFIER_TSD;
+ }
+ 
+@@ -2002,8 +2002,8 @@
+     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
+ 
+     UNLOCK_NOTIFIER_TSD;
+-    UNLOCK_NOTIFIER;
+-    UNLOCK_NOTIFIER_INIT;
++    /* UNLOCK_NOTIFIER; */
++    /* UNLOCK_NOTIFIER_INIT; */
+ }
+ 
+ /*

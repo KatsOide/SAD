@@ -817,6 +817,7 @@ c     endif
      $     ktfobj   =int8(z'7ff2000000000000'),
      $     ktflist  =int8(z'7ff2000000000000'),
      $     ktfpat   =int8(z'7ff6000000000000'),
+     $     ktfcx    =int8(z'7ff8000000000000'),
      $     ktfstring=int8(z'7ffa000000000000'),
      $     ktfsymbol=int8(z'7ffe000000000000'),
      $     ktomask  =int8(z'fff2000000000000'),
@@ -1116,6 +1117,10 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
 
       interface ktfstringq
         module procedure ktfstringqk,ktfstringqd
+      end interface
+
+      interface ktfcxq
+        module procedure ktfcxqk,ktfcxqd
       end interface
 
       interface kxmakelist
@@ -1966,6 +1971,32 @@ c        k=kfromr(x)
         endif
         return
         end function ktfnonoperqd
+
+        logical*4 function ktfcxqk(k,cx)
+        implicit none
+        complex*16, pointer, optional, intent(out) :: cx
+        integer*8 , intent(in)::k
+        integer*8 ia
+        ktfcxqk=iand(ktfmask,k) .eq. ktfcx
+        if(present(cx) .and. ktfcxqk)then
+          ia=ktfaddr(k)
+          cx=dcmplx(rlist(ia),rlist(ia+1))
+        endif
+        return
+        end function ktfcxqk
+
+        logical*4 function ktfcxqd(k,cx)
+        implicit none
+        complex*16, pointer, optional, intent(out) :: cx
+        type (sad_descriptor) , intent(in)::k
+        integer*8 ia
+        ktfcxqd=iand(ktfmask,k%k) .eq. ktfcx
+        if(present(cx) .and. ktfcxqd)then
+          ia=ktfaddrd(k)
+          cx=dcmplx(rlist(ia),rlist(ia+1))
+        endif
+        return
+        end function ktfcxqd
 
         logical*4 function ktfstringqk(k,str)
         implicit none

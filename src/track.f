@@ -32,12 +32,14 @@ c      use tfcsi, only:ipoint,lrecl,lfni
         convcase=.true.
         call tfinitn
         call tfinittws
+        call tinitintm
         call tfevals('CONVERGENCE=1E-9;ExponentOfResidual=2;'//
      $       'OffMomentumWeight=1;MatchingResidual='//
      $       'NetResidual=StabilityLevel=0;'//
      $       'FFS$NumericalDerivative=False;'//
      $       'DP=0.01;DPM=XIX=XIY=0;TITLE=CASE="";NFAMP=4;'//
      $       '(DP0=v_)^:=(LINE["DDP",1]=v);'//
+     $       'DP0:=LINE["DDP",1];'//
      $       'System$Names=Select[Names["*"],'//
      $       'ToUpperCase[#[1]]==#[1]&];Protect[DP0];',
      $       kx,irtc)

@@ -23,7 +23,7 @@
       integer*8 kz,kzp,kzf,kaxl,ktfmalocp,ktfresetparticles,kdv,
      $     kpsx,kpsy,kpsz
       integer*4 isp1,irtc,narg,itfloc,outfl0,ld,ls,mc,npa,np00,
-     $     np1,fork_worker,ne,nend,npara,
+     $     np1,ne,nend,npara,
      $     npp,m,itfmessage,nt,mt,kseed,mcf
       integer*8 ikptblw,ikptblm
       real*8 trf00,p00,vcalpha0
@@ -169,7 +169,7 @@ c     $       ne,npnlatmin
             kseed=kseed+2
             npri=npr
             npr=npr+1
-            iprid=fork_worker()
+            iprid=itffork()
             if(iprid .eq. 0)then
               call tfaddseed(kseed,irtc)
               if(irtc .ne. 0)then
@@ -178,6 +178,7 @@ c     $       ne,npnlatmin
               endif
               npr=-1
               npp=np1
+              call tsetintm(-1.d0)
               go to 10
             endif
             ipr(npr)=iprid

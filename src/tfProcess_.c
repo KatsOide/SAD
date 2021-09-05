@@ -265,7 +265,7 @@ static int Fork(integer4 *isp1, integer8 *kx,
     return -1;
   }
 
-  vx = fork_worker_();
+  vx = __tfshare_MOD_itffork();
   *kx = kfromr(vx);
   *irtc = 0;
   return 0;

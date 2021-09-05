@@ -1,0 +1,52 @@
+--- generic/tkCanvWind.c.orig	2020-12-12 02:48:53.000000000 +0900
++++ generic/tkCanvWind.c	2021-07-18 03:46:12.000000000 +0900
+@@ -162,6 +162,39 @@
+  *
+  *--------------------------------------------------------------
+  */
++static int
++KBCreateWinItem(
++    Tcl_Interp *interp,		/* Interpreter for error reporting. */
++    Tk_Canvas canvas,		/* Canvas to hold new item. */
++    Tk_Item *itemPtr,		/* Record to hold new item; header has been
++				 * initialized by caller. */
++    int objc,			/* Number of arguments in objv. */
++    Tcl_Obj *CONST objv[])	/* Arguments describing window. */
++{
++    WindowItem *winItemPtr = (WindowItem *) itemPtr;
++    /* int nn; */
++    double *bb;
++
++    objc = -objc;
++    /* nn = *((int *)objv[objc-2]); */
++    bb = (double *)objv[objc-1];
++    objc -= 2;
++
++    /*
++     * Process the arguments to fill in the item record.
++     */
++
++    winItemPtr->x = bb[0];
++    winItemPtr->y = bb[1];
++    ComputeWindowBbox(canvas, winItemPtr);
++    if (ConfigureWinItem(interp, canvas, itemPtr, objc, objv, 0) == TCL_OK) {
++	return TCL_OK;
++    }
++
++    /*error:*/
++    DeleteWinItem(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
++    return TCL_ERROR;
++}
+ 
+ static int
+ CreateWinItem(
+@@ -189,6 +222,9 @@
+     winItemPtr->anchor = TK_ANCHOR_CENTER;
+     winItemPtr->canvas = canvas;
+ 
++    if (objc<0)
++	return KBCreateWinItem(interp, canvas, itemPtr, objc, objv);
++
+     /*
+      * Process the arguments to fill in the item record. Only 1 (list) or 2 (x
+      * y) coords are allowed.

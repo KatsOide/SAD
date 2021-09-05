@@ -5,6 +5,7 @@ arch/*
 obj/*
 sad/*
 contrib/BBBrem_dir/*
+contrib/*
 .DS_Store
 .svn/*
 /CVS

@@ -52,5 +52,6 @@ extern integer4 lnblnk_(const_character, ftnlen);
 extern integer4 getfd_(integer4 *);
 extern integer fork_worker_(void);
 extern void tfsavesharedmap_(void);
+extern integer __tfshare_MOD_itffork(void);
 
 #endif /* _SAD_F2C_H_ */

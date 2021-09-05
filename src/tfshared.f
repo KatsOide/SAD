@@ -123,9 +123,12 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       subroutine tfsavesharedmap()
       use tfstk
       use tfshare
+      use tmacro, only:tsetintm
       implicit none
       ishared=0
       kstshare(0)=0
+      call tsetintm(-1.d0)
+      write(*,*)'savesharedmap'
       return
       end subroutine
 
