@@ -13,7 +13,7 @@ eqs img{
 <body>
 <center><h2>Welcome to SAD/FFS & SADScript
 </h2></center>
-<center> SAD/FFS SADScript Version: 1.1.10.5.3k64,      Updated: 08/26/2021</center>
+<center> SAD/FFS SADScript Version: 1.1.10.5.7k64,      Updated: 09/17/2021</center>
 
 <pre> Please use browser's search to find an item.
 
@@ -2841,7 +2841,7 @@ the center-of-mass statistically fluctuates depending on the number of particles
  <a href=#LECHO>ECHO</a></pre>
 <li><h3><a name=LLOSSMAP>LOSSMAP</a></h3>
 <pre>If LOSSMAP is on, TrackParticles returns the location and turn where the particle lost is detected,
-in the 7/9th and 8/10th element of the result, for  NOPOL/POL, respectively. The default is NOLOSSMAP</pre>
+in the 8/10th and 9/11th element of the result, for  NOPOL/POL, respectively. The default is NOLOSSMAP</pre>
 <pre>See also:
  <a href=#LTrackParticles>TrackParticles</a> <a href=#LPOL>POL</a></pre>
 <li><h3><a name=LLWAKE>LWAKE</a></h3>
@@ -4154,7 +4154,7 @@ are in a list of {7 or 9, np} form, where np is the number of particles. The fir
 of coordinates specifies either
 
    {x, px/p0, y, py/p0, z, dp/p0} (NOPOL)
-   {x, px/p0, y, py/p0, z, dp/p0 sy, sarg} (NOPOL)
+   {x, px/p0, y, py/p0, z, dp/p0 sy, sarg} (POL)
 bin this order. The {-1, i} is the flag which is True(==1) when the particle is alive, and False(==0)
 when lost.
 
@@ -4169,8 +4169,8 @@ to calculate the radiation fields. See RadiationField and RadiationSpectrum.
 When PHOTONS is ON (default is OFF), TrackParticles generates a list of all photons radiated through
 the tracking. The list is assigned to a symbol PhotonList.
 
-
-When LOSSMAP is ON (default is OFF), TrackParticles returns the component and the turn where the
+When LOSSMAP is ON (default is OFF), the input list must have two more lines resulting in a shape
+of {9 or 11, np}. Then TrackParticles returns into these lines the component and the turn where the
 loss of each particle is detected.</pre>
 <pre>See also:
  <a href=#Lcomponents>components</a> <a href=#LLINE>LINE</a> <a href=#LPHOTONS>PHOTONS</a> <a href=#LPhotonList>PhotonList</a> <a href=#LRADLIGHT>RADLIGHT</a> <a href=#LTouschekLifetime>TouschekLifetime</a>

@@ -2093,7 +2093,7 @@ POL turns on spin tracking and the calculation of equilibrium polarization in EM
 
       {"LOSSMAP",
         "\
-If LOSSMAP is on, TrackParticles returns the location and turn where the particle lost is detected, in the 7/9th and 8/10th element of the result, for  NOPOL/POL, respectively. The default is NOLOSSMAP",
+If LOSSMAP is on, TrackParticles returns the location and turn where the particle lost is detected, in the 8/10th and 9/11th element of the result, for  NOPOL/POL, respectively. The default is NOLOSSMAP",
         "TrackParticles POL",
         {}},
 
@@ -4427,12 +4427,12 @@ The argument nend is the last turn number. The default is nbegin.\n\n\
    {location, coordinates}\n\n\
 where location is the position-number of the starting point. If location is same as or in the downstream of destination, the tracking is done by folding across the beginning of the beam line. The coordinates are in a list of {7 or 9, np} form, where np is the number of particles. The first 6 or 8 elements of coordinates specifies either\n\n\
    {x, px/p0, y, py/p0, z, dp/p0} (NOPOL)\n\
-   {x, px/p0, y, py/p0, z, dp/p0 sy, sarg} (NOPOL)\n\b\
+   {x, px/p0, y, py/p0, z, dp/p0 sy, sarg} (POL)\n\b\
 in this order. The {-1, i} is the flag which is True(==1) when the particle is alive, and False(==0) when lost.\n\n\
    If the flag POL is on, TrackParticles performs spin tracking. Then the coordinates has two more components sy and sarg, which correspond to the y-component of the classical spin vector and the angle ArcTan[sx, sz], respectively. If POL is on, another flag RADPOL turns on the Sokolov-Ternov effect.\n\n\
    When a flag RADLIGHT is on, TrackParticles returns the trajectories of particles which are used to calculate the radiation fields. See RadiationField and RadiationSpectrum.\n\n\
 When PHOTONS is ON (default is OFF), TrackParticles generates a list of all photons radiated through the tracking. The list is assigned to a symbol PhotonList.\n\n\
-When LOSSMAP is ON (default is OFF), TrackParticles returns the component and the turn where the loss of each particle is detected.",
+When LOSSMAP is ON (default is OFF), the input list must have two more lines resulting in a shape of {9 or 11, np}. Then TrackParticles returns into these lines the component and the turn where the loss of each particle is detected.",
         "components LINE PHOTONS PhotonList RADLIGHT TouschekLifetime WakeFunction SurvivedParticles LOSSMAP POL RADPOL",
         {}},
 

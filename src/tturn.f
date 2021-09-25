@@ -313,8 +313,7 @@ c            write(*,*)'twspac-end'
      $        cmp%value(p_L_BEND) .ne. 0.d0
          if(rad)then
            if(radcod .and. radtaper)then
-             rtaper=-dp0
-     $            +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+             rtaper=(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
              ak0=cmp%value(ky_ANGL_BEND)*rtaper+ak0*(1.d0+rtaper)
              ak1=ak1*(1.d0+rtaper)
            endif
@@ -348,7 +347,6 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
          rtaper=1.d0
          if(rad .and. radcod .and. radtaper)then
            rtaper=(2.d0+gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
-     $          -dp0
          endif
          call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,
      1        cmp%value(ky_K1_QUAD)*rtaper,0.d0,
@@ -387,7 +385,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
        case (icMULT)
          rtaper=1.d0
          if(rad .and. radcod .and. radtaper)then
-           rtaper=1.d0-dp0
+           rtaper=1.d0
      $          +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
          endif
          bz=0.d0

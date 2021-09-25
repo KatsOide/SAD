@@ -522,9 +522,11 @@ c          endif
           if(radcod .and. radtaper)then
             if(rt)then
               l1=nextl(l)
-              rtaper=((4.d0+3.d0*cod(6)+gettwiss(mfitddp,l1))*.25d0-dp0)
+c              rtaper=((4.d0+3.d0*cod(6)+gettwiss(mfitddp,l1))*.25d0-dp0)
+              rtaper=((4.d0+3.d0*cod(6)+gettwiss(mfitddp,l1))*.25d0)
             else
-              rtaper=(1.d0-dp0+cod(6))
+c              rtaper=(1.d0-dp0+cod(6))
+              rtaper=(1.d0+cod(6))
             endif
             rtaper=min(1.d0+tapmax,max(1.d0-tapmax,rtaper))
             ak0=ak0*rtaper
@@ -554,9 +556,11 @@ c          endif
           if(radcod .and. radtaper)then
             if(rt)then
               l1=nextl(l)
-              rtaper=((2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0)
+c              rtaper=((2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0)
+              rtaper=((2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0)
             else
-              rtaper=1.d0-dp0+cod(6)
+c              rtaper=1.d0-dp0+cod(6)
+              rtaper=1.d0+cod(6)
             endif
             ak1=ak1*min(1.d0+tapmax,max(1.d0-tapmax,rtaper))
           endif
@@ -576,9 +580,11 @@ c          endif
           if(radcod .and. radtaper)then
             if(rt)then
               l1=nextl(l)
-              rtaper=((2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0)
+c              rtaper=((2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0)
+              rtaper=((2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0)
             else
-              rtaper=(1.d0-dp0+cod(6))
+c              rtaper=(1.d0-dp0+cod(6))
+              rtaper=(1.d0+cod(6))
             endif
             ak1=ak1*min(1.d0+tapmax,max(1.d0-tapmax,rtaper))
           endif
@@ -600,9 +606,11 @@ c          endif
           if(radcod .and. radtaper)then
             if(rt)then
               l1=nextl(l)
-              rtaper=(2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0
+c              rtaper=(2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0
+              rtaper=(2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0
             else
-              rtaper=1.d0-dp0+cod(6)
+c              rtaper=1.d0-dp0+cod(6)
+              rtaper=1.d0+cod(6)
             endif
           endif
           rtaper=min(1.d0+tapmax,max(1.d0-tapmax,rtaper))
