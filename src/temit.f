@@ -79,6 +79,7 @@ c      enddo
      $     calem0,iae,plot,params,stab,lfno)
       use tfstk
       use temw
+      use codm
       use ffs, only:limitcod
       use ffs_flag
       use ffs_pointer

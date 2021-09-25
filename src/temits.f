@@ -51,6 +51,7 @@
       use tfstk
       use ffs
       use temw
+      use codm
       use tmacro
       implicit none
       type (sad_dlist), pointer :: kl

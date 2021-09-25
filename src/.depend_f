@@ -272,9 +272,9 @@ tedrawf.o: tedrawf.f
 teigen.o: teigen.f tfstk.o
 temap.o: temap.f tfefun.o tffs.o tfloor.o tfstk.o tftrack.o tgrot.o toplvl.o
 temat.o: temat.f tffs.o tfstk.o
-temit.o: temit.f teigen.o tffs.o tfloor.o tfstk.o toplvl.o
+temit.o: temit.f tcod.o teigen.o tffs.o tfloor.o tfstk.o toplvl.o
 temitf.o: temitf.f tffs.o tfstk.o toplvl.o
-temits.o: temits.f tffs.o tfstk.o toplvl.o
+temits.o: temits.f tcod.o tffs.o tfstk.o toplvl.o
 temp.o: temp.f tfstk.o toplvl.o
 termes.o: termes.f tffs.o tfstk.o
 terror.o: terror.f tffs.o tfstk.o

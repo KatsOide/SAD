@@ -298,7 +298,7 @@ c
      $       taurdx,taurdy,taurdz,fridiv,beamin(21),
      $       vcalpha,vceff,vcacc,dvcacc,ddvcacc,alphap,
      $       pspac_dx,pspac_dy,pspac_dz,dvfs,rcratio,rclassic,brhoz,
-     $       bradprev,amom0,circ,hvc0,cuc
+     $       bradprev,amom0,circ,hvc0,cuc,dptaper
         integer*8 ilattp,lspect,ipoltr,ipolb,ipoll,ipolid,ipolo,
      $       intffsm
         integer*4 nflag0,nlat,np0,nturn,isynch,nspect,
