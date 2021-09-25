@@ -1865,8 +1865,8 @@ RFSW turns on the acceleration by CAVI and TCAVI element in the particle-trackin
       {}},
 
      {"RADTAPER",
-      " Scales all magnets except for solenoids according to the local momentum (DDP) of the closed orbit. It uses the average of DDPs at the entrance and the exit. For tracking, RADCOD and ( CAL/GO with CALC6D or EMIT(Emittance[]) ) is necessary. CAL/GO with CALC4D will clear the necessary information for tracking with RADTAPER.\n\
- RADTAPER sets the momentum deviation of the closed orbit to DP0, which is an arbitrary choice of an under-deterministic problem of tapering. Thus the difference in the path length around the ring is adjusted by automatically updating FSHIFT.",
+      "Scales all magnets except for solenoids according to the local momentum (DDP) of the closed orbit. It uses the average of DDPs at the entrance and the exit. For tracking, RADCOD and ( CAL/GO with CALC6D or EMIT(Emittance[]) ) is necessary. CAL/GO with CALC4D will clear the necessary information for tracking with RADTAPER.\n\
+ RADTAPER sets the momentum deviation by the local momentum of the closed orbit + an amount to satisfy the path length condition given by FSHIFT. The momentum deviation at the entrance, DP0, is always maintained.",
       "RADCOD CALC6D CALC4D EMIT CAL GO DP0 FSHIFT",
        {}},
 

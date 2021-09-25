@@ -132,6 +132,7 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       orbitcal=.true.
       calopt=.true.
       dp0   =0.d0
+      dptaper=0.d0
       call initialize_tampl()
       call tclrpara
       call tclrfpe

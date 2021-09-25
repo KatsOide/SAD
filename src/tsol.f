@@ -662,7 +662,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           krad=rad
           if(rad)then
             if(radcod .and. radtaper)then
-              rtaper=1.d0
+              rtaper=1.d0+dptaper
      $             +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
             endif
             krad=cmp%value(ky_RAD_QUAD) .eq. 0.d0 .and. al .ne. 0.d0
@@ -683,7 +683,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
         case (icMULT)
           rtaper=1.d0
           if(rad .and. radcod .and. radtaper)then
-            rtaper=1.d0+(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+            rtaper=1.d0+dptaper+(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
           endif
           if(seg)then
             call tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,

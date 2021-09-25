@@ -40,7 +40,7 @@
         if(radtaper)then
           rtaper=merge((
      $         2.d0+cod(6)+gettwiss(mfitddp,nextl(l)))*.5d0,
-     $         1.d0+cod(6),rt)
+     $         1.d0+cod(6),rt)+dptaper
         endif
         call tsole1(trans,cod,beam,srot,l,rtaper,.true.,.false.)
 c          write(*,*)'tsole-l ',l,sol,rtaper
