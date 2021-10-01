@@ -39,18 +39,18 @@
         endif
       endif
       if(.not. tflistq(ktastk(isp1+2)))then
-        write(*,*)'canvasclip-1'
+c        write(*,*)'canvasclip-1'
         irtc=itfmessage(9,'General::wrongtype','"List for #2"')
         return
       endif
       kal=ktfaddr(ktastk(isp1+2))
       if(ilist(2,kal-1) .ne. 2)then
-        write(*,*)'canvasclip-2'
+c        write(*,*)'canvasclip-2'
         irtc=itfmessage(9,'General::wrongleng','"#2","2"')
         return
       endif
       if(ktfreallistq(kal))then
-        write(*,*)'canvasclip-3'
+c        write(*,*)'canvasclip-3'
         irtc=itfmessage(9,'General::wrongtype',
      $       '"List for #2[[1]]"')
         return
@@ -58,7 +58,7 @@
       ka1=ktfaddr(klist(kal+1))
       ka2=ktfaddr(klist(kal+2))
       if(ktfnonreallistq(ka1) .or. ktfnonreallistq(ka2))then
-        write(*,*)'canvasclip-4'
+c        write(*,*)'canvasclip-4'
         irtc=itfmessage(9,'General::wrongtype',
      $       '"List of Reals for #2[[1]] and #2[[2]]"')
         return
@@ -373,7 +373,7 @@ c            s=sqrt(dx**2+dy**2)
       return
  9100 irtc=itfmessage(9,'General::wrongtype',
      $     '"{{x1, x2, ..}, {y1, y2, ..}}"')
-      write(*,*)'canvasclip-4'
+c      write(*,*)'canvasclip-4'
       isp=isp0
       return
       end

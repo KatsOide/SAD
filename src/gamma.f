@@ -117,7 +117,7 @@
      $     alogpi=1.1447298858494001741d0,
      $     ath1=0.5d0,ath2=0.5d0,cth=59.d0,ztlim=18.d0,
      $     dz0=-.5d0*log(m_2pi),zt0=-0.5d0,zt2=m_pi**2/6.d0,
-     $     mm_pi=-m_pi,epso=5.d-17**2/4.d0,
+     $     mm_pi=-m_pi,epso=5.d-17**2/4.d0,cezlim=18.d0,
      $     ggamma=4.7421875d0,
      $     gc0=0.99999999999999709182d0,
      $     gc1=57.156235665862923517d0,
@@ -5380,16 +5380,32 @@ c     $       confhgrr1(1.d0,2.d0-a,x,.true.)
       complex*16 function cerf(z) result(f1)
       implicit none
       complex*16 ,intent(in):: z
-      f1=2.d0*z/m_sqrtpi
-     $     *confhg1((.5d0,0.d0),(1.5d0,0.d0),zeroim(-z**2),.false.)
+      complex*16 x
+      if(abs(z) .gt. cezlim)then
+        x=.5d0/z**2
+        f1=merge(0.d0,sign(1.d0,dble(z)),dble(z)==0.d0)
+     $       -(1.d0-x*(1.d0-3.d0*x*(1.d0-5.d0*x*(1.d0
+     $       -7.d0*x*(1.d0-9.d0*x)))))*exp(-.5d0/x)/z/m_sqrtpi
+      else
+        f1=2.d0*z/m_sqrtpi
+     $       *confhg1((.5d0,0.d0),(1.5d0,0.d0),zeroim(-z**2),.false.)
+      endif
       return
       end function
 
       complex*16 function cerfc(z) result(f1)
       implicit none
       complex*16 ,intent(in):: z
-      f1=1.d0-2.d0*z/m_sqrtpi*confhg1((.5d0,0.d0),(1.5d0,0.d0),
-     $     zeroim(-z**2),.false.)
+      complex*16 x
+      if(abs(z) .gt. cezlim)then
+        x=.5d0/z**2
+        f1=merge(1.d0,1.d0-sign(1.d0,dble(z)),dble(z)==0.d0)
+     $       +(1.d0-x*(1.d0-3.d0*x*(1.d0-5.d0*x*(1.d0
+     $       -7.d0*x*(1.d0-9.d0*x)))))*exp(-.5d0/x)/z/m_sqrtpi
+      else
+        f1=1.d0-2.d0*z/m_sqrtpi*confhg1((.5d0,0.d0),(1.5d0,0.d0),
+     $       zeroim(-z**2),.false.)
+      endif
       return
       end function
 
