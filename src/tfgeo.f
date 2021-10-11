@@ -17,7 +17,7 @@
       if(.not. geocal)then
         if(gammab(1) .ne. p0)then
           gammab(1)=p0
-          call tfgeo1(1,nlat,calgeo,.true.)
+          call tfgeo1(1,nlat,calgeo,.true.,.true.)
           go to 9000
         endif
         return
@@ -41,7 +41,7 @@
       gammab(1)=p0
       inext=0
       iprev=0
-      call tfgeo1(1,nlat,calgeo,.false.)
+      call tfgeo1(1,nlat,calgeo,.false.,.true.)
       do i=1,nlat-1
         it=idtypec(i)
         if(it .eq. icMARK)then
@@ -63,7 +63,7 @@
               if(chg)then
                 geo1=geo(:,:,lxp+1)
                 pos0=pos(lxp+1)
-                call tfgeo1(lxp,lxp+1,calgeo,.false.)
+                call tfgeo1(lxp,lxp+1,calgeo,.false.,.false.)
                 if(i .ne. lxp+1)then
                   geo(:,:,i)=geo(:,:,lxp+1)
                   pos(i)=pos(lxp+1)
@@ -142,7 +142,7 @@
       return
       end
 
-      subroutine tfgeo1(istart0,istop,calgeo,acconly)
+      subroutine tfgeo1(istart0,istop,calgeo,acconly,savela)
       use kyparam
       use tfstk
       use ffs
@@ -156,7 +156,7 @@
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 ,intent(in):: istart0,istop
-      logical*4 ,intent(in):: calgeo,acconly
+      logical*4 ,intent(in):: calgeo,acconly,savela
       integer*4 istart,ke,ke1,i,k,i1
       integer*8 id
       real*8 p1,h1,ali,v,dchi3,rho0,sp0,cp0,r1,r2,cchi1,schi1,
@@ -206,6 +206,16 @@ c      h1=sqrt(1.d0+p1**2)
         ali=merge(cmp%value(kytbl(kwL,k)),0.d0,kytbl(kwL,k) .gt. 0)
         if(kytbl(kwANGL,k) .ne. 0)then
           phi=cmp%value(kytbl(kwANGL,k))
+          if(savela)then
+            select case (k)
+            case(icBEND)
+              cmp%value(p_ANGLGEO_BEND)=.5d0*phi
+              cmp%value(p_LGEO_BEND)=.5d0*ali
+            case(icMULT)
+              cmp%value(p_ANGLGEO_MULT)=.5d0*phi
+              cmp%value(p_LGEO_MULT)=.5d0*ali
+            end select
+          endif
           if(cmp%value(kytbl(kwFRMD,k)) .ne. 0.d0)then
             if(phi*ali .ne. 0.d0)then
               if(k .eq. icBEND)then

@@ -334,8 +334,8 @@ c      write(*,*)'with ',itp,ilp
       irad=0
       codx=cod
       call tchge(trans,codx,beam,srot,
-     $     -pcvt%dx,-pcvt%dy,-pcvt%theta,-pcvt%dtheta,-pcvt%phi0,
-     $     .false.)
+     $     -pcvt%dx,-pcvt%dy,pcvt%theta,pcvt%dtheta,0.d0,0.d0,
+     $     pcvt%phi0,.false.)
       irad=ir0
       return
       end function 

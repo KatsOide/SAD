@@ -45,13 +45,10 @@
       real*8, intent (in):: ak1,al
       logical*4 , intent(in), optional::force
       real*8 xspx
-c      if(present(force))then
-c        write(*,*)'tbendiinit ',force,ak1,akxi,al,alxi,dpxi,dp
-c      else
-c        write(*,*)'tbendiinit-noforce ',ak1,akxi,al,alxi,dpxi,dp
-c      endif
-      if(ak1 .eq. akxi .and. al .eq. alxi .and. dpxi .eq. dp)then
-        if(.not. present(force) .or. .not. force)then
+      if(.not. present(force) .and. .not. force)then
+        if(ak1 .eq. akxi .and. al .eq. alxi .and. dpxi .eq. dp)then
+c          write(*,'(a,1p10g12.4)')'tbendiinit-noforce ',ak1,al,dp,
+c     $         akxsq,-1.d0/rhosq-akk/p,akx,sqrt(akxsq),phix,akx*al
           return
         endif
       endif
@@ -168,7 +165,7 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
         real*8 rho0,rhob,f1r,f2r,fb1,fb2,drhob,phib
 
         contains
-        pure subroutine tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
+        subroutine tbrot(np,x,px,y,py,z,sx,sy,sz,alg,phig,dtheta,dchi2,ent)
         use tfstk
         use ffs_flag, only:calpol
         use mathfun
@@ -177,66 +174,74 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
         integer*4 i
         real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
      $       sx(np),sy(np),sz(np)
-        real*8 ,intent(in):: phi0,dtheta
-        real*8 r11,r12,r13,r21,r22,r23,r31,r32,r33,
-     $       pxi,pyi,pzi,xi,yi,xf,yf,zf,pxf,pyf,pzf,
-     $       cphi0,sphi0,cdt,sdt,sdth2,sxf,syf
-        cphi0=cos(phi0*.5d0)
-        sphi0=sin(phi0*.5d0)
-        sdth2=sin(dtheta*.5d0)**2
-        cdt=1.d0-2.d0*sdth2
-        sdt=sin(dtheta)
-        r11=cdt*cphi0**2+sphi0**2
-        r12=-cphi0*sdt
-        r13=-2.d0*sdth2*sphi0*cphi0
-        r21=-r12
-        r22=cdt
-        r23=sphi0*sdt
-        r31=r13
-        r32=-r23
-        r33=cdt*sphi0**2+cphi0**2
+        real*8 ,intent(in):: dtheta,dchi2,alg,phig
+        logical*4 ,intent(in):: ent
+        real*8 r11,r12,r13,r21,r22,r23,r31,r32,r33,dr11,dr22,dr33,
+     $       pxi,pyi,pzi,xi,yi,zi,xf,yf,zf,pxf,pyf,pzf,dl,dxz,dyz,dzz,
+     $       s2,xs2,c2,dc2,st,xst,ct,dct,xl0,c0,s0,sxf,syf
+        c0=cos(phig)
+        s0=sin(phig)
+        call xsincos(dchi2,s2,xs2,c2,dc2)
+        call xsincos(dtheta,st,xst,ct,dct)
+        dr11=dct*c0**2+dc2*s0**2+c0*s0*s2*st
+        dr22=c2*dct+dc2
+        dr33=dc2*c0**2+dct*s0**2-c0*s0*s2*st
+        r11=dr11+1.d0
+        r22=dr22+1.d0
+        r33=dr33+1.d0
+        if(ent)then
+          r12= s0*s2-c0*c2*st
+          r13= c0*((dct-dc2)*s0-c0*s2*st)
+          r21=-ct*s0*s2+c0*st
+          r23= c0*ct*s2+s0*st
+          r31= s0*(c0*(dct-dc2)+s0*s2*st)
+          r32=-c0*s2-c2*s0*st
+        else
+          r21= s0*s2-c0*c2*st
+          r31= c0*((dct-dc2)*s0-c0*s2*st)
+          r12=-ct*s0*s2+c0*st
+          r32= c0*ct*s2+s0*st
+          r13= s0*(c0*(dct-dc2)+s0*s2*st)
+          r23=-c0*s2-c2*s0*st
+        endif
+        if(phig == 0.d0)then
+          dl=alg
+        else
+          dl=alg*s0/phig
+        endif
+        xl0= dl*s0
+        zi =-dl*c0
+        dxz= r13*zi
+        dyz= r23*zi
+        dzz=dr33*zi
+        do i=1,np
+          xi=x(1)+xl0
+          yi=y(1)
+          pxi=px(i)
+          pyi=py(i)
+          pzi=1.d0+pxy2dpz(pxi,pyi)
+          xf =dr11*xi + r12*yi +dxz +x(i)
+          yf = r21*xi +dr22*yi +dyz +yi
+          zf = r31*xi + r32*yi +dzz
+          pxf=r11*pxi+r12*pyi+r13*pzi
+          pyf=r21*pxi+r22*pyi+r23*pzi
+          pzf=r31*pxi+r32*pyi+r33*pzi
+          px(i)=pxf
+          py(i)=pyf
+          x(i)=xf-pxf/pzf*zf
+          y(i)=yf-pyf/pzf*zf
+          z(i)=z(i)+zf/pzf
+          if(i .eq. 1)then
+            write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),z(1)
+          endif
+        enddo
         if(calpol)then
           do concurrent (i=1:np)
-            xi=x(i)
-            yi=y(i)
-            pxi=px(i)
-            pyi=py(i)
-            pzi=1.d0+pxy2dpz(pxi,pyi)
-            xf =r11*xi +r12*yi
-            yf =r21*xi +r22*yi
-            zf =r31*xi +r32*yi
-            pxf=r11*pxi+r12*pyi+r13*pzi
-            pyf=r21*pxi+r22*pyi+r23*pzi
-            pzf=r31*pxi+r32*pyi+r33*pzi
-            px(i)=pxf
-            py(i)=pyf
-            x(i)=xf-pxf/pzf*zf
-            y(i)=yf-pyf/pzf*zf
-            z(i)=z(i)+zf/pzf
             sxf  =r11*sx(i)+r12*sy(i)+r13*sz(i)
             syf  =r21*sx(i)+r22*sy(i)+r23*sz(i)
             sz(i)=r31*sx(i)+r32*sy(i)+r33*sz(i)
             sx(i)=sxf
             sy(i)=syf
-          enddo
-        else
-          do concurrent (i=1:np)
-            xi=x(i)
-            yi=y(i)
-            pxi=px(i)
-            pyi=py(i)
-            pzi=1.d0+pxy2dpz(pxi,pyi)
-            xf =r11*xi +r12*yi
-            yf =r21*xi +r22*yi
-            zf =r31*xi +r32*yi
-            pxf=r11*pxi+r12*pyi+r13*pzi
-            pyf=r21*pxi+r22*pyi+r23*pzi
-            pzf=r31*pxi+r32*pyi+r33*pzi
-            px(i)=pxf
-            py(i)=pyf
-            x(i)=xf-pxf/pzf*zf
-            y(i)=yf-pyf/pzf*zf
-            z(i)=z(i)+zf/pzf
           enddo
         endif
         return
@@ -520,7 +525,7 @@ c     $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
       subroutine tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     al,ak0,phi0,psi1,psi2,
      1     cosp1,sinp1,cosp2,sinp2,
-     1     ak,dx,dy,theta,dtheta,cost,sint,
+     1     ak,dx,dy,theta,dtheta,cost,sint,dchi2,alg,phig,
      1     fb10,fb20,mfring,fringe,
      $     cosw,sinw,sqwh,sinwp1,
      1     krad,eps,ini,iniph)
@@ -542,7 +547,7 @@ c     $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
       integer*4 ,intent(in):: np,mfring
       real*8 ,intent(in):: al,ak0,phi0,cosp1,sinp1,cosp2,sinp2,ak,
      $     dx,dy,theta,cost,sint,cosw,sinw,sqwh,sinwp1,eps,
-     $     psi1,psi2,fb10,fb20,dtheta
+     $     psi1,psi2,fb10,fb20,dtheta,dchi2,alg,phig
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
      $     dv(np),g(np),sx(np),sy(np),sz(np)
       integer*4 ndiv,iniph,n1,n2,nmmax
@@ -582,20 +587,20 @@ c     $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
       elseif(ak .ne. 0.d0)then
         call tbendi(np,x,px,y,py,z,g,dv,sx,sy,sz,al,phi0+ak0,phi0,
      1       cosp1,sinp1,cosp2,sinp2,
-     1       ak,dx,dy,theta,dtheta,cost,sint,
+     1       ak,dx,dy,theta,dtheta,cost,sint,dchi2,alg,phig,
      1       fb10,fb20,mfring,krad,fringe,eps)
         return
       endif
       call tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,.true.)
-      if(dtheta .ne. 0.d0)then
-        call tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
+      if(dtheta .ne. 0.d0 .or. dchi2 .ne. 0.d0)then
+        call tbrot(np,x,px,y,py,z,sx,sy,sz,alg,phig,dtheta,dchi2,.true.)
       endif
       if(phib .eq. 0.d0)then
         call tbdrift(np,x,px,y,py,z,dv,sx,sz,al,phi0)
         go to 9000
       elseif(al .eq. 0.d0)then
         call tbthin(np,x,px,y,py,z,g,sx,sy,sz,phib,phi0,dx,dy,
-     1              dtheta,cost,sint)
+     1              dtheta,cost,sint,dchi2)
         go to 9000
       endif
       rhob=al/phib
@@ -652,8 +657,8 @@ c        endif
      1       cosp1,sinp1,cosp2,sinp2,
      1       mfring,fringe,n1,n2,ndiv)
       endif
- 9000 if(dtheta .ne. 0.d0)then
-        call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
+ 9000 if(dtheta .ne. 0.d0 .or. dchi2 .ne. 0.d0)then
+        call tbrot(np,x,px,y,py,z,sx,sy,sz,alg-al,phig-phi0,dtheta,dchi2,.false.)
       endif
       call tbshift(np,x,px,y,py,z,-dx,-dy,-phi0,cost,-sint,.false.)
       return
@@ -713,24 +718,24 @@ c      endif
       end
 
       subroutine tbthin(np,x,px,y,py,z,g,sx,sy,sz,phib,phi0,dx,dy,
-     1                 dtheta,cost,sint)
+     1                 dtheta,cost,sint,dchi2)
       use tbendcom, only:tbrot,tbshift
       implicit none
       integer*4 ,intent(in):: np
       integer*4 i
-      real*8 ,intent(in):: phib,phi0,dx,dy,cost,sint,dtheta
+      real*8 ,intent(in):: phib,phi0,dx,dy,cost,sint,dtheta,dchi2
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
      $     g(np),sx(np),sy(np),sz(np)
       call tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,.true.)
-      if(dtheta .ne. 0.d0)then
-        call tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
+      if(dtheta .ne. 0.d0 .or. dchi2 /= 0.d0)then
+        call tbrot(np,x,px,y,py,z,sx,sy,sz,0.d0,.5d0*phi0,dtheta,dchi2,.true.)
       endif
       do concurrent (i=1:np)
         px(i)=px(i)+phi0-phib/(1.d0+g(i))
         z(i)=z(i)-x(i)*phi0
       enddo
-      if(dtheta .ne. 0.d0)then
-        call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
+      if(dtheta .ne. 0.d0 .or. dchi2 /= 0.d0)then
+        call tbrot(np,x,px,y,py,z,sx,sy,sz,0.d0,-.5d0*phi0,dtheta,dchi2,.false.)
       endif
       call tbshift(np,x,px,y,py,z,-dx,-dy,-phi0,cost,-sint,.false.)
       return

@@ -14,7 +14,7 @@
         return
       endif
       call tchge(trans,cod,beam,srot,
-     $     dx,dy,theta,0.d0,0.d0,.true.)
+     $     dx,dy,theta,0.d0,0.d0,0.d0,0.d0,.true.)
       if(al .ne. 0.d0)then
         if(krad)then
           call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
@@ -72,6 +72,6 @@ c      p2=sqrt((h2-1.d0)*(h2+1.d0))
      $       .true.,krad,irad)
       endif
       call tchge(trans,cod,beam,srot,
-     $     -dx,-dy,-theta,0.d0,0.d0,.false.)
+     $     -dx,-dy,theta,0.d0,0.d0,0.d0,0.d0,.false.)
       return
       end

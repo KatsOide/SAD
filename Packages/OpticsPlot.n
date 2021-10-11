@@ -246,14 +246,10 @@ With[{def={PlotRange->Automatic,
           {del,del1}={", "," "})&,l[[,1,1]]]];
     fly=Optics$FrameLabel[fly,unit];
     If[right,fl[[4]]=fly,fl[[2]]=fly];
-    MapThread[
-      Switch[#,
-        {},Null[],
-        _,ListPlot[If[ss==1,#,Thread[{ss,1}*Thread[#]]],
-          PlotJoined->#2,PointTags->#3,
-          DisplayFunction->Identity,PlotRange->pra,
-          FrameLabel->fl,FrameUnitLabel->{slabel},Legend->#5,Null@@#4,Plot->plt,Null@@fopt]
-        ]&,
+    MapThread[ListPlot[If[ss==1,#,Thread[{ss,1}*Thread[#]]],
+      PlotJoined->#2,PointTags->#3,
+      DisplayFunction->Identity,PlotRange->pra,
+      FrameLabel->fl,FrameUnitLabel->{slabel},Legend->#5,Null@@#4,Plot->plt,Null@@fopt]&,
       {v,l[[,1,3]],l[[,1,4]],opv,leg}]
     ]];
 

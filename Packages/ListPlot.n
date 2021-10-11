@@ -122,7 +122,6 @@ With[{
 	(_Rule|_RuleDelayed),
 	_}],
       pr,dr,prl,drl,pr0,prg},
-    If[gl==={},Return[{}]];
     gl=Replace[#,{Graphics[x_,y___]:>Graphics[x,Flatten[{y}]]}]&/@gl;
     df=DisplayFunction/.df/.DisplayFunction:>$DisplayFunction/.Default:>$DisplayFunction;
     opt=Override[opt,gl[[1,2]],def0];

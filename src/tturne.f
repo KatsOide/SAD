@@ -354,7 +354,7 @@ c     below is incorrect for fra <> 0
       real*8 bmir(6,6),bmi(21),bmh(21),trans1(6,6)
       real*8 psi1,psi2,apsi1,apsi2,alid,alid1,
      $     dir,al,alib,dtheta,theta0,ftable(4),
-     $     fb1,fb2,ak0,ak1,rtaper,als
+     $     fb1,fb2,ak0,ak1,rtaper,als,dchi2
       integer*4 ,intent(in):: idp,ibegin,iend
       integer*4 l,ld,lele,mfr,ke,irtc,i,l1
       logical*4 ,intent(in):: plot,rt,optics
@@ -511,6 +511,7 @@ c        go to 5000
      $           +cmp%value(ky_FB2_BEND)
           endif
           dtheta=cmp%value(ky_DROT_BEND)
+          dchi2 =cmp%value(ky_CHI2_BEND)
           theta0=cmp%value(ky_ROT_BEND)
           ak0=cmp%value(ky_K0_BEND)
      $         +cmp%value(ky_ANGL_BEND)
@@ -538,7 +539,8 @@ c              rtaper=(1.d0-dp0+cod(6))
      $         cmp%value(ky_ANGL_BEND),
      $         psi1,psi2,apsi1,apsi2,ak1,
      1         cmp%value(ky_DX_BEND),
-     $         cmp%value(ky_DY_BEND),theta0,dtheta,
+     $         cmp%value(ky_DY_BEND),theta0,dtheta,dchi2,
+     $         cmp%value(p_LGEO_BEND),cmp%value(p_ANGLGEO_BEND),
      $         fb1,fb2,
      $         nint(cmp%value(ky_FRMD_BEND)),
      $         cmp%value(ky_FRIN_BEND) .eq. 0.d0,
@@ -1001,6 +1003,7 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
      $     cmp%value(ky_DZ_MULT),
      $     chi1,chi2,cmp%value(ky_ROT_MULT),
      $     cmp%value(ky_DROT_MULT),
+     $     cmp%value(p_LGEO_MULT),cmp%value(p_ANGLGEO_MULT),
      $     cmp%value(ky_EPS_MULT),
      $     enarad .and. cmp%value(ky_RAD_MULT) .eq. 0.d0,
      $     cmp%value(ky_FRIN_MULT) .eq. 0.d0,

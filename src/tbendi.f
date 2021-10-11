@@ -1,6 +1,6 @@
       subroutine tbendi(np,x,px,y,py,z,g,dv,sx,sy,sz,al,phib,phi0,
      1     cosp1,sinp1,cosp2,sinp2,
-     1     ak,dx,dy,theta,dtheta,cost,sint,
+     1     ak,dx,dy,theta,dtheta,cost,sint,dchi2,alg,phig,
      1     fb1,fb2,mfring,enarad,fringe,eps0)
       use tbendcom, only:tbrot,tbshift
       use bendib
@@ -14,6 +14,7 @@
       implicit none
       integer*4 , parameter :: ndivmax=1000
       integer*4 np,mfring,i,ndiv,n,n1,n2
+      real*8 ,intent(in):: dchi2,alg,phig
       real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     sx(np),sy(np),sz(np),
      $     alx(-1:ndivmax+2),alr(-1:ndivmax+2),
@@ -27,8 +28,8 @@
      $     dxfr2,dyfr2,dyfra2,dtheta
       logical*4 enarad,fringe,krad
       call tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,.true.)
-      if(dtheta .ne. 0.d0)then
-        call tbrot(np,x,px,y,py,z,sx,sy,sz,phi0,dtheta)
+      if(dtheta /= 0.d0 .or. dchi2 /=0.d0)then
+        call tbrot(np,x,px,y,py,z,sx,sy,sz,alg,phig,dtheta,dchi2,.true.)
       endif
       tanp1=sinp1/cosp1
       tanp2=sinp2/cosp2
@@ -176,8 +177,8 @@ c                call tsetphotongeo(alx(n),phixn(n),theta,.false.)
         endif
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,alr(n2),phixn(n2))
       endif
-      if(dtheta .ne. 0.d0)then
-        call tbrot(np,x,px,y,py,z,sx,sy,sz,-phi0,-dtheta)
+      if(dtheta /= 0.d0 .or. dchi2 /= 0.d0)then
+        call tbrot(np,x,px,y,py,z,sx,sy,sz,alg-al,phig-phi0,dtheta,dchi2,.false.)
       endif
       call tbshift(np,x,px,y,py,z,-dx,-dy,-phi0,cost,-sint,.false.)
       return

@@ -34,7 +34,7 @@ c      use ffs_pointer, only:inext,iprev
 c      theta2=theta+akang(dcmplx(ak0,0.d0),al,cr1)
       ak=sign(ak0,al)
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
-     $     al,bz,dx,dy,0.d0,
+     $     al*.5d0,bz,dx,dy,0.d0,
      $     0.d0,0.d0,theta2,bxs,bys,bzs,.true.)
       if(krad)then
         pxr0=px
@@ -107,7 +107,7 @@ c      theta2=theta+akang(dcmplx(ak0,0.d0),al,cr1)
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,f1out,0.d0)
       endif
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
-     $     al,bz,dx,dy,0.d0,
+     $     -.5d0*al,bz,dx,dy,0.d0,
      $     0.d0,0.d0,theta2,bxs,bys,bzs,.false.)
       return
       end
