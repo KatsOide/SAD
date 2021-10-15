@@ -354,7 +354,6 @@ c$$$     $         +trans1(4,3)*trans(3,6)
  1000 continue
       call tsolrote(trans,cod,beam,srot,alg-al,bz,dx,dy,dz,
      $     -chi1,-chi2,theta2,bxs,bys,bzs,.false.)
-c      write(*,'(a,1p10g12.4)')'tmulte-8 ',chi1,chi2,ak1,cod(1:5)
       if(dhg .ne. 0.d0)then
         rg2=p0/gammab(l+1)
         call tinitr(trans1)
@@ -372,9 +371,5 @@ c      write(*,'(a,1p10g12.4)')'tmulte-8 ',chi1,chi2,ak1,cod(1:5)
         call tphyzp
         call tesetdv(cod(6))
       endif
-c      if(ktfenanq(cod(5)) .or. ktfenanq(trans(5,6)))then
-c        write(*,'(a,i5)')'tmulte-end ',l
-c        write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6),cod
-c      endif
       return
       end

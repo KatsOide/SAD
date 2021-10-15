@@ -124,10 +124,11 @@ c        spx=sin(phix)
       s=min(psqmax,pxi**2+pyi**2)
       dpzi=sqrt1(-s)
       pzi=1.d0+dpzi
+c      zi =zi-phi*dpzi*xi/pzi+al*dpzi*(.5d0*pzi+.5d0-1.d0/pzi)
+      zi=zi+(.5d0*s+(1.d0+xi/rho0)*dpzi/pzi)*al
       xi =(-al*dpzi*pxi+pzi*xi)/(pzi-phi*pxi)
       pxi=pxi+phi*dpzi
       yi =yi+(-al*dpzi+xi*phi)*pyi/pzi
-      zi =zi-phi*dpzi*xi/pzi+al*dpzi*(.5d0*pzi+.5d0-1.d0/pzi)
       xr=xi/rho0
       pxi=pxi-ak1*xi*xr*(0.5d0-xr*(2.d0-xr)/12.d0)/p
       return
@@ -231,9 +232,9 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
           x(i)=xf-pxf/pzf*zf
           y(i)=yf-pyf/pzf*zf
           z(i)=z(i)+zf/pzf
-          if(i .eq. 1)then
-            write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),z(1)
-          endif
+c          if(i .eq. 1)then
+c            write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),z(1)
+c          endif
         enddo
         if(calpol)then
           do concurrent (i=1:np)

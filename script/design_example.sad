@@ -59,6 +59,7 @@ ON ECHO;OFF CTIME;
   FREE Q*;          ! set Q* (in this case QF and QD) as the matching
                     ! variable
   GO;               ! start matching
+
 !                     define dr as the drawing command (needs X-Window)
 !  dr:=FFS["OUT 'a' DRAW BX BY & EX EY {BQ}*; TERM OUT; TDR 'a';"];
   dr:=FFS["DRAW BX BY & EX EY {BQ}*;"];
@@ -105,10 +106,12 @@ ON ECHO;OFF CTIME;
 !                   
 !                     get the current tunes
   {nx0, ny0}=Twiss[{"NX","NY"},"***"]/2/Pi;
+  REJ TOTAL;        ! reject all matching conditions;
   FIT;
-  NX nx0 5;         ! set the offmomentum tunes for 5 points
-  NY ny0 5;         ! in -DP < dp/p0 < DP
-  DP=0.01;          ! set the bandwidth |dp/p0|max = DP = 0.01
+  NX nx0 8;         ! set the offmomentum tunes for 8 points
+  NY ny0 8;         ! in -DP < dp/p0 < DP
+  DP=0.024;         ! set the bandwidth |dp/p0|max = DP = 0.024
+  FIX *;            ! fix all variables;
   FREE S*;          ! set S* (SF and SD) sextupoles as variable
   GO;
   FITP 1;           ! set the off-momentum points to 1 (on-momentum only).
@@ -119,13 +122,12 @@ ON ECHO;OFF CTIME;
     !
     ! Plot tunes -3% < dp/p0 < 3%.
   Plot[{nx[dp],ny[dp]}, {dp, -0.03, 0.03},
+    PlotRange->{3.7,4.8},
     PlotLabel->"Tune Chromaticity",
     FrameLabel->{{"`fD`np/p`d0`n","F   X X"},{"`fn`n`dx`n, `fn`n`dy`n","GX X  GX X"}}];
                     ! draw chromaticity
   If[$DisplayFunction === CanvasDrawer, Update[]];
-
 susp;
-
   TYPE;             ! print out all elements
   PrintBeamLine[ExtractBeamLine[]];   ! print out all beam line
   Print[TimeUsed[]];! CPU Time used so far.
@@ -133,7 +135,8 @@ susp;
 ! ***** EMITTANCE CALCULATION *****
 !
   EMIOUT;           ! turn on the output of matrices by EMIT.
-  EMIT;             ! This (or Emittance[]) is necessary before tracking
+  EMIT;             ! This (or Emittance[]) is necessary right before the tracking
+                    ! Do not change flags between EMIT and tracking!
   Print[TimeUsed[]];! CPU Time used so far.
 !
 ! ***** DYNAMIC APERTURE *****

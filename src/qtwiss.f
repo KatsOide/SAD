@@ -159,6 +159,7 @@ c        endif
             if(bx0 .gt. 0.d0 .and. by0 .gt. 0.d0 .and.
      $           itgetfpe() .eq. 0)then
             else
+              write(*,'(a,4i8,1p2g15.7)')'qtwiss-over 3 ',l,ip1,ip0,l1,bx0,by0
               do j=ip1-1,ip0+la,-1
                 if(twiss(j,mfitbx) .gt. 0.d0
      $               .and. twiss(j,mfitby) .gt. 0.d0)then
@@ -498,6 +499,7 @@ c            write(*,*)'qtwiss-qwsapc ',l1,ifsize,rlist(ifsize+(l1-1)*21)
             endif
             twiss(ip,mfitnx)=twiss(ip1,mfitnx)+dpsix
             twiss(ip,mfitny)=twiss(ip1,mfitny)+dpsiy
+c            write(*,'(a,i8,2l2,106g15.7)')'qtwiss1-8 ',ip,coup,normal,twiss(ip,1:6)
             call limitnan(twiss(ip,:),twissnan)
           endif
         endif
