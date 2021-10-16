@@ -45,7 +45,7 @@ c      use ffs_pointer, only:inext,iprev
      $       eps0,krad,fb1,fb2,mfring,fringe)
         return
       endif
-      write(*,'(a,1p10g12.4)')'tmulti ',al,ak(1),chi1,chi2,alg,phig
+c      write(*,'(a,1p10g12.4)')'tmulti ',al,ak(1),chi1,chi2,alg,phig
       b0=0.d0
       nzleng=al .ne. 0.d0
       spac1=.false.

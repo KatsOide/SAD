@@ -38,7 +38,7 @@
       if(dtheta /= 0.d0 .or. dchi2 /= 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,alg,phig,dtheta,dchi2,.true.)
       endif
-      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dtheta,dchi2
+c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dtheta,dchi2
       if(eps0 .eq. 0.d0)then
         eps=eps00
       else
@@ -124,32 +124,37 @@
             mfr=-1
           endif
           if(krad .and. calpol)then
-            do concurrent (i=1:np)
-              cx1=dcmplx(x(i),y(i))
-              cx=0.d0
-              do k=nmmax,2,-1
-                cx=(cx+ak(k))*cx1*aninv(k+1)
+            if(nmmax .ge. 2)then
+              do concurrent (i=1:np)
+                cx1=dcmplx(x(i),y(i))
+                cx=0.d0
+                do k=nmmax,2,-1
+                  cx=(cx+ak(k))*cx1*aninv(k+1)
+                enddo
+                bsi(i)=.5d0*imag(cx*cx1**2)/al
               enddo
-              bsi(i)=.5d0*imag(cx*cx1**2)/al
-            enddo
+            else
+              bsi=0.d0
+            endif
           endif
           call tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         als,ak0n*.5d0,phin*.5d0,psi1,0.d0,
      1         cosp1,sinp1,1.d0,0.d0,
-     1         ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,0.d0,0.d0,0.d0,
+     1         ak1n*.5d0,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,0.d0,0.d0,0.d0,
      $         fb1,fb2,mfr,fringe,cosw,sinw,sqwh,sinwp1,
      1         krad,eps0,.false.,1)
-          write(*,'(a,i5,1p10g12.4)')'tbend-3 ',n,x(1),px(1),y(1),py(1),z(1),ak0n,phin
           pcvt%fr0=als/al
-          w=phin
-          cosw=cos(w)
-          sinw=sin(w)
-          if(cosw .ge. 0.d0)then
-            sqwh=sinw**2/(1.d0+cosw)
-          else
-            sqwh=1.d0-cosw
+          if(ndiv > 1)then
+            w=phin
+            cosw=cos(w)
+            sinw=sin(w)
+            if(cosw .ge. 0.d0)then
+              sqwh=sinw**2/(1.d0+cosw)
+            else
+              sqwh=1.d0-cosw
+            endif
+            sinwp1=sinw
           endif
-          sinwp1=sinw
         else
           call tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         aln,ak0n,phin,0.d0,0.d0,
@@ -160,7 +165,6 @@
           als=als+aln
           pcvt%fr0=als/al
         endif
-        write(*,'(a,i5,1p10g12.4)')'tbend-4 ',n,x(1),px(1),y(1),py(1),z(1)
         do i=1,np
           pr=(1.d0+g(i))
           cx1=dcmplx(x(i),y(i))
@@ -191,7 +195,6 @@
           pyr0=py
           zr0=z
         endif
-        write(*,'(a,i5,1p10g12.4)')'tbend-5 ',n,x(1),px(1),y(1),py(1),z(1)
       enddo
       w=phin*.5d0-psi2
       cosw=cos(w)
@@ -209,19 +212,23 @@
         mfr=-2
       endif
       if(krad .and. calpol)then
-        do i=1,np
-          cx1=dcmplx(x(i),y(i))
-          cx=0.d0
-          do k=nmmax,2,-1
-            cx=(cx+ak(k))*cx1*aninv(k+1)
+        if(nmmax >= 2)then
+          do i=1,np
+            cx1=dcmplx(x(i),y(i))
+            cx=0.d0
+            do k=nmmax,2,-1
+              cx=(cx+ak(k))*cx1*aninv(k+1)
+            enddo
+            bsi(i)=-imag(.5d0*cx*cx1**2)/al
           enddo
-          bsi(i)=-imag(.5d0*cx*cx1**2)/al
-        enddo
+        else
+          bsi=0.d0
+        endif
       endif
       call tbend(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     aln*.5d0,ak0n*.5d0,phin*.5d0,0.d0,psi2,
      1     1.d0,0.d0,cosp2,sinp2,
-     1     ak1n,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,0.d0,0.d0,0.d0,
+     1     ak1n*.5d0,0.d0,0.d0,0.d0,0.d0,1.d0,0.d0,0.d0,0.d0,0.d0,
      $     fb1,fb2,mfr,fringe,cosw,sinw,sqwh,sinwp1,
      1     krad,eps0,.false.,2)
       if(dtheta /= 0.d0 .or. dchi2 /= 0.d0)then
@@ -412,6 +419,6 @@ c        write(*,*)'tmultae ',dble(csr*cx1)/r,dble(csl),nmmin
         cod(4)=cod(4)+dphiy
       endif
       call tchge(trans,cod,beam,srot,
-     $     -dx,-dy,theta,dtheta,dchi2,alg,phig,.false.)
+     $     -dx,-dy,theta,dtheta,dchi2,alg-al,phig-phi,.false.)
       return
       end
