@@ -72,6 +72,6 @@ c      p2=sqrt((h2-1.d0)*(h2+1.d0))
      $       .true.,krad,irad)
       endif
       call tchge(trans,cod,beam,srot,
-     $     -dx,-dy,theta,0.d0,0.d0,0.d0,0.d0,.false.)
+     $     dx,dy,theta,0.d0,0.d0,0.d0,0.d0,.false.)
       return
       end

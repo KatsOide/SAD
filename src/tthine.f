@@ -99,6 +99,6 @@ c        endif
       endif
       bradprev=0.d0
       call tchge(trans,cod,beam,srot,
-     $     -dx,-dy,theta,0.d0,0.d0,0.d0,0.d0,.false.)
+     $     dx,dy,theta,0.d0,0.d0,0.d0,0.d0,.false.)
       return
       end

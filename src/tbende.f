@@ -283,7 +283,6 @@ c      dodpx=1.d0/pzi-trans1(2,2)/pzf
       trans1(5,4)=-trans1(1,4)*trans1(2,6)+trans1(2,4)*trans1(1,6)+trans1(3,6)
 c      trans1(5,6)=-rhob*(omega+dodp*p)+h0/h1emit**3*aln
       trans1(5,6)=-rhob*(da+xsn+sn*dpzf/pzf+ddodp*p)+h0/h1emit**3*aln
-c      write(*,'(a,1p10g12.4)')'tbbody0 ',trans1(5,6),trans1(5,3),trans1(5,4),da,dpzf,pxf,pyi,ddodp,dodp
 c$$$      rhoe=rhob*pr
 c$$$      s=min(psqmax,pxi**2+pyi**2)
 c$$$      dpz1=sqrt1(-s)
@@ -343,15 +342,12 @@ c$$$     1     +drho*sinsq0
       subroutine tbrote(trans,cod,srot,alg,phig,dtheta,dchi2,ent)
       use tmacro, only:irad
       use ffs_flag,only:calpol
-      use mathfun, only:pxy2dpz,xsincos
+      use mathfun, only:xsincos
       implicit none
       real*8 ,intent(inout):: trans(6,6),cod(6),srot(3,9)
       real*8 ,intent(in):: phig,dtheta,alg,dchi2
       logical*4 ,intent(in):: ent
-      real*8 rr(3,3),
-     $     pxi,pyi,pzi,xi,yi,zi,xf,yf,zf,pxf,pyf,pzf,
-     $     s2,xs2,c2,dc2,st,xst,ct,dct,xl0,dl,
-     $     c0,s0,dpzidpx,dpzidpy,dpzidp,pr
+      real*8 rr(3,3),s2,xs2,c2,dc2,st,xst,ct,dct,dl,c0,s0
       integer*4 i
       c0=cos(phig)
       s0=sin(phig)
@@ -380,80 +376,103 @@ c$$$     1     +drho*sinsq0
       else
         dl=alg*s0/phig
       endif
-      xl0= dl*s0
-      xi=cod(1)+xl0
+      call tbgrote(trans,cod,rr,dl*s0,-dl*c0)
+      if(calpol .and. irad .gt. 6)then
+        do concurrent (i=1:9)
+          srot(1,i)=dot_product(rr(1,:),srot(:,i))+srot(1,i)
+          srot(2,i)=dot_product(rr(2,:),srot(:,i))+srot(2,i)
+          srot(3,i)=dot_product(rr(3,:),srot(:,i))+srot(3,i)
+        enddo
+      endif
+      return
+      end
+
+      subroutine tbgrote(trans,cod,dr,dx,dz,rr)
+      use mathfun,only:pxy2dpz
+      implicit none
+      real*8 ,intent(inout):: trans(6,6),cod(6)
+      real*8 ,intent(in):: dr(3,3),dx,dz
+      real*8 ,intent(out) , optional ::rr(3,3)
+      real*8 pxi,pyi,pzi,xi,yi,zi,xf,yf,zf,pxf,pyf,pzf,dpzi,dpzf,
+     $     dpzidpx,dpzidpy,dpzidp,pr,r11,r22,r33,pxfpzf,pyfpzf,zfpzf,prpzf
+      xi=cod(1)+dx
       yi=cod(3)
-      zi =-dl*c0
+      zi =dz
       pxi=cod(2)
       pyi=cod(4)
       pr=1.d0+cod(6)
-      pzi=pr+pxy2dpz(pxi/pr,pyi/pr)*pr
-      xf =rr(1,1)*xi +rr(1,2)*yi +rr(1,3)*zi +cod(1)
-      yf =rr(2,1)*xi +rr(2,2)*yi +rr(2,3)*zi +yi
-      zf =rr(3,1)*xi +rr(3,2)*yi +rr(3,3)*zi
-      rr(1,1)=rr(1,1)+1.d0
-      rr(2,2)=rr(2,2)+1.d0
-      rr(3,3)=rr(3,3)+1.d0
-      pxf=rr(1,1)*pxi+rr(1,2)*pyi+rr(1,3)*pzi
-      pyf=rr(2,1)*pxi+rr(2,2)*pyi+rr(2,3)*pzi
-      pzf=rr(3,1)*pxi+rr(3,2)*pyi+rr(3,3)*pzi
+      dpzi=pxy2dpz(pxi/pr,pyi/pr)*pr
+      pzi=pr+dpzi
+      xf =dr(1,1)*xi +dr(1,2)*yi +dr(1,3)*zi +cod(1)
+      yf =dr(2,1)*xi +dr(2,2)*yi +dr(2,3)*zi +yi
+      zf =dr(3,1)*xi +dr(3,2)*yi +dr(3,3)*zi
+      r11=1.d0+dr(1,1)
+      r22=1.d0+dr(2,2)
+      r33=1.d0+dr(3,3)
+      if(present(rr))then
+        rr=dr
+        rr(1,1)=r11
+        rr(2,2)=r22
+        rr(3,3)=r33
+      endif
+      pxf =    r11*pxi+dr(1,2)*pyi+dr(1,3)*pzi
+      pyf =dr(2,1)*pxi+    r22*pyi+dr(2,3)*pzi
+      dpzf=dr(3,1)*pxi+dr(3,2)*pyi+    r33*dpzi+dr(3,3)*pr
+      pzf =pr+dpzf
+      pxfpzf=pxf/pzf
+      pyfpzf=pyf/pzf
+      zfpzf=zf/pzf
+      prpzf=pr/pzf
       cod(2)=pxf
       cod(4)=pyf
-      cod(1)=xf-pxf/pzf*zf
-      cod(3)=yf-pyf/pzf*zf
-      cod(5)=cod(5)+zf*pr/pzf
+      cod(1)=xf-pxf*zfpzf
+      cod(3)=yf-pyf*zfpzf
+      cod(5)=cod(5)+pr*zfpzf
 
       dpzidpx=-pxi/pzi
       dpzidpy=-pyi/pzi
       dpzidp =  pr/pzi
-      trans(1,1)=rr(1,1)-rr(3,1)*pxf/pzf
-      trans(1,2)=-zf/pzf*(rr(1,1)+rr(1,3)*dpzidpx
-     $     -pxf/pzf*(rr(3,1)+rr(3,3)*dpzidpx))
-      trans(1,3)=rr(1,2)-rr(3,2)*pxf/pzf
-      trans(1,4)=-zf/pzf*(rr(1,2)+rr(1,3)*dpzidpy
-     $     -pxf/pzf*(rr(3,2)+rr(3,3)*dpzidpy))
-      trans(1,5)=0.d0
-      trans(1,6)=-zf/pzf*(rr(1,3)-rr(3,3)*pxf/pzf)*dpzidp
       trans(2,1)=0.d0
-      trans(2,2)=rr(1,1)+rr(1,3)*dpzidpx
+      trans(2,2)=    r11+dr(1,3)*dpzidpx
       trans(2,3)=0.d0
-      trans(2,4)=rr(1,2)+rr(1,3)*dpzidpy
-      trans(2,5)=0.d0
-      trans(2,6)=rr(1,3)*dpzidp
+      trans(2,4)=dr(1,2)+dr(1,3)*dpzidpy
+      trans(1:4,5)=0.d0
+      trans(2,6)=dr(1,3)*dpzidp
 
-      trans(3,1)=rr(2,1)-rr(3,1)*pyf/pzf
-      trans(3,2)=-zf/pzf*(rr(2,1)+rr(2,3)*dpzidpx
-     $     -pyf/pzf*(rr(3,1)+rr(3,3)*dpzidpx))
-      trans(3,3)=rr(2,2)-rr(3,2)*pyf/pzf
-      trans(3,4)=-zf/pzf*(rr(2,2)+rr(2,3)*dpzidpy
-     $     -pyf/pzf*(rr(3,2)+rr(3,3)*dpzidpy))
-      trans(3,5)=0.d0
-      trans(3,6)=-zf/pzf*(rr(2,3)-rr(3,3)*pyf/pzf)*dpzidp
       trans(4,1)=0.d0
-      trans(4,2)=rr(2,1)+rr(2,3)*dpzidpx
+      trans(4,2)=dr(2,1)+dr(2,3)*dpzidpx
       trans(4,3)=0.d0
-      trans(4,4)=rr(2,2)+rr(2,3)*dpzidpy
-      trans(4,5)=0.d0
-      trans(4,6)=rr(2,3)*dpzidp
+      trans(4,4)=    r22+dr(2,3)*dpzidpy
+      trans(4,6)=dr(2,3)*dpzidp
 
-      trans(5,1)=-trans(1,1)*trans(2,6)-trans(3,1)*trans(4,6)
-      trans(5,2)=-trans(1,2)*trans(2,6)+trans(2,2)*trans(1,6)
-     $           -trans(3,2)*trans(4,6)+trans(4,2)*trans(3,6)
-      trans(5,3)=-trans(1,3)*trans(2,6)-trans(3,3)*trans(4,6)
-      trans(5,4)=-trans(1,4)*trans(2,6)+trans(2,4)*trans(1,6)
-     $           -trans(3,4)*trans(4,6)+trans(4,4)*trans(3,6)
+      trans(1,1)=    r11-dr(3,1)*pxfpzf
+      trans(1,2)=-zfpzf*(trans(2,2)-pxfpzf*(dr(3,1)+    r33*dpzidpx))
+      trans(1,3)=dr(1,2)-dr(3,2)*pxfpzf
+      trans(1,4)=-zfpzf*(trans(2,4)-pxfpzf*(dr(3,2)+    r33*dpzidpy))
+      trans(1,6)=-zfpzf*(dr(1,3)-    r33*pxfpzf)*dpzidp
+
+      trans(3,1)=dr(2,1)-dr(3,1)*pyfpzf
+      trans(3,2)=-zfpzf*(trans(4,2)-pyfpzf*(dr(3,1)+    r33*dpzidpx))
+      trans(3,3)=    r22-dr(3,2)*pyfpzf
+      trans(3,4)=-zfpzf*(trans(4,4)-pyfpzf*(dr(3,2)+    r33*dpzidpy))
+      trans(3,6)=-zfpzf*(dr(2,3)-    r33*pyfpzf)*dpzidp
+
+c      trans(5,1)=-trans(1,1)*trans(2,6)-trans(3,1)*trans(4,6)
+      trans(5,1)= dr(3,1)*prpzf
+c      trans(5,2)=-trans(1,2)*trans(2,6)+trans(2,2)*trans(1,6)
+c     $           -trans(3,2)*trans(4,6)+trans(4,2)*trans(3,6)
+      trans(5,2)= -zfpzf*prpzf*(dr(3,1)+r33*dpzidpx)
+c      trans(5,3)=-trans(1,3)*trans(2,6)-trans(3,3)*trans(4,6)
+      trans(5,3)= dr(3,2)*prpzf
+c      trans(5,4)=-trans(1,4)*trans(2,6)+trans(2,4)*trans(1,6)
+c     $           -trans(3,4)*trans(4,6)+trans(4,4)*trans(3,6)
+      trans(5,4)= -zfpzf*prpzf*(dr(3,2)+r33*dpzidpy)
       trans(5,5)=1.d0
-      trans(5,6)=zf/pzf*(1.d0-pr/pzf*rr(3,3)*dpzidp)
+c      trans(5,6)=zfpzf*(1.d0-pr/pzf*    r33*dpzidp)
+      trans(5,6)=r33*(dpzf*prpzf+dpzi/pzi)-dr(3,3)
 
       trans(6,1:5)=0.d0
       trans(6,6)=1.d0
-      if(calpol .and. irad .gt. 6)then
-        do concurrent (i=1:9)
-          srot(1,i)=dot_product(rr(1,:),srot(:,i))
-          srot(2,i)=dot_product(rr(2,:),srot(:,i))
-          srot(3,i)=dot_product(rr(3,:),srot(:,i))
-        enddo
-      endif
       return
       end
 
@@ -553,7 +572,7 @@ c$$$     1     +drho*sinsq0
         call tbdrifte(trans,cod,beam,srot,al,phi0,h0,h1emit,dvemit,
      $       irad)
         call tchge(trans,cod,beam,srot,
-     $       -dx,-dy,theta,dtheta,dchi2,alg-al0,phig-phi0,.false.)
+     $       dx,dy,theta,dtheta,dchi2,alg-al0,phig-phi0,.false.)
         return
       elseif(al .eq. 0.d0)then
         call tbthie(trans,cod,beam,srot,phib,phi0,dx,dy,theta,dtheta,dchi2)
@@ -679,9 +698,7 @@ c          write(*,'(a,i5,1p10g12.4)')'tbende-3 ',n,cod(1:5)
       if(.not. next)then
         bradprev=0.d0
       endif
-c      write(*,'(a,1p10g12.4)')'tbende-4 ',cod(1:5)
       call tbedge(trans,cod,beam,al,phib,psi2*phi0+apsi2,.false.)
-c      write(*,'(a,1p10g12.4)')'tbende-5 ',cod(1:5)
       if(f2r .ne. 0.d0)then
         dxfr2=-fb2**2/rhob/24.d0
         dyfr2=fb2/rhob**2/6.d0
@@ -691,9 +708,8 @@ c      write(*,'(a,1p10g12.4)')'tbende-5 ',cod(1:5)
       if(enarad)then
         call tradke(trans,cod,beam,srot,alr,phi1,0.d0)
       endif
-c      write(*,'(a,1p10g12.4)')'tbende-8 ',cod(1:5)
       call tchge(trans,cod,beam,srot,
-     $     -dx,-dy,theta,dtheta,dchi2,alg-al0,phig-phi0,.false.)
+     $     dx,dy,theta,dtheta,dchi2,alg-al0,phig-phi0,.false.)
       return
       end
 
@@ -831,6 +847,6 @@ c      pzi=sqrt(max(1.d-4,(pr-pxi)*(pr+pxi)-pyi**2))
       cod(2)=cod(2)+(phi0-phib)+cod(6)*phi0
       cod(5)=cod(5)-phi0*cod(1)
       call tchge(trans,cod,beam,srot,
-     $     -dx,-dy,theta,dtheta,dchi2,0.d0,-.5d0*phi0,.false.)
+     $     dx,dy,theta,dtheta,dchi2,0.d0,-.5d0*phi0,.false.)
       return
       end

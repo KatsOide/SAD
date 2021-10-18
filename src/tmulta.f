@@ -419,6 +419,6 @@ c        write(*,*)'tmultae ',dble(csr*cx1)/r,dble(csl),nmmin
         cod(4)=cod(4)+dphiy
       endif
       call tchge(trans,cod,beam,srot,
-     $     -dx,-dy,theta,dtheta,dchi2,alg-al,phig-phi,.false.)
+     $     dx,dy,theta,dtheta,dchi2,alg-al,phig-phi,.false.)
       return
       end

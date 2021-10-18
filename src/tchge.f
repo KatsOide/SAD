@@ -16,7 +16,7 @@
       logical*4 ,intent(in):: ent
       logical*4 tb,mcal
       mcal=irad .ge. 6
-      tb=phig .ne. 0.d0 .and. dtheta .ne. 0.d0 .or. dchi2 .ne. 0.d0
+      tb=phig .ne. 0.d0 .and. (dtheta .ne. 0.d0 .or. dchi2 .ne. 0.d0)
       if(.not. tb)then
         th=theta+dtheta
       else
@@ -101,8 +101,8 @@
             endif
           endif
         endif
-        cod(1)=cod(1)-dx
-        cod(3)=cod(3)-dy
+        cod(1)=cod(1)+dx
+        cod(3)=cod(3)+dy
       endif
       if(associated(transa))then
         trans(:,1:irad)=matmul(transa,trans(:,1:irad))

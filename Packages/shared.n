@@ -78,4 +78,5 @@ With[{`tfork=0.01,`tsupdate=0.1,`nwu=100,`twcomp=1, nos=32,
         If[fcomp<=>{},fcomp[l]];
         Close[np];
         l]];
+
 SetAttributes[{Parallelize,CloseShared},{HoldFirst,Constant}];

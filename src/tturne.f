@@ -34,10 +34,6 @@
       normali=.true.
       call tffsbound(fbound)
       call tturneg(trans,cod,beam,srot,fbound,iae,plot,rt,optics)
-c      if(ifsize .ne. 0)then
-c        write(*,*)'tturneg-end ',beamsize(1,nlat),beamsize(6,nlat),
-c     $       beamsize(21,nlat)
-c      endif
       if(update)then
         if(wrfeff .ne. 0.d0)then
           alambdarf=pi2/wrfeff
@@ -678,7 +674,7 @@ c            call tmultr(trans,trans1,6)
  1010   continue
         call limitcod(cod)
       enddo
-c      call tfmemcheckprint('tturne-end0',0,.true.,irtc)
+c      call tfmemcheckprint('tturne-7 ',0,.true.,irtc)
       if(calint)then
         if(alid .ne. 0.d0)then
           call tintrb(trans,cod,beam,bmi,alid,alid,optics,iend+1)
