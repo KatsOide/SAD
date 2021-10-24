@@ -1,4 +1,3 @@
-
       module bendib
       use tfstk
       implicit none
@@ -216,8 +215,8 @@ c      dxf = drhop*dcxkx+xi*dcx+sxkx*pxi
         dyz= r23*zi
         dzz=dr33*zi
         do i=1,np
-          xi=x(1)+xl0
-          yi=y(1)
+          xi=x(i)+xl0
+          yi=y(i)
           pxi=px(i)
           pyi=py(i)
           pzi=1.d0+pxy2dpz(pxi,pyi)
@@ -594,6 +593,8 @@ c     $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
       if(dtheta .ne. 0.d0 .or. dchi2 .ne. 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,alg,phig,dtheta,dchi2,.true.)
       endif
+c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1)-x(2),px(1)-px(2),
+c     $     y(1)-y(2),py(1)-py(2),z(1)-z(2),g(1)-g(2)
       if(phib .eq. 0.d0)then
         call tbdrift(np,x,px,y,py,z,dv,sx,sz,al,phi0)
         go to 9000
@@ -660,6 +661,7 @@ c        endif
         call tbrot(np,x,px,y,py,z,sx,sy,sz,alg-al,phig-phi0,dtheta,dchi2,.false.)
       endif
       call tbshift(np,x,px,y,py,z,-dx,-dy,-phi0,cost,-sint,.false.)
+c      write(*,'(a,1p10g12.4)')'tbend-9 ',x(1),px(1),y(1),py(1),z(1),g(1)
       return
       end
 

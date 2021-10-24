@@ -52,6 +52,7 @@ c      write(*,'(a,1p10g12.4)')'tmulti ',al,ak(1),chi1,chi2,alg,phig
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     alg,bz,dx,dy,dz,
      $     -chi1,-chi2,theta2,bxs,bys,bzs,.true.)
+c      write(*,'(a,1p10g12.4)')'tmulti-1 ',x(1),px(1),y(1),py(1),z(1),g(1)
       akr(0)=(akr0(0)+dcmplx(bys*al,bxs*al))*rtaper
       if(nmmax .eq. 0 .and. .not. spac)then
         call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -244,6 +245,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     alg-al,bz,dx,dy,dz,
      $     -chi1,-chi2,theta2,bxs,bys,bzs,.false.)
+c      write(*,'(a,1p10g12.4)')'tmulti-9 ',x(1),px(1),y(1),py(1),z(1),g(1)
       return
       end
 

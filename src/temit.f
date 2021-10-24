@@ -180,7 +180,7 @@ c          write(*,*)'temit-inical ',calint,intra,econv,postcal,plot
           irad=12
           call tecalc(trans,cod,beam,beamn,beamp,
      $         emitn,emitp,btr,srot,srot1,
-     $         rx,rd,params,ceig,dc,cd,stab,calem)
+     $         rx,rd,sps,spm,params,ceig,dc,cd,stab,calem)
           inical=.false.
         endif
         if(pri)then
@@ -238,7 +238,7 @@ c     $       beamp(1),beamp(6),beamp(21)
 
       subroutine tecalc(trans,cod,beam,beamn,beamp,
      $     emitn,emitp,btr,srot,srot1,
-     $     rx,rd,params,ceig,dc,cd,stab,calem)
+     $     rx,rd,sps,spm,params,ceig,dc,cd,stab,calem)
       use tfstk
       use temw
       use ffs_flag
@@ -254,14 +254,14 @@ c     $       beamp(1),beamp(6),beamp(21)
       integer*4 lfno,i,j,k,k1,k2,k3,m,l,n
       real*8 ,intent(inout):: beam(42),srot1(3,3),srot(3,9)
       real*8 ,intent(in):: trans(6,12),cod(6)
-      real*8 ,intent(out):: dc
+      real*8 ,intent(out):: dc,sps(3,3),spm(3,3)
       real*8 sdamp,sqr2,bb,bbv(21),sr,rgetgl1,
      $     tune,ab(6),emxe,emye,emze,rirx(6,6)
       complex*16 ,intent(out):: cd(6)
       complex*16 dceig(6),cc(6),ceig(6)
       real*8 ,intent(out):: btr(21,21),emitn(21),emitp(21),beamn(21),
      1     beamp(21),params(nparams),rx(6,6),rd(6,6)
-      real*8 tw(ntwissfun),sps(3,3),spm(3,3),rdb(6,12)
+      real*8 tw(ntwissfun),rdb(6,12)
       logical*4 ,intent(in):: calem
       logical*4 ,intent(out):: stab
       rx=trans(:,1:6)

@@ -296,17 +296,18 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       end
 
       subroutine tbedgedrift(trans,cod,psi)
+      use mathfun, only:pxy2dpz,xsincos
       implicit none
-      real*8 trans(6,6),psi,cod(6),cosp,sinp,
+      real*8 trans(6,6),psi,cod(6),cosp,sinp,sxp,dcp,
      $     s,pr,f,dpzi,pzi,sx,phsq,sxa,pxi,pyi
       real*8, parameter ::ampmin=1.d-6
       pr=1.d0+cod(6)
-      cosp=cos(psi)
-      sinp=sin(psi)
+      call xsincos(psi,sinp,sxp,cosp,dcp)
       pxi=min(pr,max(-pr,cod(2)))
       pyi=min(pr,max(-pr,cod(4)))
+      dpzi=pr*pxy2dpz(pxi/pr,pyi/pr)
       s=pxi**2+pyi**2
-      dpzi=-s/(pr+pr*sqrt(max(ampmin,1.d0-s/pr**2)))
+c      dpzi=-s/(pr+pr*sqrt(max(ampmin,1.d0-s/pr**2)))
       pzi=pr+dpzi
       f=cosp-pxi/pzi*sinp
       cod(1)=cod(1)/f
@@ -321,13 +322,12 @@ c      write(*,'(a,1p6g15.7)')'tbed ',psi,cod(5),-pr/pzi*sx
       trans(1,2)=phsq*sxa
       trans(1,3)=0.d0
       trans(1,4)=pxi*pyi*sxa
-      trans(1,5)=0.d0
+      trans(1:4,5)=0.d0
       trans(1,6)=-pxi*pr*sxa
       trans(2,1)=0.d0
       trans(2,2)=f
       trans(2,3)=0.d0
       trans(2,4)=-pyi/pzi*sinp
-      trans(2,5)=0.d0
       trans(2,6)=pr/pzi*sinp
       trans(3,1)=pyi/f/pzi*sinp
 c      trans(3,2)=pyi*sxa*(f*pxi+phsq*sinp/pzi)
@@ -335,14 +335,12 @@ c      trans(3,2)=pyi*sxa*(f*pxi+phsq*sinp/pzi)
       trans(3,3)=1.d0
 c      trans(3,4)=sxa*(f*phsq+pxi*pyi**2*sinp/pzi)
       trans(3,4)=sxa*(f*pzi**2+pyi**2*cosp)
-      trans(3,5)=0.d0
 c      trans(3,6)=-pr*pyi*sxa*(f+pxi*sinp/pzi)
       trans(3,6)=-pr*pyi*sxa*(cosp/pzi)
       trans(4,1)=0.d0
       trans(4,2)=0.d0
       trans(4,3)=0.d0
       trans(4,4)=1.d0
-      trans(4,5)=0.d0
       trans(4,6)=0.d0
       trans(5,1)=-trans(1,1)*trans(2,6)
       trans(5,2)= trans(2,2)*trans(1,6)-trans(1,2)*trans(2,6)
@@ -351,11 +349,7 @@ c      trans(3,6)=-pr*pyi*sxa*(f+pxi*sinp/pzi)
      $     +trans(3,6)
       trans(5,5)=1.d0
       trans(5,6)=sxa*(f*pzi*s+pr**2*pxi*sinp)/pzi
-      trans(6,1)=0.d0
-      trans(6,2)=0.d0
-      trans(6,3)=0.d0
-      trans(6,4)=0.d0
-      trans(6,5)=0.d0
+      trans(6,1:5)=0.d0
       trans(6,6)=1.d0
       return
       end

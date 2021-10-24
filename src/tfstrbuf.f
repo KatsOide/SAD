@@ -784,7 +784,7 @@ c
             enddo
  20         if(lw .lt. l-i1+1)then
               if(quote)then
-                write(*,*)'psbpb ',i1,lw,l
+c                write(*,*)'psbpb ',i1,lw,l
                 call putstringbufb(strb,string(i1:i1),lw-1,full)
                 call putstringbufb(strb,'\',1,full)
                 call flushstringbuf(strb,indent,.true.,lfno,irtc)

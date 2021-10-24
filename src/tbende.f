@@ -250,6 +250,8 @@ c         pzi-p+p-1+(rhob-rho-x1)/rhob
       xf=rhob*(sn*pxi-cn*pza+dp+dpzf+drhob/rhob)
       phsq=p**2-pyi**2
       da=asin((-p*dpxf-pxf*dpzi+pxi*dpzf)/phsq)
+c      write(*,'(a,1p10g12.4)')'tbbody0 ',da,p,pxi,pxf,dpxf,dpzi,dpzf,phsq,
+c     $     atan(pxi/pzi)-atan(pxf/pzf)
       omega=phi0n+da
       yf=yi+rhob*omega*pyi
       zf=cod(5)-da*p*rhob-phi0n*(drhob+dp*rhob)
@@ -339,18 +341,26 @@ c$$$     1     +drho*sinsq0
       return
       end subroutine
 
-      subroutine tbrote(trans,cod,srot,alg,phig,dtheta,dchi2,ent)
+      subroutine tbrote(trans,cod,srot,alg,phig,dx,dtheta,dchi2,ent)
       use tmacro, only:irad
       use ffs_flag,only:calpol
       use mathfun, only:xsincos
       implicit none
       real*8 ,intent(inout):: trans(6,6),cod(6),srot(3,9)
-      real*8 ,intent(in):: phig,dtheta,alg,dchi2
+      real*8 ,intent(in):: phig,dtheta,alg,dchi2,dx
       logical*4 ,intent(in):: ent
+      real*8 ,target :: trans2(6,6)
       real*8 rr(3,3),s2,xs2,c2,dc2,st,xst,ct,dct,dl,c0,s0
       integer*4 i
-      c0=cos(phig)
-      s0=sin(phig)
+      if(phig == 0.d0)then
+        c0=1.d0
+        s0=0.d0
+        dl=alg
+      else
+        c0=cos(phig)
+        s0=sin(phig)
+        dl=alg*s0/phig
+      endif
       call xsincos(dchi2,s2,xs2,c2,dc2)
       call xsincos(dtheta,st,xst,ct,dct)
       rr(1,1)=dct*c0**2+dc2*s0**2+c0*s0*s2*st
@@ -363,6 +373,14 @@ c$$$     1     +drho*sinsq0
         rr(2,3)= c0*ct*s2+s0*st
         rr(3,1)= s0*(c0*(dct-dc2)+s0*s2*st)
         rr(3,2)=-c0*s2-c2*s0*st
+        if(dx /= 0.d0 .and. phig /= 0.d0)then
+          call tdrife1(trans,cod,1.d0,0.d0,dx*s0)
+          cod(1)=cod(1)-dx*c0
+          call tbgrote(trans2,cod,rr,dl*s0,-dl*c0)
+          call tmultr5(trans,trans2,6)
+        else
+          call tbgrote(trans,cod,rr,dl*s0,-dl*c0)
+        endif
       else
         rr(2,1)= s0*s2-c0*c2*st
         rr(3,1)= c0*((dct-dc2)*s0-c0*s2*st)
@@ -370,13 +388,13 @@ c$$$     1     +drho*sinsq0
         rr(3,2)= c0*ct*s2+s0*st
         rr(1,3)= s0*(c0*(dct-dc2)+s0*s2*st)
         rr(2,3)=-c0*s2-c2*s0*st
+        call tbgrote(trans,cod,rr,dl*s0,-dl*c0)
+        if(dx /= 0.d0 .and. phig /= 0.d0)then
+          call tdrife1(trans2,cod,1.d0,0.d0,-dx*s0)
+          cod(1)=cod(1)+dx*c0
+          call tmultr5(trans,trans2,6)
+        endif
       endif
-      if(phig == 0.d0)then
-        dl=alg
-      else
-        dl=alg*s0/phig
-      endif
-      call tbgrote(trans,cod,rr,dl*s0,-dl*c0)
       if(calpol .and. irad .gt. 6)then
         do concurrent (i=1:9)
           srot(1,i)=dot_product(rr(1,:),srot(:,i))+srot(1,i)
@@ -397,12 +415,12 @@ c$$$     1     +drho*sinsq0
      $     dpzidpx,dpzidpy,dpzidp,pr,r11,r22,r33,pxfpzf,pyfpzf,zfpzf,prpzf
       xi=cod(1)+dx
       yi=cod(3)
-      zi =dz
       pxi=cod(2)
       pyi=cod(4)
       pr=1.d0+cod(6)
       dpzi=pxy2dpz(pxi/pr,pyi/pr)*pr
       pzi=pr+dpzi
+      zi =dz
       xf =dr(1,1)*xi +dr(1,2)*yi +dr(1,3)*zi +cod(1)
       yf =dr(2,1)*xi +dr(2,2)*yi +dr(2,3)*zi +yi
       zf =dr(3,1)*xi +dr(3,2)*yi +dr(3,3)*zi
@@ -580,6 +598,7 @@ c      trans(5,6)=zfpzf*(1.d0-pr/pzf*    r33*dpzidp)
       endif
       call tchge(trans,cod,beam,srot,
      $     dx,dy,theta,dtheta,dchi2,alg,phig,.true.)
+c      write(*,'(a,1p10g12.4)')'tbende-2 ',cod(1:5)
       if(enarad)then
         call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
       endif
@@ -620,6 +639,7 @@ c      trans(5,6)=zfpzf*(1.d0-pr/pzf*    r33*dpzidp)
       tanp2=tan(psi2*phi0+apsi2)
       f=1.d0/rho0
       call tbedge(trans,cod,beam,al,phib,psi1*phi0+apsi1,.true.)
+c      write(*,'(a,1p10g12.4)')'tbende-2.5 ',cod(1:5)
       cod11=cod(1)
       akc=ak*rbc
       alc=al*rbc
@@ -652,11 +672,11 @@ c      trans(5,6)=zfpzf*(1.d0-pr/pzf*    r33*dpzidp)
             call tbendebody0(trans,cod,beam,srot,aln,
      $           phin,sn,xsn,cn,dcn,aln,bsi1,bsi2,
      $           enarad .and. n .ne. n2)
-c            write(*,'(a,i5,1p10g12.4)')'tbende-3a ',n,cod(1:5)
             alr=aln
             phi1=phin
           endif
           bsi1=0.d0
+c          write(*,'(a,i5,1p10g12.4)')'tbende-3a ',n,cod(1:5)
         enddo
       else
         tbinit=.true.
@@ -678,7 +698,6 @@ c            write(*,'(a,i5,1p10g12.4)')'tbende-3a ',n,cod(1:5)
           phi1=phi0*alx/al0
           call tbendecorr(trans,cod,beam,
      $         (akx+akx0)*.5d0,(alx+alx0)*.5d0)
-c          write(*,'(a,i5,1p10g12.4)')'tbende-1 ',n,cod(1:5)
           akx0=akx
           alx0=alx
           if(n .eq. n2)then
@@ -687,7 +706,6 @@ c          write(*,'(a,i5,1p10g12.4)')'tbende-1 ',n,cod(1:5)
           call tbendebody(trans,cod,beam,srot,alx,phi1,
      $         akx,alr,bsi1,bsi2,
      $         enarad .and. n .ne. n2)
-c          write(*,'(a,i5,1p10g12.4)')'tbende-3 ',n,cod(1:5)
           if(n .le. 0 .or. n .ge. ndiv)then
             tbinit=.true.
           endif
@@ -698,6 +716,7 @@ c          write(*,'(a,i5,1p10g12.4)')'tbende-3 ',n,cod(1:5)
       if(.not. next)then
         bradprev=0.d0
       endif
+c      write(*,'(a,1p10g12.4)')'tbende-6 ',cod
       call tbedge(trans,cod,beam,al,phib,psi2*phi0+apsi2,.false.)
       if(f2r .ne. 0.d0)then
         dxfr2=-fb2**2/rhob/24.d0
@@ -708,8 +727,10 @@ c          write(*,'(a,i5,1p10g12.4)')'tbende-3 ',n,cod(1:5)
       if(enarad)then
         call tradke(trans,cod,beam,srot,alr,phi1,0.d0)
       endif
+c      write(*,'(a,1p10g12.4)')'tbende-8 ',cod
       call tchge(trans,cod,beam,srot,
      $     dx,dy,theta,dtheta,dchi2,alg-al0,phig-phi0,.false.)
+c      write(*,'(a,1p10g12.4)')'tbende-9 ',cod
       return
       end
 

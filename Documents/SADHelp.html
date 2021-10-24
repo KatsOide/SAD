@@ -13,7 +13,7 @@ eqs img{
 <body>
 <center><h2>Welcome to SAD/FFS & SADScript
 </h2></center>
-<center> SAD/FFS SADScript Version: 1.1.10.5.7k64,      Updated: 09/17/2021</center>
+<center> SAD/FFS SADScript Version: 1.1.10.7k64,      Updated: 10/21/2021</center>
 
 <pre> Please use browser's search to find an item.
 
@@ -2896,13 +2896,13 @@ calculate the synchrotron radiation field.</pre>
 <pre>See also:
  <a href=#LPOL>POL</a></pre>
 <li><h3><a name=LRADTAPER>RADTAPER</a></h3>
-<pre> Scales all magnets except for solenoids according to the local momentum (DDP) of the closed orbit.
+<pre>Scales all magnets except for solenoids according to the local momentum (DDP) of the closed orbit.
 It uses the average of DDPs at the entrance and the exit. For tracking, RADCOD and ( CAL/GO with
 CALC6D or EMIT(Emittance[]) ) is necessary. CAL/GO with CALC4D will clear the necessary information
 for tracking with RADTAPER.
- RADTAPER sets the momentum deviation of the closed orbit to DP0, which is an arbitrary choice of
-an under-deterministic problem of tapering. Thus the difference in the path length around the ring
-is adjusted by automatically updating FSHIFT.</pre>
+ RADTAPER sets the momentum deviation by the local momentum of the closed orbit + an amount to satisfy
+the path length condition given by FSHIFT. The momentum deviation at the entrance, DP0, is always
+maintained.</pre>
 <pre>See also:
  <a href=#LRADCOD>RADCOD</a> <a href=#LCALC6D>CALC6D</a> <a href=#LCALC4D>CALC4D</a> <a href=#LEMITTANCE(EMIT)>EMITTANCE(EMIT)</a> <a href=#LCALCULATE(CAL)>CALCULATE(CAL)</a> <a href=#LGO>GO</a>
  <a href=#LDP0>DP0</a> <a href=#LFSHIFT>FSHIFT</a></pre>
@@ -4151,12 +4151,13 @@ The argument nend is the last turn number. The default is nbegin.
 where location is the position-number of the starting point. If location is same as or in the downstream
 of destination, the tracking is done by folding across the beginning of the beam line. The coordinates
 are in a list of {7 or 9, np} form, where np is the number of particles. The first 6 or 8 elements
-of coordinates specifies either
+of coordinates specifie either
 
    {x, px/p0, y, py/p0, z, dp/p0} (NOPOL)
-   {x, px/p0, y, py/p0, z, dp/p0 sy, sarg} (POL)
-bin this order. The {-1, i} is the flag which is True(==1) when the particle is alive, and False(==0)
-when lost.
+   {x, px/p0, y, py/p0, z, dp/p0, sarg, sy} (POL)
+
+in this order, depending on POL. The row [[-1, i]] is the alive flag which is True (==1) when the
+particle is alive, and False (==0) when lost.
 
    If the flag POL is on, TrackParticles performs spin tracking. Then the coordinates has two more
 components sy and sarg, which correspond to the y-component of the classical spin vector and the

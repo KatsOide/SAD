@@ -3077,6 +3077,7 @@ c     $         btx,bty,btz,cphi0,sphi0
         sz=(sz-sx*sphi0)/cphi0
         return
         end subroutine
+
         real*8 function outer(a,b)
         implicit none
         real*8 ,intent(in):: a(3),b(3)
@@ -3175,7 +3176,7 @@ c        write(*,*)'spnorm ',sdamp,gintd
      $       c1a,c3a,c5a,
      $       rm(3,3),epol(3,3),b(3),rmd(3,3,3)
         integer*4 i
-c        write(*,'(1p3g15.7)')(rm(k,:),k=1,3)
+c        write(*,'(a,1p10g12.4)')'sremit-sps ',sps
         smu=params(ipnup)*m_2pi
         drot=matmul(srot(:,4:9),r)
         c1=dot_product(drot(:,1),sps(:,1))
@@ -3258,7 +3259,6 @@ c     $       demit(15),demit(20),demit(21),dez1,dez2,c5,c6,c5a,c60
           call tsolvg(rm,b,epol(:,i),3,3,3)
         enddo
         rm1(1,1)=rm1(1,1)-sdamp
-c        write(*,'(1p3g13.5)')epol
         equpol=epol(1,:)
         return
         end subroutine

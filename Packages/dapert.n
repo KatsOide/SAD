@@ -34,6 +34,7 @@ DALib=Class[{},{},{},
       n1=Min[201,Length[range[[ax[[1]]]]]];
       NP=Min[4000,n1*Min[dapw,51]*2];
       Write[lfno, " Turns =",nt," Maximum number of particles =",NP];
+!      Print[{range,lfno,ref,{phix,phiy,phiz},damp,dampenough,ax}];
       score=DynamicAperture[range,lfno,ref,{phix,phiy,phiz},damp,dampenough,ax];
       NP=NP0;
       TURNS=TURNS0;
