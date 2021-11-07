@@ -573,7 +573,7 @@ Twiss$Functions={"AX","BX","NX","AY","BY","NY","EX","EPX","EY","EPY",
   "GMX","GMY","GMZ"};
 RTwiss$Functions=("R"//#)&/@Twiss$Functions;
 DTwiss$Functions=("D"//#)&/@Twiss$Functions;
-XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions];
+XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"}];
 
 Twiss$Positive["BX"|"BY"|"BZ"|"GMX"|"GMY"|"GMZ"|
   "SIGX"|"SIGY"|"SIGZ"|"SIGXX"|"SIGYY"|"SIGZZ"|
@@ -791,6 +791,9 @@ If[$DisplayFunction===Unevaluated[TopDrawer],
   Twiss$Label["PZPY"]="`fz`n`dpyP`n";
   Twiss$Label["RPZPY"]="`fz`n`dpyPR`n";
   Twiss$Label["DPZPY"]="`fdz`n`dpyP`n";
+  Twiss$Label["BMAGX"]="B`dMAGx`n";
+  Twiss$Label["BMAGY"]="B`dMAGy`n";
+  Twiss$Label["BMAGZ"]="B`dMAGz`n";
   Twiss$Label[x_String?(#[1,4]==="SIZE"&)]:=Module[
     {{l,u}=MakeSize$Label$Unit[x[5,-1]]},
     Twiss$Unit[x]=u;

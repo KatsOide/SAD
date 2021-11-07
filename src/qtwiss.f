@@ -159,7 +159,7 @@ c        endif
             if(bx0 .gt. 0.d0 .and. by0 .gt. 0.d0 .and.
      $           itgetfpe() .eq. 0)then
             else
-              write(*,'(a,4i8,1p2g15.7)')'qtwiss-over 3 ',l,ip1,ip0,l1,bx0,by0
+c              write(*,'(a,4i8,1p2g15.7)')'qtwiss-over 3 ',l,ip1,ip0,l1,bx0,by0
               do j=ip1-1,ip0+la,-1
                 if(twiss(j,mfitbx) .gt. 0.d0
      $               .and. twiss(j,mfitby) .gt. 0.d0)then

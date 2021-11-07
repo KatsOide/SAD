@@ -14,3 +14,4 @@ With[{root=Environment["SAD_ROOTPATH"]},
 
     ];
 
+TimeZoneOffset=Block[{f=OpenRead["!date +\"%z\""]},{Read[f]*0.6,Close[f]}[[1]]]; (* Use local time *)

@@ -4,16 +4,17 @@
       use tffitcode
       use ffs_fit, only:nlist
       use ffs_pointer, only:twiss
+      use gfun
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer :: klx
       type (sad_rlist), pointer :: ktl,kll
-      integer*4 ,parameter ::nkey=mfitgmz
+      integer*4 ,parameter ::nkey=mfito
       integer*8 kax,kaxi,itoff
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       integer*4 narg,i,m,nc,isp0,nd,kt,itfmessage,lenw,icol
-      real*8 ftwiss(ntwissfun),tfgettwiss,tphysdisp
+      real*8 ftwiss(ntwissfun),tfgettwiss
       logical*4 ,intent(in):: ref
       logical*4 over,dref
       character*(MAXPNAME+16) keyword,tfgetstrs
@@ -166,7 +167,7 @@
      $             (/(ktfref+itoff+i-1,i=1,nlat)/)
             endif
           elseif(kt .ge. mfitpex .and. kt .le. mfitpepy .or.
-     $           kt .ge. mfitpzx .and. kt .le. mfitgmz)then
+     $           kt .ge. mfitpzx .and. kt .le. mfito)then
             do i=1,nlat
               call tfgettwiss1(i,icol,kt,kll%dbody(i),dref,ref)
             enddo
@@ -219,7 +220,7 @@ c                    kll%rbody(i)=twiss(itastk(2,isp0+i),icol,kt)
                 enddo
               endif
             elseif(kt .ge. mfitpex .and. kt. le. mfitpepy
-     $             .or. kt .ge. mfitpzx .and. kt. le. mfitgmz)then
+     $             .or. kt .ge. mfitpzx .and. kt. le. mfito)then
               do i=1,m
                 if(vstk2(isp0+i) .eq. 0.d0)then
                   call tfgettwiss1(itastk(2,isp0+i),
@@ -280,12 +281,13 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       use ffs
       use ffs_pointer
       use tffitcode
+      use gfun
       implicit none
       type (sad_descriptor) , intent(out):: kx
       integer*4 ,intent(in):: i,icol,kt
       integer*8 itoff
       logical*4 ,intent(in):: ref,dref
-      real*8 pe(4),pe0(4),tgetgm
+      real*8 pe(4),pe0(4)
       select case (kt)
       case (mfitbx,mfitby,mfitbz)
         if(dref)then
@@ -321,6 +323,8 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
         else
           kx=dfromr(tgetgm(kt,i,icol))
         endif
+      case (mfitbmagx,mfitbmagy,mfitbmagz)
+        kx=tgetbmag(i,kt)
       case default
         if(dref)then
           kx=dfromr(twiss(i,0,kt)-twiss(i,-1,kt))
@@ -337,15 +341,15 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       real*8 function tfgettwiss(kt,ftwiss)
       use tfstk
       use tffitcode
+      use gfun
       implicit none
       integer*4 ,intent(in):: kt
       real*8 ,intent(in):: ftwiss(ntwissfun)
-      real*8 tphysdisp
       tfgettwiss=0.d0
       if(kt .le. ntwissfun)then
         tfgettwiss=ftwiss(kt)
       elseif(kt .ge. mfitpex .and. kt .le. mfitpepy .or.
-     $       kt .ge. mfitpzx .and. kt .le. mfitgmz)then
+     $       kt .ge. mfitpzx .and. kt .le. mfito)then
         tfgettwiss=tphysdisp(kt,ftwiss)
       endif
       if(ktfenanq(tfgettwiss))then

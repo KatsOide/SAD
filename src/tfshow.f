@@ -5,6 +5,7 @@
       use ffs_pointer
       use ffs_fit
       use tffitcode
+      use gfun
       implicit none
       integer*8 kx,kax,kax1,kax2,kax3,kax4,kax3i,kaxi,kaxi4
       integer*4 namel,mfpnta,mfpnta1,
@@ -13,7 +14,7 @@
      $     mm,lb,ip,j,nf,nl
       parameter (namel=11)
       integer*4 icalc1(3,ndim1)
-      real*8 df(nqcol),fm,tgfun
+      real*8 df(nqcol),fm
       integer*4 jshow(64),itfgetrecl,irtc
       character*5 fun,form,forms
       character*31 name

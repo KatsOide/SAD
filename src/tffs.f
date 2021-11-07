@@ -120,12 +120,13 @@ c        el%elmv%k=0
      $     mfitpzx=mfitpepy+1,
      $     mfitpzpx=mfitpzx+1,
      $     mfitpzy=mfitpzpx+1,mfitpzpy=mfitpzy+1,
-     $     mfitgmx=mfitpzpy+1,mfitgmy=mfitgmx+1,
-     $     mfitgmz=mfitgmy+1,mfittrx=mfitgmz+1,
-     $     mfittry=mfittrx+1,mfitleng=mfittry+1,
+     $     mfitgmx=mfitpzpy+1,mfitgmy=mfitgmx+1,mfitgmz=mfitgmy+1,
+     $     mfitbmagx=mfitgmz+1,mfitbmagy=mfitbmagx+1,mfitbmagz=mfitbmagy+1,
+     $     mfittrx=mfitbmagz+1,mfittry=mfittrx+1,mfittrz=mfittry+1,
+     $     mfitleng=mfittrz+1,
      $     mfitgx=mfitleng+1,mfitgy=mfitgx+1,mfitgz=mfitgy+1,
      $     mfitchi1=mfitgz+1,mfitchi2=mfitchi1+1,mfitchi3=mfitchi2+1,
-     $     ntwissfun=mfitzpy,mfito=mfittry,mfit=mfitchi3,
+     $     ntwissfun=mfitzpy,mfito=mfitbmagz,mfit=mfitchi3,
      $     mfit1=mfit+12
       logical*4 :: inittws=.true.
 
@@ -1319,7 +1320,8 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
      1     'PEX     ','PEPX    ','PEY     ','PEPY    ',
      1     'PZX     ','PZPX    ','PZY     ','PZPY    ',
      $     'GMX     ','GMY     ','GMZ     ',
-     $     'TRX     ','TRY     ',
+     $     'BMAGX   ','BMAGY   ','BMAGZ   ',
+     $     'TRX     ','TRY     ','TRZ     ',
      $     'LENG    ',
      $     'GX      ','GY      ','GZ      ',
      $     'CHI1    ','CHI2    ','CHI3    ',

@@ -4,6 +4,7 @@
       use ffs_pointer
       use ffs_fit
       use tffitcode
+      use gfun
       implicit none
       real*8 ,parameter :: abmax=1.d-8
       real*8 ,parameter::factor=0.97d0,dmax=1.d10
@@ -11,7 +12,7 @@
       integer*4 ,intent(out):: nqcola,nqcola1,
      $     iqcol(*),lfp(2,maxcond),kdp(*)
       real*8 ,intent(out):: df1(*)
-      real*8 vpeak(npeak),vf,tdfun1,tgfun,vb,ve,v,vf1
+      real*8 vpeak(npeak),vf,vb,ve,v,vf1,tdfun1
       logical*4 ,intent(out):: error
       integer*4 ipeak(npeak),j,i,ka,kf,kp,kp1,mp,idp,kpb,kpe,
      $     k,ip,irtc,m
@@ -486,12 +487,13 @@ c        write(*,*)'tdfun1 ',kf,maxfit,vf,v,tdfun1
       subroutine tfpeak(idp,kf,ibegin,iend,ipeak,vpeak,npeak)
       use ffs_pointer
       use tffitcode
+      use gfun
       implicit none
       integer*4 ,intent(in)::ibegin,iend,kf,npeak,idp
       integer*4 ,intent(out)::ipeak(npeak)
       real*8 ,intent(out)::vpeak(npeak)
       integer*4 i,j,k
-      real*8 va,va0,va1,tgfun
+      real*8 va,va0,va1
       vpeak=0.d0
       ipeak=0
       va0=0.d0

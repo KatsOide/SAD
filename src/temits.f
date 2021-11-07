@@ -8,6 +8,7 @@
       use tmacro
       use tffitcode, only:ntwissfun
       use temw, only:nparams
+      use gfun
       implicit none
       integer*8 kx
       integer*4 irtc,mphi2,lfno,mphiz,ndims,
@@ -53,6 +54,7 @@
       use temw
       use codm
       use tmacro
+      use gfun
       implicit none
       type (sad_dlist), pointer :: kl
       type (sad_rlist), pointer :: kvl
@@ -1041,6 +1043,7 @@ c$$$     $     bdx(1,m,j0),nd)
      $     w,dj,sige,tws,ndims,beam,fj)
       use tffitcode
       use sad_main, only:iaidx
+      use gfun
       implicit none
       integer*4 mphi2,ndp,ndims
       real*8 beam(42),sige,f,dj,w,e,aj
