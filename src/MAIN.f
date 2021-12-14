@@ -1,8 +1,8 @@
       module version
         character*19, parameter ::
 c                     /'1234567890123456789'/
-     $     versionid  ='1.1.10.3k64        ',
-     $     versiondate='5/19/2021 18:00:00 '
+     $     versionid  ='1.1.10.7.3k64      ',
+     $     versiondate='11/14/2021 18:00:00'
 
         character*25 builtdate
         character*30 startdat
@@ -13,6 +13,7 @@ c                     /'1234567890123456789'/
       use maccbk
       use tfmem
       use tftok
+      use tfshare
       implicit none
 c
       call fdate1(startdat)

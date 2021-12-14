@@ -23,6 +23,9 @@ Graphics$Options=AspectRatio|FrameLabel|PlotRange|GridLines|Alignment|DataRange|
     InfoBind|FrameUnitLabel|FontScale|TickFontScale|FrameFontScale|LegendFontScale|
       TitleFontScale|FrameColor|TickColor|LegendBG|LegendRaise|BelowFrame;
 
+Plot$DefaultColor={"dodger blue","tomato3","forest green","dark goldenrod",
+      "royal blue","orange3","blue violet"};
+
 With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
   AspectRatio->Automatic,PlotJoined->False,StepRatio->1,
   PointSize->1,PointSymbol->"1O",Plot->True,Frame->True,
@@ -126,10 +129,11 @@ With[{
       If[ini && df===CanvasDrawer,
         The$CanvasObject@AllGraphics={gl,opt}];
       {pr0,prg}={PlotRange,PlotRegion}/.opt;
-      prl=Prepend[(PlotRange/.Second[#]/.def0)&/@gl,pr0]/.Default:>Null[];
+      pr000=pr0;
+      prl00=prl=PRM1$$/@(Prepend[(PlotRange/.Second[#]/.def0)&/@gl,pr0]/.Default:>Null[]);
       pr=If[prl==={},
         {{Automatic,Automatic},{Automatic,Automatic}},
-        PR$$[First[prl]]];
+        First[prl]];
       drl=Thread[Partition[Flatten[(DataRange/.Second[#]/.def0)&/@gl],4]];
       dr={{Min[drl[[1]]],Max[drl[[2]]]},{Min[drl[[3]]],Max[drl[[4]]]}};
       opt=Override[{PlotRange->pr,DataRange->dr,PlotRegion->prg},
@@ -147,12 +151,12 @@ With[{
     Append[gl,opt]
     ]];
 
-PR$$[{x_List,y_List}]:={x,y};
-PR$$[{x_,y_List}]:={{x,x},y};
-PR$$[{x_List,y_}]:={x,{y,y}};
-PR$$[{x_,y_}]:={{Automatic,Automatic},{x,y}};
-PR$$[Default]=Default;
-PR$$[x_]:={{x,x},{x,x}};
+PRM1$$[Automatic]={{Automatic,Automatic},{Automatic,Automatic}};
+PRM1$$[{Automatic,Automatic}]={{Automatic,Automatic},{Automatic,Automatic}};
+PRM1$$[y:{_Real,_Real}]:={{Automatic,Automatic},y};
+PRM1$$[{Automatic,y:{_,_}}]:={{Automatic,Automatic},y};
+PRM1$$[{x:{_,_},Automatic}]:={x,{Automatic,Automatic}};
+PRM1$$[x_]:=x;
 
 With[{def={MaxBend->0.01,PlotPoints->32,PlotDivision->1024,PlotRange->Automatic,
   PlotJoined->True,StepRatio->1,Plot->False,GridLines->{Automatic,Automatic},
@@ -170,9 +174,7 @@ With[{def={MaxBend->0.01,PlotPoints->32,PlotDivision->1024,PlotRange->Automatic,
 
 With[{def={Dashing->{{1},{0.8,0.2},{0.4, 0.15},{0.2,0.1},{0.1,0.07},
   {0.8,0.07, 0.07, 0.07},{0.4,0.07,0.07,0.07}},
-  PlotColor:>
-    {"dodger blue","tomato3","forest green","dark goldenrod",
-      "royal blue","orange3","blue violet"},
+  PlotColor:>Plot$DefaultColor,
   Thickness->2,
   Legend->{False},
   PlotRange->Automatic,
@@ -245,15 +247,20 @@ PlotInterpolate[fin_,{y_,xmin_,xmax_},min0_,maxdiv_,maxb_]:=Module[
   ny=Length[yl];
   ys=Sort[yl];
   {ymin,ymax}=ys[[{1+(ny-1)*0.05,ny*0.95}]];
-  ya=ys[[ny/2]];
-  {Thread[{xl,yl}],{ya+Max[(ymin-ya)*1.3,(ys[[1]]-ya)*1.5],
-    ya+Min[(ymax-ya)*1.3,(ys[[-1]]-ya)*1.05]}}];
+  ya=(ymin+ymax)/2;
+  If[ya-ys[[1]]<(ya-ymin)*1.2,
+    ymin=ys[[1]];
+    ya=(ymin+ymax)/2];
+  If[ys[[-1]]-ya<(ymax-ya)*1.2,
+    ymax=ys[[-1]];
+    ya=(ymin+ymax)/2];
+  {Thread[{xl,yl}],{ya+(ymin-ya)*1.2,ya+(ymax-ya)*1.2}}];
 
 SetAttributes[Plot,HoldAll];
 SetAttributes[PlotInterpolate,HoldFirst];
 
 SetAttributes[
-  {ListPlot,SetOption,PR$$,
+  {ListPlot,SetOption,PRM1$$,
     ListPlotMessage,Show,
     Show1$,Graphics$Options,
     WindowBackground},Constant];

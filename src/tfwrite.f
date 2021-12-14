@@ -1135,11 +1135,12 @@ c          enddo
       use tfrbuf
       implicit none
       type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) :: kx1
       type (sad_string), pointer :: str
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
-      integer*4 itfmessage,nc,itfmessagestr
-      logical*4 disp
+      integer*4 itfmessage,nc,itfmessagestr,lf
+      logical*4 disp,temp
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
@@ -1152,18 +1153,16 @@ c          enddo
           return
         endif
         disp=.false.
-        if(str%str(1:1) .eq. '!')then
+        temp=str%str(1:1) .eq. '!'
+        if(temp)then
           call tfsystemcommand(str%str,nc,kx,irtc)
           if(irtc .ne. 0)then
             return
           endif
           disp=.true.
-c          if(str%str(nc:nc) .eq. '&')then
-c            lfn=itfopenread(kx,disp,irtc)
-c            kx%k=kfromr(dble(lfn))
-c            return
-c          endif
-          call loc_string(ktfaddr(kx),str)
+          kx1=kx
+          call loc_string(ktfaddr(kx1),str)
+          nc=str%nch
         else
           if(nc .gt. 2) then
              if (str%str(nc-1:nc) .eq. '.z' .or.
@@ -1199,8 +1198,18 @@ c          endif
         endif
         call trbopenmap(str%str(1:nc),kx,irtc)
         if(Irtc .ne. 0)then
+c          write(*,*)'openread ',nc,str%str(:str%nch)
           irtc=itfmessagestr(999,'General::fileopen',str%str(1:nc))
           kx=dxfailed
+          return
+        endif
+        lf=ifromd(kx)
+        call tflocald(ntable(lf))
+        ntable(lf)%k=0
+        if(temp)then
+          ntable(lf)=dtfcopy(kx1)
+c          write(*,*)'openread-fd ',lf,ifd(lf)
+c          call tfdebugprint(kx1,'tfopenread',1)
         endif
       endif
       return
@@ -1250,23 +1259,14 @@ c     $     nc+15,itx,iax,vx,irtc)
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_descriptor) tftemporaryname
+      type (sad_string) ,pointer:: str
       integer*4 ,intent(in):: nc
       integer*4 ,intent(out):: irtc
       character*(*) ,intent(in):: cmd
-      integer*4 , parameter :: llbuf=1024
-      integer*4 system,itfsyserr,lw,ir,i,m
-      integer*4 l
+      integer*4 system,itfsyserr,ir,i,m
       character post
-      character*(llbuf) buff,tfgetstr
-      l=nextfn(moderead)
-      if(ntable(l)%k .eq. 0)then
-        kx=tftemporaryname(isp,irtc)
-        ntable(l)=dtfcopy(kx)
-      else
-        kx=ntable(l)
-        irtc=0
-      endif
-      buff=tfgetstr(kx,lw)
+      kx=tftemporaryname(isp,irtc)
+      call descr_string(kx,str)
       post=' '
       m=nc
       do i=nc,1,-1
@@ -1279,7 +1279,7 @@ c     $     nc+15,itx,iax,vx,irtc)
           exit
         endif
       enddo
-      ir=system(cmd(2:m)//' > '//buff(:lw)//' '//post)
+      ir=system(cmd(2:m)//' > '//str%str(:str%nch)//' '//post)
       if(ir .lt. 0)then
         irtc=itfsyserr(999)
         return

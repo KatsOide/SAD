@@ -98,31 +98,6 @@ c        el%elmv%k=0
 
       end module
 
-      module tmacro
-        use mackw
-        use macphys
-        use macfile
-        real*8, parameter :: c=cveloc,hp=plankr,e=elemch,epsrad=1.d-6,
-     $       emminv=1.d-15,eps00m=0.005d0,ampmaxm=0.05d0
-        integer*4 ,parameter :: ndivmaxm=1000
-        real*8 amass,charge,h0,p0,omega0,trf0,crad,erad,
-     $       codin(6),dleng,anrad,urad,u0,vc0,wrfeff,dp0,brho,
-     $       ccintr,cintrb,pbunch,coumin,re0,pgev,emidiv,
-     $       emidib,emidiq,emidis,ctouck,dvemit,h1emit,
-     $       anbunch,tdummy(6),zlost,alost,
-     $       taurdx,taurdy,taurdz,fridiv,beamin(21),
-     $       vcalpha,vceff,vcacc,dvcacc,ddvcacc,alphap,
-     $       pspac_dx,pspac_dy,pspac_dz,dvfs,rcratio,rclassic,brhoz,
-     $       bradprev,amom0,circ,hvc0,cuc
-        integer*8 ilattp,lspect,ipoltr,ipolb,ipoll,ipolid,ipolo
-        integer*4 nflag0,nlat,np0,nturn,isynch,nspect,
-     $       lplot,nplot,nuse,nclas,irad,novfl,npelm,ipelm,
-     $       nparallel,pspac_nx,pspac_ny,pspac_nz,
-     $       pspac_nturn,pspac_nturncalc,l_track
-        logical*4 oldflagsdummy,tparaed
-
-      end module
-
       module tffitcode
       implicit none
       integer*4, parameter ::
@@ -145,12 +120,13 @@ c        el%elmv%k=0
      $     mfitpzx=mfitpepy+1,
      $     mfitpzpx=mfitpzx+1,
      $     mfitpzy=mfitpzpx+1,mfitpzpy=mfitpzy+1,
-     $     mfitgmx=mfitpzpy+1,mfitgmy=mfitgmx+1,
-     $     mfitgmz=mfitgmy+1,mfittrx=mfitgmz+1,
-     $     mfittry=mfittrx+1,mfitleng=mfittry+1,
+     $     mfitgmx=mfitpzpy+1,mfitgmy=mfitgmx+1,mfitgmz=mfitgmy+1,
+     $     mfitbmagx=mfitgmz+1,mfitbmagy=mfitbmagx+1,mfitbmagz=mfitbmagy+1,
+     $     mfittrx=mfitbmagz+1,mfittry=mfittrx+1,mfittrz=mfittry+1,
+     $     mfitleng=mfittrz+1,
      $     mfitgx=mfitleng+1,mfitgy=mfitgx+1,mfitgz=mfitgy+1,
      $     mfitchi1=mfitgz+1,mfitchi2=mfitchi1+1,mfitchi3=mfitchi2+1,
-     $     ntwissfun=mfitzpy,mfito=mfittry,mfit=mfitchi3,
+     $     ntwissfun=mfitzpy,mfito=mfitbmagz,mfit=mfitchi3,
      $     mfit1=mfit+12
       logical*4 :: inittws=.true.
 
@@ -1344,7 +1320,8 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
      1     'PEX     ','PEPX    ','PEY     ','PEPY    ',
      1     'PZX     ','PZPX    ','PZY     ','PZPY    ',
      $     'GMX     ','GMY     ','GMZ     ',
-     $     'TRX     ','TRY     ',
+     $     'BMAGX   ','BMAGY   ','BMAGZ   ',
+     $     'TRX     ','TRY     ','TRZ     ',
      $     'LENG    ',
      $     'GX      ','GY      ','GZ      ',
      $     'CHI1    ','CHI2    ','CHI3    ',
@@ -3102,6 +3079,7 @@ c     $         btx,bty,btz,cphi0,sphi0
         sz=(sz-sx*sphi0)/cphi0
         return
         end subroutine
+
         real*8 function outer(a,b)
         implicit none
         real*8 ,intent(in):: a(3),b(3)
@@ -3200,7 +3178,7 @@ c        write(*,*)'spnorm ',sdamp,gintd
      $       c1a,c3a,c5a,
      $       rm(3,3),epol(3,3),b(3),rmd(3,3,3)
         integer*4 i
-c        write(*,'(1p3g15.7)')(rm(k,:),k=1,3)
+c        write(*,'(a,1p10g12.4)')'sremit-sps ',sps
         smu=params(ipnup)*m_2pi
         drot=matmul(srot(:,4:9),r)
         c1=dot_product(drot(:,1),sps(:,1))
@@ -3283,7 +3261,6 @@ c     $       demit(15),demit(20),demit(21),dez1,dez2,c5,c6,c5a,c60
           call tsolvg(rm,b,epol(:,i),3,3,3)
         enddo
         rm1(1,1)=rm1(1,1)-sdamp
-c        write(*,'(1p3g13.5)')epol
         equpol=epol(1,:)
         return
         end subroutine

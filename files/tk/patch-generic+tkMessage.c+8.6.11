@@ -1,0 +1,11 @@
+--- generic/tkMessage.c.orig	2021-07-17 16:19:30.000000000 +0900
++++ generic/tkMessage.c	2021-07-17 16:10:23.000000000 +0900
+@@ -622,7 +622,7 @@
+     for ( ; ; inc /= 2) {
+ 	msgPtr->textLayout = Tk_ComputeTextLayout(msgPtr->tkfont,
+ 		msgPtr->string, msgPtr->numChars, width, msgPtr->justify,
+-		0, &thisWidth, &thisHeight);
++                                                  0, &thisWidth, &thisHeight);
+ 	maxWidth = thisWidth + 2 * (inset + msgPtr->padX);
+ 	height = thisHeight + 2 * (inset + msgPtr->padY);
+ 

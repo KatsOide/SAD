@@ -34,10 +34,6 @@
       normali=.true.
       call tffsbound(fbound)
       call tturneg(trans,cod,beam,srot,fbound,iae,plot,rt,optics)
-c      if(ifsize .ne. 0)then
-c        write(*,*)'tturneg-end ',beamsize(1,nlat),beamsize(6,nlat),
-c     $       beamsize(21,nlat)
-c      endif
       if(update)then
         if(wrfeff .ne. 0.d0)then
           alambdarf=pi2/wrfeff
@@ -354,7 +350,7 @@ c     below is incorrect for fra <> 0
       real*8 bmir(6,6),bmi(21),bmh(21),trans1(6,6)
       real*8 psi1,psi2,apsi1,apsi2,alid,alid1,
      $     dir,al,alib,dtheta,theta0,ftable(4),
-     $     fb1,fb2,ak0,ak1,rtaper,als
+     $     fb1,fb2,ak0,ak1,rtaper,als,dchi2
       integer*4 ,intent(in):: idp,ibegin,iend
       integer*4 l,ld,lele,mfr,ke,irtc,i,l1
       logical*4 ,intent(in):: plot,rt,optics
@@ -511,6 +507,7 @@ c        go to 5000
      $           +cmp%value(ky_FB2_BEND)
           endif
           dtheta=cmp%value(ky_DROT_BEND)
+          dchi2 =cmp%value(ky_CHI2_BEND)
           theta0=cmp%value(ky_ROT_BEND)
           ak0=cmp%value(ky_K0_BEND)
      $         +cmp%value(ky_ANGL_BEND)
@@ -522,9 +519,12 @@ c          endif
           if(radcod .and. radtaper)then
             if(rt)then
               l1=nextl(l)
-              rtaper=((4.d0+3.d0*cod(6)+gettwiss(mfitddp,l1))*.25d0-dp0)
+c              rtaper=((4.d0+3.d0*cod(6)+gettwiss(mfitddp,l1))*.25d0-dp0)
+              rtaper=(4.d0+3.d0*cod(6)+gettwiss(mfitddp,l1))*.25d0
+     $             +dptaper
             else
-              rtaper=(1.d0-dp0+cod(6))
+c              rtaper=(1.d0-dp0+cod(6))
+              rtaper=1.d0+cod(6)+dptaper
             endif
             rtaper=min(1.d0+tapmax,max(1.d0-tapmax,rtaper))
             ak0=ak0*rtaper
@@ -535,7 +535,8 @@ c          endif
      $         cmp%value(ky_ANGL_BEND),
      $         psi1,psi2,apsi1,apsi2,ak1,
      1         cmp%value(ky_DX_BEND),
-     $         cmp%value(ky_DY_BEND),theta0,dtheta,
+     $         cmp%value(ky_DY_BEND),theta0,dtheta,dchi2,
+     $         cmp%value(p_LGEO_BEND),cmp%value(p_ANGLGEO_BEND),
      $         fb1,fb2,
      $         nint(cmp%value(ky_FRMD_BEND)),
      $         cmp%value(ky_FRIN_BEND) .eq. 0.d0,
@@ -554,9 +555,11 @@ c          endif
           if(radcod .and. radtaper)then
             if(rt)then
               l1=nextl(l)
-              rtaper=((2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0)
+c              rtaper=((2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0)
+              rtaper=(2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0+dptaper
             else
-              rtaper=1.d0-dp0+cod(6)
+c              rtaper=1.d0-dp0+cod(6)
+              rtaper=1.d0+cod(6)+dptaper
             endif
             ak1=ak1*min(1.d0+tapmax,max(1.d0-tapmax,rtaper))
           endif
@@ -576,9 +579,11 @@ c          endif
           if(radcod .and. radtaper)then
             if(rt)then
               l1=nextl(l)
-              rtaper=((2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0)
+c              rtaper=((2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0)
+              rtaper=(2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0+dptaper
             else
-              rtaper=(1.d0-dp0+cod(6))
+c              rtaper=(1.d0-dp0+cod(6))
+              rtaper=(1.d0+cod(6))+dptaper
             endif
             ak1=ak1*min(1.d0+tapmax,max(1.d0-tapmax,rtaper))
           endif
@@ -600,9 +605,11 @@ c          endif
           if(radcod .and. radtaper)then
             if(rt)then
               l1=nextl(l)
-              rtaper=(2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0
+c              rtaper=(2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0-dp0
+              rtaper=(2.d0+cod(6)+gettwiss(mfitddp,l1))*.5d0+dptaper
             else
-              rtaper=1.d0-dp0+cod(6)
+c              rtaper=1.d0-dp0+cod(6)
+              rtaper=1.d0+cod(6)+dptaper
             endif
           endif
           rtaper=min(1.d0+tapmax,max(1.d0-tapmax,rtaper))
@@ -667,7 +674,7 @@ c            call tmultr(trans,trans1,6)
  1010   continue
         call limitcod(cod)
       enddo
-c      call tfmemcheckprint('tturne-end0',0,.true.,irtc)
+c      call tfmemcheckprint('tturne-7 ',0,.true.,irtc)
       if(calint)then
         if(alid .ne. 0.d0)then
           call tintrb(trans,cod,beam,bmi,alid,alid,optics,iend+1)
@@ -992,6 +999,7 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
      $     cmp%value(ky_DZ_MULT),
      $     chi1,chi2,cmp%value(ky_ROT_MULT),
      $     cmp%value(ky_DROT_MULT),
+     $     cmp%value(p_LGEO_MULT),cmp%value(p_ANGLGEO_MULT),
      $     cmp%value(ky_EPS_MULT),
      $     enarad .and. cmp%value(ky_RAD_MULT) .eq. 0.d0,
      $     cmp%value(ky_FRIN_MULT) .eq. 0.d0,

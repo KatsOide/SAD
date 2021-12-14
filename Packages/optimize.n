@@ -116,7 +116,7 @@ FindCOD=Class[{},{},{ax,bx,ay,by,p0,NDiv=300,MaxAmp=2e-2},
     v=Prepend[Table[ReplacePart[z0,z0[[i]]+dz[[i]],i],{i,4}],z0];
     Catch[
       p0=Sort[Thread[{DiffCOD/@v,v}]];
-      p1=`DownhillSimplex[p0,DiffCOD,Output->out,opt]];
+      p1=System`DownhillSimplex[p0,DiffCOD,Output->out,opt]];
     If[~?STABLE,
       {DXI,DPXI,DYI,DPYI}=p1[[1,2]];
       FFS["CELL;CAL NOEXP;"]];
@@ -132,6 +132,8 @@ EndPackage[];
 Clear[The$Simplex];
 The$Simplex=Simplex[];
 SetAttributes[The$Simplex,Dynamic];
+
+Write[6,{$ContextPath,Context[DownhillSimplex]}];
 
 DownhillSimplex=The$Simplex@DownhillSimplex;
 Amoebar=The$Simplex@Amoebar;
@@ -186,8 +188,4 @@ OptimizeOptics[opt___]:=Module[
 
 OptimizeOptics::novariables="No matching variables";
 
-
 Protect[CalculateMatching,SetupOptimize,OptimizeOptics];
-
-
-

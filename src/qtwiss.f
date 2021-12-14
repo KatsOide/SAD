@@ -36,7 +36,7 @@
      $     r1,r2,r3,r4,detr,rr,sqrdet,trtr,bx0,by0,
      $     ax0,ay0,al,pxi,pyi,pxisq,pyisq,pzi,ale,alz,psi1,psi2,
      $     theta0,x,px,y,dpsix,dpsiy,bz,
-     $     pr,a,dpz,trf00,dtheta,
+     $     pr,a,dpz,trf00,dtheta,dchi2,
      $     apsi1,apsi2,sspc0,sspc,vcalpha0,fb1,fb2,
      $     ak1,ftable(4),dir
       logical*4 ,intent(out):: over
@@ -159,6 +159,7 @@ c        endif
             if(bx0 .gt. 0.d0 .and. by0 .gt. 0.d0 .and.
      $           itgetfpe() .eq. 0)then
             else
+c              write(*,'(a,4i8,1p2g15.7)')'qtwiss-over 3 ',l,ip1,ip0,l1,bx0,by0
               do j=ip1-1,ip0+la,-1
                 if(twiss(j,mfitbx) .gt. 0.d0
      $               .and. twiss(j,mfitby) .gt. 0.d0)then
@@ -269,6 +270,7 @@ c          endif
               fb1=cmp%value(ky_F1_BEND)
      $             +cmp%value(ky_FB2_BEND)
             endif
+            dchi2=cmp%value(ky_CHI2_BEND)
             dtheta=cmp%value(ky_DROT_BEND)
             theta0=cmp%value(ky_ROT_BEND)
             cod1=cod
@@ -278,7 +280,8 @@ c          endif
      $           cmp%value(ky_K1_BEND),
      1           cmp%value(ky_DX_BEND),
      $           cmp%value(ky_DY_BEND),
-     $           theta0,dtheta,
+     $           theta0,dtheta,dchi2,
+     $           cmp%value(p_LGEO_BEND),cmp%value(p_ANGLGEO_BEND),
      $           fb1,fb2,
      $           nint(cmp%value(ky_FRMD_BEND)),
      $           cmp%value(ky_FRIN_BEND) .eq. 0.d0,
@@ -496,6 +499,7 @@ c            write(*,*)'qtwiss-qwsapc ',l1,ifsize,rlist(ifsize+(l1-1)*21)
             endif
             twiss(ip,mfitnx)=twiss(ip1,mfitnx)+dpsix
             twiss(ip,mfitny)=twiss(ip1,mfitny)+dpsiy
+c            write(*,'(a,i8,2l2,106g15.7)')'qtwiss1-8 ',ip,coup,normal,twiss(ip,1:6)
             call limitnan(twiss(ip,:),twissnan)
           endif
         endif
@@ -1182,8 +1186,9 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
       case (icBEND)
         if(cmp%value(ky_FRMD_BEND) .eq. 0)then
           cmp%value(ky_F1_BEND)=0.d0
+        else
+          cmp%value(ky_FRMD_BEND)=-f1-2.d0*f2
         endif
-        cmp%value(ky_FRMD_BEND)=-f1-2.d0*f2
         if(r .ne. 0.d0)then
 c          if(cmp%orient .gt. 0.d0)then
           if(cmp%ori)then
@@ -1233,8 +1238,9 @@ c     $     cmp%value(ky_K0_BEND)
           if(cmp%value(ky_FRMD_MULT) .eq. 0.d0)then
             cmp%value(ky_FB1_MULT)=0.d0
             cmp%value(ky_FB2_MULT)=0.d0
+          else
+            cmp%value(ky_FRMD_BEND)=-f1-2.d0*f2
           endif
-          cmp%value(ky_FRMD_BEND)=-f1-2.d0*f2
           if(cmp%ori)then
             cmp%value(ky_E1_MULT)=
      $           cmp%value(ky_E1_MULT)*f1/r
@@ -1305,7 +1311,7 @@ c     $     cmp%value(ky_K0_BEND)
       if(cmp%value(kytbl(kwFRMD,lt)) .eq. 0.d0)then
         cmp%value(kytbl(kwFRMD,lt))=-4.d0
       endif
- 9000 if(kytbl(kwL,lt) .ne. 0)then
+ 9000 if(kytbl(kwL,lt) /= 0)then
         cmp%value(kytbl(kwL,lt))=cmp%value(kytbl(kwL,lt))*r
       endif
       chg=.true.
@@ -1582,6 +1588,7 @@ c        write(*,'(a,3i5,1p2g15.7)')'qputfracseg ',k,i1,i,r,lkv0%rbody(i)
      $     cmp%value(ky_DZ_MULT),
      $     chi1m,chi2m,cmp%value(ky_ROT_MULT),
      $     cmp%value(ky_DROT_MULT),
+     $     cmp%value(p_LGEO_MULT),cmp%value(p_ANGLGEO_MULT),
      $     cmp%value(ky_EPS_MULT),
      $     cmp%value(ky_FRIN_MULT) .eq. 0.d0,
      $     ftable(1),ftable(2),ftable(3),ftable(4),

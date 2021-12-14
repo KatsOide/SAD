@@ -123,6 +123,7 @@ c      y(1:2)=range(1:2,2)
 c      g(1:n1)=r1
       call trackd(range,r1,n1,nturn,
      1     trval,phi,damp,dampenough,ivar1,ivar2,lfno)
+      call tftclupdate(7)
       dapert=dapert0
       if(itgetfpe() .ne. 0)then
         write(*,*)'DynamicApertureSurvey-FPE ',itgetfpe()

@@ -284,7 +284,7 @@ c'\
         elseif(ktfoperq(k))then
           call loc_namtbl(klist(klist(ifunbase+ktfaddr(k))),loc)
           nc=loc%str%nch
-          call putstringbufpb(strb,loc%str%str,nc,.true.,lfno,irtc)
+          call putstringbufpb(strb,loc%str%str,nc,.false.,lfno,irtc)
         elseif(ktfpatq(k,pat))then
           kv=pat%expr%k
           kav=ktfaddr(kv)
@@ -357,7 +357,7 @@ c'\
           nc=0
         elseif(ktfenanq(k%x(1)))then
           nc=3
-          call putstringbufpb(strb,'NaN',nc,.true.,lfno,irtc)        
+          call putstringbufpb(strb,'NaN',nc,.false.,lfno,irtc)        
         elseif(ktfrealq(k,v))then
           if(form .eq. '*')then
             form1=tfgetform()
@@ -366,7 +366,7 @@ c'\
           endif
           buff=autofg(v,form1)
           nc=len_trim(buff)
-          call putstringbufpb(strb,buff,nc,.true.,lfno,irtc)
+          call putstringbufpb(strb,buff,nc,.false.,lfno,irtc)
         else
           write(*,*)'tfconvstrb ',ktftype(k%k),ktfaddr(k)
           nc=5
@@ -702,10 +702,13 @@ c
 
         subroutine putstringbufpb(strb,string,l,quote,lfno,irtc)
         implicit none
-        type (sad_strbuf), pointer :: strb
-        integer*4 lfno,irtc,l,lw,i,i1,lexp,lv,iext,itfmessage
-        character*(l) string
-        logical*4 full,indent,quote
+        type (sad_strbuf), pointer ,intent(in):: strb
+        integer*4 ,intent(in):: l,lfno
+        integer*4 ,intent(out):: irtc
+        character*(l),intent(in):: string
+        logical*4 ,intent(in):: quote
+        integer*4 lw,i,i1,lexp,lv,iext,itfmessage
+        logical*4 full,indent
         irtc=0
         if(l .le. 0)then
           return
@@ -733,6 +736,10 @@ c
      $         ichar(string(1:1)) .le. ichar('z')
      $         )
           indent=strb%lexp .ge. 0
+c          write(*,*)'psbuf-1 ',indent,l,strb%nch,strb%lexp
+          if(l > strb%lexp-strb%nch .and. l <= strb%lexp)then
+            call flushstringbuf(strb,indent,.true.,lfno,irtc)
+          endif
           i1=1
           do10: do while(i1 .le. l)
             lexp=strb%lexp
@@ -754,6 +761,7 @@ c
                 if(irtc .ne. 0)then
                   return
                 endif
+c                write(*,*)'psbuf-2 ',lw,lexp,strb%nch
                 lw=lexp-strb%nch
               endif
             else
@@ -779,10 +787,10 @@ c
                 cycle do10
               endif
             enddo
- 20         if(lw .lt. l-i1+1)then
+ 20       if(lw .lt. l-i1+1)then
               if(quote)then
                 call putstringbufb(strb,string(i1:i1),lw-1,full)
-                call putstringbufb(strb,'\',1,full)
+                call putstringbufb(strb,'\\',1,full)
                 call flushstringbuf(strb,indent,.true.,lfno,irtc)
                 if(irtc .ne. 0)then
                   return

@@ -1,0 +1,660 @@
+--- generic/tkCanvText.c.orig	2021-07-17 16:19:30.000000000 +0900
++++ generic/tkCanvText.c	2021-07-17 16:09:23.000000000 +0900
+@@ -14,6 +14,16 @@
+ #include "tkCanvas.h"
+ #include "default.h"
+ 
++EXTERN Tk_TextLayout	Tk_KGComputeTextLayout (Tk_Font font,
++			    CONST char *string, int numChars, int wrapLength,
++			    Tk_Justify justify, int flags, int *widthPtr,
++			    int *heightPtr, Tk_Font, Tk_Font, Tk_Font,
++			    GC, GC, GC, GC, int);
++EXTERN void             Tk_KGDrawTextLayout (Display *display,
++                            Drawable drawable, GC gc, Tk_TextLayout layout,
++                            int  x, int y, int firstChar, int lastChar);
++
++
+ /*
+  * The structure below defines the record for each text item.
+  */
+@@ -45,10 +55,13 @@
+     XColor *activeColor;	/* Color for text. */
+     XColor *disabledColor;	/* Color for text. */
+     Tk_Font tkfont;		/* Font for drawing text. */
++    Tk_Font tkaltfont;	/* Information about alt text font, or NULL. */
++    Tk_Font tkscriptfont;	/* Information about script font, or NULL. */
++    Tk_Font tkaltscriptfont;	/* Information about alt script font, or NULL. */
+     Tk_Justify justify;		/* Justification mode for text. */
+-    Pixmap stipple;		/* Stipple bitmap for text, or None. */
+-    Pixmap activeStipple;	/* Stipple bitmap for text, or None. */
+-    Pixmap disabledStipple;	/* Stipple bitmap for text, or None. */
++    Pixmap stipple;		/* Stipple bitmap for text, or NuLL. */
++    Pixmap activeStipple;	/* Stipple bitmap for text, or NuLL. */
++    Pixmap disabledStipple;	/* Stipple bitmap for text, or NuLL. */
+     char *text;			/* Text for item (malloc-ed). */
+     int width;			/* Width of lines for word-wrap, pixels. Zero
+ 				 * means no word-wrap. */
+@@ -71,7 +84,18 @@
+     double drawOrigin[2];	/* Where we start drawing from. */
+     GC gc;			/* Graphics context for drawing text. */
+     GC selTextGC;		/* Graphics context for selected text. */
+-    GC cursorOffGC;		/* If not None, this gives a graphics context
++    GC altGc;			/* Graphics context for drawing alttext. */
++    GC scriptGc;		/* Graphics context for drawing scripttext. */
++    GC altScriptGc;		/* Graphics context for drawing altscripttext. */
++    GC copyGC;			/* Used for copying information from an
++				 * off-screen pixmap to the screen. */
++    int dx, dy;
++    int pixoffx, pixoffy;
++    int usebg;
++    XColor *bgcolor;
++    GC bgGC;
++    int bsmplw,brmdes;
++    GC cursorOffGC;		/* If not NuLL, this gives a graphics context
+ 				 * to use to draw the insertion cursor when
+ 				 * it's off. Used if the selection and
+ 				 * insertion cursor colors are the same. */
+@@ -100,8 +124,6 @@
+ 	NULL, Tk_Offset(TextItem, activeStipple), TK_CONFIG_NULL_OK, NULL},
+     {TK_CONFIG_ANCHOR, "-anchor", NULL, NULL,
+ 	"center", Tk_Offset(TextItem, anchor), TK_CONFIG_DONT_SET_DEFAULT, NULL},
+-    {TK_CONFIG_DOUBLE, "-angle", NULL, NULL,
+-	"0.0", Tk_Offset(TextItem, angle), TK_CONFIG_DONT_SET_DEFAULT, NULL},
+     {TK_CONFIG_COLOR, "-disabledfill", NULL, NULL,
+ 	NULL, Tk_Offset(TextItem, disabledColor), TK_CONFIG_NULL_OK, NULL},
+     {TK_CONFIG_BITMAP, "-disabledstipple", NULL, NULL,
+@@ -110,8 +132,20 @@
+ 	DEF_CANVITEM_OUTLINE, Tk_Offset(TextItem, color), TK_CONFIG_NULL_OK, NULL},
+     {TK_CONFIG_FONT, "-font", NULL, NULL,
+ 	DEF_CANVTEXT_FONT, Tk_Offset(TextItem, tkfont), 0, NULL},
++    {TK_CONFIG_FONT, "-altfont", NULL, NULL,
++	"Symbol -14", Tk_Offset(TextItem, tkaltfont), 0},
++    {TK_CONFIG_FONT, "-scriptfont", NULL, NULL,
++	"Helvetica -10", Tk_Offset(TextItem, tkscriptfont), 0},
++    {TK_CONFIG_FONT, "-altscriptfont", NULL, NULL,
++	"Symbol -10", Tk_Offset(TextItem, tkaltscriptfont), 0},
+     {TK_CONFIG_JUSTIFY, "-justify", NULL, NULL,
+ 	"left", Tk_Offset(TextItem, justify), TK_CONFIG_DONT_SET_DEFAULT, NULL},
++    {TK_CONFIG_INT, "-removelastdescent", NULL, NULL,
++	"0", Tk_Offset(TextItem, brmdes), 0},
++    {TK_CONFIG_DOUBLE, "-angle", NULL, NULL,
++	"0.0", Tk_Offset(TextItem, angle), TK_CONFIG_DONT_SET_DEFAULT, NULL},
++    /* {TK_CONFIG_INT, "-rotation", NULL, NULL, */
++    /*     "0", Tk_Offset(TextItem, rotation), 0}, */
+     {TK_CONFIG_CUSTOM, "-offset", NULL, NULL,
+ 	"0,0", Tk_Offset(TextItem, tsoffset),
+ 	TK_CONFIG_DONT_SET_DEFAULT, &offsetOption},
+@@ -123,6 +157,10 @@
+ 	NULL, 0, TK_CONFIG_NULL_OK, &tagsOption},
+     {TK_CONFIG_STRING, "-text", NULL, NULL,
+ 	"", Tk_Offset(TextItem, text), 0, NULL},
++    {TK_CONFIG_COLOR, "-textbg", NULL, NULL,
++	DEF_CANVAS_BG_COLOR, Tk_Offset(TextItem, bgcolor), 0},
++    {TK_CONFIG_INT, "-usebg", NULL, NULL,
++	"0", Tk_Offset(TextItem, usebg), 0},
+     {TK_CONFIG_INT, "-underline", NULL, NULL,
+ 	"-1", Tk_Offset(TextItem, underline), 0, NULL},
+     {TK_CONFIG_PIXELS, "-width", NULL, NULL,
+@@ -173,6 +211,8 @@
+ static void		TranslateText(Tk_Canvas canvas,
+ 			    Tk_Item *itemPtr, double deltaX, double deltaY);
+ 
++int bTkCanvTextDebug=0;
++
+ /*
+  * The structures below defines the rectangle and oval item types by means of
+  * functions that can be invoked by generic item code.
+@@ -221,6 +261,9 @@
+  *
+  *--------------------------------------------------------------
+  */
++static int		KBCreateText (Tcl_Interp *interp,
++			    Tk_Canvas canvas, struct Tk_Item *itemPtr,
++			    int objc, Tcl_Obj *CONST objv[]);
+ 
+ static int
+ CreateText(
+@@ -255,6 +298,9 @@
+     textPtr->activeColor = NULL;
+     textPtr->disabledColor = NULL;
+     textPtr->tkfont	= NULL;
++    textPtr->tkaltfont	= NULL;
++    textPtr->tkscriptfont	= NULL;
++    textPtr->tkaltscriptfont	= NULL;
+     textPtr->justify	= TK_JUSTIFY_LEFT;
+     textPtr->stipple	= None;
+     textPtr->activeStipple = None;
+@@ -269,11 +315,23 @@
+     textPtr->textLayout = NULL;
+     textPtr->actualWidth = 0;
+     textPtr->drawOrigin[0] = textPtr->drawOrigin[1] = 0.0;
+-    textPtr->gc		= NULL;
+-    textPtr->selTextGC	= NULL;
+-    textPtr->cursorOffGC = NULL;
++    textPtr->gc		= None;
++    textPtr->altGc		= None;
++    textPtr->scriptGc		= None;
++    textPtr->altScriptGc		= None;
++    textPtr->selTextGC	= None;
++    textPtr->cursorOffGC = None;
+     textPtr->sine	= 0.0;
+     textPtr->cosine	= 1.0;
++    textPtr->copyGC = None;
++    /* textPtr->rotation = 0; */
++    textPtr->usebg = 0;
++    textPtr->bgcolor	= NULL;
++    textPtr->bgGC = 0;
++    textPtr->brmdes = 0;
++
++    if (objc<0)
++	return KBCreateText(interp, canvas, itemPtr, objc, objv);
+ 
+     /*
+      * Process the arguments to fill in the item record. Only 1 (list) or 2 (x
+@@ -301,6 +359,44 @@
+     DeleteText(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
+     return TCL_ERROR;
+ }
++
++static int
++KBCreateText(interp, canvas, itemPtr, objc, objv)
++    Tcl_Interp *interp;		/* Interpreter for error reporting. */
++    Tk_Canvas canvas;		/* Canvas to hold new item. */
++    Tk_Item *itemPtr;		/* Record to hold new item; header has been
++				 * initialized by caller. */
++    int objc;			/* Number of arguments in objv. */
++    Tcl_Obj *CONST objv[];	/* Arguments describing rectangle. */
++{
++    TextItem *textPtr = (TextItem *) itemPtr;
++    int nn;
++    double *bb;
++
++    objc = -objc;
++    nn = *((int *)objv[objc-2]);
++    bb = (double *)objv[objc-1];
++    objc -= 2;
++
++    /*
++     * Process the arguments to fill in the item record.
++     */
++
++    if (nn != 2) {
++	return TCL_ERROR;
++    }
++    textPtr->x = bb[0];
++    textPtr->y = bb[1];
++    ComputeTextBbox(canvas, textPtr);
++    /*    printf("KBCreText-ComputeTextBbox(%s)\n",textPtr->text);*/
++    if (ConfigureText(interp, canvas, itemPtr, objc, objv, 0) == TCL_OK) {
++	return TCL_OK;
++    }
++
++    /*error:*/
++    DeleteText(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
++    return TCL_ERROR;
++}
+ 
+ /*
+  *--------------------------------------------------------------
+@@ -398,7 +494,7 @@
+     TextItem *textPtr = (TextItem *) itemPtr;
+     XGCValues gcValues;
+     GC newGC, newSelGC;
+-    unsigned long mask;
++    unsigned long mask = GCFont;
+     Tk_Window tkwin;
+     Tk_CanvasTextInfo *textInfoPtr = textPtr->textInfoPtr;
+     XColor *selBgColorPtr;
+@@ -406,6 +502,9 @@
+     Pixmap stipple;
+     Tk_State state;
+ 
++    if (bTkCanvTextDebug)
++      printf("TkCanvTextDebug: ConfigureText\n");
++
+     tkwin = Tk_CanvasTkwin(canvas);
+     if (TCL_OK != Tk_ConfigureWidget(interp, tkwin, configSpecs, objc,
+ 	    (const char **) objv, (char *) textPtr, flags|TK_CONFIG_OBJS)) {
+@@ -447,11 +546,11 @@
+ 	}
+     }
+ 
+-    newGC = newSelGC = NULL;
+-    if (textPtr->tkfont != NULL) {
++    newGC = newSelGC = None;
++    if (textPtr->tkfont != None) {
+ 	gcValues.font = Tk_FontId(textPtr->tkfont);
+ 	mask = GCFont;
+-	if (color != NULL) {
++	if (color != None) {
+ 	    gcValues.foreground = color->pixel;
+ 	    mask |= GCForeground;
+ 	    if (stipple != None) {
+@@ -472,15 +571,48 @@
+ 	}
+ 	newSelGC = Tk_GetGC(tkwin, mask|GCForeground, &gcValues);
+     }
+-    if (textPtr->gc != NULL) {
++    if (textPtr->gc != None) {
+ 	Tk_FreeGC(Tk_Display(tkwin), textPtr->gc);
+     }
+     textPtr->gc = newGC;
+-    if (textPtr->selTextGC != NULL) {
++    if (textPtr->selTextGC != None) {
+ 	Tk_FreeGC(Tk_Display(tkwin), textPtr->selTextGC);
+     }
+     textPtr->selTextGC = newSelGC;
+ 
++    if (textPtr->copyGC == None) {
++	textPtr->copyGC = Tk_GetGC(tkwin, 0, &gcValues);
++    }
++
++
++    gcValues.foreground = textPtr->color->pixel;
++    gcValues.font = Tk_FontId(textPtr->tkaltfont);
++    newGC = Tk_GetGC(tkwin, mask, &gcValues);
++    if (textPtr->altGc != None) {
++	Tk_FreeGC(Tk_Display(tkwin), textPtr->altGc);
++    }
++    textPtr->altGc = newGC;
++    gcValues.font = Tk_FontId(textPtr->tkscriptfont);
++    newGC = Tk_GetGC(tkwin, mask, &gcValues);
++    if (textPtr->scriptGc != None) {
++	Tk_FreeGC(Tk_Display(tkwin), textPtr->scriptGc);
++    }
++    textPtr->scriptGc = newGC;
++    gcValues.font = Tk_FontId(textPtr->tkaltscriptfont);
++    newGC = Tk_GetGC(tkwin, mask, &gcValues);
++    if (textPtr->altScriptGc != None) {
++	Tk_FreeGC(Tk_Display(tkwin), textPtr->altScriptGc);
++    }
++    textPtr->altScriptGc = newGC;
++	
++    gcValues.foreground = textPtr->bgcolor->pixel;
++    mask = GCForeground;
++    newGC = Tk_GetGC(tkwin, mask, &gcValues);
++    if (textPtr->bgGC != None) {
++	Tk_FreeGC(Tk_Display(tkwin), textPtr->bgGC);
++    }
++    textPtr->bgGC = newGC;
++
+     selBgColorPtr = Tk_3DBorderColor(textInfoPtr->selBorder);
+     if (Tk_3DBorderColor(textInfoPtr->insertBorder)->pixel
+ 	    == selBgColorPtr->pixel) {
+@@ -491,9 +623,9 @@
+ 	}
+ 	newGC = Tk_GetGC(tkwin, GCForeground, &gcValues);
+     } else {
+-	newGC = NULL;
++	newGC = None;
+     }
+-    if (textPtr->cursorOffGC != NULL) {
++    if (textPtr->cursorOffGC != None) {
+ 	Tk_FreeGC(Tk_Display(tkwin), textPtr->cursorOffGC);
+     }
+     textPtr->cursorOffGC = newGC;
+@@ -578,6 +710,9 @@
+ 	Tk_FreeColor(textPtr->disabledColor);
+     }
+     Tk_FreeFont(textPtr->tkfont);
++    Tk_FreeFont(textPtr->tkaltfont);
++    Tk_FreeFont(textPtr->tkscriptfont);
++    Tk_FreeFont(textPtr->tkaltscriptfont);
+     if (textPtr->stipple != None) {
+ 	Tk_FreeBitmap(display, textPtr->stipple);
+     }
+@@ -592,18 +727,59 @@
+     }
+ 
+     Tk_FreeTextLayout(textPtr->textLayout);
+-    if (textPtr->gc != NULL) {
++    if (textPtr->gc != None) {
+ 	Tk_FreeGC(display, textPtr->gc);
+     }
+-    if (textPtr->selTextGC != NULL) {
++    if (textPtr->altGc != None) {
++	Tk_FreeGC(display, textPtr->altGc);
++    }
++    if (textPtr->scriptGc != None) {
++	Tk_FreeGC(display, textPtr->scriptGc);
++    }
++    if (textPtr->altScriptGc != None) {
++	Tk_FreeGC(display, textPtr->altScriptGc);
++    }
++    if (textPtr->selTextGC != None) {
+ 	Tk_FreeGC(display, textPtr->selTextGC);
+     }
+-    if (textPtr->cursorOffGC != NULL) {
++    if (textPtr->cursorOffGC != None) {
+ 	Tk_FreeGC(display, textPtr->cursorOffGC);
+     }
++    if (textPtr->copyGC != None) {
++	Tk_FreeGC(display, textPtr->copyGC);
++    }
++    if (textPtr->bgGC != None) {
++	Tk_FreeGC(display, textPtr->bgGC);
++    }
+ }
+ 
+ /*
++static void rotatepoint(textPtr, x1, y1, dx1, dy1, px2, py2)
++    TextItem *textPtr;
++    int x1,y1,dx1,dy1,*px2,*py2;
++{
++    switch(textPtr->rotation) {
++    case 90:
++	*px2 =  (y1-textPtr->y) + textPtr->y;
++	*py2 = -(x1-textPtr->x) + textPtr->x;
++	break;
++
++    case 180:
++	*px2 = -(x1-textPtr->x) + textPtr->x;
++	*py2 = -(y1-textPtr->y) + textPtr->y;
++	break;
++
++    case 270:
++	*px2 = -(y1-textPtr->y) + textPtr->y;
++	*py2 =  (x1-textPtr->x) + textPtr->x;
++	break;
++    }
++    *px2 += dx1;
++    *py2 += dy1;
++}
++*/
++
++/*
+  *--------------------------------------------------------------
+  *
+  * ComputeTextBbox --
+@@ -629,18 +805,34 @@
+     TextItem *textPtr)		/* Item whose bbox is to be recomputed. */
+ {
+     Tk_CanvasTextInfo *textInfoPtr;
+-    int leftX, topY, width, height, fudge, i;
++    int width, height, fudge;
+     Tk_State state = textPtr->header.state;
+-    double x[4], y[4], dx[4], dy[4], sinA, cosA, tmp;
++    double sinA, cosA, w0,w1,h0,h1,dx1,dx2,dx3,dy1,dy2,dy3;
+ 
+     if (state == TK_STATE_NULL) {
+ 	state = Canvas(canvas)->canvas_state;
+     }
+ 
++    if (bTkCanvTextDebug) {
++	printf("TkCanvTextDebug: ComputeTextBbox(%s)\n",textPtr->text);
++	printf("x,y: %f,%f\n", textPtr->x, textPtr->y);
++    }
++
++    fudge=0;
+     Tk_FreeTextLayout(textPtr->textLayout);
+-    textPtr->textLayout = Tk_ComputeTextLayout(textPtr->tkfont,
++    textPtr->bsmplw = (textPtr->text==NULL)||(strchr(textPtr->text,'`') ? 0 : 1);
++    if (textPtr->bsmplw)
++	textPtr->textLayout = 
++            Tk_ComputeTextLayout(textPtr->tkfont,
++                                 textPtr->text, textPtr->numChars, textPtr->width,
++                                 textPtr->justify, 0, &width, &height);
++    else
++	textPtr->textLayout = Tk_KGComputeTextLayout(textPtr->tkfont,
+ 	    textPtr->text, textPtr->numChars, textPtr->width,
+-	    textPtr->justify, 0, &width, &height);
++	    textPtr->justify, 0, &width, &height, textPtr->tkaltfont,
++	    textPtr->tkscriptfont, textPtr->tkaltscriptfont, textPtr->gc,
++	    textPtr->altGc, textPtr->scriptGc, textPtr->altScriptGc,
++	    textPtr->brmdes);
+ 
+     if (state == TK_STATE_HIDDEN || textPtr->color == NULL) {
+ 	width = height = 0;
+@@ -651,122 +843,98 @@
+      * bounding box for the text item.
+      */
+ 
+-    leftX = ROUND(textPtr->x);
+-    topY = ROUND(textPtr->y);
+-    for (i=0 ; i<4 ; i++) {
+-	dx[i] = dy[i] = 0.0;
+-    }
+-    switch (textPtr->anchor) {
+-    case TK_ANCHOR_NW:
+-    case TK_ANCHOR_N:
+-    case TK_ANCHOR_NE:
+-	break;
+-
+-    case TK_ANCHOR_W:
+-    case TK_ANCHOR_CENTER:
+-    case TK_ANCHOR_E:
+-	topY -= height / 2;
+-	for (i=0 ; i<4 ; i++) {
+-	    dy[i] = -height / 2;
+-	}
+-	break;
+-
+-    case TK_ANCHOR_SW:
+-    case TK_ANCHOR_S:
+-    case TK_ANCHOR_SE:
+-	topY -= height;
+-	for (i=0 ; i<4 ; i++) {
+-	    dy[i] = -height;
+-	}
+-	break;
+-    }
+-    switch (textPtr->anchor) {
+-    case TK_ANCHOR_NW:
+-    case TK_ANCHOR_W:
+-    case TK_ANCHOR_SW:
+-	break;
+-
+-    case TK_ANCHOR_N:
+-    case TK_ANCHOR_CENTER:
+-    case TK_ANCHOR_S:
+-	leftX -= width / 2;
+-	for (i=0 ; i<4 ; i++) {
+-	    dx[i] = -width / 2;
+-	}
+-	break;
+-
+-    case TK_ANCHOR_NE:
+-    case TK_ANCHOR_E:
+-    case TK_ANCHOR_SE:
+-	leftX -= width;
+-	for (i=0 ; i<4 ; i++) {
+-	    dx[i] = -width;
+-	}
+-	break;
++    textInfoPtr = textPtr->textInfoPtr;
++    fudge = (textInfoPtr->insertWidth + 1) / 2;
++    if (textInfoPtr->selBorderWidth > fudge) {
++	fudge = textInfoPtr->selBorderWidth;
+     }
+ 
+-    textPtr->actualWidth = width;
+-
+     sinA = textPtr->sine;
+     cosA = textPtr->cosine;
+-    textPtr->drawOrigin[0] = textPtr->x + dx[0]*cosA + dy[0]*sinA;
+-    textPtr->drawOrigin[1] = textPtr->y + dy[0]*cosA - dx[0]*sinA;
+-
+     /*
+      * Last of all, update the bounding box for the item. The item's bounding
+      * box includes the bounding box of all its lines, plus an extra fudge
+      * factor for the cursor border (which could potentially be quite large).
+      */
+ 
+-    textInfoPtr = textPtr->textInfoPtr;
+-    fudge = (textInfoPtr->insertWidth + 1) / 2;
+-    if (textInfoPtr->selBorderWidth > fudge) {
+-	fudge = textInfoPtr->selBorderWidth;
+-    }
+-
+     /*
+      * Apply the rotation before computing the bounding box.
+      */
+ 
+-    dx[0] -= fudge;
+-    dx[1] += width + fudge;
+-    dx[2] += width + fudge;
+-    dy[2] += height;
+-    dx[3] -= fudge;
+-    dy[3] += height;
+-    for (i=0 ; i<4 ; i++) {
+-	x[i] = textPtr->x + dx[i] * cosA + dy[i] * sinA;
+-	y[i] = textPtr->y + dy[i] * cosA - dx[i] * sinA;
+-    }
+-
+-    /*
+-     * Convert to a rectilinear bounding box.
+-     */
+-
+-    for (i=1,tmp=x[0] ; i<4 ; i++) {
+-	if (x[i] < tmp) {
+-	    tmp = x[i];
+-	}
+-    }
+-    textPtr->header.x1 = ROUND(tmp);
+-    for (i=1,tmp=y[0] ; i<4 ; i++) {
+-	if (y[i] < tmp) {
+-	    tmp = y[i];
+-	}
+-    }
+-    textPtr->header.y1 = ROUND(tmp);
+-    for (i=1,tmp=x[0] ; i<4 ; i++) {
+-	if (x[i] > tmp) {
+-	    tmp = x[i];
+-	}
+-    }
+-    textPtr->header.x2 = ROUND(tmp);
+-    for (i=1,tmp=y[0] ; i<4 ; i++) {
+-	if (y[i] > tmp) {
+-	    tmp = y[i];
+-	}
+-    }
+-    textPtr->header.y2 = ROUND(tmp);
++    w0=2*fudge+width;
++    h0=2*fudge+height;
++    w1=w0*fabs(cosA)+h0*fabs(sinA);
++    h1=w0*fabs(sinA)+h0*fabs(cosA);
++    /*    printf("CTBB %d %d %f %f %f %f %f %f\n",width,height,w0,h0,w1,h1,sinA,cosA);*/
++
++    if(sinA>=0)
++        if(cosA>=0){
++            dx1=0;
++            dx2=-w1;
++            dy1= w0*sinA;
++            dy2=-h0*cosA;
++        }else{
++            dx1=-w0*cosA;
++            dx2=-h0*sinA;
++            dy1=h1;
++            dy2=0;
++        }else
++        if(cosA<0){
++            dx1=w1;
++            dx2=0;
++            dy1=-h0*cosA;
++            dy2=w0*sinA;
++        }else{
++            dx1=-h0*sinA;
++            dx2=-w0*cosA;
++            dy1=0;
++            dy2=-h1;}
++    dx3=(dx1+dx2)/2;
++    dy3=(dy1+dy2)/2;
++    switch(textPtr->anchor){
++    case TK_ANCHOR_W:
++    case TK_ANCHOR_NW:
++    case TK_ANCHOR_SW:
++        textPtr->drawOrigin[0]=dx1;
++        textPtr->header.x1=textPtr->x;
++        break;
++    case TK_ANCHOR_NE:
++    case TK_ANCHOR_E:
++    case TK_ANCHOR_SE:
++        textPtr->drawOrigin[0]=dx2;
++        textPtr->header.x1=textPtr->x-w1;
++        break;
++    case TK_ANCHOR_N:
++    case TK_ANCHOR_S:
++    case TK_ANCHOR_CENTER:
++        textPtr->drawOrigin[0]=dx3;
++        textPtr->header.x1=textPtr->x-w1/2;
++        break;}
++    switch(textPtr->anchor){
++    case TK_ANCHOR_N:
++    case TK_ANCHOR_NW:
++    case TK_ANCHOR_NE:
++        textPtr->drawOrigin[1]=dy1;
++        textPtr->header.y1=textPtr->y;
++        break;
++    case TK_ANCHOR_SE:
++    case TK_ANCHOR_S:
++    case TK_ANCHOR_SW:
++        textPtr->drawOrigin[1]=dy2;
++        textPtr->header.y1=textPtr->y-h1;
++        break;
++    case TK_ANCHOR_W:
++    case TK_ANCHOR_E:
++    case TK_ANCHOR_CENTER:
++        textPtr->drawOrigin[1]=dy3;
++        textPtr->header.y1=textPtr->y-h1/2;
++        break;}
++
++    textPtr->header.x2=textPtr->header.x1+w1;
++    textPtr->header.y2=textPtr->header.y1+h1;
++    textPtr->drawOrigin[0] += textPtr->x;
++    textPtr->drawOrigin[1] += textPtr->y;
++    textPtr->actualWidth = w1;
+ }
+ 
+ /*
+@@ -803,6 +971,9 @@
+     Pixmap stipple;
+     Tk_State state = itemPtr->state;
+ 
++    if (bTkCanvTextDebug)
++      printf("TkCanvTextDebug: DisplayCanvText\n");
++
+     textPtr = (TextItem *) itemPtr;
+     textInfoPtr = textPtr->textInfoPtr;
+ 
+@@ -820,7 +991,7 @@
+ 	}
+     }
+ 
+-    if (textPtr->gc == NULL) {
++    if (textPtr->gc == None) {
+ 	return;
+     }
+ 
+@@ -932,7 +1103,7 @@
+ 		Tk_Fill3DPolygon(Tk_CanvasTkwin(canvas), drawable,
+ 			textInfoPtr->insertBorder, points, 4,
+ 			textInfoPtr->insertBorderWidth, TK_RELIEF_RAISED);
+-	    } else if (textPtr->cursorOffGC != NULL) {
++	    } else if (textPtr->cursorOffGC != None) {
+ 		/*
+ 		 * Redraw the background over the area of the cursor, even
+ 		 * though the cursor is turned off. This guarantees that the
+@@ -982,6 +1153,15 @@
+     if (stipple != None) {
+ 	XSetTSOrigin(display, textPtr->gc, 0, 0);
+     }
++
++    /*
++    if (xovl0 != 0) {
++	int y = drawableY-ypos - textPtr->altFontPtr->max_bounds.ascent;
++	if (xovl0>xovl1)
++	    xovl1 = xStart-xpos;
++	XDrawLine(display, pixmap, textPtr->gc, xovl0, y, xovl1, y);
++    }
++    */
+ }
+ 
+ /*
+@@ -1063,6 +1243,7 @@
+ 	textPtr->insertPos += charsAdded;
+     }
+     ComputeTextBbox(canvas, textPtr);
++    printf("TextInsert-ComputeTextBbox(%s)\n",textPtr->text);
+ }
+ 
+ /*

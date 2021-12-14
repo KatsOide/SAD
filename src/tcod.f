@@ -1,3 +1,11 @@
+      module codm
+      real*8, parameter :: 
+     $     conv0=1.d-10,epsr0=1.d-6,ddpmax=3.e-5,
+     1     epsrr=1.d-4,rmax=1.d200,fmin=1.d-4,a=0.25d0, dpthre=3.e-4
+      real*8 , parameter :: codw0(6) =
+     $     [1.d-6,1.d-5,1.d-6,1.d-5,1.d-5,1.d-6]
+      
+      contains
       recursive subroutine tcod(trans,cod,beam,optics,fndcod)
       use tfstk
       use ffs_flag
@@ -12,17 +20,12 @@
       logical*4 ,intent(out):: fndcod
       logical*4 ,intent(in):: optics
       integer*4 , parameter :: lmax=100
-      real*8, parameter :: 
-     $     conv0=1.d-10,epsr0=1.d-6,ddpmax=3.e-5,
-     1     epsrr=1.d-4,rmax=1.d200,fmin=1.d-4,a=0.25d0, dpthre=3.e-4
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42)
       real*8 codi(6),codf(6),dcod(6),r0,fact,trf00,dtrf0,r,
      $     dcod1(6),codw(6),conv,trs(6,6),
      $     dcod0(6),s,trw,dz,alambdarf,trf0s,v0,red,ddp,srot(3,9)
       integer*4 loop,i
       logical*4 rt,rtr
-      real*8 , parameter :: codw0(6) =
-     $     [1.d-6,1.d-5,1.d-6,1.d-5,1.d-5,1.d-6]
       vcalpha=1.d0
       trf0=0.d0
       if(rfsw)then
@@ -42,6 +45,7 @@ c     $       fndcod,vceff,wrfeff,trf0,vcacc,u0*pgev,cod(5)
       trf0s=trf0
       v0=p0/h0
       rt=.false.
+      dptaper=0.d0
  10   dcod=0.d0
       dcod0=0.d0
       r0=rmax
@@ -84,11 +88,9 @@ c     $       fndcod,vceff,wrfeff,trf0,vcacc,u0*pgev,cod(5)
       dcod1=codi-codf
       if(rfsw)then
         if(radtaper)then
-          if(.not. ktfenanq(dcod1(5)))then
-            dleng=dleng+dcod1(5)
-            call rsetgl1('FSHIFT',-dleng/circ)
+          if(.not. ktfenanq(dcod1(5)) .and. trans(5,6) .ne. 0.d0)then
+            dptaper=dptaper-dcod1(5)/trans(5,6)
           endif
-          dcod1(5)=0.d0
         endif
       else
         dcod1(5)=0.d0
@@ -138,7 +140,7 @@ c      write(6,'(1p6g12.5)')codi,codf,dcod1
         dcod1(5)=0.d0
       elseif(radtaper)then
         trs(1:6,6)=0.d0
-        dcod1(5)=0.d0
+c        dcod1(5)=0.d0
       endif
       dcod0=dcod
       ddp=dcod1(6)
@@ -158,4 +160,6 @@ c        write(*,*)'tcod-dz ',dz,dvcacc,dz*dvcacc/pgev,ddp
       cod=codi
       codi=codi+fact*dcod
       go to 1
-      end
+      end subroutine
+
+      end module

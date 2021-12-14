@@ -64,8 +64,9 @@ c
      $ky_AY_BEND=25,
      $ky_LDEV_BEND=26,
      $ky_LRAD_BEND=27,
+     $ky_CHI2_BEND=28,
 c
-     $ky_MAX_BEND=28,
+     $ky_MAX_BEND=29,
      $     p_L_BEND=ky_MAX_BEND+1,
      $     p_PSI1_BEND=p_L_BEND+1,
      $     p_PSI2_BEND=p_PSI1_BEND+1,
@@ -83,7 +84,9 @@ c
      $     p_FB1_BEND=p_THETA_BEND+1,
      $     p_FB2_BEND=p_FB1_BEND+1,
      $     p_FRMD_BEND=p_FB2_BEND+1,
-     $     p_NPARAM_BEND=p_FRMD_BEND-ky_MAX_BEND,
+     $     p_LGEO_BEND=p_FRMD_BEND+1,
+     $     p_ANGLGEO_BEND=p_LGEO_BEND+1,
+     $     p_NPARAM_BEND=p_ANGLGEO_BEND-ky_MAX_BEND,
 c  for quad
      $ky_L_QUAD=1,
      $ky_K1_QUAD=2,
@@ -252,9 +255,11 @@ c
      $     p_CR1_MULT=p_THETA2_MULT+1,
      $     p_CR1I_MULT=p_CR1_MULT+1,
      $     p_NM_MULT=p_CR1I_MULT+1,
-     $     p_K0R_MULT=p_NM_MULT+1,
+     $     p_LGEO_MULT=p_NM_MULT+1,
+     $     p_ANGLGEO_MULT=p_LGEO_MULT+1,
+     $     p_K0R_MULT=p_ANGLGEO_MULT+1,
      $     p_SK0R_MULT=p_K0R_MULT+1,
-     $     p_DOFR_MULT=p_K0R_MULT+nmult*2+2,
+     $     p_DOFR_MULT=p_SK0R_MULT+nmult*2+2,
      $     p_PROF_MULT=p_DOFR_MULT+1+nmult/8,
      $     p_NPARAM_MULT=p_PROF_MULT-ky_MAX_MULT,
 c  for UNDULATOR
@@ -813,7 +818,7 @@ c
        kytbl(kwDP  ,0)=sethtb('DP      ',icKWRD,kwDP  )
        kytbl(kwSIGZ,0)=sethtb('SIGZ    ',icKWRD,kwSIGZ)
        kytbl(kwSIGZ,0)=sethtb('SIGMAZ  ',icKWRD,kwSIGZ)
-       kytbl(kwSIGE,0)=sethtb('SIGE    ',icKWRD,kwSIGZ)
+       kytbl(kwSIGE,0)=sethtb('SIGE    ',icKWRD,kwSIGE)
        kytbl(kwGEO ,0)=sethtb('GEO     ',icKWRD,kwGEO )
        kytbl(kwR1  ,0)=sethtb('R1      ',icKWRD,kwR1  )
        kytbl(kwR2  ,0)=sethtb('R2      ',icKWRD,kwR2  )
@@ -1024,6 +1029,7 @@ c
       kytbl(kwAY,icBEND)=ky_AY_BEND
       kytbl(kwLDEV,icBEND)=ky_LDEV_BEND
       kytbl(kwLRAD,icBEND)=ky_LRAD_BEND
+      kytbl(kwCHI2,icBEND)=ky_CHI2_BEND
 c
       kytbl(kwMAX,icBEND)=ky_MAX_BEND
       kytbl(kwNPARAM,icBEND)=p_NPARAM_BEND

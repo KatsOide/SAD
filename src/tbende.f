@@ -4,23 +4,18 @@
       use temw,only:bsir0,tmulbs
       use tspin
       implicit none
-      logical*4 tbinit
-      real*8 al,b1,b,aind,trans1(6,6),cx,cy,
+      logical*4 ,save :: tbinit
+      real*8 ,save:: al,b1,b,aind,trans1(6,6),cx,cy,
      $     drhopp,akxsqp,dcxp,sxkxp,dcyp,sykyp,phixp,phiyp,
      $     akysqp,dcxkxp,aksxp,aksyp,xsxkxp
 
       contains
-      subroutine tbendeinit(ak1,al,force)
+      subroutine tbendeinit(ak1,al)
       implicit none
       real*8 , intent(in) :: ak1,al
-      logical*4 , intent(in), optional::force
       p=1.d0+dp
       rhoe=rhob*p
-      if(present(force))then
-        call tbendiinit(ak1,al,force)
-      else
-        call tbendiinit(ak1,al)
-      endif
+      call tbendiinit(ak1,al,.true.)
       cx=1.d0+dcx
       cy=1.d0+dcy
       drhopp=1.d0/rhoe/p
@@ -69,8 +64,8 @@
       implicit none
       real*8 , intent(in) :: ak1,al
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42)
-      real*8 pzi,dpzi,xr,s,a,trans2(6,6),dk,pxf,xf,yf,zf,phi
-      phi=al/rho0
+      real*8 pzi,dpzi,xr,s,a,trans2(6,6),dk,pxf,xf,yf,zf,phi0
+      phi0=al/rho0
       p  =1.d0+cod(6)
       xi =cod(1)
       pxi=min(p,max(-p,cod(2)))/p
@@ -79,56 +74,41 @@
       s=min(psqmax,pxi**2+pyi**2)
       dpzi=sqrt1(-s)
       pzi=1.d0+dpzi
-      a=1.d0/(pzi-phi*pxi)
+      a=1.d0/(pzi-phi0*pxi)
       xf =(-al*dpzi*pxi+pzi*xi)*a
-      pxf=pxi+phi*dpzi
-      yf =yi+(-al*dpzi+xf*phi)*pyi/pzi
-      zf =cod(5)-phi*dpzi*xf/pzi+al*dpzi*(.5d0*pzi+.5d0-1.d0/pzi)
+      pxf=pxi+phi0*dpzi
+      yf =yi+(-al*dpzi+xf*phi0)*pyi/pzi
+c      zf =cod(5)-phi0*dpzi*xf/pzi+al*dpzi*(.5d0*pzi+.5d0-1.d0/pzi)
+      zf=cod(5)+(.5d0*s+(1.d0+xi/rho0)*dpzi/pzi)*al
       xr=xf/rho0
       pxf=pxf-ak1*xf*xr*(0.5d0-xr*(2.d0-xr)/12.d0)/p
       dk=-ak1*xr*(1.d0-xr*(1.d0-2.d0*xr))
+      call tinitr(trans2)
       trans2(1,1)=pzi*a
-      trans2(1,2)=((al+phi*xi)*(pzi**2+pxi**2)
-     $     -al*(phi*pxi**3+pzi**3))*a**2/pzi/p
-      trans2(1,3)=0
-      trans2(1,4)=(al*(1.d0-phi*pxi)+phi*xi)*pxi*pyi*a**2/pzi/p
-      trans2(1,5)=0.d0
-      trans2(1,6)=pxi/pzi*a*(al*(-a*(1.d0-phi*pxi)+pzi**2)-a*phi*xi)
+      trans2(1,2)=((al+phi0*xi)*(pzi**2+pxi**2)
+     $     -al*(phi0*pxi**3+pzi**3))*a**2/pzi/p
+      trans2(1,4)=(al*(1.d0-phi0*pxi)+phi0*xi)*pxi*pyi*a**2/pzi/p
+      trans2(1,6)=pxi/pzi*a*(al*(-a*(1.d0-phi0*pxi)+pzi**2)-a*phi0*xi)
       trans2(2,1)=dk*trans2(1,1)
-      trans2(2,2)=1.d0-phi*pxi/pzi+dk*trans2(1,2)
-      trans2(2,3)=0.d0
-      trans2(2,4)=-phi*pyi/pzi+dk*trans2(1,4)
-      trans2(2,5)=0.d0
-      trans2(2,6)=-phi/pzi*dpzi+dk*trans2(1,6)
-      trans2(3,1)=phi*pyi*a
-      trans2(3,2)=(-al*phi*(pzi**2+pxi**2)
-     $     +(al+phi*xi)*(pxi+phi*pzi))*a**2*pyi/pzi/p
-      trans2(3,3)=1.d0
-      trans2(3,4)=(-al*(pzi**2*(pzi-phi*pxi)+phi*pxi*pyi**2)
-     $     +(pyi**2+pzi*(pzi-phi*pxi))*(al+phi*xi))*a**2/p/pzi
-      trans2(3,5)=0.d0
-      trans2(3,6)=-(al*(dpzi*(1.d0+pzi)*phi*pxi-pzi**3)+(al+phi*xi))
+      trans2(2,2)=1.d0-phi0*pxi/pzi+dk*trans2(1,2)
+      trans2(2,4)=-phi0*pyi/pzi+dk*trans2(1,4)
+      trans2(2,6)=-phi0/pzi*dpzi+dk*trans2(1,6)
+      trans2(3,1)=phi0*pyi*a
+      trans2(3,2)=(-al*phi0*(pzi**2+pxi**2)
+     $     +(al+phi0*xi)*(pxi+phi0*pzi))*a**2*pyi/pzi/p
+      trans2(3,4)=(-al*(pzi**2*(pzi-phi0*pxi)+phi0*pxi*pyi**2)
+     $     +(pyi**2+pzi*(pzi-phi0*pxi))*(al+phi0*xi))*a**2/p/pzi
+      trans2(3,6)=-(al*(dpzi*(1.d0+pzi)*phi0*pxi-pzi**3)+(al+phi0*xi))
      $     *a**2*pyi/pzi/p
-      trans2(4,1)=0.d0
-      trans2(4,2)=0.d0
-      trans2(4,3)=0.d0
-      trans2(4,4)=1.d0
-      trans2(4,5)=0.d0
-      trans2(4,6)=0.d0
       trans2(5,1)=-trans2(1,1)*trans2(2,6)
       trans2(5,2)=-trans2(1,2)*trans2(2,6)+trans2(2,2)*trans2(1,6)
-      trans2(5,3)=0.d0
       trans2(5,4)=trans2(3,6)
-      trans2(5,5)=1.d0
-      trans2(5,6)=(-al*pzi*(a*phi*pxi+pzi)+
-     $     a*(al*(-phi*pxi*dpzi*(phi*pxi-1.d0)*a/pzi**2+1.d0)+
-     $     phi*xi*(pxi*phi*dpzi*a/pzi**2+1.d0)))/p
-      trans2(6,1)=0.d0
-      trans2(6,2)=0.d0
-      trans2(6,3)=0.d0
-      trans2(6,4)=0.d0
-      trans2(6,5)=0.d0
-      trans2(6,6)=1.d0
+c      zf =cod(5)-phi0*dpzi*xf/pzi+al*dpzi*(.5d0*pzi+.5d0-1.d0/pzi)
+c      trans2(5,6)=(-al*pzi*(a*phi0*pxi+pzi)+
+c     $     a*(al*(-phi0*pxi*dpzi*(phi0*pxi-1.d0)*a/pzi**2+1.d0)+
+c     $     phi0*xi*(pxi*phi0*dpzi*a/pzi**2+1.d0)))/p
+c      zf=cod(5)+(.5d0*s+(1.d0+xi/rho0)*dpzi/pzi)*al
+      trans2(5,6)=(-s/p+(1.d0+xi/rho0)*s/pzi**3)*al
       call tmultr5(trans,trans2,irad)
       call tmulbs(beam ,trans2,.true.)
       cod(1)=xf
@@ -143,12 +123,12 @@
       use tmacro
       use kradlib, only:tradke
       use temw,only:tmulbs
+      use mathfun, only:pxy2dpz
       implicit none
       real*8, intent(in):: ak1,al,bsi1,bsi2,alr
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 pxf,xf,phin,dxpx,
-     $     dxf,dpxf,dyf,dpyf,hi,hip,pyf,yf,zf,
-     $     xiksq
+     $     dxf,dpxf,dyf,dpyf,hi,hip,pyf,yf,zf,xiksq
       logical*4 ,intent(in):: enarad
       dp=cod(6)
       p=1.d0+dp
@@ -180,8 +160,11 @@ c     $     -(5.d0/rho0-1.d0/rhoe)*(drhopak*al-dpxf/akxsq))
       pyf=pyi+dpyf
       trans1(1,1)=cx
       trans1(1,2)=sxkx/p
+c       dcxkx*(drhop+akxsq*xi)+sxkx*pxi
       trans1(1,6)=drhopp*dcxkx+drhop*dcxkxp
-     $     +xi*dcxp+(sxkxp-0.5d0*sxkx/p)*pxi
+     $     +xi*dcxp+(sxkxp-sxkx/p)*pxi
+c      trans1(1,6)=drhopp*dcxkx+(drhop+akxsqp*xi)*dcxkxp
+c     $     +(sxkxp-0.5d0*sxkx/p)*pxi
       trans1(2,1)=aksx*p
       trans1(2,2)=cx
 c      trans1(2,6)=aksxp*(drhopak+xi)*p
@@ -190,7 +173,8 @@ c     $     +aksx*(drhopakp*p+drhopak+xi)+pxi*dcxp
      $     +(p*aksxp+aksx)*xi+dcxp*pxi
       trans1(3,3)=cy
       trans1(3,4)=syky/p
-      trans1(3,6)=yi*dcyp+(sykyp-0.5d0*syky/p)*pyi
+c      trans1(3,6)=yi*dcyp+(sykyp-0.5d0*syky/p)*pyi
+      trans1(3,6)=yi*dcyp+(sykyp-syky/p)*pyi
       trans1(4,3)=aksy*p
       trans1(4,4)=cy
       trans1(4,6)=(aksyp*p+aksy)*yi+pyi*dcyp
@@ -198,15 +182,25 @@ c     $     +aksx*(drhopakp*p+drhopak+xi)+pxi*dcxp
       trans1(5,2)=-trans1(1,2)*trans1(2,6)+trans1(2,2)*trans1(1,6)
       trans1(5,3)=-trans1(3,3)*trans1(4,6)+trans1(4,3)*trans1(3,6)
       trans1(5,4)=-trans1(3,4)*trans1(4,6)+trans1(4,4)*trans1(3,6)
+c      dpzi=p*pxy2dpz(pxi,pyi)
+c      pzi=p+dpzi
+c      az=1.d0/(pzi-p*phin*pxi)
+c      trans1(5,6)=(-al*pzi*(az*p**2*phin*pxi + pzi)/p**3 +
+c     $     az*(al*(-phin*p*pxi*dpzi*(phin*p*pxi - p)*az/pzi**2 + 1.d0) +
+c     $     phin*xi*(p**2*pxi*phin*dpzi*az/pzi**2 + 1.d0)))
+c     $     +hip*al+h0/h1emit**3*al
+c      zf =zi-.25d0*(dxpx
+c     $     -(5.d0/rho0-1.d0/rhoe)*(drhop*xsxkx-sxkx*xi-dcxkx*pxi))
+c     $     -hi*al*.5d0
+c      dxpx=dxf*pxi+xi*dpxf+dxf*dpxf+dyf*pyi+yi*dpyf+dyf*dpyf
       trans1(5,6)=-0.25d0*(-dxpx/p
      $     +trans1(1,6)*pxf+trans1(2,6)/p*xf
      $     +trans1(3,6)*pyf+trans1(4,6)/p*yf
      $     -1.d0/rhoe/p*(drhop*xsxkx-sxkx*xi-dcxkx*pxi)
      $     -(5.d0/rho0-1.d0/rhoe)
-     $     *(drhopp*xsxkx+drhop*xsxkxp-sxkxp*xi-dcxkxp*pxi))
+c     $     *(drhopp*xsxkx+drhop*xsxkxp-sxkxp*xi-dcxkxp*pxi))
+     $     *(drhopp*xsxkx+drhop*xsxkxp-sxkxp*xi-dcxkxp*pxi+dcxkx*pxi/p))
      $     -hip*al*.5d0+h0/h1emit**3*al
-c      write(*,'(a,1p8g15.7)')'tmulte ',drhopp,drhop,xsxkx,xsxkxp,
-c     $     sxkxp,dcxkxp
       call tmultr5(trans,trans1,irad)
       call tmulbs(beam ,trans1,.true.)
       cod(1)=xf
@@ -224,72 +218,122 @@ c     $     sxkxp,dcxkxp
       end subroutine
 
       subroutine tbendebody0(trans,cod,beam,srot,aln,
-     $     phi0n,snphi0,sinsq0,csphi0,alr,
+     $     phi0n,sn,xsn,cn,dcn,alr,
      $     bsi1,bsi2,enarad)
       use tmacro
       use kradlib, only:tradke
       use temw,only:tmulbs
       use mathfun
       implicit none
-      real*8, intent(in):: phi0n,snphi0,sinsq0,csphi0,aln,bsi1,bsi2,alr
+      real*8, intent(in):: phi0n,sn,xsn,cn,dcn,aln,bsi1,bsi2,alr
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
-      real*8 xi,pxi,yi,pyi,dp,pr,rhoe,
-     $     dpzinv,phsq,dtn,s,dpz1,pz1,drho,dpx,pxf,
-     $     pz2,d,sinda,da,dpz2,xf
+      real*8 xi,pxi,yi,pyi,dp,pxf,pza,pzf,pzi,s1,u,xf,yf,zf,
+     $     dpxf,dpzf,dpzi,omega,phsq,da,dm22,ddodp,
+     $     dodp,dodpx,dodpy,dodx,
+     $     dpzadp,dpzadpx,dpzadpy,dpzadx,ddpzadp
       logical*4 , intent(in) ::enarad
       xi=cod(1)
       dp=cod(6)
-      pr=1.d0+dp
-      pxi=min(pr,max(-pr,cod(2)))/pr
+      p=1.d0+dp
+      pxi=min(p,max(-p,cod(2)))
       yi=cod(3)
-      pyi=min(pr,max(-pr,cod(4)))/pr
-      rhoe=rhob*pr
-      s=min(psqmax,pxi**2+pyi**2)
-      dpz1=sqrt1(-s)
-      pz1=1.d0+dpz1
-      drho=drhob+rhoe*dpz1+rhob*dp
-      dpx=-(xi-drho)/rhoe*snphi0-sinsq0*pxi
-      pxf=pxi+dpx
-      s=min(psqmax,pxf**2+pyi**2)
-      dpz2=sqrt1(-s)
-      pz2=1.d0+dpz2
-      d=pxf*pz1+pxi*pz2
-      sinda=min(1.d0,max(-1.d0,merge(2.d0*pxf*pz2/(pxf**2+pz2**2),
-     $     dpx*(pxf+pxi)/d,d .eq. 0.d0)))
-      s=sinda**2
-      da=sinda*(1.d0+s*merge(
-     $     a3+s*(a5+s*(a7+s*(a9+s*(a11+s*(a13+s*a15))))),
-     $     a3+s*(a5+a7*s),
-     $     s .gt. 2.d-4))
-      trans1(2,1)=-snphi0/rhob
-      trans1(2,2)=csphi0-snphi0*pxi/pz1
-      trans1(2,6)=snphi0/pz1
-      trans1(2,4)=-pyi*trans1(2,6)
-      dpzinv=dpx/pz1/pz2*(pxi+pxf)/(pz1+pz2)
-      phsq=(1.d0-pyi)*(1.d0+pyi)
-      dtn=merge(-2.d0*pxi/pz1,phsq*sinda/pz1/pz2,d .eq. 0.d0)
-      trans1(1,1)=csphi0+snphi0*pxf/pz2
-      trans1(1,2)=rhob*(snphi0-dtn*csphi0+pxi*pxf/pz1/pz2*snphi0)
-      trans1(1,6)=rhob*(dpzinv+sinsq0/pz1-pxf/pz2*trans1(2,6))
-      trans1(1,4)=-pyi*trans1(1,6)
-      trans1(5,1)=rhob*trans1(2,1)/pz2
-      trans1(5,2)=rhob*(dpzinv-sinsq0/pz2-snphi0*pxi/pz1/pz2)
-      trans1(5,6)=rhob*(trans1(2,6)/pz2-dtn/phsq)
-      trans1(5,4)=-pyi*trans1(5,6)
-      trans1(3,1)=-pyi*trans1(5,1)
-      trans1(3,2)=-pyi*trans1(5,2)
-      trans1(3,4)=rhob*(phi0n-da)-pyi*trans1(5,4)
-      trans1(3,6)=trans1(5,4)
-      trans1(5,6)=trans1(5,6)-(phi0n-da)*rhob+h0/h1emit**3*aln
-      xf=xi*csphi0+rhoe*(snphi0*pxi-dpx*(pxi+pxf)/(pz1+pz2))
-     1     +drho*sinsq0
+      pyi=min(p,max(-p,cod(4)))
+      dpzi=p*pxy2dpz(pxi/p,pyi/p)
+      pzi=p+dpzi
+      pza=dpzi+dp+(drhob-xi)/rhob
+c         pzi-p+p-1+(rhob-rho-x1)/rhob
+      dpxf=dcn*pxi+sn*pza
+      pxf=pxi+dpxf
+      dpzf=p*pxy2dpz(pxf/p,pyi/p)
+      pzf=p+dpzf
+      s1=pxf/pzf
+      xf=rhob*(sn*pxi-cn*pza+dp+dpzf+drhob/rhob)
+      phsq=p**2-pyi**2
+      da=asin((-p*dpxf-pxf*dpzi+pxi*dpzf)/phsq)
+c      write(*,'(a,1p10g12.4)')'tbbody0 ',da,p,pxi,pxf,dpxf,dpzi,dpzf,phsq,
+c     $     atan(pxi/pzi)-atan(pxf/pzf)
+      omega=phi0n+da
+      yf=yi+rhob*omega*pyi
+      zf=cod(5)-da*p*rhob-phi0n*(drhob+dp*rhob)
+      dpzadx =-1.d0/rhob
+      dpzadpx=-pxi/pzi
+      dpzadpy=-pyi/pzi
+      ddpzadp=-dpzi/pzi
+      dpzadp = 1.d0+ddpzadp
+      u=(s1+dpzadpx)/phsq
+      trans1(2,1)=sn*dpzadx
+      dm22=dcn+sn*dpzadpx
+      trans1(2,2)=1.d0+dm22
+      trans1(2,4)=sn*dpzadpy
+      trans1(2,6)=sn*dpzadp
+      dodx =-trans1(2,1)/pzf
+c      dodpx=1.d0/pzi-trans1(2,2)/pzf
+      dodpx=((dpzf-dpzi)/pzi-dm22)/pzf
+      dodpy=-u*pyi-trans1(2,4)/pzf
+      ddodp = u*p -sn*ddpzadp/pzf
+      dodp  = ddodp-sn/pzf
+      trans1(1,1)=cn+sn*s1
+      trans1(1,2)=rhob*(sn-cn*dpzadpx-s1*trans1(2,2))
+      trans1(1,4)=rhob*(-cn*dpzadpy-s1*trans1(2,4)-pyi/pzf)
+      trans1(1,6)=rhob*(-cn*dpzadp-s1*trans1(2,6)+p/pzf)
+      trans1(3,1)=rhob*pyi*dodx
+      trans1(3,2)=rhob*pyi*dodpx
+      trans1(3,4)=rhob*(omega+pyi*dodpy)
+      trans1(3,6)=rhob*pyi*dodp
+      trans1(5,1)=-trans1(1,1)*trans1(2,6)+trans1(2,1)*trans1(1,6)
+      trans1(5,2)=-trans1(1,2)*trans1(2,6)+trans1(2,2)*trans1(1,6)
+      trans1(5,4)=-trans1(1,4)*trans1(2,6)+trans1(2,4)*trans1(1,6)+trans1(3,6)
+c      trans1(5,6)=-rhob*(omega+dodp*p)+h0/h1emit**3*aln
+      trans1(5,6)=-rhob*(da+xsn+sn*dpzf/pzf+ddodp*p)+h0/h1emit**3*aln
+c$$$      rhoe=rhob*pr
+c$$$      s=min(psqmax,pxi**2+pyi**2)
+c$$$      dpz1=sqrt1(-s)
+c$$$      pz1=1.d0+dpz1
+c$$$      drho=drhob+rhoe*dpz1+rhob*dp
+c$$$      dpx=-(xi-drho)/rhoe*snphi0-sinsq0*pxi
+c$$$      pxf=pxi+dpx
+c$$$      s=min(psqmax,pxf**2+pyi**2)
+c$$$      dpz2=sqrt1(-s)
+c$$$      pz2=1.d0+dpz2
+c$$$c      d=pxf*pz1+pxi*pz2
+c$$$      sinda=min(1.d0,max(-1.d0,2.d0*pxf*pz2/(pxf**2+pz2**2)))
+c$$$c      sinda=min(1.d0,max(-1.d0,merge(2.d0*pxf*pz2/(pxf**2+pz2**2),
+c$$$c     $     dpx*(pxf+pxi)/d,d .eq. 0.d0)))
+c$$$      s=sinda**2
+c$$$      da=sinda*(1.d0+s*merge(
+c$$$     $     a3+s*(a5+s*(a7+s*(a9+s*(a11+s*(a13+s*a15))))),
+c$$$     $     a3+s*(a5+a7*s),
+c$$$     $     s .gt. 2.d-4))
+c$$$      trans1(2,1)=-snphi0/rhob
+c$$$      trans1(2,2)=csphi0-snphi0*pxi/pz1
+c$$$      trans1(2,6)=snphi0/pz1
+c$$$      trans1(2,4)=-pyi*trans1(2,6)
+c$$$      dpzinv=dpx/pz1/pz2*(pxi+pxf)/(pz1+pz2)
+c$$$      phsq=(1.d0-pyi)*(1.d0+pyi)
+c$$$c      dtn=merge(-2.d0*pxi/pz1,phsq*sinda/pz1/pz2,d .eq. 0.d0)
+c$$$      dtn=phsq*sinda/pz1/pz2
+c$$$      trans1(1,1)=csphi0+snphi0*pxf/pz2
+c$$$      trans1(1,2)=rhob*(snphi0-dtn*csphi0+pxi*pxf/pz1/pz2*snphi0)
+c$$$      trans1(1,6)=rhob*(dpzinv+sinsq0/pz1-pxf/pz2*trans1(2,6))
+c$$$      trans1(1,4)=-pyi*trans1(1,6)
+c$$$      trans1(5,1)=rhob*trans1(2,1)/pz2
+c$$$      trans1(5,2)=rhob*(dpzinv-sinsq0/pz2-snphi0*pxi/pz1/pz2)
+c$$$      trans1(5,6)=rhob*(trans1(2,6)/pz2-dtn/phsq)
+c$$$      trans1(5,4)=-pyi*trans1(5,6)
+c$$$      trans1(3,1)=-pyi*trans1(5,1)
+c$$$      trans1(3,2)=-pyi*trans1(5,2)
+c$$$      trans1(3,4)=rhob*(phi0n-da)-pyi*trans1(5,4)
+c$$$      trans1(3,6)=trans1(5,4)
+c$$$      trans1(5,6)=trans1(5,6)-(phi0n-da)*rhob+h0/h1emit**3*aln
+c$$$      xf=xi*csphi0+rhoe*(snphi0*pxi-dpx*(pxi+pxf)/(pz1+pz2))
+c$$$     1     +drho*sinsq0
       call tmultr5(trans,trans1,irad)
       call tmulbs(beam ,trans1,.true.)
       cod(1)=xf
-      cod(3)=yi+pyi*rhoe*(phi0n-da)
-      cod(2)=min(pr,max(-pr,pxf*pr))
-      cod(4)=min(pr,max(-pr,pyi*pr))
-      cod(5)=cod(5)-phi0n*(dp*rhob+drhob)+da*rhoe-dvemit*aln
+      cod(3)=yf
+      cod(2)=min(p,max(-p,pxf))
+      cod(4)=min(p,max(-p,pyi))
+      cod(5)=zf-dvemit*aln
       if(enarad)then
         bsir0=bsir0+bsi1*yi/rhob-bsi2*cod(3)/rhob
         call tradke(trans,cod,beam,srot,alr,phi0n,0.d0)
@@ -297,39 +341,166 @@ c     $     sxkxp,dcxkxp
       return
       end subroutine
 
-      subroutine tbrote(trans1,cod,srot,phi0,dtheta)      
+      subroutine tbrote(trans,cod,srot,alg,phig,dx,dtheta,dchi2,ent)
       use tmacro, only:irad
       use ffs_flag,only:calpol
-      use mathfun, only:asinz
+      use mathfun, only:xsincos
       implicit none
-      real*8 ,intent(inout):: trans1(6,6),cod(6),srot(3,9)
-      real*8 ,intent(in):: phi0,dtheta
-      real*8 chi1,chi2,chi3,sphi0,coschi2,sdt,cphi0,rr(3,3)
+      real*8 ,intent(inout):: trans(6,6),cod(6),srot(3,9)
+      real*8 ,intent(in):: phig,dtheta,alg,dchi2,dx
+      logical*4 ,intent(in):: ent
+      real*8 ,target :: trans2(6,6)
+      real*8 rr(3,3),s2,xs2,c2,dc2,st,xst,ct,dct,dl,c0,s0
       integer*4 i
-      cphi0=cos(phi0*.5d0)
-      sphi0=sin(phi0*.5d0)
-      sdt=sin(dtheta)
-      chi2=asinz(sdt*sphi0)
-      coschi2=cos(chi2)
-      chi1=asinz(sin(dtheta*.5d0)**2*2.d0*sphi0*cphi0/coschi2)
-      chi3=asinz(sdt*cphi0/coschi2)
-      call tsrote(trans1,cod,rr,chi1,chi2,chi3)
+      if(phig == 0.d0)then
+        c0=1.d0
+        s0=0.d0
+        dl=alg
+      else
+        c0=cos(phig)
+        s0=sin(phig)
+        dl=alg*s0/phig
+      endif
+      call xsincos(dchi2,s2,xs2,c2,dc2)
+      call xsincos(dtheta,st,xst,ct,dct)
+      rr(1,1)=dct*c0**2+dc2*s0**2+c0*s0*s2*st
+      rr(2,2)=c2*dct+dc2
+      rr(3,3)=dc2*c0**2+dct*s0**2-c0*s0*s2*st
+      if(ent)then
+        rr(1,2)= s0*s2-c0*c2*st
+        rr(1,3)= c0*((dct-dc2)*s0-c0*s2*st)
+        rr(2,1)=-ct*s0*s2+c0*st
+        rr(2,3)= c0*ct*s2+s0*st
+        rr(3,1)= s0*(c0*(dct-dc2)+s0*s2*st)
+        rr(3,2)=-c0*s2-c2*s0*st
+        if(dx /= 0.d0 .and. phig /= 0.d0)then
+          call tdrife1(trans,cod,1.d0,0.d0,dx*s0)
+          cod(1)=cod(1)-dx*c0
+          call tbgrote(trans2,cod,rr,dl*s0,-dl*c0)
+          call tmultr5(trans,trans2,6)
+        else
+          call tbgrote(trans,cod,rr,dl*s0,-dl*c0)
+        endif
+      else
+        rr(2,1)= s0*s2-c0*c2*st
+        rr(3,1)= c0*((dct-dc2)*s0-c0*s2*st)
+        rr(1,2)=-ct*s0*s2+c0*st
+        rr(3,2)= c0*ct*s2+s0*st
+        rr(1,3)= s0*(c0*(dct-dc2)+s0*s2*st)
+        rr(2,3)=-c0*s2-c2*s0*st
+        call tbgrote(trans,cod,rr,dl*s0,-dl*c0)
+        if(dx /= 0.d0 .and. phig /= 0.d0)then
+          call tdrife1(trans2,cod,1.d0,0.d0,-dx*s0)
+          cod(1)=cod(1)+dx*c0
+          call tmultr5(trans,trans2,6)
+        endif
+      endif
       if(calpol .and. irad .gt. 6)then
         do concurrent (i=1:9)
-          srot(1,i)=dot_product(rr(1,:),srot(:,i))
-          srot(2,i)=dot_product(rr(2,:),srot(:,i))
-          srot(3,i)=dot_product(rr(3,:),srot(:,i))
+          srot(1,i)=dot_product(rr(1,:),srot(:,i))+srot(1,i)
+          srot(2,i)=dot_product(rr(2,:),srot(:,i))+srot(2,i)
+          srot(3,i)=dot_product(rr(3,:),srot(:,i))+srot(3,i)
         enddo
       endif
       return
       end
 
+      subroutine tbgrote(trans,cod,dr,dx,dz,rr)
+      use mathfun,only:pxy2dpz
+      implicit none
+      real*8 ,intent(inout):: trans(6,6),cod(6)
+      real*8 ,intent(in):: dr(3,3),dx,dz
+      real*8 ,intent(out) , optional ::rr(3,3)
+      real*8 pxi,pyi,pzi,xi,yi,zi,xf,yf,zf,pxf,pyf,pzf,dpzi,dpzf,
+     $     dpzidpx,dpzidpy,dpzidp,pr,r11,r22,r33,pxfpzf,pyfpzf,zfpzf,prpzf
+      xi=cod(1)+dx
+      yi=cod(3)
+      pxi=cod(2)
+      pyi=cod(4)
+      pr=1.d0+cod(6)
+      dpzi=pxy2dpz(pxi/pr,pyi/pr)*pr
+      pzi=pr+dpzi
+      zi =dz
+      xf =dr(1,1)*xi +dr(1,2)*yi +dr(1,3)*zi +cod(1)
+      yf =dr(2,1)*xi +dr(2,2)*yi +dr(2,3)*zi +yi
+      zf =dr(3,1)*xi +dr(3,2)*yi +dr(3,3)*zi
+      r11=1.d0+dr(1,1)
+      r22=1.d0+dr(2,2)
+      r33=1.d0+dr(3,3)
+      if(present(rr))then
+        rr=dr
+        rr(1,1)=r11
+        rr(2,2)=r22
+        rr(3,3)=r33
+      endif
+      pxf =    r11*pxi+dr(1,2)*pyi+dr(1,3)*pzi
+      pyf =dr(2,1)*pxi+    r22*pyi+dr(2,3)*pzi
+      dpzf=dr(3,1)*pxi+dr(3,2)*pyi+    r33*dpzi+dr(3,3)*pr
+      pzf =pr+dpzf
+      pxfpzf=pxf/pzf
+      pyfpzf=pyf/pzf
+      zfpzf=zf/pzf
+      prpzf=pr/pzf
+      cod(2)=pxf
+      cod(4)=pyf
+      cod(1)=xf-pxf*zfpzf
+      cod(3)=yf-pyf*zfpzf
+      cod(5)=cod(5)+pr*zfpzf
+
+      dpzidpx=-pxi/pzi
+      dpzidpy=-pyi/pzi
+      dpzidp =  pr/pzi
+      trans(2,1)=0.d0
+      trans(2,2)=    r11+dr(1,3)*dpzidpx
+      trans(2,3)=0.d0
+      trans(2,4)=dr(1,2)+dr(1,3)*dpzidpy
+      trans(1:4,5)=0.d0
+      trans(2,6)=dr(1,3)*dpzidp
+
+      trans(4,1)=0.d0
+      trans(4,2)=dr(2,1)+dr(2,3)*dpzidpx
+      trans(4,3)=0.d0
+      trans(4,4)=    r22+dr(2,3)*dpzidpy
+      trans(4,6)=dr(2,3)*dpzidp
+
+      trans(1,1)=    r11-dr(3,1)*pxfpzf
+      trans(1,2)=-zfpzf*(trans(2,2)-pxfpzf*(dr(3,1)+    r33*dpzidpx))
+      trans(1,3)=dr(1,2)-dr(3,2)*pxfpzf
+      trans(1,4)=-zfpzf*(trans(2,4)-pxfpzf*(dr(3,2)+    r33*dpzidpy))
+      trans(1,6)=-zfpzf*(dr(1,3)-    r33*pxfpzf)*dpzidp
+
+      trans(3,1)=dr(2,1)-dr(3,1)*pyfpzf
+      trans(3,2)=-zfpzf*(trans(4,2)-pyfpzf*(dr(3,1)+    r33*dpzidpx))
+      trans(3,3)=    r22-dr(3,2)*pyfpzf
+      trans(3,4)=-zfpzf*(trans(4,4)-pyfpzf*(dr(3,2)+    r33*dpzidpy))
+      trans(3,6)=-zfpzf*(dr(2,3)-    r33*pyfpzf)*dpzidp
+
+c      trans(5,1)=-trans(1,1)*trans(2,6)-trans(3,1)*trans(4,6)
+      trans(5,1)= dr(3,1)*prpzf
+c      trans(5,2)=-trans(1,2)*trans(2,6)+trans(2,2)*trans(1,6)
+c     $           -trans(3,2)*trans(4,6)+trans(4,2)*trans(3,6)
+      trans(5,2)= -zfpzf*prpzf*(dr(3,1)+r33*dpzidpx)
+c      trans(5,3)=-trans(1,3)*trans(2,6)-trans(3,3)*trans(4,6)
+      trans(5,3)= dr(3,2)*prpzf
+c      trans(5,4)=-trans(1,4)*trans(2,6)+trans(2,4)*trans(1,6)
+c     $           -trans(3,4)*trans(4,6)+trans(4,4)*trans(3,6)
+      trans(5,4)= -zfpzf*prpzf*(dr(3,2)+r33*dpzidpy)
+      trans(5,5)=1.d0
+c      trans(5,6)=zfpzf*(1.d0-pr/pzf*    r33*dpzidp)
+      trans(5,6)=r33*(dpzf*prpzf+dpzi/pzi)-dr(3,3)
+
+      trans(6,1:5)=0.d0
+      trans(6,6)=1.d0
+      return
+      end
+
       subroutine tbendef1(trans,cod,beam,srot,al0,phi0,fb,rb0,enarad)
+      use mathfun, only:xsincos
       implicit none
       real*8 , intent(inout)::trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 , intent(in)::al0,phi0,rb0,fb
       logical*4 , intent(in)::enarad
-      real*8 phib1,csphib1,snphib1,sinsq1,bsi1,bsi2,rb,fl
+      real*8 phib1,sn,xsn,cn,dcn,bsi1,bsi2,rb,fl
       integer*4 i
       logical*4 en
       rb=rb0
@@ -339,12 +510,9 @@ c     $     sxkxp,dcxkxp
       do i=1,2
         fl=0.5d0*fb*rb
         phib1=phi0*fl/al0
-        csphib1=cos(phib1)
-        snphib1=sin(phib1)
-        sinsq1=merge(snphib1**2/(1.d0+csphib1),1.d0-csphib1,
-     $       csphib1 .ge. 0.d0)
+        call xsincos(phib1,sn,xsn,cn,dcn)
         call tbendebody0(trans,cod,beam,srot,fl,
-     $     phib1,snphib1,sinsq1,csphib1,.5d0*fb,bsi1,bsi2,
+     $     phib1,sn,xsn,cn,dcn,.5d0*fb,bsi1,bsi2,
      $     en)
         rb=1.d0/6.d0/rb
         bsi1=0.d0
@@ -360,7 +528,7 @@ c     $     sxkxp,dcxkxp
 
       subroutine tbende(trans,cod,beam,srot,al0,phib,phi0,
      $     psi1,psi2,apsi1,apsi2,ak,
-     1     dx,dy,theta,dtheta,
+     1     dx,dy,theta,dtheta,dchi2,alg,phig,
      $     fb1,fb2,mfring,fringe,eps0,enarad,alcorr,next,l)
       use bendeb
       use tfstk
@@ -369,16 +537,17 @@ c     $     sxkxp,dcxkxp
       use multa, only:nmult
       use kradlib, only:tradke
       use temw,only:tsetr0
+      use mathfun, only:xsincos
       implicit none
       integer*4 ,intent(in)::  mfring,l
       integer*4 ndiv,nrad,n,n1,n2
       real*8 ,intent(in):: al0,phib,phi0,apsi1,apsi2,ak,dx,dy,
-     $     theta,dtheta,fb1,fb2,eps0
+     $     theta,dtheta,fb1,fb2,eps0,dchi2,alg,phig
       real*8 phibl,bsi1,bsi2,alx,alr,
      $     dxfr1,dyfr1,dxfr2,dyfr2,phi1,
      $     eps,akn,tanp1,tanp2,f,
      $     dyfra1,dyfra2,psi1,psi2,cod11,
-     $     csphin,snphin,sinsqn,phin,aln,alx0,akx0,
+     $     cn,sn,xsn,dcn,phin,aln,alx0,akx0,
      $     rbc,akc,alc,phic,f1r,f2r
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       complex*16 akm(0:nmult)
@@ -417,24 +586,19 @@ c     $     sxkxp,dcxkxp
         return
       elseif(phib .eq. 0.d0)then
         call tchge(trans,cod,beam,srot,
-     $       dx,dy,theta,dtheta,phi0,.true.)
+     $       dx,dy,theta,dtheta,dchi2,alg,phig,.true.)
         call tbdrifte(trans,cod,beam,srot,al,phi0,h0,h1emit,dvemit,
      $       irad)
         call tchge(trans,cod,beam,srot,
-     $       -dx,-dy,-theta,-dtheta,-phi0,.false.)
+     $       dx,dy,theta,dtheta,dchi2,alg-al0,phig-phi0,.false.)
         return
       elseif(al .eq. 0.d0)then
-        call tbthie(trans,cod,beam,srot,phib,phi0,dx,dy,theta,dtheta)
+        call tbthie(trans,cod,beam,srot,phib,phi0,dx,dy,theta,dtheta,dchi2)
         return
       endif
-c      if(l .eq. 4551)then
-c        write(*,*)'tbende-0 ',dx,dy,dtheta
-c      endif
       call tchge(trans,cod,beam,srot,
-     $     dx,dy,theta,dtheta,phi0,.true.)
-c      if(l .eq. 4551)then
-c        write(*,*)'tbende-0.5'
-c      endif
+     $     dx,dy,theta,dtheta,dchi2,alg,phig,.true.)
+c      write(*,'(a,1p10g12.4)')'tbende-2 ',cod(1:5)
       if(enarad)then
         call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
       endif
@@ -469,49 +633,21 @@ c      endif
         nrad=int(abs(al0*rbc/epsrad*crad*(h0*b)**2))
         ndiv=max(ndiv,int(nrad*emidiv*emidib),
      1       int(abs(phib*h0*anrad)/epsrad/1.d6*emidiv*emidib))
-c        write(*,'(a,3i5,1p10g12.4)')'tbende ',l,nrad,ndiv,rbc,al0,b
       endif
-      trans1(1,3)=0.d0
-      trans1(1,4)=0.d0
-      trans1(1,5)=0.d0
-      trans1(2,3)=0.d0
-      trans1(2,4)=0.d0
-      trans1(2,5)=0.d0
-      trans1(3,1)=0.d0
-      trans1(3,2)=0.d0
-      trans1(3,5)=0.d0
-      trans1(4,1)=0.d0
-      trans1(4,2)=0.d0
-      trans1(4,5)=0.d0
-      trans1(5,5)=1.d0
-      trans1(6,1)=0.d0
-      trans1(6,2)=0.d0
-      trans1(6,3)=0.d0
-      trans1(6,4)=0.d0
-      trans1(6,5)=0.d0
-      trans1(6,6)=1.d0
+      call tinitr(trans1)
       tanp1=tan(psi1*phi0+apsi1)
       tanp2=tan(psi2*phi0+apsi2)
       f=1.d0/rho0
       call tbedge(trans,cod,beam,al,phib,psi1*phi0+apsi1,.true.)
+c      write(*,'(a,1p10g12.4)')'tbende-2.5 ',cod(1:5)
       cod11=cod(1)
       akc=ak*rbc
       alc=al*rbc
       akn=akc/ndiv
       aln=alc/ndiv
       phin=phic/ndiv
-c      write(*,'(a,i5,1p8g15.7)')'tbende ',ndiv,
-c     $     rb1,rb2,al0,alc,aln,phin,ak
       if(ak .eq. 0.d0)then
-        trans1(3,3)=1.d0
-        trans1(4,3)=0.d0
-        trans1(4,4)=1.d0
-        trans1(4,6)=0.d0
-        trans1(5,3)=0.d0        
-        csphin=cos(phin)
-        snphin=sin(phin)
-        sinsqn=merge(snphin**2/(1.d0+csphin),1.d0-csphin,
-     $       csphin .ge. 0.d0)
+        call xsincos(phin,sn,xsn,cn,dcn)
         bsi1=1.d0
         bsi2=0.d0
         n1=1
@@ -534,12 +670,13 @@ c     $     rb1,rb2,al0,alc,aln,phin,ak
               bsi2=1.d0
             endif
             call tbendebody0(trans,cod,beam,srot,aln,
-     $           phin,snphin,sinsqn,csphin,aln,bsi1,bsi2,
+     $           phin,sn,xsn,cn,dcn,aln,bsi1,bsi2,
      $           enarad .and. n .ne. n2)
             alr=aln
             phi1=phin
           endif
           bsi1=0.d0
+c          write(*,'(a,i5,1p10g12.4)')'tbende-3a ',n,cod(1:5)
         enddo
       else
         tbinit=.true.
@@ -579,6 +716,7 @@ c     $     rb1,rb2,al0,alc,aln,phin,ak
       if(.not. next)then
         bradprev=0.d0
       endif
+c      write(*,'(a,1p10g12.4)')'tbende-6 ',cod
       call tbedge(trans,cod,beam,al,phib,psi2*phi0+apsi2,.false.)
       if(f2r .ne. 0.d0)then
         dxfr2=-fb2**2/rhob/24.d0
@@ -589,8 +727,10 @@ c     $     rb1,rb2,al0,alc,aln,phin,ak
       if(enarad)then
         call tradke(trans,cod,beam,srot,alr,phi1,0.d0)
       endif
+c      write(*,'(a,1p10g12.4)')'tbende-8 ',cod
       call tchge(trans,cod,beam,srot,
-     $     -dx,-dy,-theta,-dtheta,-phi0,.false.)
+     $     dx,dy,theta,dtheta,dchi2,alg-al0,phig-phi0,.false.)
+c      write(*,'(a,1p10g12.4)')'tbende-9 ',cod
       return
       end
 
@@ -659,22 +799,21 @@ c      pzi=sqrt(max(1.d-4,(pr-pxi)*(pr+pxi)-pyi**2))
 
       subroutine qbend(trans,cod,
      1     al0,phib,phi0,psi1,psi2,apsi1,apsi2,ak,
-     1     dx,dy,theta,dtheta,fb1,fb2,mfring,fringe,eps0,coup)
+     1     dx,dy,theta,dtheta,dchi2,alg,phig,fb1,fb2,mfring,fringe,eps0,coup)
       implicit none
       integer*4 ,intent(in):: mfring
       real*8 ,intent(inout):: trans(4,5),cod(6)
       real*8 transe(6,12),beam(42),srot(3,9)
       real*8 ,intent(in):: dx,dy,theta,fb1,fb2,al0,phib,phi0,
-     $     psi1,psi2,ak,dtheta,eps0,apsi1,apsi2
+     $     psi1,psi2,ak,dtheta,eps0,apsi1,apsi2,dchi2,alg,phig
       logical*4 ,intent(out):: coup
       logical*4 ,intent(in):: fringe
       call tinitr(transe)
       call tbende(transe,cod,beam,srot,al0,phib,phi0,
      $     psi1,psi2,apsi1,apsi2,ak,
-     1     dx,dy,theta,dtheta,
+     1     dx,dy,theta,dtheta,dchi2,alg,phig,
      $     fb1,fb2,mfring,fringe,eps0,.false.,.true.,.false.,1)
       call qcopymat(trans,transe,.false.)
-c      write(*,*)'qbend ',cod,al0,phi0,phib
       coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.
      $     trans(2,3) .ne. 0.d0 .or. trans(2,4) .ne. 0.d0
       return
@@ -710,17 +849,17 @@ c      write(*,*)'qbend ',cod,al0,phi0,phib
       end
 
       subroutine tbthie(trans,cod,beam,srot,phib,phi0,
-     1                 dx,dy,theta,dtheta)
+     1                 dx,dy,theta,dtheta,dchi2)
       use tfstk
       use ffs_flag
       use tmacro
       use temw,only:tmulbs
       implicit none
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
-      real*8 ,intent(in):: phib,phi0,dx,dy,theta,dtheta
+      real*8 ,intent(in):: phib,phi0,dx,dy,theta,dtheta,dchi2
       real*8 trans1(6,6)
       call tchge(trans,cod,beam,srot,
-     $     dx,dy,theta,dtheta,phi0,.true.)
+     $     dx,dy,theta,dtheta,dchi2,0.d0,.5d0*phi0,.true.)
       call tinitr(trans1)
       trans1(2,6)=phi0
       trans1(5,1)=-phi0
@@ -729,6 +868,6 @@ c      write(*,*)'qbend ',cod,al0,phi0,phib
       cod(2)=cod(2)+(phi0-phib)+cod(6)*phi0
       cod(5)=cod(5)-phi0*cod(1)
       call tchge(trans,cod,beam,srot,
-     $     -dx,-dy,-theta,-dtheta,-phi0,.false.)
+     $     dx,dy,theta,dtheta,dchi2,0.d0,-.5d0*phi0,.false.)
       return
       end

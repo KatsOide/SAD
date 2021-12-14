@@ -599,7 +599,7 @@ c      endif
       call tfmakerulestk(itfcov,kcv)
       call tfmakerulestk(itfdm,kdm)
       kx=kxmakelist(isp2)
-      call tfdebugprint(kx,'tffit-8',3)
+c      call tfdebugprint(kx,'tffit-8',3)
       isp=isp2-1
  9200 call tfree(kdp)
  9100 do i=1,nvar
@@ -1050,10 +1050,10 @@ c     call tfdebugprint(ke,'ke',1)
         dtastk(isp)=sad_descr(sav(i)%p%sym)
         ierr0=ierrorexp
         ierrorexp=1
-        call tfdebugprint(ke,'tfderiv D',2)
-        call tfdebugprint(dtastk(isp),'by ',2)
+c        call tfdebugprint(ke,'tfderiv D',2)
+c        call tfdebugprint(dtastk(isp),'by ',2)
         call tfdeval(isp0+1,iads,kd,1,.false.,euv,irtc)
-        call tfdebugprint(kd,'==>',2)
+c        call tfdebugprint(kd,'==>',2)
         ierrorexp=ierr0
         if(irtc .ne. 0)then
           if(irtc .gt. 0. and. ierrorprint .ne. 0)then
@@ -1084,7 +1084,7 @@ c     call tfdebugprint(ke,'ke',1)
       enddo
       irtc=0
       isp=isp0
-      write(*,*)'tfderiv-end'
+c      write(*,*)'tfderiv-end'
       return
       end
 

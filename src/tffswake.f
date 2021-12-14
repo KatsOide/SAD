@@ -102,7 +102,7 @@ c     $           utwiss(1,nfam1,iutp),npf)
           call c_f_pointer(c_loc(rlist(iwl)),wakel,[2,nlw])
           call c_f_pointer(c_loc(rlist(iwt)),waket,[2,ntw])
           call tffswakekick(utwiss(1:ntwissfun,-nfam,iutp),utwiss1,
-     $         iwl,iwt,wakel,waket,
+     $         iwl,iwt,wakel,waket,nlw,ntw,
      $         sigz,2.d0*gammab(ibound%le)*amass,nfam,nfam1,
      $         dx,dy,wbuf,wbufxy,wbufxyl,
      $         wzl,wzt,iwsl,iwst)
@@ -117,7 +117,7 @@ c     $           utwiss(1,nfam1,iutp),npf)
           iutp1=itwissp(ibound1%le)
           call tffswakekick(utwiss1,
      $         utwiss(1:ntwissfun,-nfam,iutp1),
-     $         iwl,iwt,wakel,waket,
+     $         iwl,iwt,wakel,waket,nlw,ntw,
      $         sigz,2.d0*gammab(ibound%le+1)*amass,nfam,nfam1,
      $         dx,dy,wbuf,wbufxy,wbufxyl,
      $         wzl,wzt,iwsl,iwst)
@@ -132,35 +132,38 @@ c     $           utwiss(1,nfam1,iutp),npf)
       end
 
       subroutine tffswakekick(ut0,ut1,
-     $     iwl,iwt,wakel,waket,sigz,p,
+     $     iwl,iwt,wakel,waket,nlw,ntw,
+     $     sigz,p,
      $     nfam,nfam1,dx,dy,
      $     wbuf,wbufxy,wbufxyl,wzl,wzt,iwsl,iwst)
       use tfstk
       use ffs
       use tffitcode
       implicit none
-      integer*8 iwl,iwt,iwsl,iwst
-      integer*4 nfam,nfam1,i,j,lw,i1,i2,ic,np
-      real*8 ut0(ntwissfun,-nfam:nfam),
-     $     ut1(ntwissfun,-nfam:nfam),
-     $     wbuf(nfam1:nfam),
-     $     wbufx(nfam1:nfam),wbufy(nfam1:nfam),
-     $     wbufxl(nfam1:nfam),wbufyl(nfam1:nfam),
+      integer*8,intent(in)::   iwl,iwt
+      integer*8,intent(inout):: iwsl,iwst
+      integer*4 ,intent(in):: nfam,nfam1,nlw,ntw
+      integer*4 i,j,i1,i2,ic,np
+      real*8 ,intent(in):: ut0(ntwissfun,-nfam:nfam),
+     $     wakel(2,nlw),waket(2,ntw),sigz,p,dx,dy
+      real*8 ,intent(out):: ut1(ntwissfun,-nfam:nfam)
+      real*8 ,intent(inout):: wbuf(nfam1:nfam),
      $     wbufxy(nfam1:nfam,nfam1:nfam),
      $     wbufxyl(nfam1:nfam,nfam1:nfam),
-     $     wzl(nfam1:nfam),wzt(nfam1:nfam),
-     $     wakel(2,*),waket(2,*),sigz,
-     $     zi,dz,w,sigg,a,p,dz0,xi,yi,cp0,dsig,ddz0,
-     $     dx,dy,z1,z2,d
+     $     wzl(nfam1:nfam),wzt(nfam1:nfam)
+      real*8 wbufxl(nfam1:nfam),wbufyl(nfam1:nfam),
+     $     wbufx(nfam1:nfam),wbufy(nfam1:nfam),
+     $     zi,dz,w,sigg,a,dz0,xi,yi,cp0,dsig,ddz0,
+     $     z1,z2,d
       logical*4 re
       real*8 , parameter :: fact=.398942280401433d0
       np=nfam-nfam1+1
-      ut1(:,1:np)=ut0(:,1:np)
+      ut1(:,nfam1:nfam)=ut0(:,nfam1:nfam)
 c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
       cp0=abs(charge*e*pbunch/np/p)
       sigg=max(1.d-5,sigz/np/anbunch)
       dsig=.1d0*sigg
-      if(iwl .ne. 0)then
+      if(iwl .ne. 0 .and. lwake)then
         if(iwl .eq. iwsl)then
           ddz0=ut0(mfitdz,nfam1)-wzl(nfam1)
           re=.false.
@@ -175,11 +178,10 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
         endif
         if(re)then
           iwsl=iwl
-          lw=(ilist(1,iwl-1)-1)/2
           z1=-1d100
           i1=1
           z2=1d100
-          i2=lw
+          i2=nlw
           call tclr(wbuf,np)
           do i=nfam1,nfam
             zi=ut0(mfitdz,i)
@@ -190,10 +192,10 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
                 w=min(1.d0,(dz+sigg)/sigg*.5d0)
                 if(dz .le. wakel(1,1))then
                   wbuf(j)=wbuf(j)+w*wakel(2,1)
-                elseif(dz .lt. wakel(1,lw))then
+                elseif(dz .lt. wakel(1,nlw))then
                   if(dz .ge. z2)then
                     i1=i2
-                    i2=lw
+                    i2=nlw
                   elseif(dz .lt. z1)then
                     i2=i1
                     i1=1
@@ -218,7 +220,7 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
         endif
         ut1(mfitddp,:)=ut0(mfitddp,:)-cp0*wbuf
       endif
-      if(iwt .ne. 0)then
+      if(iwt .ne. 0 .and. twake)then
         re=.false.
         if(iwt .eq. iwst)then
           ddz0=ut0(mfitdz,nfam1)-wzt(nfam1)
@@ -245,10 +247,9 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
           enddo
         else
           iwst=iwt
-          lw=(ilist(1,iwt-1)-1)/2
           i1=1
           z1=-1d100
-          i2=lw
+          i2=ntw
           z2=1d100
           dz0=sigg*fact
           do i=nfam1,nfam
@@ -258,10 +259,10 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
             wzt(i)=zi
             do j=nfam1,nfam
               dz=zi-ut0(mfitdz,j)+dz0
-              if(dz .gt. waket(1,1) .and. dz .lt. waket(1,lw))then
+              if(dz .gt. waket(1,1) .and. dz .lt. waket(1,ntw))then
                 if(dz .ge. z2)then
                   i1=i2
-                  i2=lw
+                  i2=ntw
                 elseif(dz .lt. z1)then
                   i2=i1
                   i1=1
@@ -343,7 +344,7 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
         ilist(1,ifname)=lenw(name)
         call tfpadstr(name,ifname+1,ilist(1,ifname))
         levele=levele+1
-        call descr_sad(dlist(ifwfunl),kwll)
+        call descr_sad(dfromk(ktflist+ifwfunl),kwll)
         kx=tfleval(kwll,.true.,irtc)
         if(irtc .ne. 0)then
           if(ierrorprint .ne. 0)then
@@ -354,6 +355,7 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
         if(ktflistq(kx))then
           kal=ktfmalocp(kx,n,m,.false.,.true.,.false.,.false.,irtc)
           if(irtc .eq. 0 .and. m .eq. 2)then
+c            call tfdebugprint(kx,'setupwake-l-kx',1)
             isp=isp1
             LOOP_J_1: do j=isp-3,isp0+1,-2
               kalj=abs(ktastk(j))
@@ -375,7 +377,7 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
           endif
         endif
  20     isp2=isp
-        call descr_sad(dlist(ifwfunt),kwtl)
+        call descr_sad(dfromk(ktflist+ifwfunt),kwtl)
         kx=tfleval(kwtl,.true.,irtc)
         isp=isp2
         if(irtc .ne. 0)then
@@ -387,6 +389,7 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
         if(ktflistq(kx))then
           kat=ktfmalocp(kx,n,m,.false.,.true.,.false.,.false.,irtc)
           if(irtc .eq. 0 .and. m .eq. 2)then
+c            call tfdebugprint(kx,'setupwake-t-kx',1)
             isp=isp1
             LOOP_J_2: do j=isp-2,isp0+2,-2
               katj=abs(ktastk(j))

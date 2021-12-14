@@ -1,19 +1,31 @@
       subroutine txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     dx,dy,theta,nb,
-     $     fw,lwl,wakel,lwt,waket,p0,h0,itab,izs,init)
+     $     fw,lwl0,wakel,lwt0,waket,p0,h0,itab,izs,init)
       use tfstk, only: ktfenanq
-      use ffs_flag,only:calpol
+      use ffs_flag,only:calpol,twake,lwake
       implicit none
-      integer*4 np,ns,lwl,lwt,i,n,k,l,m,nb
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
-     $     sx(np),sy(np),sz(np),
-     $     wakel(2,lwl),waket(2,lwt),xs(np),ys(np),zs(np),
+      integer*4 ,intent(in):: np,lwl0,lwt0
+      integer*4 ns,lwl,lwt,i,n,k,l,m,nb
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),
+     $     dv(np),sx(np),sy(np),sz(np)
+      real*8 ,intent(in):: wakel(2,lwl0),waket(2,lwt0),dx,dy,theta
+      real*8 xs(np),ys(np),zs(np),
      $     dz,w,wx(np),wy(np),wz(np),ws(np),zk,dzk,
-     $     pa,pb,h1,fw,dwx,dwy,dwz,p0,h0,fwp,dx,dy,theta,
+     $     pa,pb,h1,fw,dwx,dwy,dwz,p0,h0,fwp,
      $     cost,sint,xi,pxi,pmin,zmin
       parameter (pmin=1.d-10,zmin=-1.d30)
-      integer*4 itab(np),izs(np)
-      logical*4 init
+      integer*4 ,intent(inout)::  itab(np),izs(np)
+      logical*4 ,intent(in):: init
+      if(lwake)then
+        lwl=lwl0
+      else
+        lwl=0
+      endif
+      if(twake)then
+        lwt=lwt0
+      else
+        lwt=0
+      endif
       if(lwl .eq. 0 .and. lwt .eq. 0)then
         return
       endif

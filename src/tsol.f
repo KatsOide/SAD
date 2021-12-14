@@ -7,7 +7,7 @@ c
 
       contains
       subroutine tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
-     $     al,bz,dx,dy,dz,
+     $     alg,bz,dx,dy,dz,
      $     chi1,chi2,chi3,bxs,bys,bzs,ent)
       use mathfun, only:sqrt1,xsincos,pxy2dpz,asinz
       use ffs_flag, only:calpol,rad
@@ -16,8 +16,8 @@ c
       real*8 ,intent(inout)::
      $     x(np),px(np),y(np),py(np),z(np),g(np),
      $     sx(np),sy(np),sz(np),bxs,bys,bzs
-      real*8 , intent(in)::al,bz,dx,dy,dz,
-     $     chi1,chi2,chi3
+      real*8 , intent(in)::bz,dx,dy,dz,
+     $     chi1,chi2,chi3,alg
       logical*4 ,intent(in)::ent
       integer*4 i,j
       real*8 b,phix,phiy,phiz,a,a12,a14,a22,a24,cosphi,
@@ -29,7 +29,7 @@ c
       real*8 ,parameter :: conv=3.d-16
       if(ent)then
         if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or. chi2 .ne. 0.d0)then
-          s0s=-al*.5d0
+          s0s=-alg
           call xsincos(chi1,schi1,xs,cchi1,dcchi1)
           call xsincos(chi2,schi2,xs,cchi2,dcchi2)
           if(bz .ne. 0.d0)then
@@ -172,6 +172,7 @@ c     pz2=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
           enddo
         endif
         if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or. chi2 .ne. 0.d0)then
+          s0s=alg
           if(bz .ne. 0.d0)then
             do i=1,np
               pr=(1.d0+g(i))
@@ -243,7 +244,7 @@ c              endif
       return
       end subroutine
 
-      subroutine tsolrote(trans,cod,beam,srot,al,bz,dx,dy,dz,
+      subroutine tsolrote(trans,cod,beam,srot,alg,bz,dx,dy,dz,
      $     chi1,chi2,chi3,bxs,bys,bzs,ent)
       use tmacro, only:irad
       use ffs_flag, only:calpol
@@ -253,7 +254,7 @@ c              endif
       implicit none
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 trans1(6,6),trans2(6,6),tb(6)
-      real*8 ,intent(in):: bz,dx,dy,chi3,dz,chi1,chi2,al
+      real*8 ,intent(in):: bz,dx,dy,chi3,dz,chi1,chi2,alg
       real*8 ,intent(out):: bxs,bys,bzs
       real*8 s0,rr(3,3),xs,x0,px0,bzh,
      $     ds1,pr,pz0,dpz0dpx,dpz0dpy,dpz0dp,
@@ -271,7 +272,7 @@ c     cod in/outs canonical momenta!
           bzh1=bz*.5d0
           cod(2)=cod(2)+bzh1*cod(3)
           cod(4)=cod(4)-bzh1*cod(1)
-          s0=-.5d0*al
+          s0=-alg
           call xsincos(chi1,schi1,xs,cchi1,dcchi1)
           call xsincos(chi2,schi2,xs,cchi2,dcchi2)
           bzs=cchi2*cchi1*bz
@@ -382,7 +383,7 @@ c     cod in/outs canonical momenta!
             call tinitr(trans1)
           endif
           mul=.true.
-          s0=-.5d0*al
+          s0=alg
           call tinitr(trans2)
           pr=1.d0+cod(6)
           bzh=bzs*.5d0
@@ -662,7 +663,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           krad=rad
           if(rad)then
             if(radcod .and. radtaper)then
-              rtaper=1.d0-dp0
+              rtaper=1.d0+dptaper
      $             +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
             endif
             krad=cmp%value(ky_RAD_QUAD) .eq. 0.d0 .and. al .ne. 0.d0
@@ -683,8 +684,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
         case (icMULT)
           rtaper=1.d0
           if(rad .and. radcod .and. radtaper)then
-            rtaper=1.d0-dp0
-     $           +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+            rtaper=1.d0+dptaper+(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
           endif
           if(seg)then
             call tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,

@@ -313,8 +313,7 @@ c            write(*,*)'twspac-end'
      $        cmp%value(p_L_BEND) .ne. 0.d0
          if(rad)then
            if(radcod .and. radtaper)then
-             rtaper=-dp0
-     $            +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+             rtaper=(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0+dptaper
              ak0=cmp%value(ky_ANGL_BEND)*rtaper+ak0*(1.d0+rtaper)
              ak1=ak1*(1.d0+rtaper)
            endif
@@ -334,6 +333,8 @@ c            write(*,*)'twspac-end'
      1        cmp%value(p_THETA_BEND),cmp%value(ky_DROT_BEND),
 c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      1        cmp%value(p_COSTHETA_BEND),cmp%value(p_SINTHETA_BEND),
+     $        cmp%value(ky_CHI2_BEND),
+     $        cmp%value(p_LGEO_BEND),cmp%value(p_ANGLGEO_BEND),
      $        cmp%value(p_FB1_BEND),cmp%value(p_FB2_BEND),
      $        cmp%ivalue(1,p_FRMD_BEND),
      $        cmp%value(ky_FRIN_BEND) .eq. 0.d0,
@@ -347,8 +348,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
          endif
          rtaper=1.d0
          if(rad .and. radcod .and. radtaper)then
-           rtaper=(2.d0+gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
-     $          -dp0
+           rtaper=(2.d0+gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0+dptaper
          endif
          call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,
      1        cmp%value(ky_K1_QUAD)*rtaper,0.d0,
@@ -387,8 +387,8 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
        case (icMULT)
          rtaper=1.d0
          if(rad .and. radcod .and. radtaper)then
-           rtaper=1.d0-dp0
-     $          +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+           rtaper=1.d0
+     $          +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0+dptaper
          endif
          bz=0.d0
          if(seg)then
@@ -742,10 +742,11 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
      $       cmp%value(p_PSI1_MULT),cmp%value(p_PSI2_MULT),
      1       cmp%value(ky_DX_MULT),cmp%value(ky_DY_MULT),
      $       cmp%value(ky_DZ_MULT),
-     $       cmp%value(p_CHI1_MULT),cmp%value(p_CHI2_MULT),
+     $       cmp%value(ky_CHI1_MULT),cmp%value(ky_CHI2_MULT),
      $       cmp%value(ky_ROT_MULT),
      $       cmp%value(ky_DROT_MULT),
      $       cmp%value(p_THETA2_MULT),
+     $       cmp%value(p_LGEO_MULT),cmp%value(p_ANGLGEO_MULT),
      $       cmp%value(ky_EPS_MULT),
      $       rad .and. cmp%value(ky_RAD_MULT) .eq. 0.d0 .and.
      $       cmp%value(p_L_MULT) .ne. 0.d0,
@@ -771,10 +772,11 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
      $       cmp%value(p_PSI1_MULT),cmp%value(p_PSI2_MULT),
      1       cmp%value(ky_DX_MULT),cmp%value(ky_DY_MULT),
      $       cmp%value(ky_DZ_MULT),
-     $       cmp%value(p_CHI1_MULT),cmp%value(p_CHI2_MULT),
+     $       cmp%value(ky_CHI1_MULT),cmp%value(ky_CHI2_MULT),
      $       cmp%value(ky_ROT_MULT),
      $       cmp%value(ky_DROT_MULT),
      $       cmp%value(p_THETA2_MULT),
+     $       cmp%value(p_LGEO_MULT),cmp%value(p_ANGLGEO_MULT),
      $       cmp%value(ky_EPS_MULT),
      $       rad .and. cmp%value(ky_RAD_MULT) .eq. 0.d0 .and.
      $       cmp%value(p_L_MULT) .ne. 0.d0,

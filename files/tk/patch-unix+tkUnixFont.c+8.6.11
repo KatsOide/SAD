@@ -1,0 +1,39 @@
+--- unix/tkUnixFont.c.orig	2021-08-28 13:49:27.000000000 +0900
++++ unix/tkUnixFont.c	2021-08-28 12:41:33.000000000 +0900
+@@ -304,9 +304,13 @@
+  *-------------------------------------------------------------------------
+  */
+ 
++#ifndef TCL_CFGVAL_ENCODING
++#define TCL_CFGVAL_ENCODING "ascii"
++#endif
++
+ void
+ TkpFontPkgInit(
+-    TCL_UNUSED(TkMainInfo *))	/* The application being created. */
++    TkMainInfo *mainPtr)	/* The application being created. */
+ {
+     ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
+ 	    Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
+@@ -314,6 +318,13 @@
+     int i;
+     Tcl_Encoding ucs2;
+ 
++    static Tcl_Config cfg[] = {
++	{ "fontsystem", "x11" },
++	{ 0,0 }
++    };
++
++    Tcl_RegisterConfig(mainPtr->interp, "tk", cfg, TCL_CFGVAL_ENCODING);
++
+     if (tsdPtr->controlFamily.encoding == NULL) {
+ 
+ 	Tcl_EncodingType type = {"X11ControlChars", ControlUtfProc, ControlUtfProc, NULL, NULL, 0};
+@@ -1276,6 +1287,7 @@
+     Drawable root;
+ #endif
+ 
++    fontPtr = (UnixFont *) tkfont;
+     lastSubFontPtr = &fontPtr->subFontArray[0];
+     xStart = x;
+ 

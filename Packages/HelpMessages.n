@@ -162,8 +162,9 @@ writes the BeamLine b1,.. to stdout. If b1.. is omitted the current beam line is
        }]},
 
    {"BEAMSIZE(BEAM)",
-   "Calculate the beam size with the current Twiss parameters. The calculation is in 5D and not correct if the synchrotron motion is significant. Use EMITTANCE(EMIT) with CODPLOT for a 6D calculation.",
-   "DISPLAY(DISP) EMITTANCE(EMIT) CODPLOT",
+   "Calculate the beam size with the current Twiss parameters. The calculation is in 5D and not correct if the synchrotron motion is significant. Use EMITTANCE(EMIT) with CODPLOT for a 6D calculation.\n\n\
+BEAMSIZE(BEAM) uses the minimum emittance taking MINCOUP into account: Max[EMITk, MINCOUP*(EMITX+EMITY)] (k=X,Y).",
+   "DISPLAY(DISP) EMITTANCE(EMIT) CODPLOT MINCOUP",
    {}},
 
    {"GO",
@@ -254,7 +255,7 @@ optical-functions.",
 Example: EMITX=...; EMITY=...;DP=...; \n\
          BEAMSIZE(BEAM)\n\
          DISP B",
-      "BEAMSIZE(BEAM) EMITTANCE(EMIT) CODPLOT GAUSS UNIFORM special-variables EMITX EMITY DP",
+      "BEAMSIZE(BEAM) EMITTANCE(EMIT) CODPLOT GAUSS UNIFORM special-variables EMITX EMITY MINCOUP DP",
       {}},
 
      {"ACCELERATION(A)",
@@ -546,8 +547,8 @@ Usage: (1) EMIT\n\
 EquAlign["\\frac{1}{\\alpha_p}\\frac{\\varDelta f_{\\rm rf}}{f_{\\rm rf}}=-|{\\tt DP}|, -|{\\tt DP}|/2, 0, |{\\tt DP}|/2, |{\\tt DP}|\\ ,","\
    df_rf/f_rf/alpha_p = -|dp|, -|dp|/2, 0, |dp|/2, |dp|,"]//"\n\n\
 then prints out a table of the dependences of various quantities on the frequency shift.\n\n\
-   The results of EMITTANCE(EMIT) are affected by flags COD, RADCOD, RFSW, INTRA, WSPAC, EMIOUT, CODPLOT and special-variables MOMENTUM, CHARGE, FSHIFT, MINCOUP, PBUNCH. The flag TRPT or RING affects only Emittance[], as EMITTANCE(EMIT) automatically set RING.\n\
-   EMITTANCE(EMIT) returns the equilibrium emittances in variables EMITX, EMITY, EMITZ, and the equilibrium bunch length in SIGZ, the relative momentum spread in SIGE, and the longitudinal equilibrium position DTSYNCH. \n\n\
+   The results of EMITTANCE(EMIT) are affected by flags COD, RADCOD, RFSW, INTRA, WSPAC, EMIOUT, CODPLOT and special-variables MOMENTUM, CHARGE, FSHIFT, MINCOUP, PBUNCH. The flag TRPT or RING affects only Emittance[], as EMITTANCE(EMIT) automatically set RING.\n\n\
+   EMITTANCE(EMIT) returns the equilibrium emittances in variables EMITX, EMITY, EMITZ, and the equilibrium bunch length in SIGZ, the relative momentum spread in SIGE, and the longitudinal equilibrium position DTSYNCH. Values Max[EMITk, MINCOUP*(EMITX+EMITY)] (k=X,Y) are used in the intrabeam calculaton, but variables EMITX and EMITY hold the original value without MINCOUP.\n\n\
    The map used in EMIT is slightly different from that used in the tracking. For instance, the edge angle of a bend is approximated by a thin quad. If the edge angle is large and the curvature is small, EMIT may give a wrong answer. This will be corrected in near future.",
     "multi-turn-tracking extended-Twiss-parameters COD RADCOD RFSW INTRA EMIOUT WSPAC \n\
  CODPLOT TRPT MOMENTUM CHARGE FSHIFT MINCOUP PBUNCH EMITX EMITY EMITZ SIGE SIGZ DTSYNCH Emittance equilibrium-beam-envelope",
@@ -649,8 +650,8 @@ with\n\n"//EquAlign["H(x,p_x,y,p_y,z,p)=(-\\sqrt{p^2-p_x^2-p_y^2}+1-E/v_0){\\tt 
        "\
 An aperture. Only valid in tracking. A particle with\n\n"//
 EquAlign["&\\frac{(x-{\\tt DX})^2}{{\\tt AX}^2}+\\frac{(y-{\\tt DY})^2}{{\\tt AY}^2}<1\\\\\
- \\&\\&\\ &\\min({\\tt DX1},{\\tt DX2})<x<\\max({\\tt DX1},{\\tt DX2})\\\\\
- \\&\\&\\ &\\min({\\tt DY1},{\\tt DY2})<y<\\max({\\tt DY1},{\\tt DY2})",
+ \\&\\&\\ &\\min({\\tt DX1},{\\tt DX2})<x-{\\tt DX}<\\max({\\tt DX1},{\\tt DX2})\\\\\
+ \\&\\&\\ &\\min({\\tt DY1},{\\tt DY2})<y-{\\tt DY}<\\max({\\tt DY1},{\\tt DY2})",
 "\
    (x - DX)^2/AX^2 + (y - DY)^2/AY^2 < 1\n\
  && Min[DX1, DX2] < x < Max[DX1, DX2]\n\
@@ -1864,8 +1865,8 @@ RFSW turns on the acceleration by CAVI and TCAVI element in the particle-trackin
       {}},
 
      {"RADTAPER",
-      " Scales all magnets except for solenoids according to the local momentum (DDP) of the closed orbit. It uses the average of DDPs at the entrance and the exit. For tracking, RADCOD and ( CAL/GO with CALC6D or EMIT(Emittance[]) ) is necessary. CAL/GO with CALC4D will clear the necessary information for tracking with RADTAPER.\n\
- RADTAPER sets the momentum deviation of the closed orbit to DP0, which is an arbitrary choice of an under-deterministic problem of tapering. Thus the difference in the path length around the ring is adjusted by automatically updating FSHIFT.",
+      "Scales all magnets except for solenoids according to the local momentum (DDP) of the closed orbit. It uses the average of DDPs at the entrance and the exit. For tracking, RADCOD and ( CAL/GO with CALC6D or EMIT(Emittance[]) ) is necessary. CAL/GO with CALC4D will clear the necessary information for tracking with RADTAPER.\n\
+ RADTAPER sets the momentum deviation by the local momentum of the closed orbit + an amount to satisfy the path length condition given by FSHIFT. The momentum deviation at the entrance, DP0, is always maintained.",
       "RADCOD CALC6D CALC4D EMIT CAL GO DP0 FSHIFT",
        {}},
 
@@ -2092,7 +2093,7 @@ POL turns on spin tracking and the calculation of equilibrium polarization in EM
 
       {"LOSSMAP",
         "\
-If LOSSMAP is on, TrackParticles returns the location and turn where the particle lost is detected, in the 7/9th and 8/10th element of the result, for  NOPOL/POL, respectively. The default is NOLOSSMAP",
+If LOSSMAP is on, TrackParticles returns the location and turn where the particle lost is detected, in the 8/10th and 9/11th element of the result, for  NOPOL/POL, respectively. The default is NOLOSSMAP",
         "TrackParticles POL",
         {}},
 
@@ -2331,7 +2332,7 @@ NBUNCH is the number of bunches for the calculation of WakeFunction. Accessible 
 
      {"MINCOUP",
       "\
-MINCOUP is the minimum emittance ratio to be assumed in the calculation of intrabeam effects in EMITTANCE(EMIT) and Emittance[]. Emittances Max[emit_k, MINCOUP*(emit_x+emit_y)] (k=x,y) are assumed in the intrabeam calculation. Accessible in MAIN.",
+MINCOUP is the minimum emittance ratio to be assumed in the calculation of intrabeam effects in EMITTANCE(EMIT) and Emittance[]. Emittances Max[EMITk, MINCOUP*(EMITX+EMITY)] (k=X,Y) are assumed in the intrabeam calculation. Accessible in MAIN.",
       "EMITTANCE(EMIT) Emittance INTRA equilibrium-beam-envelope",
       {}},
 
@@ -4409,7 +4410,7 @@ TransferMatrices        List of physical transfer matrix from the beginning of t
 IntrabeamExcitation     List of the change of the 6 x 6 beam matrix due to the intrabeam scattering (only when INTRA), converted to the beginning of the beam line.\t\n\n\
    If the flag TRPT or NORING is set, the calculation assumes a transport line so that several quantities such as damping rate, eigen modes, equilibrium beam matrix, etc. are meaningless. Use RING or NOTRPT for such calculation. In the case of TRPT or NORING, the incoming beam envelope must be given by the option InitialBeamMatrix with a 6 x 6 symmetric matrix. TRPT is useful for calculation of space charge and intrabeam in a transport line.\n\
    Please do not forget to put semicolon at the end of Emittance[] function, otherwise the output will be huge especially when Orbit or Matrix is True.\n If ExpandElementValues->False, calculation is made using the present values of each component (i.e., including machine errors).\n\n\
-If SaveEMIT->True, the calculated values of emittances are stored in variables EMITX, EMITY, EMITZ, SIGE, SIGZ. The default is SaveEMIT->False.\n\n\
+If SaveEMIT->True, the calculated values of emittances are stored in variables EMITX, EMITY, EMITZ, SIGE, SIGZ. The default is SaveEMIT->False. These are the values calculated by the lattice, and not affected by MINCOUP.\n\n\
 InitialOrbit->{x0,px0,y0,py0,z0,dp0/p0} specifies the incoming orbit which is valid when NOCOD is set. The option Output->filenum enables the print out of EMITTANCE(EMIT) to filnum.\n\n\
 If Region is not the entire ring, parameters such as Emittances and DampingRate, etc., are not calculated, and return NaNs.\n\n\
 *1) The values of Emittances with INTRA and MINCOUP correspond to the equilibrium with intrabeam scattering weakened by MINCOUP.",
@@ -4424,14 +4425,14 @@ The argument nbegin is the initial turn number to be passed to tracking to indic
 The argument nend is the last turn number. The default is nbegin.\n\n\
    The variable beam and also the result of TrackParticles are lists of the form \n\n\
    {location, coordinates}\n\n\
-where location is the position-number of the starting point. If location is same as or in the downstream of destination, the tracking is done by folding across the beginning of the beam line. The coordinates are in a list of {7 or 9, np} form, where np is the number of particles. The first 6 or 8 elements of coordinates specifies either\n\n\
+where location is the position-number of the starting point. If location is same as or in the downstream of destination, the tracking is done by folding across the beginning of the beam line. The coordinates are in a list of {7 or 9, np} form, where np is the number of particles. The first 6 or 8 elements of coordinates specifie either\n\n\
    {x, px/p0, y, py/p0, z, dp/p0} (NOPOL)\n\
-   {x, px/p0, y, py/p0, z, dp/p0 sy, sarg} (NOPOL)\n\b\
-in this order. The {-1, i} is the flag which is True(==1) when the particle is alive, and False(==0) when lost.\n\n\
+   {x, px/p0, y, py/p0, z, dp/p0, sarg, sy} (POL)\n\n\
+in this order, depending on POL. The row [[-1, i]] is the alive flag which is True (==1) when the particle is alive, and False (==0) when lost.\n\n\
    If the flag POL is on, TrackParticles performs spin tracking. Then the coordinates has two more components sy and sarg, which correspond to the y-component of the classical spin vector and the angle ArcTan[sx, sz], respectively. If POL is on, another flag RADPOL turns on the Sokolov-Ternov effect.\n\n\
    When a flag RADLIGHT is on, TrackParticles returns the trajectories of particles which are used to calculate the radiation fields. See RadiationField and RadiationSpectrum.\n\n\
 When PHOTONS is ON (default is OFF), TrackParticles generates a list of all photons radiated through the tracking. The list is assigned to a symbol PhotonList.\n\n\
-When LOSSMAP is ON (default is OFF), TrackParticles returns the component and the turn where the loss of each particle is detected.",
+When LOSSMAP is ON (default is OFF), the input list must have two more lines resulting in a shape of {9 or 11, np}. Then TrackParticles returns into these lines the component and the turn where the loss of each particle is detected.",
         "components LINE PHOTONS PhotonList RADLIGHT TouschekLifetime WakeFunction SurvivedParticles LOSSMAP POL RADPOL",
         {}},
 

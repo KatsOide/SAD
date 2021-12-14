@@ -2117,7 +2117,7 @@ c        go to 6900
           go to 7000
         endif
         isp0=isp1+1
-        call tfsharedsize(isp0,k,nsize,irtc)
+        call tfsharedsize(isp0,k%k,nsize,irtc)
         isp=isp1+1
         if(irtc .ne. 0)then
           go to 7000

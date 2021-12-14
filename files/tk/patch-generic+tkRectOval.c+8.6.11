@@ -1,0 +1,65 @@
+--- generic/tkRectOval.c.orig	2020-07-07 05:42:25.000000000 +0900
++++ generic/tkRectOval.c	2021-07-18 03:46:37.000000000 +0900
+@@ -227,6 +227,9 @@
+  *
+  *--------------------------------------------------------------
+  */
++static int		KBCreateRectOval (Tcl_Interp *interp,
++			    Tk_Canvas canvas, struct Tk_Item *itemPtr,
++			    int objc, Tcl_Obj *CONST objv[]);
+ 
+ static int
+ CreateRectOval(
+@@ -261,6 +264,9 @@
+     rectOvalPtr->disabledFillStipple = None;
+     rectOvalPtr->fillGC = NULL;
+ 
++    if (objc<0)
++	return KBCreateRectOval(interp, canvas, itemPtr, objc, objv);
++
+     /*
+      * Process the arguments to fill in the item record.
+      */
+@@ -284,6 +290,42 @@
+     DeleteRectOval(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
+     return TCL_ERROR;
+ }
++
++static int
++KBCreateRectOval(interp, canvas, itemPtr, objc, objv)
++    Tcl_Interp *interp;			/* For error reporting. */
++    Tk_Canvas canvas;			/* Canvas to hold new item. */
++    Tk_Item *itemPtr;			/* Record to hold new item;  header
++					 * has been initialized by caller. */
++    int objc;				/* Number of arguments in objv. */
++    Tcl_Obj *CONST objv[];		/* Arguments describing rectangle. */
++{
++    RectOvalItem *rectOvalPtr = (RectOvalItem *) itemPtr;
++    /* int nn; */
++    double *bb;
++
++    objc = -objc;
++    /* nn = *((int *)objv[objc-2]); */
++    bb = (double *)objv[objc-1];
++    objc -= 2;
++
++    /*
++     * Process the arguments to fill in the item record.
++     */
++
++    rectOvalPtr->bbox[0] = bb[0];
++    rectOvalPtr->bbox[1] = bb[1];
++    rectOvalPtr->bbox[2] = bb[2];
++    rectOvalPtr->bbox[3] = bb[3];
++    ComputeRectOvalBbox(canvas, rectOvalPtr);
++    if (ConfigureRectOval(interp, canvas, itemPtr, objc, objv, 0)
++	    == TCL_OK) {
++	return TCL_OK;
++    }
++
++    DeleteRectOval(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
++    return TCL_ERROR;
++}
+ 
+ /*
+  *--------------------------------------------------------------

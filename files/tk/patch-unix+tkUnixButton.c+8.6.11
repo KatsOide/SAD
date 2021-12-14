@@ -1,0 +1,151 @@
+--- unix/tkUnixButton.c.orig	2021-07-17 16:22:31.000000000 +0900
++++ unix/tkUnixButton.c	2021-07-17 16:11:31.000000000 +0900
+@@ -395,7 +395,7 @@
+     ClientData clientData)	/* Information about widget. */
+ {
+     TkButton *butPtr = (TkButton *)clientData;
+-    GC gc;
++    GC gc, altGc, scriptGc, altScriptGc;
+     Tk_3DBorder border;
+     Pixmap pixmap;
+     int x = 0;			/* Initialization only needed to stop compiler
+@@ -409,21 +409,36 @@
+     int imageXOffset = 0, imageYOffset = 0;
+ 				/* image information that will be used to
+ 				 * restrict disabled pixmap as well */
++    char *text;
+ 
+     butPtr->flags &= ~REDRAW_PENDING;
+     if ((butPtr->tkwin == NULL) || !Tk_IsMapped(tkwin)) {
+ 	return;
+     }
+ 
++    if (butPtr->textPtr==NULL)
++	text = NULL;
++    else
++	text = Tcl_GetString(butPtr->textPtr);
++
+     border = butPtr->normalBorder;
+     if ((butPtr->state == STATE_DISABLED) && (butPtr->disabledFg != NULL)) {
+ 	gc = butPtr->disabledGC;
++	altGc = butPtr->disabledAltGC;
++	scriptGc = butPtr->disabledScriptGC;
++	altScriptGc = butPtr->disabledAltScriptGC;
+     } else if ((butPtr->state == STATE_ACTIVE)
+ 	    && !Tk_StrictMotif(butPtr->tkwin)) {
+ 	gc = butPtr->activeTextGC;
++	altGc = butPtr->activeAltTextGC;
++	scriptGc = butPtr->activeScriptTextGC;
++	altScriptGc = butPtr->activeAltScriptTextGC;
+ 	border = butPtr->activeBorder;
+     } else {
+ 	gc = butPtr->normalTextGC;
++	altGc = butPtr->normalAltTextGC;
++	scriptGc = butPtr->normalScriptTextGC;
++	altScriptGc = butPtr->normalAltScriptTextGC;
+     }
+     if ((butPtr->flags & SELECTED) && (butPtr->selectBorder != NULL)
+ 	    && !butPtr->indicatorOn) {
+@@ -604,13 +619,20 @@
+ 		    imageXOffset, imageYOffset, 1);
+ 	    XSetClipOrigin(butPtr->display, gc, 0, 0);
+ 	}
+-
+-	Tk_DrawTextLayout(butPtr->display, pixmap, gc,
+-		butPtr->textLayout, x + textXOffset, y + textYOffset, 0, -1);
+-	Tk_UnderlineTextLayout(butPtr->display, pixmap, gc,
+-		butPtr->textLayout, x + textXOffset, y + textYOffset,
+-		butPtr->underline);
+-	y += fullHeight/2;
++        if (butPtr->bspecial||butPtr->rotation)
++            TkKGDisplayText(butPtr->display, pixmap, butPtr, butPtr->tkfont,
++                            butPtr->tkaltfont, butPtr->tkscriptfont, butPtr->tkaltscriptfont,
++                            text, strlen(text), x, y, 
++                            (butPtr->rotation==90)||(butPtr->rotation==270)?butPtr->textHeight:butPtr->textWidth,
++                            butPtr->justify, butPtr->underline, gc, altGc, scriptGc, altScriptGc,
++                            0);
++        else 
++            Tk_DrawTextLayout(butPtr->display, pixmap, gc, butPtr->textLayout,
++                              x, y, 0, -1);
++        Tk_UnderlineTextLayout(butPtr->display, pixmap, gc,
++                               butPtr->textLayout, x + textXOffset, y + textYOffset,
++                               butPtr->underline);
++        y += fullHeight/2;
+     } else {
+ 	if (haveImage) {
+ 	    TkComputeAnchor(butPtr->anchor, tkwin, 0, 0,
+@@ -670,10 +692,18 @@
+ 
+ 	    x += butPtr->indicatorSpace;
+ 	    ShiftByOffset(butPtr, relief, &x, &y, width, height);
+-	    Tk_DrawTextLayout(butPtr->display, pixmap, gc, butPtr->textLayout,
+-		    x, y, 0, -1);
+-	    Tk_UnderlineTextLayout(butPtr->display, pixmap, gc,
+-		    butPtr->textLayout, x, y, butPtr->underline);
++	    if (butPtr->bspecial||butPtr->rotation)
++		TkKGDisplayText(butPtr->display, pixmap, butPtr, butPtr->tkfont,
++			butPtr->tkaltfont, butPtr->tkscriptfont, butPtr->tkaltscriptfont,
++			text, strlen(text), x, y, 
++			(butPtr->rotation==90)||(butPtr->rotation==270)?butPtr->textHeight:butPtr->textWidth,
++			butPtr->justify, butPtr->underline, gc, altGc, scriptGc, altScriptGc,
++			0);
++	    else {
++                Tk_DrawTextLayout(butPtr->display, pixmap, gc, butPtr->textLayout,
++                                  x, y, 0, -1);
++                Tk_UnderlineTextLayout(butPtr->display, pixmap, gc,
++                                       butPtr->textLayout, x, y, butPtr->underline);}
+ 	    y += butPtr->textHeight/2;
+ 	}
+     }
+@@ -861,6 +891,12 @@
+     int width, height, avgWidth, txtWidth, txtHeight;
+     int haveImage = 0, haveText = 0;
+     Tk_FontMetrics fm;
++    char *text;
++
++    if (butPtr->textPtr==NULL)
++	text = NULL;
++    else
++	text = Tcl_GetString(butPtr->textPtr);
+ 
+     butPtr->inset = butPtr->highlightWidth + butPtr->borderWidth;
+ 
+@@ -888,14 +924,31 @@
+     }
+ 
+     if (haveImage == 0 || butPtr->compound != COMPOUND_NONE) {
+-	Tk_FreeTextLayout(butPtr->textLayout);
+-
+-	butPtr->textLayout = Tk_ComputeTextLayout(butPtr->tkfont,
+-		Tcl_GetString(butPtr->textPtr), -1, butPtr->wrapLength,
+-		butPtr->justify, 0, &butPtr->textWidth, &butPtr->textHeight);
++	if (butPtr->bspecial||butPtr->rotation) {
++	    TkKGDisplayText(butPtr->display, 0, butPtr, butPtr->tkfont,
++		butPtr->tkaltfont, butPtr->tkscriptfont, butPtr->tkaltscriptfont,
++		text, strlen(text), 0, 0, butPtr->wrapLength,
++		butPtr->justify, butPtr->underline, NULL, NULL, NULL, NULL, 1);
++	    if ((butPtr->rotation==90)||(butPtr->rotation==270)) {
++		txtWidth = butPtr->textHeight;
++		txtHeight = butPtr->textWidth;
++		butPtr->textWidth = txtWidth;
++		butPtr->textHeight = txtHeight;
++	    } else {
++		txtWidth = butPtr->textWidth;
++		txtHeight = butPtr->textHeight;
++	    }
++	} else {
++	    Tk_FreeTextLayout(butPtr->textLayout);
++	    butPtr->textLayout = 
++                Tk_ComputeTextLayout(butPtr->tkfont,
++                                     Tcl_GetString(butPtr->textPtr), -1, butPtr->wrapLength,
++                                     butPtr->justify, 0, &butPtr->textWidth,
++                                     &butPtr->textHeight);
+ 
+-	txtWidth = butPtr->textWidth;
+-	txtHeight = butPtr->textHeight;
++	    txtWidth = butPtr->textWidth;
++	    txtHeight = butPtr->textHeight;
++	}
+ 	avgWidth = Tk_TextWidth(butPtr->tkfont, "0", 1);
+ 	Tk_GetFontMetrics(butPtr->tkfont, &fm);
+ 	haveText = (txtWidth != 0 && txtHeight != 0);

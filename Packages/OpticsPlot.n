@@ -197,6 +197,7 @@ With[{def={PlotRange->Automatic,
     lf=Length[f1];
     fopt=Override[fopt,opt,def];
     {plt,pra,fl,leg}={Plot,PlotRange,FrameLabel,Legend}/.fopt;
+!    Print["OP$1 ",leg];
     {fl,fly}=If[ListQ[fl],
       {fl=Take[Join[fl,{"","","",""}],4],
       If[right,fl[[4]],fl[[2]]]},
@@ -216,6 +217,7 @@ With[{def={PlotRange->Automatic,
       Message[OpticsPlot::units,Evaluate[#[[1,2]]],Evaluate[unit]]]&,l];
     l=Cases[l,{{_,unit,_,_,_},_,_},1];
     v=l[[,3]];
+!    Print["OP$1-v ",{ss,l[[,3]]}];
     opv=l[[,2]];
     {min,max}=MinMax[#[[,2]]&/@v];
     am=Switch[pra,
@@ -571,7 +573,7 @@ Twiss$Functions={"AX","BX","NX","AY","BY","NY","EX","EPX","EY","EPY",
   "GMX","GMY","GMZ"};
 RTwiss$Functions=("R"//#)&/@Twiss$Functions;
 DTwiss$Functions=("D"//#)&/@Twiss$Functions;
-XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions];
+XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"}];
 
 Twiss$Positive["BX"|"BY"|"BZ"|"GMX"|"GMY"|"GMZ"|
   "SIGX"|"SIGY"|"SIGZ"|"SIGXX"|"SIGYY"|"SIGZZ"|
@@ -789,6 +791,9 @@ If[$DisplayFunction===Unevaluated[TopDrawer],
   Twiss$Label["PZPY"]="`fz`n`dpyP`n";
   Twiss$Label["RPZPY"]="`fz`n`dpyPR`n";
   Twiss$Label["DPZPY"]="`fdz`n`dpyP`n";
+  Twiss$Label["BMAGX"]="B`dMAGx`n";
+  Twiss$Label["BMAGY"]="B`dMAGy`n";
+  Twiss$Label["BMAGZ"]="B`dMAGz`n";
   Twiss$Label[x_String?(#[1,4]==="SIZE"&)]:=Module[
     {{l,u}=MakeSize$Label$Unit[x[5,-1]]},
     Twiss$Unit[x]=u;

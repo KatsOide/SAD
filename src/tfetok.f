@@ -176,7 +176,9 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
         istop=is1+m
         if(m .gt. 0 .or. string(is1:is1) .eq. '.')then
           is2=is1+max(m,1)
-          if(is2 .lt. l .and. string(is2:is2+1) .eq. '\\\n')then
+c          write(*,*)'eval2 ',is1,m,l,is2,'"',string(is2:is2+1),'"'
+          if(is2 .lt. l .and. (string(is2:is2+1) .eq. '\\\n' .or.
+     $           index('eEdDxX',string(is2:is2)) .ne. 0))then
             call tedigicopy(string(is1:l),buf,j,nnl)
             vx=eval1(buf,j,1,m)
             istop=is1+m+nnl

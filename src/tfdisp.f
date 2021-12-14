@@ -10,11 +10,12 @@
       use ffs_pointer
       use ffs_fit
       use tffitcode
+      use gfun
       implicit none
       integer*4 , intent(in)::l,icolm,mf
       character*(*) , intent(in)::form
       real*8 , intent(in), optional::a
-      real*8 v,tgetgm
+      real*8 v
       logical*4 ,intent(in):: dref
       v=0.d0
       if(dref)then
@@ -86,6 +87,7 @@
       use ffs_seg
       use tfcsi, only:lfni
       use geolib
+      use gfun
       implicit none
       type (sad_comp), pointer:: cmp
       integer*4 , intent(inout):: idisp1,idisp2

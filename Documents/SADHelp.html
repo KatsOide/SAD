@@ -13,7 +13,7 @@ eqs img{
 <body>
 <center><h2>Welcome to SAD/FFS & SADScript
 </h2></center>
-<center> SAD/FFS SADScript Version: 1.1.9.0.5k64,      Updated: 09/08/2020</center>
+<center> SAD/FFS SADScript Version: 1.1.10.7k64,      Updated: 10/21/2021</center>
 
 <pre> Please use browser's search to find an item.
 
@@ -693,9 +693,12 @@ parameters of the entrance and the exit swap.
 </ul>
 <h3><a name=LBEAMSIZE(BEAM)>BEAMSIZE(BEAM)</a></h3>
 <pre>Calculate the beam size with the current Twiss parameters. The calculation is in 5D and not correct
-if the synchrotron motion is significant. Use EMITTANCE(EMIT) with CODPLOT for a 6D calculation.</pre>
+if the synchrotron motion is significant. Use EMITTANCE(EMIT) with CODPLOT for a 6D calculation.
+
+BEAMSIZE(BEAM) uses the minimum emittance taking MINCOUP into account: Max[EMITk, MINCOUP*(EMITX+EMITY)]
+(k=X,Y).</pre>
 <pre>See also:
- <a href=#LDISPLAY(DISP)>DISPLAY(DISP)</a> <a href=#LEMITTANCE(EMIT)>EMITTANCE(EMIT)</a> <a href=#LCODPLOT>CODPLOT</a></pre>
+ <a href=#LDISPLAY(DISP)>DISPLAY(DISP)</a> <a href=#LEMITTANCE(EMIT)>EMITTANCE(EMIT)</a> <a href=#LCODPLOT>CODPLOT</a> <a href=#LMINCOUP>MINCOUP</a></pre>
 <h3><a name=LBYE>BYE</a></h3>
 <pre>Exits from the current beam line and returns to the original beam line where VISIT command was issued.
 All information specific to the beam line, such as matching conditions are restored.
@@ -1080,7 +1083,7 @@ Example: EMITX=...; EMITY=...;DP=...;
          DISP B</pre>
 <pre>See also:
  <a href=#LBEAMSIZE(BEAM)>BEAMSIZE(BEAM)</a> <a href=#LEMITTANCE(EMIT)>EMITTANCE(EMIT)</a> <a href=#LCODPLOT>CODPLOT</a> <a href=#LGAUSS>GAUSS</a> <a href=#LUNIFORM>UNIFORM</a> <a href=#Lspecial-variables>special-variables</a>
- <a href=#LEMITX>EMITX</a> <a href=#LEMITY>EMITY</a> <a href=#LDP>DP</a></pre>
+ <a href=#LEMITX>EMITX</a> <a href=#LEMITY>EMITY</a> <a href=#LMINCOUP>MINCOUP</a> <a href=#LDP>DP</a></pre>
 <li><h3><a name=LDREFERENCE(DRE)>DREFERENCE(DRE)</a></h3>
 <pre>Display the difference between the reference optics. (beta - betaR)/betaR are displayed for BX, BY,
 BZ.</pre>
@@ -2645,9 +2648,11 @@ then prints out a table of the dependences of various quantities on the frequenc
    The results of EMITTANCE(EMIT) are affected by flags COD, RADCOD, RFSW, INTRA, WSPAC, EMIOUT,
 CODPLOT and special-variables MOMENTUM, CHARGE, FSHIFT, MINCOUP, PBUNCH. The flag TRPT or RING affects
 only Emittance[], as EMITTANCE(EMIT) automatically set RING.
+
    EMITTANCE(EMIT) returns the equilibrium emittances in variables EMITX, EMITY, EMITZ, and the equilibrium
 bunch length in SIGZ, the relative momentum spread in SIGE, and the longitudinal equilibrium position
-DTSYNCH. 
+DTSYNCH. Values Max[EMITk, MINCOUP*(EMITX+EMITY)] (k=X,Y) are used in the intrabeam calculaton, but
+variables EMITX and EMITY hold the original value without MINCOUP.
 
    The map used in EMIT is slightly different from that used in the tracking. For instance, the edge
 angle of a bend is approximated by a thin quad. If the edge angle is large and the curvature is small,
@@ -2836,7 +2841,7 @@ the center-of-mass statistically fluctuates depending on the number of particles
  <a href=#LECHO>ECHO</a></pre>
 <li><h3><a name=LLOSSMAP>LOSSMAP</a></h3>
 <pre>If LOSSMAP is on, TrackParticles returns the location and turn where the particle lost is detected,
-in the 7/9th and 8/10th element of the result, for  NOPOL/POL, respectively. The default is NOLOSSMAP</pre>
+in the 8/10th and 9/11th element of the result, for  NOPOL/POL, respectively. The default is NOLOSSMAP</pre>
 <pre>See also:
  <a href=#LTrackParticles>TrackParticles</a> <a href=#LPOL>POL</a></pre>
 <li><h3><a name=LLWAKE>LWAKE</a></h3>
@@ -2891,13 +2896,13 @@ calculate the synchrotron radiation field.</pre>
 <pre>See also:
  <a href=#LPOL>POL</a></pre>
 <li><h3><a name=LRADTAPER>RADTAPER</a></h3>
-<pre> Scales all magnets except for solenoids according to the local momentum (DDP) of the closed orbit.
+<pre>Scales all magnets except for solenoids according to the local momentum (DDP) of the closed orbit.
 It uses the average of DDPs at the entrance and the exit. For tracking, RADCOD and ( CAL/GO with
 CALC6D or EMIT(Emittance[]) ) is necessary. CAL/GO with CALC4D will clear the necessary information
 for tracking with RADTAPER.
- RADTAPER sets the momentum deviation of the closed orbit to DP0, which is an arbitrary choice of
-an under-deterministic problem of tapering. Thus the difference in the path length around the ring
-is adjusted by automatically updating FSHIFT.</pre>
+ RADTAPER sets the momentum deviation by the local momentum of the closed orbit + an amount to satisfy
+the path length condition given by FSHIFT. The momentum deviation at the entrance, DP0, is always
+maintained.</pre>
 <pre>See also:
  <a href=#LRADCOD>RADCOD</a> <a href=#LCALC6D>CALC6D</a> <a href=#LCALC4D>CALC4D</a> <a href=#LEMITTANCE(EMIT)>EMITTANCE(EMIT)</a> <a href=#LCALCULATE(CAL)>CALCULATE(CAL)</a> <a href=#LGO>GO</a>
  <a href=#LDP0>DP0</a> <a href=#LFSHIFT>FSHIFT</a></pre>
@@ -3581,7 +3586,8 @@ will be huge especially when Orbit or Matrix is True.
 including machine errors).
 
 If SaveEMIT->True, the calculated values of emittances are stored in variables EMITX, EMITY, EMITZ,
-SIGE, SIGZ. The default is SaveEMIT->False.
+SIGE, SIGZ. The default is SaveEMIT->False. These are the values calculated by the lattice, and not
+affected by MINCOUP.
 
 InitialOrbit->{x0,px0,y0,py0,z0,dp0/p0} specifies the incoming orbit which is valid when NOCOD is
 set. The option Output->filenum enables the print out of EMITTANCE(EMIT) to filnum.
@@ -4145,12 +4151,13 @@ The argument nend is the last turn number. The default is nbegin.
 where location is the position-number of the starting point. If location is same as or in the downstream
 of destination, the tracking is done by folding across the beginning of the beam line. The coordinates
 are in a list of {7 or 9, np} form, where np is the number of particles. The first 6 or 8 elements
-of coordinates specifies either
+of coordinates specifie either
 
    {x, px/p0, y, py/p0, z, dp/p0} (NOPOL)
-   {x, px/p0, y, py/p0, z, dp/p0 sy, sarg} (NOPOL)
-bin this order. The {-1, i} is the flag which is True(==1) when the particle is alive, and False(==0)
-when lost.
+   {x, px/p0, y, py/p0, z, dp/p0, sarg, sy} (POL)
+
+in this order, depending on POL. The row [[-1, i]] is the alive flag which is True (==1) when the
+particle is alive, and False (==0) when lost.
 
    If the flag POL is on, TrackParticles performs spin tracking. Then the coordinates has two more
 components sy and sarg, which correspond to the y-component of the classical spin vector and the
@@ -4163,8 +4170,8 @@ to calculate the radiation fields. See RadiationField and RadiationSpectrum.
 When PHOTONS is ON (default is OFF), TrackParticles generates a list of all photons radiated through
 the tracking. The list is assigned to a symbol PhotonList.
 
-
-When LOSSMAP is ON (default is OFF), TrackParticles returns the component and the turn where the
+When LOSSMAP is ON (default is OFF), the input list must have two more lines resulting in a shape
+of {9 or 11, np}. Then TrackParticles returns into these lines the component and the turn where the
 loss of each particle is detected.</pre>
 <pre>See also:
  <a href=#Lcomponents>components</a> <a href=#LLINE>LINE</a> <a href=#LPHOTONS>PHOTONS</a> <a href=#LPhotonList>PhotonList</a> <a href=#LRADLIGHT>RADLIGHT</a> <a href=#LTouschekLifetime>TouschekLifetime</a>
@@ -5816,7 +5823,8 @@ FitWeight function.</pre>
 <pre>MASS is the rest mass of the particle in eV. The default is the electron mass.</pre>
 <li><h3><a name=LMINCOUP>MINCOUP</a></h3>
 <pre>MINCOUP is the minimum emittance ratio to be assumed in the calculation of intrabeam effects in EMITTANCE(EMIT)
-and Emittance[]. Emittances Max[emit_k, MINCOUP*(emit_x+emit_y)] (k=x,y) are assumed in the intrabeam
+
+and Emittance[]. Emittances Max[EMITk, MINCOUP*(EMITX+EMITY)] (k=X,Y) are assumed in the intrabeam
 calculation. Accessible in MAIN.</pre>
 <pre>See also:
  <a href=#LEMITTANCE(EMIT)>EMITTANCE(EMIT)</a> <a href=#LEmittance>Emittance</a> <a href=#LINTRA>INTRA</a> <a href=#Lequilibrium-beam-envelope>equilibrium-beam-envelope</a>
