@@ -355,7 +355,7 @@ tfsetlist.o: tfsetlist.f tfstk.o toplvl.o
 tfsetparam.o: tfsetparam.f initb1.o tffs.o tfloor.o tfstk.o toplvl.o
 tfsetv.o: tfsetv.f tfeeval.o tffs.o tfstk.o toplvl.o
 tfshared.o: tfshared.f tfstk.o toplvl.o
-tfshow.o: tfshow.f tffs.o tfstk.o
+tfshow.o: tfshow.f tffs.o tfstk.o tgfun.o
 tfsize.o: tfsize.f
 tfsolvemember.o: tfsolvemember.f tfeeval.o tffuns.o tfstk.o
 tfsort.o: tfsort.f tfefun.o tfetok.o tfstk.o
