@@ -489,10 +489,10 @@ c     enddo
       params(ipnnup)=h0*gspin
       if(calpol)then
         call spnorm(srot,sps,spinmu,sdamp)
-        params(iptaup)=1.d0/sdamp/params(iprevf)
         srot1=srot(:,1:3)
         params(ipnup)=spinmu/m_2pi
         call sremit(srot,sps,params,beamn,sdamp,spm,equpol)
+        params(iptaup)=1.d0/sdamp/params(iprevf)
         params(ipequpol)=equpol(3)
         params(ipequpol2:ipequpol6)=equpol
         params(ippolx:ippolz)=sps(:,1)
@@ -1121,9 +1121,9 @@ c     kiku ------------------>
             write(lfno,*)'                x              px'//
      $           '             y              py'//
      $           '             z              pz'
-            write(lfno,'(a,1p6g15.7)')'        sx',srot(1,4:9)
-            write(lfno,'(a,1p6g15.7)')'        sy',srot(2,4:9)
-            write(lfno,'(a,1p6g15.7)')'        sz',srot(3,4:9)
+            write(lfno,'(a,1p6g15.7)')'        gx',srot(1,4:9)
+            write(lfno,'(a,1p6g15.7)')'        gy',srot(2,4:9)
+            write(lfno,'(a,1p6g15.7)')'        gz',srot(3,4:9)
             write(lfno,*)'\n'//'   Spin depolarization matrix:'
             write(lfno,*)'                s1             s2'//
      $           '             s3'

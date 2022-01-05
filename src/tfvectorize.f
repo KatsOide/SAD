@@ -8,8 +8,8 @@
       integer*4 isp1,irtc,i,j,isp0,isp2,nv,idsp,itfmessage
       kf=dtastk(isp1+1)
       if(ktfoperq(kf,kaf))then
-        if(kaf .eq. mtfplus .or. kaf .eq. mtftimes
-     $       .or. kaf .eq. mtfpower .or. kaf .eq. mtfrevpower)then
+        select case (kaf)
+        case (mtfplus,mtftimes,mtfpower,mtfrevpower)
           nv=0
           do i=isp1+2,isp
             if(ktflistq(dtastk(i),kli) .and. (kli%head%k .eq. kxvect
@@ -36,7 +36,7 @@ c          call tfdebugprint(kx1,'vectorize',1)
           endif
           kx=kx1
           return
-        elseif(kaf .eq. mtfset .or. kaf .eq. mtfsetdelayed)then
+        case (mtfset,mtfsetdelayed)
           do i=isp1+2,isp
             if(ktflistq(ktastk(i),kli) .and.
      $           kli%head%k .eq. kxvect1)then
@@ -48,7 +48,7 @@ c          call tfdebugprint(kx1,'vectorize',1)
           enddo
           kx=tfefunref(isp1+1,.false.,irtc)
           return
-        elseif(kaf .gt. mtfend)then
+        case (mtfend)
           kaf1=klist(ifunbase+kaf)+1
           if(ilist(1,kaf1) .eq. 1 .and. ilist(1,kaf1+1) .ne. 0 .and.
      $         isp .eq. isp1+2 .and. ktflistq(ktastk(isp),kl) .and.
@@ -63,7 +63,7 @@ c          call tfdebugprint(kx1,'vectorize',1)
               return
             endif
           endif
-        endif
+        end select
       endif
       nv=0
       do i=isp1+2,isp

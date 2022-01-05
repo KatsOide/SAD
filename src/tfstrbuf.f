@@ -736,6 +736,10 @@ c
      $         ichar(string(1:1)) .le. ichar('z')
      $         )
           indent=strb%lexp .ge. 0
+c          write(*,*)'psbuf-1 ',indent,l,strb%nch,strb%lexp
+          if(l > strb%lexp-strb%nch .and. l <= strb%lexp)then
+            call flushstringbuf(strb,indent,.true.,lfno,irtc)
+          endif
           i1=1
           do10: do while(i1 .le. l)
             lexp=strb%lexp
@@ -757,6 +761,7 @@ c
                 if(irtc .ne. 0)then
                   return
                 endif
+c                write(*,*)'psbuf-2 ',lw,lexp,strb%nch
                 lw=lexp-strb%nch
               endif
             else
@@ -782,11 +787,11 @@ c
                 cycle do10
               endif
             enddo
- 20         if(lw .lt. l-i1+1)then
+ 20       if(lw .lt. l-i1+1)then
               if(quote)then
 c                write(*,*)'psbpb ',i1,lw,l
                 call putstringbufb(strb,string(i1:i1),lw-1,full)
-                call putstringbufb(strb,'\',1,full)
+                call putstringbufb(strb,'\\',1,full)
                 call flushstringbuf(strb,indent,.true.,lfno,irtc)
                 if(irtc .ne. 0)then
                   return

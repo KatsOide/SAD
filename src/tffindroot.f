@@ -387,6 +387,7 @@ c        ktastk(isp)=ig
      $         '"initial value","Real"')
           go to 9000
         endif
+        v0(j)=min(vmax(j),max(vmin(j),v0(j)))
       enddo
 c      if(isp .gt. isp0)then
 c        isp4=isp
@@ -568,15 +569,18 @@ c      endif
         cut=cutoff
         if(n .le. 2)then
           if(cutoff .ne. 0.d0)then
+            v0(1:nvar)=max(vmin(1:nvar),min(vmax(1:nvar),v0(1:nvar)))
             v0s(1:nvar)=v0(1:nvar)
             call tffit1(datap,n,m,ke,symdv,nvar,sav,v0,
      $           kdl,vmin,vmax,r,kdm,kcv,kci,eps0,maxi,0.d0,irtc)
             cut=sqrt(r/max(1,m-nvar))*cutoff
           endif
         endif
+        v0(1:nvar)=max(vmin(1:nvar),min(vmax(1:nvar),v0(1:nvar)))
         call tffit1(datap,n,m,ke,symdv,nvar,sav,v0,
      $       kdl,vmin,vmax,r,kdm,kcv,kci,eps0,maxi,cut,irtc)
       endif
+      v0(1:nvar)=max(vmin(1:nvar),min(vmax(1:nvar),v0(1:nvar)))
       do i=1,nvar
         call tflocal(kdl(i))
       enddo
@@ -667,6 +671,7 @@ c      write(*,*)'covmat ',n,m,ndim
      $     vbest(nvar),dv(nvar),df2(m))
       kdm%k=0
       kcv%k=0
+      v0=max(vmin,min(vmax,v0))
       v00=v0
       iter=0
       ajump=1.d0
@@ -675,7 +680,8 @@ c      write(*,*)'covmat ',n,m,ndim
       kaxvec=ktadaloc(0,1)
       klist(kaxvec+1)=ktflist+ktavaloc(0,m)
       klist(kaxvec)=ktfcopy1(kxvect)
- 21   call tfevalfit(df0,d0,data,n,m,ke,symdv,nvar,sav,v0,
+ 21   v0=max(vmin,min(vmax,v0))
+      call tfevalfit(df0,d0,data,n,m,ke,symdv,nvar,sav,v0,
      $     kaxvec,.false.,cut,irtc)
       if(irtc .ne. 0)then
         deallocate(a0,a,abest,df,df0,v00,w,cv,vbest,dv,df2)
@@ -780,7 +786,7 @@ c          v(i)=min(vmax(i),max(vmin(i),v0(i)+dv(i)*fact))
 c        enddo
         call tfevalfit(df0,d,data,n,m,ke,symdv,nvar,sav,v,
      $       kaxvec,.false.,cut,irtc)
-        if(irtc .ne. 0)then
+         if(irtc .ne. 0)then
           deallocate(a0,a,abest,df,df0,v00,w,cv,vbest,dv,df2)
           call tflocal1(kaxvec)
           return

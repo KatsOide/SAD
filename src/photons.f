@@ -683,7 +683,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
         use temw,only:codr0,bzhr0,bsir0,calint,tinv6,gintd,transr,
      $       tmulbs
         use ffs_flag,only:radcod,calpol
-        use mathfun, only:pxy2dpz,p2h,asinz
+        use mathfun, only:pxy2dpz,p2h,asinz,xsincos
         use tspin, only:cave,cl,cuu,gmin,sflc
         implicit none
         real*8 , intent(inout)::trans(6,12),cod(6),beam(42),
@@ -696,9 +696,9 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
      $       pr,px,py,pz,pz0,xpx,xpy,xpz,xpa,theta,th,
      $       p,h1,al1,anp,uc,dg,g,pr1,pxi,pyi,
      $       p2,h2,de,cp,sp,b,pxm,pym,gi,dh1r,
-     $       pxh,pyh,pzh,xpzb,btx,bty,btz,dct,sinu,cosu,dcosu,
+     $       pxh,pyh,pzh,xpzb,btx,bty,btz,dct,sinu,cosu,dcosu,xsinu,
      $       gx,gy,gz,blx,bly,blz,
-     $       sx(9),sy(9),sz(9),sux(9),suy(9),suz(9),sw(9),
+     $       sx(3),sy(3),sz(3),sux(3),suy(3),suz(3),sw(3),
      $       dpxh(6),dpyh(6),dpzh(6),bp,dbp(6),dpxr0(6),dpz0(6),
      $       dxpx(6),dxpy(6),dxpz(6),dxpzb(6),dblx(6),dbly(6),dblz(6),
      $       dbtx(6),dbty(6),dbtz(6),dgx(6),dgy(6),dgz(6),dpz00(6)
@@ -898,31 +898,29 @@ c     enddo
             if(g .ne. 0.d0)then
 c              bt=abs(dcmplx(btx,abs(dcmplx(bty,btz))))
               bt=norm2([btx,bty,btz])
-              th=tan(.5d0*g)
-              sinu=2.d0*th/(1.d0+th**2)
-              dcosu=th*sinu
-c              sinu=sin(g)
-c              dcosu=2.d0*sin(g*.5d0)**2
-              cosu=1.d0-dcosu
+              call xsincos(g,sinu,xsinu,cosu,dcosu)
+c              th=tan(.5d0*g)
+c              sinu=2.d0*th/(1.d0+th**2)
+c              dcosu=th*sinu
+cc              sinu=sin(g)
+cc              dcosu=2.d0*sin(g*.5d0)**2
+c              cosu=1.d0-dcosu
               sinu=sinu/g
-              sx=srot(1,:)
-              sy=srot(2,:)
-              sz=srot(3,:)
+              sx=srot(1,1:3)
+              sy=srot(2,1:3)
+              sz=srot(3,1:3)
               sw=(sx*gx+sy*gy+sz*gz)/g
               gintd=gintd+sw(1:3)*sflc*anp*(bt*h1*p/al1)**2
-              sw=sw*dcosu/g
+              sw=-sw*dcosu/g
               sux=sy*gz-sz*gy
               suy=sz*gx-sx*gz
               suz=sx*gy-sy*gx
-              sx       =cosu*sx+sinu*sux+sw*gx
-              srot(2,:)=cosu*sy+sinu*suy+sw*gy
-              sz       =cosu*sz+sinu*suz+sw*gz
-              srot(1,:)= cp*sx+sp*sz
-              srot(3,:)=-sp*sx+cp*sz
-            else
-              srot(1,:)=  cp*srot(1,:)+sp*srot(3,:)
-              srot(3,:)=(-sp*srot(1,:)+srot(3,:))/cp
+              srot(1,1:3)=cosu*sx+sinu*sux+sw*gx
+              srot(2,1:3)=cosu*sy+sinu*suy+sw*gy
+              srot(3,1:3)=cosu*sz+sinu*suz+sw*gz
             endif
+            srot(1,:)=  cp*srot(1,:)+sp*srot(3,:)
+            srot(3,:)=(-sp*srot(1,:)+srot(3,:))/cp
           endif
         endif
         codr0(1:6)=cod(1:6)

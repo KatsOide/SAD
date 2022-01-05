@@ -278,6 +278,7 @@ FitPlot[data_,fun_,x_,par0__]:=
         fun,x,par0],
       True,
       Fit[data,fun,x,par0]];
+!    Print["FitPlot: ",{s}];
     g1=ListPlot[data,DisplayFunction->Identity,Null@@opt];
 !    ReleaseHold[Hold[fun1[y_]:=With[{x=y},fun]]/.s];
     {x1,x2}=Switch[pr,
@@ -286,8 +287,11 @@ FitPlot[data_,fun_,x_,par0__]:=
       {{Automatic,_Real},_},{Min[xa],pr[[1,2]]},
       _,MinMax[xa]];
     Block[{x},
-      g=Unevaluated$[Plot[fun,{x,x1,x2},
-        DisplayFunction->Identity,Null@@opt,PlotColor->"blue"]]/.s];
+      With[{f=fun/.s},
+        Print[f];
+        g=Plot[f,{x,x1,x2},
+          DisplayFunction->Identity,Null@@opt,PlotColor->"blue"]
+        ]];
     lsym=Min[Max[StringLength[SymbolNameRoot[#]]&/@par[[,1]]],8];
     StandardForm[$FORM="8.5";
       ci=ConfidenceInterval/.s;

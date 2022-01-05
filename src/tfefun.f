@@ -45,7 +45,7 @@
                 endif
                 if(ktfrealq(ky1))then
                   if(iopc == mtfplus)then
-                    if(ky1%k == 0)then
+                    if(ky1%k == 0 .or. ky1%k == ktfmzero)then
                       ke=merge(listy%dbody(2),
      $                     tftake(ky,dfromr(dble(-m+1)),
      $                     .true.,.false.,irtc),m== 2)
@@ -57,7 +57,7 @@
      $                     tftake(ky,dfromr(dble(-m+1)),
      $                     .true.,.false.,irtc),m == 2)
                       return
-                    elseif(ky1%k == 0 .and.
+                    elseif((ky1%k == 0 .or. ky1%k == ktfmzero) .and.
      $                     redmath%value%k .ne. 0)then
                       ke%k=0
                       return
@@ -73,14 +73,14 @@
               return
             endif
             if(ktfrealq(kx))then
-              if(iopc == mtfplus .and. kx%k == 0)then
+              if(iopc == mtfplus .and. (kx%k == 0 .or. kx%k == ktfmzero))then
                 ke=ky
                 return
               elseif(iopc == mtftimes)then
                 if(kx%k == ktftrue)then
                   ke=ky
                   return
-                elseif(kx%k == 0 .and.redmath%value%k .ne. 0)then
+                elseif((kx%k == 0 .or. kx%k == ktfmzero) .and.redmath%value%k .ne. 0)then
                   ke%k=0
                   return
                 endif
@@ -96,14 +96,14 @@
             return
           endif
         elseif(ktfrealq(kx))then
-          if(iopc == mtfplus .and. kx%k == 0)then
+          if(iopc == mtfplus .and. (kx%k == 0 .or. kx%k == ktfmzero))then
             ke=ky
             return
           elseif(iopc == mtftimes)then
             if(kx%k == ktftrue)then
               ke=ky
               return
-            elseif(kx%k == 0 .and. redmath%value%k .ne. 0)then
+            elseif((kx%k == 0 .or. kx%k == ktfmzero) .and. redmath%value%k .ne. 0)then
               ke%k=0
               return
             endif
@@ -180,7 +180,7 @@ c          write(*,*)'tfeexpr-slot ',vy,ks
             if(ky%k == ktftrue)then
               ke=k1
               return
-            elseif(ky%k == 0 .and. redmath%value%k .ne. 0)then
+            elseif((ky%k == 0 .or. ky%k == ktfmzero).and. redmath%value%k .ne. 0)then
               ke%k=ktftrue
               return
             endif
@@ -317,7 +317,7 @@ c        call tfdebugprint(ky,'@',1)
         endif
       case (mtfcomplex)
         if(ktfrealq(k))then
-          if(k%k == 0)then
+          if(k%k == 0 .or. k%k == ktfmzero)then
             ke=k1
             return
           endif
@@ -834,7 +834,7 @@ c        write(*,*)'with: ',iopc
       case (mtftimes)
         tfcmplxmathv=c1*c2
       case (mtfrevpower)
-        if(imag(c1) == 0.d0)then
+        if(imag(c1) == 0.d0 .or. imag(c1) == -0.d0)then
           i1=int8(c1)
           tfcmplxmathv=merge(merge(1.d0/c2,c2**i1,i1 == -1),
      $         c2**dble(c1),i1 == dble(c1))
@@ -842,7 +842,7 @@ c        write(*,*)'with: ',iopc
           tfcmplxmathv=c2**c1
         endif
       case(mtfpower)
-        if(imag(c2) == 0.d0)then
+        if(imag(c2) == 0.d0 .or. imag(c2) == -0.d0)then
           i2=int8(c2)
           tfcmplxmathv=merge(merge(1.d0/c1,merge((1.d0,0.d0),c1**i2,
      $         i2 == 0 .and. redmath%value%k .ne. 0),
@@ -870,6 +870,7 @@ c        write(*,*)'with: ',iopc
       type (sad_descriptor) ky,tfdot,tfecmplxl
       type (sad_dlist), pointer :: kl,kl1
       integer*4 ,intent(out):: irtc
+      integer*8 ka1
       integer*4 ne,ne1,i,iopc1,isp0
       logical*4 list1,list
 c     begin initialize for preventing compiler warning
@@ -965,7 +966,7 @@ c      write(*,*)'with ',iopc1
                 if(irtc .ne. 0)then
                   return
                 endif
-                if(ky%k == 0)then
+                if(ky%k == 0 .or. ky%k == ktfmzero)then
                   kx%k=0
                   return
                 elseif(.not. ktfrealq(ky))then
@@ -1003,9 +1004,19 @@ c      write(*,*)'with ',iopc1
               isp=isp0
             endif
           else
-            if(iopc1 == mtfequal .or. iopc1 == mtfunequal)then
+            select case (iopc1)
+            case (mtfset,mtfsetdelayed)
+              do i=1,ne1
+                if(ktfrefq(kl1%dbody(i),ka1))then
+                  call tflocald(dlist(ka1))
+                  dlist(ka1)=dtfcopy(k)
+                endif
+              enddo
+              kx=k
+              return
+            case (mtfequal,mtfunequal)
               exit
-            endif
+            end select
             isp0=isp
             do i=1,ne
               isp=isp+1
@@ -1084,11 +1095,11 @@ c      call tfdebugprint(kx,': ',1)
         endif
         if(ktfrealq(ky1))then
           if(iopc == mtfplus)then
-            if(ky1%k == 0)then
+            if(ky1%k == 0 .or. ky1%k == ktfmzero)then
               m=m-1
             endif
           else
-            if(ky1%k == 0)then
+            if(ky1%k == 0 .or. ky1%k == ktfmzero)then
               kx%k=0
               return
             elseif(ky1%k == ktftrue)then
@@ -3310,7 +3321,7 @@ c          call tfstk2l(lista,lista)
           isp=isp10
           do j=isp10+1,isp11
             if(ktfrealq(ktastk(j),v))then
-              if(v==0.d0)then
+              if(abs(v)==0.d0)then
                 kx%k=0
                 go to 8000
               endif

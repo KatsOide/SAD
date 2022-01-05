@@ -59,9 +59,8 @@ c          call tfdebugprint(kx,'tfmodule-1',1)
         isp=isp2
       elseif(rep)then
         if(isp2 .gt. isp0)then
-c          call tfdebugprint(ktflist+ksad_loc(lvlist%head),'module-1',2)
           kxl1=tfredefslist(isp0,isp2,lvlist)
-c          call tfdebugprint(ktflist+kal1,'==>',2)
+c          call tfdebugprint(kxl1,'==>',2)
         else
           kxl1=sad_descr(lvlist)
         endif
@@ -113,6 +112,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
         go to 100
       endif
       if(eval)then
+c        write(*,*)'mlocalv-1'
         do i=1,m
           ki=list%dbody(i)
           if(ktfsymbolq(ki,symi))then

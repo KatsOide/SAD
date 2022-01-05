@@ -842,6 +842,7 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
           z(i)=z(i)+zf/pzf+dz-dv(i)*dz
           px(i)=pxf
           py(i)=pyf
+c          write(*,'(i5,1p10g12.4)'),i,x(i),z(i),xi,xf,zf,dx,dz,r31
         enddo
       endif
       return

@@ -69,6 +69,7 @@ c cod has canonical momenta!
         cod(4)=cod(4)+bzh*cod(1)
         trans1(2,1:6)=trans1(2,1:6)-bzh*trans1(3,1:6)
         trans1(4,1:6)=trans1(4,1:6)+bzh*trans1(1,1:6)
+c        writen(*,'(a,1p10g12.4)')'tdrife ',al,ak0y/al,ak0x/al,bz,trans1(1,2)
         call tmultr5(trans,trans1,irad)
       endif
       if(irad .gt. 6)then

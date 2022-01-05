@@ -496,6 +496,7 @@ c      call tfdebugprint(k,'tfget',1)
           itf=min(-1,itf)
         endif
       enddo
+c      call tfdebugprint(kx,'tfget-r',1)
       call tfconnect(kx,0)
       call trbclose(lfn)
       savep=sav

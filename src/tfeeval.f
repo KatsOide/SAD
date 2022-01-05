@@ -270,6 +270,7 @@ c                endif
       dtastk(isp)=list%head
       do i=1,list%nl
         ki=list%dbody(i)
+c        call tfdebugprint(ki,'evallev',1)
         kai=ktfaddr(ki)
         select case(ki%k-kai)
         case (ktflist)
@@ -305,7 +306,11 @@ c                endif
           call tfgetllstkall(listi)
         endif
       enddo
-      kx=merge(kxcompose(isp1),sad_descr(list),ev)
+      if(ev)then
+        kx=kxcompose(isp1)
+      else
+        kx=sad_descr(list)
+      endif
       irtc=0
  9000 isp=isp1-1
       return

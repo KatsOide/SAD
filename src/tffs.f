@@ -1885,7 +1885,7 @@ c     begin initialize for preventing compiler warning
      $     ipnup=ipequpol6+1,iprevf=ipnup+1,
      $     nparams=iprevf
 
-c     inverse normal ccordinate at the origin
+c     inverse normal ccordinate at the origin (normal -> physical)
       real(8), public :: r(6, 6) = RESHAPE((/
      $     1.d0, 0.d0, 0.d0, 0.d0, 0.d0, 0.d0,
      $     0.d0, 1.d0, 0.d0, 0.d0, 0.d0, 0.d0,
@@ -1895,7 +1895,7 @@ c     inverse normal ccordinate at the origin
      $     0.d0, 0.d0, 0.d0, 0.d0, 0.d0, 1.d0/),
      $     (/6, 6/))
 
-c     Inverse matrix of r: NormalCoordinate
+c     Inverse matrix of r: NormalCoordinate (physical -> normal)
       real(8), public :: ri(6, 6) = RESHAPE((/
      $     1.d0, 0.d0, 0.d0, 0.d0, 0.d0, 0.d0,
      $     0.d0, 1.d0, 0.d0, 0.d0, 0.d0, 0.d0,
@@ -3011,14 +3011,14 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
      $     gbrhoi,anph)
         use tmacro
         use ffs_flag, only:radpol
-        use mathfun,only:pxy2dpz,sqrt1
+        use mathfun,only:pxy2dpz,sqrt1,xsincos
         implicit none
         real*8 pxm,pym,bsi,pzm,bx0,by0,bz0,sx,sy,sz,
      $       bx,by,bz,bp,blx,bly,blz,btx,bty,btz,ct,h,
      $       gx,gy,gz,g,a,gbrhoi,dsx,dsy,dsz,
      $       sux,suy,suz,
-     $       bt,st,dst,dr,sl1,st1,tanuh,
-     $       sw,anph,cosu,sinu,dcosu
+     $       bt,st,dst,dr,sl1,st1,
+     $       sw,anph,cosu,sinu,dcosu,xsinu
         pzm=1.d0+pxy2dpz(pxm,pym)
         bx=bx0*a
         by=by0*a
@@ -3062,11 +3062,12 @@ c        g=abs(dcmplx(gx,abs(dcmplx(gy,gz))))
         if(g .ne. 0.d0)then
 c          write(*,'(a,1p9g14.6)')'sprot ',g,ct,h,
 c     $         btx,bty,btz,cphi0,sphi0
-          tanuh=tan(g*.5d0)
-          sinu=2.d0*tanuh/(1.d0+tanuh**2)
-          dcosu=tanuh*sinu
-          cosu=1.d0-dcosu
-          sw=(sx*gx+sy*gy+sz*gz)*dcosu/g**2
+c          tanuh=tan(g*.5d0)
+c          sinu=2.d0*tanuh/(1.d0+tanuh**2)
+c          dcosu=tanuh*sinu
+c          cosu=1.d0-dcosu
+          call xsincos(g,sinu,xsinu,cosu,dcosu)
+          sw=-(sx*gx+sy*gy+sz*gz)*dcosu/g**2
           sinu=sinu/g
           sux=sy*gz-sz*gy
           suy=sz*gx-sx*gz
@@ -3163,6 +3164,26 @@ c        write(*,*)'spnorm ',sdamp,gintd
         return
         end subroutine
 
+        subroutine serot(xx,xy,yy,c1,c2,d1,d2,e1,e2,em1,em2)
+        implicit none
+        real*8 ,intent(in):: xx,xy,yy
+        real*8 ,intent(inout):: c1,c2,d1,d2,e1,e2
+        real*8 ,intent(out):: em1,em2
+        real*8 tx,c,s
+        tx=.5d0*atan(2.d0*xy,xx-yy)
+        c=cos(tx)
+        s=sin(tx)
+        em1=c**2*xx+s**2*yy+2.d0*c*s*xy
+        em2=c**2*yy+s**2*xx-2.d0*c*s*xy
+        c1=  c*c1+s*c2
+        c2=(-s*c1+  c2)/c
+        d1=  c*d1+s*d2
+        d2=(-s*d1+  d2)/c
+        e1=  c*e1+s*e2
+        e2=(-s*e1+  e2)/c
+        return
+        end
+
         subroutine sremit(srot,sps,params,demit,sdamp,rm1,equpol)
         use temw,only:ipdampx,nparams,ipdampz,ipemx,ipemz,ipnup,
      $       ipnx,ipnz,r
@@ -3171,14 +3192,12 @@ c        write(*,*)'spnorm ',sdamp,gintd
         real*8 , intent(in)::srot(3,9),demit(21),sps(3,3),
      $       params(nparams),sdamp
         real*8 , intent(out)::equpol(3),rm1(3,3)
-        real*8 drot(3,6),
+        real*8 drot(3,6),emit1(3),emitd(3),damp(3),
      $       d1,d2,d3,d4,d5,d6,e1,e2,e3,e4,e5,e6,
-     $       c1,c2,c3,c4,c5,c6,smu,c,s,tx,c60,c40,c20,
+     $       c1,c2,c3,c4,c5,c6,smu,
      $       dex1,dex2,dey1,dey2,dez1,dez2,
-     $       c1a,c3a,c5a,
      $       rm(3,3),epol(3,3),b(3),rmd(3,3,3)
         integer*4 i
-c        write(*,'(a,1p10g12.4)')'sremit-sps ',sps
         smu=params(ipnup)*m_2pi
         drot=matmul(srot(:,4:9),r)
         c1=dot_product(drot(:,1),sps(:,1))
@@ -3199,58 +3218,19 @@ c        write(*,'(a,1p10g12.4)')'sremit-sps ',sps
         e4=dot_product(drot(:,4),sps(:,3))
         e5=dot_product(drot(:,5),sps(:,3))
         e6=dot_product(drot(:,6),sps(:,3))
-        tx=.5d0*atan(2.d0*demit(2),demit(1)-demit(3))
-        c=cos(tx)
-        s=sin(tx)
-        dex1=c**2*demit(1)+s**2*demit(3)+2.d0*c*s*demit(2)
-        dex2=c**2*demit(3)+s**2*demit(1)-2.d0*c*s*demit(2)
-        c1a=c1
-        c20=c2
-        c1=  c*c1-s*c2
-        c2= (s*c1+  c2)/c
-        d1=  c*d1-s*d2
-        d2= (s*d1+  d2)/c
-        e1=  c*e1-s*e2
-        e2= (s*e1+  e2)/c
-c        write(*,'(a,1p10g12.4)')'sremit-x ',tx,
-c     $       demit(1),demit(2),demit(3),dex1,dex2,c1,c2,c1a,c20
-        tx=.5d0*atan(2.d0*demit(9),demit(6)-demit(10))
-        c=cos(tx)
-        s=sin(tx)
-        dey1=c**2*demit(6) +s**2*demit(10)+2.d0*c*s*demit(9)
-        dey2=c**2*demit(10)+s**2*demit(6) -2.d0*c*s*demit(9)
-        c3a=c3
-        c40=c4
-        c3=  c*c3-s*c4
-        c4= (s*c3+  c4)/c
-        d3=  c*d3-s*d4
-        d4= (s*d3+  d4)/c
-        e3=  c*e3-s*e4
-        e4= (s*e3+  e4)/c
-c        write(*,'(a,1p10g12.4)')'sremit-y ',tx,
-c     $       demit(6),demit(9),demit(10),dey1,dey2,c3,c4,c3a,c40
-        tx=.5d0*atan(2.d0*demit(20),demit(15)-demit(21))
-        c=cos(tx)
-        s=sin(tx)
-        dez1=c**2*demit(15)+s**2*demit(21)+2.d0*c*s*demit(20)
-        dez2=c**2*demit(21)+s**2*demit(15)-2.d0*c*s*demit(20)
-        c5a=c5
-        c60=c6
-        c5=  c*c5-s*c6
-        c6= (s*c5+  c6)/c
-        d5=  c*d5-s*d6
-        d6= (s*d5+  d6)/c
-        e5=  c*e5-s*e6
-        e6= (s*e5+  e6)/c
-c        write(*,'(a,1p10g12.4)')'sremit-z ',tx,
-c     $       demit(15),demit(20),demit(21),dez1,dez2,c5,c6,c5a,c60
+        call serot(demit(1), demit(2), demit(3), c1,c2,d1,d2,e1,e2,dex1,dex2)
+        call serot(demit(6), demit(9), demit(10),c3,c4,d3,d4,e3,e4,dey1,dey2)
+        call serot(demit(15),demit(20),demit(21),c5,c6,d5,d6,e5,e6,dez1,dez2)
+        emit1=params(ipemx:ipemz)
+        damp=abs(params(ipdampx:ipdampz))
+        emitd=2.d0*emit1*damp/3.d0
         call spdepol(
      $       (/c1,c3,c5/),(/c2,c4,c6/),
      $       (/d1,d3,d5/),(/d2,d4,d6/),
      $       (/e1,e3,e5/),(/e2,e4,e6/),
-     $       (/dex1,dey1,dez1/),(/dex2,dey2,dez2/),
-     $       params(ipemx:ipemz),
-     $       abs(params(ipdampx:ipdampz)),
+     $       (/dex1,dey1,dez1/)/3.d0,(/dex2,dey2,dez2/)/3.d0,
+c     $       emitd,emitd,
+     $       emit1,damp,
      $       params(ipnx:ipnz)*m_2pi,smu,rmd)
         rm1=0.d0
         do i=1,3
@@ -3258,10 +3238,13 @@ c     $       demit(15),demit(20),demit(21),dez1,dez2,c5,c6,c5a,c60
           rm=rm1
           rm(1,1)=rm(1,1)-sdamp
           b=(/-sdamp*pst,0.d0,0.d0/)
-          call tsolvg(rm,b,epol(:,i),3,3,3)
+          call tsolva(rm,b,epol(:,i),3,3,3,min(1.d-8,sdamp/100.d0))
         enddo
         rm1(1,1)=rm1(1,1)-sdamp
         equpol=epol(1,:)
+        write(*,'(a,1p10g12.4)')'epol ',epol
+        write(*,'(a,1p10g12.4)')'rm1  ',rm1
+        write(*,'(a,1p10g12.4)')'pols ',matmul(rm1,epol)
         return
         end subroutine
 

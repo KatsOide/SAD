@@ -428,7 +428,7 @@
       real*8 pure elemental function sqrtl(x)
       implicit none
       real*8 ,intent(in)::  x
-      real*8 ,parameter :: am=1.d-100
+      real*8 ,parameter :: am=1.d-200
       sqrtl=sqrt(max(x,am))
       return
       end function
