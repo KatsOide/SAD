@@ -4049,7 +4049,12 @@ Example:\n\
 
         {"FitPlot",
           "\
-Usage: FitPlot[data, fun, var, {par1,ini1}, .. , {parn, inin}, opt].",
+Usage: FitPlot[data, fun, var, {par1,ini1}, .. , {parn, inin}, opt].\n\n\
+options        defaults\n\
+-----------------------------------------\n\
+FunctionLabel  Default     Shows the fit function within FrameLabel[[3]].\n\
+ResultLabel    Default     Shows the fit results within FrameLabel[[3]].\n\
+",
           "Fit",
           {}},
 
