@@ -561,7 +561,7 @@ AutoLoad[Class,This,Constructor,Destructor,Clone,Object,
   PackagesDirectory//"Class.n"];
 AutoLoad[NearlySameQ,FixedPoint,FixedPoinstList,FunctionDefinition,
   PackagesDirectory//"Misc.n"];
-AutoLoad[Shared,Parallelize,CloseShared,
+AutoLoad[Shared,Parallelize,OpenShared,CloseShared,
   PackagesDirectory//"shared.n"];
 
 AutoLoad[CaOpen,CaRead,CaWrite,CaGet,CaPut,CaClose,

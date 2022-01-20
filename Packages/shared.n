@@ -1,4 +1,5 @@
-Clear[Shared,CloseShared,Parallelize];
+Clear[Shared,OpenShared,CloseShared,Parallelize];
+OpenShared=OpenShared$;
 
 Shared[`n_Real]:=ReadShared[`n];
 (Shared[n_]=`v_)^:=WriteShared[n,v];
@@ -79,4 +80,4 @@ With[{`tfork=0.01,`tsupdate=0.1,`nwu=100,`twcomp=1, nos=32,
         Close[np];
         l]];
 
-SetAttributes[{Parallelize,CloseShared},{HoldFirst,Constant}];
+SetAttributes[{Parallelize,OpenShared,CloseShared},{HoldFirst,Constant}];
