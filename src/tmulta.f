@@ -14,16 +14,16 @@
       integer*4 ,parameter ::ndivmax=2000
       real*8 ,parameter ::ampmax=0.05d0,eps00=0.005d0
       integer*4 np,mfring,i,n,mfr,ndiv,nmmax,m,m1,k,nmmin
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),dv(np),sx(np),sy(np),sz(np)
+      real*8 
      $     al,phi,psi1,psi2,bz,dx,dy,theta,eps0,fb1,fb2,
      $     dtheta,pr,cost,sint,rho0,rhob,dchi2,alg,phig,
      $     sinp1,sinp2,cosp1,cosp2,phin,aln,cosw,sinw,sqwh,sinwp1,
      $     eps,w,r,rk(0:nmult),als,ak0r,ak1r,ak1n,
      $     phib,ak0n
-      real*8 sx(np),sy(np),sz(np)
       complex*16 ak0(0:nmult),ak(0:nmult),akn(0:nmult),
      $     cx1,csl,csr,cl,cr,cg,cx
-      logical*4 fringe,krad
+      logical*4 ,intent(in):: fringe,krad
       if(bz .ne. 0.d0)then
         write(*,*)
      $       'MULT with nonzero ANGLE and BZ is not yet supported.'

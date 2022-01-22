@@ -10,7 +10,8 @@
       integer*4, parameter ::ndivmax=1000
       real*8, parameter::eps=1.d-3,oneev=1.d0+3.83d-12
       integer*4 ,intent(in):: np,mfring,lwl,lwt
-      integer*4 ndiv,i,n,itab(np),izs(np)
+      integer*4 ndiv,i,n
+      integer*4 ,dimension(:),allocatable :: itab,izs
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
      $     g(np),dv(np),sx(np),sy(np),sz(np)
       real*8 ,intent(in):: wakel(2,lwl),waket(2,lwt),
@@ -152,6 +153,12 @@ c          dpr=a/(1.d0+sqrt(1.d0+a))
           z(i)=-t*p2r*p0/h2-dzn
 20      continue
         if(lwake .or. twake)then
+          if(.not. allocated(itab))then
+            allocate(itab(np))
+          endif
+          if(.not. allocated(izs))then
+            allocate(izs(np))
+          endif
           fw=fw0*wsn
           call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         0.d0,0.d0,0.d0,

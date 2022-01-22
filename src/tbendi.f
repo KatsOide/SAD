@@ -15,9 +15,9 @@
       integer*4 , parameter :: ndivmax=1000
       integer*4 np,mfring,i,ndiv,n,n1,n2
       real*8 ,intent(in):: dchi2,alg,phig
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
-     $     sx(np),sy(np),sz(np),
-     $     alx(-1:ndivmax+2),alr(-1:ndivmax+2),
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
+     $     sx(np),sy(np),sz(np)
+      real*8 alx(-1:ndivmax+2),alr(-1:ndivmax+2),
      $     akxn(-1:ndivmax+2),phixn(-1:ndivmax+2),
      $     cphixn(-1:ndivmax+2),sphixn(-1:ndivmax+2),
      $     al,phib,phi0,cosp1,sinp1,cosp2,sinp2,

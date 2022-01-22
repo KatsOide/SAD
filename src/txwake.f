@@ -9,8 +9,8 @@
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),
      $     dv(np),sx(np),sy(np),sz(np)
       real*8 ,intent(in):: wakel(2,lwl0),waket(2,lwt0),dx,dy,theta
-      real*8 xs(np),ys(np),zs(np),
-     $     dz,w,wx(np),wy(np),wz(np),ws(np),zk,dzk,
+      real*8 ,dimension(:), allocatable:: xs,ys,zs,wx,wy,wz,ws
+      real*8 dz,w,zk,dzk,
      $     pa,pb,h1,fw,dwx,dwy,dwz,p0,h0,fwp,
      $     cost,sint,xi,pxi,pmin,zmin
       parameter (pmin=1.d-10,zmin=-1.d30)
@@ -42,15 +42,20 @@
       endif
       fwp=fw/p0
       ns=izs(np)
-      do n=1,ns
-        ws(n)=0.d0
-        xs(n)=0.d0
-        ys(n)=0.d0
-        zs(n)=0.d0
-        wx(n)=0.d0
-        wy(n)=0.d0
-        wz(n)=0.d0
-      enddo
+      allocate(ws(ns))
+      allocate(xs(ns))
+      allocate(ys(ns))
+      allocate(zs(ns))
+      allocate(wx(ns))
+      allocate(wy(ns))
+      allocate(wz(ns))
+      ws=0.d0
+      xs=0.d0
+      ys=0.d0
+      zs=0.d0
+      wx=0.d0
+      wy=0.d0
+      wz=0.d0
       do i=1,np
         n=izs(i)
         ws(n)=ws(n)+1.d0
@@ -136,9 +141,11 @@ c        endif
 
       subroutine txwdefslice(np,z,nb,itab,izs)
       implicit none
-      integer*4 np,nb,itab(np),izs(np),mb(0:nb),
-     $     i,m,m0,nm,ks,m1,j
-      real*8 z(np),za,sb
+      integer*4 ,intent(inout):: itab(np),izs(np)
+      integer*4 ,intent(in):: np,nb
+      integer*4 mb(0:nb),i,m,m0,nm,ks,m1,j
+      real*8 ,intent(in):: z(np)
+      real*8 za,sb
       za=z(itab(np))-z(itab(1))
       if(nb .gt. 1)then
         sb=za/(nb-1)*.5d0

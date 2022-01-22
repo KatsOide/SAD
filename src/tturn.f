@@ -208,17 +208,6 @@ c      isb=ilist(2,iwakepold+6)
       call tallocrad(np0)
       bsi=0.d0
       do l=lbegin,lend
-        l_track=l
-c        if(abs(x(1))+abs(y(1)) .gt. 0.01d0)then
-c        write(*,'(a,2i5,1p10g12.4)')'tturn1-l ',l,np,sx(1),sy(1),sz(1)
-c          write(*,*)'tturn1 ',l,np,kptbl(1,1:6)
-c        endif
-c        call tfmemcheckprint('tturn',l,.false.,irtc)
-c        if(trpt .and. codplt)then
-c          call ttstat(np,x,px,y,py,z,g,dv,0.d0,
-c     1         ' ',sa,ss,0.d0,
-c     1         .false.,.false.,0)
-c        endif
         if(la .le. 0)then
           call tapert(x,px,y,py,z,g,dv,sx,sy,sz,
      1         kptbl,np,n,
@@ -231,6 +220,10 @@ c        endif
         endif
         call compelc(l,cmp)
         lele=idtype(cmp%id)
+c        if(l > 3270)then
+c          write(*,'(a,2i5)')'tturn ',l,lele
+c        endif
+        l_track=l
         if(sol)then
           if(l .eq. lbegin)then
             call tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,l,lend,
@@ -489,7 +482,9 @@ c     endif
          endif
 
        case (icMAP)
+         call tfmemcheckprint('tturn-temap',l,.false.,irtc)
          call temap(np,np0,x,px,y,py,z,g,dv,sx,sy,sz,l,n,kptbl)
+         call tfmemcheckprint('tturn-temap-end',l,.false.,irtc)
          go to 1010
 
        case (icBEAM)

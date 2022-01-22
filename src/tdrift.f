@@ -370,14 +370,15 @@ c        write(*,'(a,1p10g12.4)')'tsoldz ',dpldpx*phix*xsinphi,sinphi,dpz0dpx*ph
       integer*4 np,i,itmax,ndiag
       real*8 conv
       parameter (itmax=15,conv=1.d-15)
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     sx(np),sy(np),sz(np)
-      real*8 al,bz,pr,bzp,phi,px1,py1,px0,py0,z0,
-     $     sinphi,cosphi,ak0x,ak0y,b,phix,phiy,phiz,
+      real*8 ,intent(in):: al,bz,ak0x,ak0y
+      real*8 pr,bzp,phi,px1,py1,px0,py0,z0,
+     $     sinphi,cosphi,b,phix,phiy,phiz,
      $     dphizsq,dpz0,pz0,plx,ply,plz,ptx,pty,ptz,
      $     pbx,pby,pbz,dphi,dcosphi,pl,dpl,alb,
      $     xsinphi,bpr,bsi0,ap,db
-      logical*4 enarad
+      logical*4 ,intent(in):: enarad
       data ndiag/15/
       if(abs(ak0x) == 0.d0 .and. abs(ak0y) == 0.d0)then
         if(abs(bz) == 0.d0)then

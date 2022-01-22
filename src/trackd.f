@@ -512,8 +512,7 @@ c      write(*,'(a,1p6g15.7)')'tinip ',xa(6),emx,emz
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
      $     dv(np),g(np)
       real*8 xa(7)
-      real*8 ,intent(in):: dampx,dampy,dampz,
-     $     aenox(np),aenoy(np),aenoz(np)
+      real*8 ,intent(in):: dampx,dampy,dampz,aenox(np),aenoy(np),aenoz(np)
       integer*4 ,intent(inout):: mturn(np)
       integer*4 i,j
       logical*4 damp

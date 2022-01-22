@@ -30,7 +30,8 @@ c      use ffs_pointer, only:inext,iprev
       complex*16 ,intent(in):: ak(0:nmult),akr0(0:nmult)
       logical*4 ,intent(in):: fringe,krad
       logical*1 ,intent(in):: dofr(0:nmult)
-      type (tzparams) tzs(np),tzs1(np)
+c      type (tzparams) tzs(np),tzs1(np)
+      type (tzparams) ,dimension(:),allocatable:: tzs,tzs1
       integer*4 i,m,n,ndiv,ibsi
       real*8 bxs,bys,bzs,b,a,epsr,wi,
      $     akr1,ak1,al1,p,ea,pxf,pyf,sv,wm,alx
@@ -140,10 +141,16 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
               call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al1,0.d0)
               pcvt%fr0=pcvt%fr0+al1/al
             elseif(m .eq. 1)then
+              if(.not. allocated(tzs1))then
+                allocate(tzs1(np))
+              endif
               call tsolqum(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $             al1,ak1,bzs,dble(ak01),imag(ak01),-1,eps0,
      $             tzs1,.true.)
             else
+              if(.not. allocated(tzs))then
+                allocate(tzs(np))
+              endif
               call tsolqum(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $             al1,ak1,bzs,dble(ak01),imag(ak01),-1,eps0,
      $             tzs,m .eq. 2)
@@ -187,6 +194,9 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
             call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           al1,ak1,bzs,dble(ak01),imag(ak01),2,eps0)
           else
+            if(.not. allocated(tzs1))then
+              allocate(tzs1(np))
+            endif
             call tsolqum(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $            al1,ak1,bzs,dble(ak01),imag(ak01),-1,eps0,
      $           tzs1,.false.)
@@ -242,6 +252,12 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
      $         0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
         endif
       endif
+c      if(allocated(tzs1))then
+c        deallocate(tzs1)
+c      endif
+c      if(allocated(tzs))then
+c        deallocate(tzs)
+c      endif
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     alg-al,bz,dx,dy,dz,
      $     -chi1,-chi2,theta2,bxs,bys,bzs,.false.)
