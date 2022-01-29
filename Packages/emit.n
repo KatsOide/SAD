@@ -13,7 +13,7 @@ SetAttributes[{OneTurnInformation,Orbit,Matrix,ExpandElementValues,
   OneTurnExcitation,EquilibriumBeamMatrix,ClosedOrbit,
   NominalSpinTune,PolarizationTime,
   TransferMatrices,IntrabeamExcitation,SaveEMIT,AzimuthalModes,SpinTune,
-  Polarization,Polarizations,
+  SpinPrecessionMatrix,Polarization,Polarizations,
   PolarizationVector,Region},
   Constant];
 
@@ -68,7 +68,8 @@ With[{default={OneTurnInformation->False,
               {m,6},{n,6}],
           EquilibriumBeamMatrix->
             Table[e[[3,6,((m+n+Abs[m-n])^2+2*(m+n)-6*Abs[m-n])/8]],
-              {m,6},{n,6}]}];
+              {m,6},{n,6}],
+          SpinPrecessionMatrix->e[[3,7]]}];
         If[mode>1,
           AppendTo[r,ClosedOrbit->e[[4]]];
           If[mode>2,

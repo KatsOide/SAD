@@ -78,7 +78,7 @@ c        write(*,'(a,1p2g15.7,3i5)')'tfemit ',klr%rbody(1:2),is,ie,nlat
       irtc=0
       iae=iaez
       if(mode .ge. 1)then
-        iae%iamat=ktadalocnull(-1,6)
+        iae%iamat=ktadalocnull(-1,7)
         if(mode .ge. 2)then
           iae%iacod=ktadalocnull(-1,nel)
           if(mode .eq. 3)then
@@ -113,7 +113,7 @@ c        write(*,'(a,1p2g15.7,3i5)')'tfemit ',klr%rbody(1:2),is,ie,nlat
         call setparams(param,cod)
         call rotri(is,ris)
         dummy=dnotanumber
-        call setiamat(iae%iamat,ris,codin,beam,dummy,trans)
+        call setiamat(iae%iamat,ris,codin,beam,dummy,trans,srot)
         param(iptwiss:iptwiss+ntwissfun-1)=tfetwiss(ris,codin,
      $       twiss(is,0,mfitdetr) .lt. 1.d0)
       endif
@@ -151,9 +151,11 @@ c            call tfdebugprint(klx%dbody(5),'tfemit-trmat',10)
       use tffitcode
       use temw, only:nparams,tfinitemip
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       integer*8 kparams
-      integer*4 isp1,irtc,mphi2,i,itfmessage
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 mphi2,i,itfmessage
       real*8 arg(4),emxe,emye,rese
       call tfinitemip
       if(isp .ne. isp1+4)then

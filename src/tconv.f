@@ -2,8 +2,10 @@
       use tmacro
       use mathfun
       implicit none
-      integer*4 idir
-      real*8 x1(8),x2(8),pr,h1,p1
+      integer*4 ,intent(in):: idir
+      real*8 ,intent(in):: x1(8)
+      real*8 ,intent(out):: x2(8)
+      real*8 pr,h1,p1
       if(idir .ge. 0)then
 c        x2(6)=x1(6)*(2.d0+x1(6))
         x2(6)=x1(6)

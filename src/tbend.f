@@ -22,13 +22,13 @@
       if(n .gt. 0 .and. n .le. ndiv)then
         alx=aln
         alr=aln
-      elseif(n .eq. -1)then
+      elseif(n == -1)then
         alx=rbl*f1r
         alr=f1r
-      elseif(n .eq. 0)then
+      elseif(n == 0)then
         alx=rbh*f1r
         alr=f1r
-      elseif(n .eq. ndiv+1)then
+      elseif(n == ndiv+1)then
         alx=rbh*f2r
         alr=f2r
       else
@@ -45,7 +45,7 @@
       logical*4 , intent(in), optional::force
       real*8 xspx
       if(.not. present(force) .and. .not. force)then
-        if(ak1 .eq. akxi .and. al .eq. alxi .and. dpxi .eq. dp)then
+        if(ak1 == akxi .and. al == alxi .and. dpxi == dp)then
 c          write(*,'(a,1p10g12.4)')'tbendiinit-noforce ',ak1,al,dp,
 c     $         akxsq,-1.d0/rhosq-akk/p,akx,sqrt(akxsq),phix,akx*al
           return
@@ -337,16 +337,16 @@ c        write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),
           bsi1=0.d0
           bsi2=0.d0
           call tbendal(n,ndiv,f1r,f2r,aln,alx,alr)
-          if(n .eq. n1)then
-            if(mfring .gt. 0 .or. mfring .eq. -1)then
+          if(n == n1)then
+            if(mfring .gt. 0 .or. mfring == -1)then
               mfr1=-1
             endif
             psi1n=psi1
             cosp1n=cosp1
             sinp1n=sinp1
             bsi1=1.d0
-          elseif(n .eq. n2)then
-            if(mfring .gt. 0 .or. mfring .eq. -2)then
+          elseif(n == n2)then
+            if(mfring .gt. 0 .or. mfring == -2)then
               mfr1=-2
             endif
             psi2n=psi2
@@ -400,7 +400,7 @@ c        write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),
         real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
      $       dv(np),g(np),sx(np),sy(np),sz(np)
         logical*4 ,intent(in):: krad,fringe
-        if((mfring .gt. 0 .or. mfring .eq. -1) .and. fb1 .ne. 0.d0)then
+        if((mfring .gt. 0 .or. mfring == -1) .and. fb1 .ne. 0.d0)then
           dxfr1=fb1**2/rhob/24.d0
           dyfr1=fb1/rhob**2/6.d0
           dzfr1=dxfr1*sinp1
@@ -411,7 +411,7 @@ c        write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),
           dyfra1=0.d0
           dzfr1=0.d0
         endif
-        if((mfring .gt. 0 .or. mfring .eq. -2) .and. fb2 .ne. 0.d0)then
+        if((mfring .gt. 0 .or. mfring == -2) .and. fb2 .ne. 0.d0)then
           dxfr2=fb2**2/rhob/24.d0
           dyfr2=fb2/rhob**2/6.d0
           dzfr2=dxfr2*sinp2
@@ -554,13 +554,13 @@ c     $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
       logical*4 ,intent(in):: fringe,ini,krad
       logical*1 ,save::dofr(0:1)=[.true.,.true.]
       phib=phi0+ak0
-      if(phi0 .eq. 0.d0)then
-        if(ak .eq. 0.d0)then
+      if(phi0 == 0.d0)then
+        if(ak == 0.d0)then
           call tsteer(np,x,px,y,py,z,g,dv,sx,sy,sz,al,-ak0,
      1         dx,dy,theta+dtheta,
      1         cosp1,sinp1,cosp2,sinp2,
      $         fb10,fb20,fringe,eps,krad)
-        elseif(phib .eq. 0.d0)then
+        elseif(phib == 0.d0)then
           call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,0.d0,
      1         dx,dy,theta+dtheta,theta+dtheta,krad,.true.,
      1         fringe,0.d0,0.d0,0,eps,.true.)
@@ -568,7 +568,7 @@ c     $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
           akm=0.d0
           akm(0)=ak0
           akm(1)=ak
-          nmmax=merge(1,0,ak .eq. 0.d0)
+          nmmax=merge(1,0,ak == 0.d0)
           theta2=theta+dtheta+akang(dcmplx(ak,0.d0),al,cr1)
           akr0(0)=akm(0)*cr1
           akr0(1)=akm(1)*cr1*cr1
@@ -595,10 +595,10 @@ c     $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
       endif
 c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1)-x(2),px(1)-px(2),
 c     $     y(1)-y(2),py(1)-py(2),z(1)-z(2),g(1)-g(2)
-      if(phib .eq. 0.d0)then
+      if(phib == 0.d0)then
         call tbdrift(np,x,px,y,py,z,dv,sx,sz,al,phi0)
         go to 9000
-      elseif(al .eq. 0.d0)then
+      elseif(al == 0.d0)then
         call tbthin(np,x,px,y,py,z,g,sx,sy,sz,phib,phi0,dx,dy,
      1              dtheta,cost,sint,dchi2)
         go to 9000
@@ -615,18 +615,18 @@ c     $     y(1)-y(2),py(1)-py(2),z(1)-z(2),g(1)-g(2)
       f2r=0.d0
       if(krad)then
         if(ini)then
-          if(photons .and. iniph .eq. 0)then
+          if(photons .and. iniph == 0)then
             call tsetpcvt(l_track,dx,dy,theta,dtheta,phi0,al)
           endif
           pxr0=px
           pyr0=py
           zr0=z
         endif
-        if(iprev(l_track) .eq. 0 .and. fb1 .ne. 0.d0)then
+        if(iprev(l_track) == 0 .and. fb1 .ne. 0.d0)then
           n1=-1
           f1r=fb1*.5d0
         endif
-        if(inext(l_track) .eq. 0 .and. fb2 .ne. 0.d0)then
+        if(inext(l_track) == 0 .and. fb2 .ne. 0.d0)then
           n2=2
           f2r=fb2*.5d0
         endif
@@ -644,7 +644,7 @@ c          end select
 c        endif
       endif
       n2=ndiv+n2
-      if(n1 .eq. n2)then
+      if(n1 == n2)then
         call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al,phi0,
      1       cosp1,sinp1,cosp2,sinp2,

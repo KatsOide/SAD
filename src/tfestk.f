@@ -63,7 +63,7 @@ c Alternatives is temporarily set .false. due to possible reduction.
      $           +ichar(oper1(3:3))+ichar(oper1(4:4))
             j=iand(j,63)
             do k=1,nhash
-              if(iophash(k,j) .lt. 0)then
+              if(iophash(k,j) < 0)then
                 iophash(k,j)=i
                 cycle LOOP_I
               endif
@@ -147,10 +147,10 @@ c          msgn /:   (*   *)   Hold z
       integer*4 iop,iop1,isp1,i,itgetfpe,itfmessage
       logical*4 ,intent(in):: lastfirst(0:mtfnopc)
       logical*4 ineq
-      ineq(iop1)=iop1 .ge. mtfgreater .and. iop1 .le. mtfunequal .or.
+      ineq(iop1)=iop1 >= mtfgreater .and. iop1 <= mtfunequal .or.
      $     iop1 == mtfsame .or. iop1 == mtfunsame
       irtc=0
-      do while(isp .gt. isp0)
+      do while(isp > isp0)
         iop=itastk2(1,isp)
 c        call tfdebugprint(dtastk(isp),'estk',1)
 c        write(*,*)'with ',isp,isp0,iop
@@ -228,7 +228,7 @@ c        write(*,*)'with ',isp,isp0,iop
           kx=kxpfaloc(dtastk(isp-1))
           go to 1010
         endif
-        if(iprior(iop) .lt. iprior(iop1))then
+        if(iprior(iop) < iprior(iop1))then
           return
         elseif(iprior(iop) == iprior(iop1) .and.
      $         lastfirst(iop))then
@@ -266,7 +266,7 @@ c        write(*,*)'with ',isp,isp0,iop
             if(irtc /= 0)then
               return
             endif
-            if(itgetfpe() .gt. 0)then
+            if(itgetfpe() > 0)then
               irtc=itfmessage(9,'General::fpe','""')
               return
             endif
@@ -375,10 +375,10 @@ c      call tfdebugprint(kx,'resulting:',1)
       integer*8 ka
       integer*4 i,narg,itfmessage,iop1
       logical*4 ineq
-      ineq(iop1)=iop1 .ge. mtfgreater .and. iop1 .le. mtfunequal .or.
+      ineq(iop1)=iop1 >= mtfgreater .and. iop1 <= mtfunequal .or.
      $     iop1 == mtfsame .or. iop1 == mtfunsame
       narg=isp-isp1
-      if(narg .lt. 3 .or. narg /= (narg/2)*2+1)then
+      if(narg < 3 .or. narg /= (narg/2)*2+1)then
         irtc=itfmessage(9,'General::narg','"3 or more"')
         return
       endif
@@ -388,7 +388,7 @@ c      call tfdebugprint(kx,'resulting:',1)
         if(irtc /= 0)then
           return
         endif
-        if(i .gt. isp1+1)then
+        if(i > isp1+1)then
           if(ktfoperq(dtastk(i-1)) .and.
      $         ineq(int(ktfaddr(ktastk(i-1)))))then
             ka=ktfaddr(ktastk(i-1))
@@ -436,7 +436,7 @@ c      include 'DEBUG.inc'
           iah=int(kah)
           kx=merge(tfcomposefun(isp1,iah,.false.,irtc),
      $         tfcomposeoper(isp1,iah,.true.,isp0,irtc),
-     $         iah .gt. mtfend)    
+     $         iah > mtfend)    
           if(irtc == 0)then
             return
           endif
@@ -470,11 +470,11 @@ c      include 'DEBUG.inc'
       if(isp /= isp1 .and. rlist(iaximmediate) /= 0.d0)then
         if(ktfoperq(kh,kah))then
           iah=int(kah)
-          if(iah .gt. mtfend)then
+          if(iah > mtfend)then
             kx=tfcomposefun(isp1,iah,.true.,irtc)
             if(irtc == 0)then
               return
-            elseif(irtc .gt. 0)then
+            elseif(irtc > 0)then
               go to 10
             endif
             if(.not. ktfimmediateq(klist(ifunbase+iah)))then
@@ -484,7 +484,7 @@ c      include 'DEBUG.inc'
             kx=tfcomposeoper(isp1,iah,.true.,isp0,irtc)
             if(irtc == 0)then
               return
-            elseif(irtc .gt. 0)then
+            elseif(irtc > 0)then
               if(iah == mtfcomplex)then
                 go to 1
               endif
@@ -611,7 +611,7 @@ c      include 'DEBUG.inc'
           if(iand(ktrmask,ktastk(isp1+1)) /= ktfnr .and.
      $         iand(ktrmask,ktastk(isp)) /= ktfnr )then
             kx%k=merge(ktftrue,ktffalse,
-     $           rtastk(isp1+1) .gt. rtastk(isp))
+     $           rtastk(isp1+1) > rtastk(isp))
             irtc=0
             return
           endif
@@ -619,7 +619,7 @@ c      include 'DEBUG.inc'
           if(iand(ktrmask,ktastk(isp1+1)) /= ktfnr .and.
      $         iand(ktrmask,ktastk(isp)) /= ktfnr )then
             kx%k=merge(ktftrue,ktffalse,
-     $           rtastk(isp1+1) .ge. rtastk(isp))
+     $           rtastk(isp1+1) >= rtastk(isp))
             irtc=0
             return
           endif
@@ -627,7 +627,7 @@ c      include 'DEBUG.inc'
           if(iand(ktrmask,ktastk(isp1+1)) /= ktfnr .and.
      $         iand(ktrmask,ktastk(isp)) /= ktfnr )then
             kx%k=merge(ktftrue,ktffalse,
-     $           rtastk(isp1+1) .lt. rtastk(isp))
+     $           rtastk(isp1+1) < rtastk(isp))
             irtc=0
             return
           endif
@@ -635,7 +635,7 @@ c      include 'DEBUG.inc'
           if(iand(ktrmask,ktastk(isp1+1)) /= ktfnr .and.
      $         iand(ktrmask,ktastk(isp)) /= ktfnr )then
             kx%k=merge(ktftrue,ktffalse,
-     $           rtastk(isp1+1) .le. rtastk(isp))
+     $           rtastk(isp1+1) <= rtastk(isp))
             irtc=0
             return
           endif
@@ -643,7 +643,7 @@ c      include 'DEBUG.inc'
           if(ktastk(isp1+1) == klist(iaxslotnull))then
             if(ktfrealq(ktastk(isp)))then
               iv=int(rtastk(isp))
-              if(iv .ge. -2 .and. iv .le. nslots)then
+              if(iv >= -2 .and. iv <= nslots)then
                 kx=dlist(iaxslotpart+iv+2)
                 irtc=0
                 return
@@ -841,9 +841,9 @@ c      include 'DEBUG.inc'
       select case (id)
       case (nfunif)
         narg=isp-isp1
-        if(narg .ge. 2 .and. narg .le. 4)then
+        if(narg >= 2 .and. narg <= 4)then
           if(ktastk(isp1+1) == 0)then
-            kx=merge(dtastk(isp1+3),dxnullo,narg .ge. 3)
+            kx=merge(dtastk(isp1+3),dxnullo,narg >= 3)
           elseif(ktfrealq(ktastk(isp1+1)))then
             kx=dtastk(isp1+2)
           else
@@ -872,7 +872,7 @@ c      include 'DEBUG.inc'
               exit
             endif
           enddo
-          if(isp2 .gt. isp1+1)then
+          if(isp2 > isp1+1)then
             dh%k=ktfoper+int8(iah)
             kx=kxcrelistm(isp-isp2+1,ktastk(isp2:isp),dh)
             irtc=0
@@ -886,7 +886,7 @@ c      include 'DEBUG.inc'
             isp2=isp1+1
             do j=isp1+2,isp-1,2
               if(tfconstq(dtastk(j)))then
-                if(itfpmatc(dtastk(isp1+1),dtastk(j)) .ge. 0)then
+                if(itfpmatc(dtastk(isp1+1),dtastk(j)) >= 0)then
                   kx=dtastk(j+1)
                   irtc=0
                   return
@@ -898,7 +898,7 @@ c      include 'DEBUG.inc'
                 exit
               endif
             enddo
-            if(isp2 .gt. isp1+1)then
+            if(isp2 > isp1+1)then
               dh%k=ktfoper+int8(iah)
               dtastk(isp2)=dtastk(isp1+1)
               kx=kxcrelistm(isp-isp2+1,ktastk(isp2:isp),dh)
@@ -913,19 +913,19 @@ c      include 'DEBUG.inc'
  11       if(isp == isp1+2)then
             kx=tfmodule(isp1,.true.,.false.,irtc)
             if(irtc /= 0)then
-              if(irtc .gt. 0 .and. ierrorprint /= 0)then
+              if(irtc > 0 .and. ierrorprint /= 0)then
                 call tfreseterror
               endif
               irtc=1
             endif
             isp=isp1+2
-          elseif(isp .gt. isp1+2)then
+          elseif(isp > isp1+2)then
             dh=dtastk(isp1+1)
             dtastk(isp1+1)=dtastk(isp1)
             kx=tfcomposefun(isp1+1,iah,.true.,irtc)
             dtastk(isp1+1)=dh
             if(irtc /= 0)then
-              if(irtc .gt. 0 .and. ierrorprint /= 0)then
+              if(irtc > 0 .and. ierrorprint /= 0)then
                 call tfreseterror
               endif
               irtc=1
@@ -943,13 +943,13 @@ c      include 'DEBUG.inc'
  21       if(isp == isp1+2)then
             kx=kxcompose(isp1)
             irtc=0
-          elseif(isp .gt. isp1+2)then
+          elseif(isp > isp1+2)then
             dh=dtastk(isp1+1)
             dtastk(isp1+1)=dtastk(isp1)
             kx=tfcomposefun(isp1+1,iah,.true.,irtc)
             dtastk(isp1+1)=dh
             if(irtc /= 0)then
-              if(irtc .gt. 0 .and. ierrorprint /= 0)then
+              if(irtc > 0 .and. ierrorprint /= 0)then
                 call tfreseterror
               endif
               irtc=1
@@ -998,7 +998,7 @@ c      include 'DEBUG.inc'
             kx=tfefunref(isp1,.false.,irtc)
           elseif(tfconstq(ktastk(isp)))then
             if(ktflistq(ktastk(isp)))then
-              if(ilist(2,ktfaddr(ktastk(isp))-1) .le. 15)then
+              if(ilist(2,ktfaddr(ktastk(isp))-1) <= 15)then
 c                call tfdebugprint(ktastk(isp),'composefun-a',1)
                 kx=tfefunref(isp1,.true.,irtc)
               endif
@@ -1051,7 +1051,7 @@ c          call tfdebugprint(kx,'==>',1)
       character*(*) ,intent(in):: string
       levele=levele+1
       kx=tfeval(string,1,istop,.false.,irtc)
-      if(irtc .gt. 0 .and. ierrorprint /= 0)then
+      if(irtc > 0 .and. ierrorprint /= 0)then
         call tfreseterror
       endif
       l=itfdownlevel()

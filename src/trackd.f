@@ -4,7 +4,7 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       use tfstk
       use ffs_flag
       use tmacro,only:np0,codin,dvfs,omega0,taurdx,taurdy,taurdz,
-     $     nparallel,tsetintm,intffsm
+     $     nparallel,tsetintm
       use ffs_pointer, only:idelc
       use tftr
       use tfshare
@@ -157,19 +157,8 @@ c      lp0=latt(1)+kytbl(kwmax,idtype(idelc(1)))+1
       npz=npmax
       np00=np0
       np0=npz
-      allocate (x(npz))
-      allocate (px(npz))
-      allocate (y(npz))
-      allocate (py(npz))
-      allocate (z(npz))
-      allocate (g(npz))
-      allocate (dv(npz))
-      allocate (spx(npz))
-      allocate (spy(npz))
-      allocate (spz(npz))
-      allocate (aenox(npz))
-      allocate (aenoy(npz))
-      allocate (aenoz(npz))
+      allocate(x(npz),px(npz),y(npz),py(npz),z(npz),g(npz),dv(npz),
+     $     spx(npz),spy(npz),spz(npz),aenox(npz),aenoy(npz),aenoz(npz))
       call tfevals('`ExtMap$@InitMap['//autos(dble(npz))//',1]',
      $     kxm,irtc)
       allocate(kptbl(npmax,6))

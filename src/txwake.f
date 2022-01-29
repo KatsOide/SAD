@@ -42,13 +42,7 @@
       endif
       fwp=fw/p0
       ns=izs(np)
-      allocate(ws(ns))
-      allocate(xs(ns))
-      allocate(ys(ns))
-      allocate(zs(ns))
-      allocate(wx(ns))
-      allocate(wy(ns))
-      allocate(wz(ns))
+      allocate(ws(ns),xs(ns),ys(ns),zs(ns),wx(ns),wy(ns),wz(ns))
       ws=0.d0
       xs=0.d0
       ys=0.d0

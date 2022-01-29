@@ -554,8 +554,8 @@ c      trans(5,6)=zfpzf*(1.d0-pr/pzf*    r33*dpzidp)
       logical*4 ,intent(in):: enarad,alcorr,fringe,next
       logical*4 prev
       if(alcorr .and.
-     $     mfring .ne. 0 .and. al0 .ne. 0.d0
-     $     .and. phi0 .ne. 0.d0)then
+     $     mfring /= 0 .and. al0 /= 0.d0
+     $     .and. phi0 /= 0.d0)then
         al=al0-((phi0*fb1)**2+(phi0*fb2)**2)/48.d0/al0
      1       *sin(.5d0*(phi0*(1.d0-psi1-psi2)-apsi1-apsi2))
      $       /sin(.5d0*phi0)
@@ -605,10 +605,10 @@ c      write(*,'(a,1p10g12.4)')'tbende-2 ',cod(1:5)
       phibl=phib/al
       rhob=1.d0/phibl
       rho0=al/phi0
-      prev=bradprev .ne. 0.d0
+      prev=bradprev /= 0.d0
       f1r=0.d0
       f2r=0.d0
-      if(fb1 .ne. 0.d0)then
+      if(fb1 /= 0.d0)then
         if(mfring .gt. 0 .or. mfring .eq. -1)then
           dxfr1=fb1**2*phibl/24.d0
           dyfr1=fb1*phibl**2/6.d0
@@ -617,7 +617,7 @@ c      write(*,'(a,1p10g12.4)')'tbende-2 ',cod(1:5)
           f1r=0.5d0*fb1
         endif
       endif
-      if(fb2 .ne. 0.d0 .and.
+      if(fb2 /= 0.d0 .and.
      $       mfring .gt. 0 .or. mfring .eq. -2)then
         f2r=0.5d0*fb2
       endif
@@ -652,10 +652,10 @@ c      write(*,'(a,1p10g12.4)')'tbende-2.5 ',cod(1:5)
         bsi2=0.d0
         n1=1
         n2=ndiv
-        if(f1r .ne. 0.d0)then
+        if(f1r /= 0.d0)then
           n1=0
         endif
-        if(f2r .ne. 0.d0)then
+        if(f2r /= 0.d0)then
           n2=ndiv+1
         endif
         do n=n1,n2
@@ -671,7 +671,7 @@ c      write(*,'(a,1p10g12.4)')'tbende-2.5 ',cod(1:5)
             endif
             call tbendebody0(trans,cod,beam,srot,aln,
      $           phin,sn,xsn,cn,dcn,aln,bsi1,bsi2,
-     $           enarad .and. n .ne. n2)
+     $           enarad .and. n /= n2)
             alr=aln
             phi1=phin
           endif
@@ -682,10 +682,10 @@ c          write(*,'(a,i5,1p10g12.4)')'tbende-3a ',n,cod(1:5)
         tbinit=.true.
         n1=1
         n2=ndiv
-        if(f1r .ne. 0.d0)then
+        if(f1r /= 0.d0)then
           n1=-1
         endif
-        if(f2r .ne. 0.d0)then
+        if(f2r /= 0.d0)then
           n2=ndiv+2
         endif
         alx0=0.d0
@@ -705,7 +705,7 @@ c          write(*,'(a,i5,1p10g12.4)')'tbende-3a ',n,cod(1:5)
           endif
           call tbendebody(trans,cod,beam,srot,alx,phi1,
      $         akx,alr,bsi1,bsi2,
-     $         enarad .and. n .ne. n2)
+     $         enarad .and. n /= n2)
           if(n .le. 0 .or. n .ge. ndiv)then
             tbinit=.true.
           endif
@@ -718,7 +718,7 @@ c          write(*,'(a,i5,1p10g12.4)')'tbende-3a ',n,cod(1:5)
       endif
 c      write(*,'(a,1p10g12.4)')'tbende-6 ',cod
       call tbedge(trans,cod,beam,al,phib,psi2*phi0+apsi2,.false.)
-      if(f2r .ne. 0.d0)then
+      if(f2r /= 0.d0)then
         dxfr2=-fb2**2/rhob/24.d0
         dyfr2=fb2/rhob**2/6.d0
         dyfra2=merge(4.d0*dyfr2/fb2**2,0.d0,fringe)
@@ -814,8 +814,8 @@ c      pzi=sqrt(max(1.d-4,(pr-pxi)*(pr+pxi)-pyi**2))
      1     dx,dy,theta,dtheta,dchi2,alg,phig,
      $     fb1,fb2,mfring,fringe,eps0,.false.,.true.,.false.,1)
       call qcopymat(trans,transe,.false.)
-      coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.
-     $     trans(2,3) .ne. 0.d0 .or. trans(2,4) .ne. 0.d0
+      coup=trans(1,3) /= 0.d0 .or. trans(1,4) /= 0.d0 .or.
+     $     trans(2,3) /= 0.d0 .or. trans(2,4) /= 0.d0
       return
       end
 

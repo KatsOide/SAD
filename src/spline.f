@@ -298,10 +298,13 @@ C
       subroutine tfspline(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,kd,k1,k2
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kd,k1,k2
       type (sad_dlist), pointer :: klx,kld
       integer*8 ka1,ka2,ix,iy,iddy,ka
-      integer*4 isp1,irtc,itfmessage,n,m,mode
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage,n,m,mode
       real*8 dy(2)
       type (sad_descriptor), save :: kxperiodic
       data kxperiodic%k /0/
@@ -380,8 +383,10 @@ C
 
       subroutine spline2(m,x,y,ddy,mode,dy)
       implicit none
-      integer*4 m,mode
-      real*8 x(m),y(m),ddy(m),work(m),dy(2)
+      integer*4 ,intent(in):: m,mode
+      real*8 x(m),y(m),ddy(m),dy(2)
+      real*8 ,allocatable,dimension(:)::work
+      allocate(work(m))
       call spline(m,x,y,ddy,work,mode,dy)
       return
       end
@@ -389,10 +394,12 @@ C
       subroutine tffindindex(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer ::kl
       type (sad_rlist), pointer ::klr,kll
-      integer*4 isp1,irtc,itfmessage,i1,i2,ih,n,i,m
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage,i1,i2,ih,n,i,m
       real*8 x
       if(isp1+2 .ne. isp)then
         irtc=itfmessage(9,'General::narg','"2"')

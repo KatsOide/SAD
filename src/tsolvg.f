@@ -36,10 +36,12 @@ c
       real*8 ,intent(inout):: a(ndim,m),b(n)
       real*8 ,intent(out):: x(m)
       real*8 ,intent(in):: epslon
-      real*8 v(0:nmax),anorm,enorm
+      real*8 ,allocatable,dimension(:)::v,aam,bbm
+      integer*4  ,allocatable,dimension(:)::lsep
+      real*8 anorm,enorm
       real*8 aa,f,g,s,r,w,u,h,xmin,z,vv,d,c,p,bb,y,an
-      real*8 q,h1,h2,t,r1,r2,ra,aam(m),bbm(n)
-      integer*4 lsep(0:nmax),i,j,k,kkk,nfail,
+      real*8 q,h1,h2,t,r1,r2,ra
+      integer*4 i,j,k,kkk,nfail,
      $     mn,it,isep,ibegin,iend,ma,i1,i1mn
       logical*4 svd
 c     begin initialize for preventing compiler warning
@@ -52,6 +54,7 @@ c     end   initialize for preventing compiler warning
         write(*,*)' TSVD Too large matrix. ',n,m
         return
       endif
+      allocate(v(0:nmax),aam(m),bbm(n),lsep(0:nmax))
       v(1:n)=1.d0
       x=1.d0
       do 10 i=1,mn

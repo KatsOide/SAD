@@ -638,7 +638,7 @@ c              write(*,*)'tfecmplx-rl*2 '
       implicit none
       type (sad_descriptor) kx
       type (sad_descriptor) ,intent(in):: k
-      type (sad_dlist), pointer :: kl,klx
+      type (sad_dlist), pointer :: kl
       type (sad_rlist), pointer :: klr
       integer*4 ,intent(in):: mode,iaf
       integer*4 ,intent(out):: irtc

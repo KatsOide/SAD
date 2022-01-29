@@ -2,10 +2,13 @@
       use tfstk
       use efun
       implicit none
-      type (sad_descriptor) kx,kx1,kf,ki,k1
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kx1,kf,ki,k1
       type (sad_dlist), pointer :: kli,kli1,klx1,kl,klx
       integer*8 kaf,kaf1,kai
-      integer*4 isp1,irtc,i,j,isp0,isp2,nv,idsp,itfmessage
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 i,j,isp0,isp2,nv,idsp,itfmessage
       kf=dtastk(isp1+1)
       if(ktfoperq(kf,kaf))then
         select case (kaf)

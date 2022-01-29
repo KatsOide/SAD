@@ -21,12 +21,12 @@
       logical*4 exist
       kx=dxnullo
       narg=isp-isp1
-      if(narg .le. 1)then
+      if(narg <= 1)then
         irtc=itfmessage(9,'General::narg','"2 or more"')
         return
       endif
       lfn=itfgetlfn(isp1,.false.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
       lpw=itfgetrecl()
@@ -36,13 +36,13 @@
       isp2=isp
       do j=isp1+2,isp11
         call tfevalstk(dtastk(j),.true.,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 10
         endif
         do i=isp2+1,isp
           call tfconvstrb(strb,dtastk(i),nc,
      $         .false.,.false.,lfn,'*',irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 10
           endif
           exist=exist .or. nc .gt. 0
@@ -71,7 +71,7 @@
       integer*8 map,ksize,maprwfile
       integer*4 ifd,itfmessage
       kx=dxnullo;
-      if(isp .ne. isp1+2)then
+      if(isp /= isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
@@ -88,7 +88,7 @@ c      call tfdebugprint(dtastk(isp1+1),'mapfile',1)
       endif
       ksize=ksize*8
       map=maprwfile(fname%str,ifd,ksize,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         irtc=itfmessage(9,'General::mmap','""')        
         return
       endif
@@ -107,7 +107,7 @@ c      call tfdebugprint(dtastk(isp1+1),'mapfile',1)
       integer*8 map,ksize
       integer*4 ifd,itfmessage,unmap
       kx=dxnullo;
-      if(isp .ne. isp1+3)then
+      if(isp /= isp1+3)then
         irtc=itfmessage(9,'General::narg','"3"')
         return
       endif
@@ -128,7 +128,7 @@ c      call tfdebugprint(dtastk(isp1+1),'mapfile',1)
       endif
       ksize=ksize*8
       irtc=unmap(map,ksize,ifd)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         irtc=itfmessage(9,'General::mmap','"(Unmap)"')
         return
       endif
@@ -147,7 +147,7 @@ c      call tfdebugprint(dtastk(isp1+1),'mapfile',1)
       integer*4 itfmessage
       logical*4 ,intent(in):: read
       iv=0
-      if(isp .le. isp1)then
+      if(isp <= isp1)then
         irtc=itfmessage(9,'General::narg','"1 or more"')
         return
       endif
@@ -187,18 +187,18 @@ c      call tfdebugprint(dtastk(isp1+1),'mapfile',1)
       integer*4 ,intent(out):: irtc
       integer*4 narg,lfn,isp11,j,i,itfgetlfn,nc,itfmessage,isp2
       narg=isp-isp1
-      if(narg .le. 1)then
+      if(narg <= 1)then
         irtc=itfmessage(9,'General::narg','"2 or more"')
         return
       endif
       lfn=itfgetlfn(isp1,.false.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
       isp11=isp
       do j=isp1+2,isp11
         call tfevalstk(dtastk(j),.true.,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           isp=isp11
           return
         endif
@@ -207,7 +207,7 @@ c      call tfdebugprint(dtastk(isp1+1),'mapfile',1)
         do i=isp11+1,isp2
           call tfconvstrb(strb,dtastk(i),
      $         nc,.false.,.false.,-1,'*',irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 10
           endif
           call writestringbuf(strb,.false.,lfn)
@@ -258,7 +258,7 @@ c      enddo
       prolog(ncprolog:ncprolog)=' '
       levele=levele+1
       call tfprint1(k,6,79,nline,.true.,.true.,irtc)
-      if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
+      if(irtc .gt. 0 .and. ierrorprint /= 0)then
         call tfreseterror
       endif
       l=itfdownlevel()
@@ -274,10 +274,10 @@ c      enddo
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       integer*4 itfgetrecl,nret,itfmessage
-      if(isp .eq. isp1+1)then
+      if(isp == isp1+1)then
         call tfprint1(dtastk(isp),
      $       lfno,-itfgetrecl(),1,.true.,.true.,irtc)
-      elseif(isp .eq. isp1+2)then
+      elseif(isp == isp1+2)then
         if(ktfnonrealq(ktastk(isp)))then
           irtc=itfmessage(9,'General::wrongtype','"real number"')
           return
@@ -314,20 +314,20 @@ c      enddo
       endif
       if(ncprolog .gt. 0)then
         call putstringbufp(strb,prolog(1:ncprolog),lfno,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
       endif
       call tfconvstrb(strb,k,nc,str,.false.,lfno,' ',irtc)
-      if(irtc .eq. 0)then
+      if(irtc == 0)then
         call writestringbufn(strb,cr,lfno)
-      elseif(irtc .eq. -1)then
+      elseif(irtc == -1)then
         irtc=0
       elseif(irtc .gt. 0)then
         kr=dlist(ktfaddr(kerror)+2)
-        if(kxlongstr%k .eq. 0)then
+        if(kxlongstr%k == 0)then
           call tfevals('Hold[General::longstr]',ks,irtc1)
-          if(irtc1 .ne. 0)then
+          if(irtc1 /= 0)then
             irtc=irtc1
             go to 9000
           endif
@@ -358,12 +358,12 @@ c      enddo
       integer*4 i,isp00,isp0,kk,iop,ispv,icmpl
       icmpl=0
       call tfgetoption('Compiled',ktastk(isp),kx,irtc)
-      if(irtc .eq. -1)then
+      if(irtc == -1)then
         ispv=isp
-      elseif(irtc .ne. 0)then
+      elseif(irtc /= 0)then
         return
       elseif(ktfrealq(kx))then
-        if(kx%k .ne. 0)then
+        if(kx%k /= 0)then
           icmpl=1
         endif
         ispv=isp-1
@@ -391,25 +391,25 @@ c      enddo
           ka0=0
         endif
         isp=isp+1
-        if(ka0 .ne. 0)then
+        if(ka0 /= 0)then
           dtastk(isp)=kxadaloc(-1,2,klh)
           klh%head%k=ktfoper+mtfsetdelayed
           klh%dbody(1)%k=ktfsymbol+ktfcopy1(ka0+6)
           klh%dbody(2)=dtfcopy(k)
           do kk=1,0,-1
-            iop=merge(mtfsetdelayed,mtfupsetdelayed, kk .eq. 1)
+            iop=merge(mtfsetdelayed,mtfupsetdelayed, kk == 1)
             kad=klist(ka0+kk)
-            do while(kad .ne. 0)
-              if(ilist(1,kad+2) .eq. maxgeneration)then
+            do while(kad /= 0)
+              if(ilist(1,kad+2) == maxgeneration)then
                 do ii=kad+3,kad+ilist(2,kad+2)+3
                   kadi=klist(ii)
-                  do while(kadi .ne. 0)
+                  do while(kadi /= 0)
                     isp=isp+1
                     dtastk(isp)=kxadaloc(-1,2,kli)
                     kli%head%k=ktfoper+iop
                     kli%dbody(1)=dtfcopy1(dlist(kadi+3+icmpl))
                     kli%dbody(2)=dtfcopy(dlist(kadi+5+icmpl))
-                    if(kli%dbody(2)%k .eq. ktfref)then
+                    if(kli%dbody(2)%k == ktfref)then
                       kli%dbody(2)=dtfcopy(dlist(kadi+6))
                     endif
                     kadi=klist(kadi)
@@ -421,7 +421,7 @@ c      enddo
                 kli%head%k=ktfoper+iop
                 kli%dbody(1)=dtfcopy1(dlist(kad+3+icmpl))
                 kli%dbody(2)=dtfcopy(dlist(kad+5+icmpl))
-                if(kli%dbody(2)%k .eq. ktfref)then
+                if(kli%dbody(2)%k == ktfref)then
                   kli%dbody(2)=dtfcopy(dlist(kad+6))
                 endif
               endif
@@ -470,7 +470,7 @@ c      enddo
 c      call tfdebugprint(k,'tfget',1)
       call tfopenread(isp0,kfn,irtc)
       isp=isp0
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         kx%k=ktfoper+mtfnull
         return
       endif
@@ -487,11 +487,11 @@ c      call tfdebugprint(k,'tfget',1)
         itf=itfgeto(kf)
         if(itf .ge. 0)then
           kx=kf
-        elseif(itf .eq. -1)then
+        elseif(itf == -1)then
           itf=0
           call skiplnget
         endif
-        if(ios .ne. 0)then
+        if(ios /= 0)then
           ios=0
           itf=min(-1,itf)
         endif
@@ -501,7 +501,7 @@ c      call tfdebugprint(kx,'tfget-r',1)
       call trbclose(lfn)
       savep=sav
       call trbassign(lfni)
-      irtc=merge(irtcabort,0,itf .eq. -3)
+      irtc=merge(irtcabort,0,itf == -3)
       return
       end
 
@@ -515,12 +515,12 @@ c      call tfdebugprint(kx,'tfget-r',1)
       integer*4 , intent(in)::lfn
       integer*4 itfgeto,itf
       logical*4 openf
-      if(lfn .le. 0)then
+      if(lfn <= 0)then
         kx%k=kxeof
         return
       endif
       sav=savep
-      openf=lfn .ne. sav%lfni
+      openf=lfn /= sav%lfni
       if(openf)then
         call trbassign(lfn)
         lfn1=0
@@ -528,16 +528,16 @@ c      call tfdebugprint(kx,'tfget-r',1)
       levele=levele+1
       itf=-1
       ios=0
-      do while (itf .eq. -1 .and. ios .eq. 0)
+      do while (itf == -1 .and. ios == 0)
         itf=itfgeto(kx)
-        if(itf .eq. -1)then
+        if(itf == -1)then
           call tprmptget(-1,.true.)
         endif
       enddo
       if(itf .lt. 0)then
         kx=dxnullo
       endif
-      if(ios .ne. 0)then
+      if(ios /= 0)then
         ios=0
         kx%k=kxeof
         if(openf)then
@@ -573,10 +573,10 @@ c          enddo
           isp=isp0+narg-1
           call tfskip(isp0,kx,irtc)
           isp=isp0
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
-          if(kx%k .eq. kxeof)then
+          if(kx%k == kxeof)then
             return
           endif
         enddo
@@ -594,7 +594,7 @@ c          enddo
       integer*4 ,intent(out):: irtc
       integer*4 lfn,itfgetlfn
       lfn=itfgetlfn(isp1,.true.,irtc)
-      if(irtc .eq. 0)then
+      if(irtc == 0)then
         call tfreadf(isp1,lfn,kx,irtc)
       endif
       return
@@ -609,7 +609,7 @@ c          enddo
       integer*4 ,intent(out):: irtc
       type(ropt) opts
       call tfreadoptions(isp1,opts,.true.,irtc)
-      if(irtc .eq. 0)then
+      if(irtc == 0)then
         isp=min(isp,isp1+2)
         call tfreadfs(isp1,lfn,opts,kx,irtc)
       endif
@@ -635,12 +635,12 @@ c          enddo
      $     /0,0,0,0,0, 0,0,0,0,0/
       narg=isp-isp1
       irtc=0
-      if(narg .eq. 0)then
+      if(narg == 0)then
         irtc=itfmessage(9,'General::narg','"1 or more"')
-      elseif(narg .eq. 1)then
+      elseif(narg == 1)then
         call tfread1(lfn,kx)
       else
-        if(itfexprs%k .eq. 0)then
+        if(itfexprs%k == 0)then
           itfexprs=kxsymbolf('Expression',10,.true.)
           itfstrs=kxsymbolf('String',6,.true.)
           itfwords=kxsymbolf('Word',4,.true.)
@@ -675,7 +675,7 @@ c          enddo
             call tfreadstringf(lfn,kx,.true.,opts,irtc)
           elseif(tfsamesymbolq(k2,itfreals))then
             call tfreadstringf(lfn,kx,.false.,opts,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               return
             endif
             if(ktfstringq(kx))then
@@ -699,10 +699,10 @@ c          enddo
             go to 9000
           endif
         elseif(ktflistq(k2,list))then
-          if(list%head%k .eq. ktfoper+mtflist)then
+          if(list%head%k == ktfoper+mtflist)then
             call tfreadfm(lfn,list,list%nl,opts,.false.,kx,irtc)
-          elseif(list%head%k .eq. ktfoper+mtftimes .and.
-     $           list%nl .eq. 2)then
+          elseif(list%head%k == ktfoper+mtftimes .and.
+     $           list%nl == 2)then
             k1=list%dbody(1)
             if(ktfnonrealq(k1,i1))then
               go to 9000
@@ -742,7 +742,7 @@ c          enddo
         isp=isp0+2
         dtastk(isp)=list%dbody(merge(2,kk,mult))
         call tfreadfs(isp0,lfn,opts,kxi,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           isp=isp2
           return
         endif
@@ -775,7 +775,7 @@ c          enddo
       type(ropt)  opts
       lfn=itfgetlfn(isp1,.true.,irtc)
       call tfreadoptions(isp1,opts,del,irtc)
-      if(irtc .eq. 0)then
+      if(irtc == 0)then
         call tfreadstringf(lfn,kx,char1,opts,irtc)
       endif
       return
@@ -813,10 +813,10 @@ c          enddo
         isp0=isp
         call tfgetoptionstk(isp1+3,kaopt,optname,nopt,ispopt,irtc)
         isp=isp0
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
-        if(ispopt .ne. isp1+3)then
+        if(ispopt /= isp1+3)then
           irtc=itfmessage(9,'General::narg','"2 (+ options)"')
           return
         endif
@@ -824,23 +824,23 @@ c          enddo
         if(ktfstringq(dtastk(isp0+1)))then
           opts%delim=tfgetstr(dtastk(isp0+1),opts%ndel)
           opts%opt=.true.
-        elseif(ktastk(isp0+1) .ne. ktfref)then
+        elseif(ktastk(isp0+1) /= ktfref)then
           irtc=itfmessage(9,'General::wrongval',
      $         '"Character-string is","for WordSeparators ->"')
           return
         endif
         if(ktfrealq(dtastk(isp0+2)))then
-          opts%new=rtastk(isp0+2) .ne. 0.d0
+          opts%new=rtastk(isp0+2) /= 0.d0
           opts%opt=.true.
-        elseif(ktastk(isp0+2) .ne. ktfref)then
+        elseif(ktastk(isp0+2) /= ktfref)then
           irtc=itfmessage(9,'General::wrongval',
      $         '"True or False is","for ReadNewRecord ->"')
           return
         endif
         if(ktfrealq(dtastk(isp0+3)))then
-          opts%null=rtastk(isp0+3) .ne. 0.d0
+          opts%null=rtastk(isp0+3) /= 0.d0
           opts%opt=.true.
-        elseif(ktastk(isp0+3) .ne. ktfref)then
+        elseif(ktastk(isp0+3) /= ktfref)then
           irtc=itfmessage(9,'General::wrongval',
      $         '"True or False is","for NullWords ->"')
           return
@@ -869,13 +869,13 @@ c          enddo
       logical*4 fb
       type (ropt) opts
       irtc=0
-      if(lfn .le. 0 .or. ibuf(lfn) .eq. 0)then
+      if(lfn <= 0 .or. ibuf(lfn) == 0)then
         kx%k=kxeof
         return
       endif
       isw=1
       sav=savep
-      if(lfn .ne. lfni)then
+      if(lfn /= lfni)then
         call trbassign(lfn)
       endif
       fb=itbuf(lfn) .lt. modestring
@@ -883,7 +883,7 @@ c          enddo
       is=ipoint
       do while (.true.)
         if(nc .lt. 0)then
-          if(.not. fb .or. lfn .ne. lfni)then
+          if(.not. fb .or. lfn /= lfni)then
             call tfreadbuf(lfn,1,nc)
             if(nc .lt. 0)then
               go to 101
@@ -892,7 +892,7 @@ c          enddo
             if(opts%new)then
               do while (nc .lt. 0)
                 call tprmptget(-1,.false.)
-                if(ios .ne. 0)then
+                if(ios /= 0)then
                   go to 101
                 endif
                 nc=max(0,lrecl-ipoint)
@@ -903,7 +903,7 @@ c          enddo
             endif
           endif
         endif
-        if(nc .eq. 0)then
+        if(nc == 0)then
           if(opts%new)then
             if((opts%ndel .gt. 0 .and. .not. opts%null) .or. char1)then
               nc=-1
@@ -921,7 +921,7 @@ c          enddo
           call tfword(buffer(ipoint:ipoint+nc-1),
      $         opts%delim(1:opts%ndel),
      $         isw,nc1,next,opts%null)
-          if(nc1 .le. 0 .and. .not. opts%null)then
+          if(nc1 <= 0 .and. .not. opts%null)then
             if(opts%new)then
               nc=-1
               cycle
@@ -944,13 +944,13 @@ c          enddo
       endif
       nc=nc1
       ie=is+isw-2+nc
-      if(buffer(ie:ie) .eq. char(10))then
+      if(buffer(ie:ie) == char(10))then
         nc=max(nc-1,0)
       endif
  1    kx=kxsalocb(-1,buffer(is+isw-1:),nc)
       go to 1000
  101  kx%k=kxeof
- 1000 if(lfn .ne. sav%lfni)then
+ 1000 if(lfn /= sav%lfni)then
         savep=sav
         call trbassign(sav%lfni)
       endif
@@ -981,11 +981,11 @@ c          enddo
      $     'ByteOrder'/
       narg=isp-isp1
       irtc=0
-      if(lfn .eq. 0)then
+      if(lfn == 0)then
         kx%k=kxeof
         return
       endif
-      if(itflittle%k .eq. 0)then
+      if(itflittle%k == 0)then
         itflittle=kxsymbolf('LittleEndian',12,.true.)
         itfbig=kxsymbolf('BigEndian',9,.true.)
       endif
@@ -994,15 +994,15 @@ c          enddo
         isp0=isp
         call tfgetoptionstk(isp1+3,kaopt,optname,nopt,ispopt,irtc)
         isp=isp0
-       if(irtc .ne. 0)then
+       if(irtc /= 0)then
           return
         endif
-        if(ispopt .ne. isp1+3)then
+        if(ispopt /= isp1+3)then
           irtc=itfmessage(9,'General::narg','"2 (+ options)"')
           return
         endif
         opt=.false.
-        if(iand(ktfmask,ktastk(isp0+1)) .eq. ktfsymbol)then
+        if(iand(ktfmask,ktastk(isp0+1)) == ktfsymbol)then
           if(tfsamesymbolq(dtastk(isp0+1),itflittle))then
             little=.true.
             opt=.true.
@@ -1013,7 +1013,7 @@ c          enddo
             irtc=itfmessage(9,'General::wrongval',
      $           '"LittleEndian or BigEndian","for ByteOrder ->"')
           endif
-        elseif(iand(ktfmask,ktastk(isp0+1)) .ne. ktfoper)then
+        elseif(iand(ktfmask,ktastk(isp0+1)) /= ktfoper)then
           irtc=itfmessage(9,'General::wrongval',
      $         '"LittleEndian or BigEndian","for ByteOrder ->"')
           return
@@ -1024,23 +1024,23 @@ c          enddo
         endif
       endif
       nb=mode
-      if(mode .eq. 3)then
+      if(mode == 3)then
         nb=4
-      elseif(mode .eq. 5)then
+      elseif(mode == 5)then
         nb=8
       endif
       rbuf=0.d0
       if(little)then
         do i=nb,1,-1
           irtc=fgetc(lfn,bbuf(i))
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 101
           endif
         enddo
       else
         do i=1,nb
           irtc=fgetc(lfn,bbuf(i))
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 101
           endif
         enddo
@@ -1078,7 +1078,7 @@ c          enddo
         endif
       else
         do i=1,nc
-          if(index(del,str(i:i)) .le. 0)then
+          if(index(del,str(i:i)) <= 0)then
             is=i
             go to 10
           endif
@@ -1108,7 +1108,7 @@ c          enddo
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       integer*4 nc,itfmessage
-      if(isp .le. isp1)then
+      if(isp <= isp1)then
         kx%k=ktfoper+mtfnull
         irtc=0
         return
@@ -1121,7 +1121,7 @@ c          enddo
       endif
       nc=str%nch
       irtc=0
-      if(nc .le. 0)then
+      if(nc <= 0)then
         kx%k=ktfoper+mtfnull
         return
       endif
@@ -1142,22 +1142,22 @@ c          enddo
       integer*4 ,intent(out):: irtc
       integer*4 itfmessage,nc,itfmessagestr,lf
       logical*4 disp,temp
-      if(isp .ne. isp1+1)then
+      if(isp /= isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
       if(ktfstringq(dtastk(isp),str))then
         nc=str%nch
-        if(nc .le. 0)then
+        if(nc <= 0)then
           irtc=itfmessage(9,'General::wrongval',
      $         '"filename or \"!command\"","argument"')
           return
         endif
         disp=.false.
-        temp=str%str(1:1) .eq. '!'
+        temp=str%str(1:1) == '!'
         if(temp)then
           call tfsystemcommand(str%str,nc,kx,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
           disp=.true.
@@ -1166,10 +1166,10 @@ c          enddo
           nc=str%nch
         else
           if(nc .gt. 2) then
-             if (str%str(nc-1:nc) .eq. '.z' .or.
-     $           str%str(nc-1:nc) .eq. '.Z')then
+             if (str%str(nc-1:nc) == '.z' .or.
+     $           str%str(nc-1:nc) == '.Z')then
                call tfuncompress(str%str,nc,kx,irtc)
-               if(irtc .ne. 0)then
+               if(irtc /= 0)then
                  return
                endif
                call loc_string(ktfaddr(kx),str)
@@ -1177,9 +1177,9 @@ c          enddo
              endif
           endif
           if(nc .gt. 3) then
-             if (str%str(nc-2:nc) .eq. '.gz')then
+             if (str%str(nc-2:nc) == '.gz')then
                call tfungzip(str%str,nc,kx,irtc)
-               if(irtc .ne. 0)then
+               if(irtc /= 0)then
                  return
                endif
                call loc_string(ktfaddr(kx),str)
@@ -1187,9 +1187,9 @@ c          enddo
              endif
           endif
           if(nc .gt. 4) then
-             if (str%str(nc-3:nc) .eq. '.bz2')then
+             if (str%str(nc-3:nc) == '.bz2')then
                call tfunbzip2(str%str,nc,kx,irtc)
-               if(irtc .ne. 0)then
+               if(irtc /= 0)then
                  return
                endif
                call loc_string(ktfaddr(kx),str)
@@ -1198,7 +1198,7 @@ c          enddo
           endif
         endif
         call trbopenmap(str%str(1:nc),kx,irtc)
-        if(Irtc .ne. 0)then
+        if(Irtc /= 0)then
 c          write(*,*)'openread ',nc,str%str(:str%nch)
           irtc=itfmessagestr(999,'General::fileopen',str%str(1:nc))
           kx=dxfailed
@@ -1272,11 +1272,11 @@ c     $     nc+15,itx,iax,vx,irtc)
       m=nc
       do i=nc,1,-1
         m=i
-        if(cmd(i:i) .eq. '&')then
+        if(cmd(i:i) == '&')then
           post='&'
           m=i-1
           exit
-        elseif(cmd(i:i) .ne. ' ')then
+        elseif(cmd(i:i) /= ' ')then
           exit
         endif
       enddo
@@ -1286,7 +1286,7 @@ c     $     nc+15,itx,iax,vx,irtc)
         return
       endif
       call tpause(10000)
-      if(post .eq. '&')then
+      if(post == '&')then
         call tpause(10000)
       endif
 c      ir=system('chmod 777 '//buff(:lw)//char(0))
@@ -1306,7 +1306,7 @@ c      endif
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       integer*4 itfmessage,iu,nc
-      if(isp .ne. isp1+1)then
+      if(isp /= isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       elseif(ktfnonstringq(ktastk(isp)))then
@@ -1315,7 +1315,7 @@ c      endif
         return
       endif
       call trbopen(iu,ktfaddr(ktastk(isp)),int8(modestring),nc)
-      if(iu .le. 0)then
+      if(iu <= 0)then
         irtc=itfmessage(9,'General::fileopen','"(String)"')
       else
         kx=dfromr(dble(iu))
@@ -1356,25 +1356,25 @@ c      endif
       type (sad_descriptor) ixmachine
       data ixmachine%k /0/
       kx=dxnullo
-      if(isp .eq. isp1+1)then
-        if(ktastk(isp) .ne. ktfoper+mtfnull)then
+      if(isp == isp1+1)then
+        if(ktastk(isp) /= ktfoper+mtfnull)then
           irtc=itfmessage(9,'General::wrongval','Null')
           return
         endif
-      elseif(isp1 .ne. isp)then
+      elseif(isp1 /= isp)then
         irtc=itfmessage(9,'General::narg','0')
         return
       endif
-      if(ixmachine%k .eq. 0)then
+      if(ixmachine%k == 0)then
         ixmachine=kxsymbolz('System`$MachineName',19)
       endif
-      if(lm .eq. 0)then
+      if(lm == 0)then
         call descr_sad(ixmachine,symd)
         call descr_sad(symd%value,str)
         lm=min(256,str%nch)
         machine(1:lm)=str%str(1:lm)
         do i=1,lm
-          if(machine(i:i) .eq. '.')then
+          if(machine(i:i) == '.')then
             lm=i-1
             exit
           endif
@@ -1404,13 +1404,13 @@ c      write(*,*)'temporaryName ',buff(:lw)
       external fseek
       type (sad_descriptor), save :: iabof,iacp
       data iabof%k,iacp%k/0,0/
-      if(iabof%k .eq. 0)then
+      if(iabof%k == 0)then
         iabof=kxsymbolf('BeginningOfFile',15,.true.)
         iacp= kxsymbolf('CurrentPosition',15,.true.)
       endif
-      if(isp .eq. isp1+2)then
+      if(isp == isp1+2)then
         ls=1
-      elseif(isp .ne. isp1+3)then
+      elseif(isp /= isp1+3)then
         go to 9000
       else
         k1=dtastk(isp)
@@ -1434,7 +1434,7 @@ c      write(*,*)'temporaryName ',buff(:lw)
       lfn=int(rtastk(isp1+1))
       ioff=int(rtastk(isp1+2))
       ierr=fseek(lfn,ioff,ls)
-      if(ierr .ne. 0)then
+      if(ierr /= 0)then
         irtc=itfsyserr(9)
       endif
       kx%k=ktfoper+mtfnull
@@ -1453,12 +1453,12 @@ c      write(*,*)'temporaryName ',buff(:lw)
       integer*4 ,intent(out):: irtc
       integer*4 narg,lfn,itfmessage,itfgetlfn
       narg=isp-isp1
-      if(narg .ne. 1)then
+      if(narg /= 1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
       lfn=itfgetlfn(isp1,.false.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
       endfile(lfn,err=1)

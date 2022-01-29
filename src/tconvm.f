@@ -10,9 +10,7 @@ c      real*8 pr(np),h1(np),p1(np)
         px=px+g*px
         py=py+g*py
       else
-        allocate(pr(np))
-        allocate(h1(np))
-        allocate(p1(np))
+        allocate(pr(np),h1(np),p1(np))
         pr=1.d0+g
         px=px/pr
         py=py/pr

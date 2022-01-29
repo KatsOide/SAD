@@ -24,7 +24,7 @@
       kx=k
       irtc=0
       if(ktflistq(k,list))then
-        if(iand(lconstlist,list%attr) .eq. 0)then
+        if(iand(lconstlist,list%attr) == 0)then
           kx=tfleval(list,.true.,irtc)
         endif
       elseif(ktfsymbolq(k))then
@@ -50,10 +50,10 @@
       kx%k=ktflist+kaa
 c      call tfdebugprint(kx,'tfleval',1)
       irtc=0
-      if(iand(lconstlist,list%attr) .ne. 0)then
+      if(iand(lconstlist,list%attr) /= 0)then
         return
       endif
-      if(iand(lnoconstlist,list%attr) .eq. 0)then
+      if(iand(lnoconstlist,list%attr) == 0)then
         if(tfconstlistqo(list))then
           return
         endif
@@ -72,16 +72,16 @@ c      call tfdebugprint(kx,'tfleval',1)
       type (sad_dlist) , pointer :: kl
       integer*4 ,intent(out):: irtc
       logical*4 ,intent(in):: ref
-      if(list%head%k .eq. ktfoper+mtfnull)then
+      if(list%head%k == ktfoper+mtfnull)then
         call tfevallstkall(list,ref,ref,irtc)
       else
         isp=isp+1
-        if(iand(lconstlist,list%attr) .ne. 0)then
+        if(iand(lconstlist,list%attr) /= 0)then
           dtastk(isp)=sad_descr(list)
           irtc=0
         else
           dtastk(isp)=tfleval(list,ref,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
           if(ktfsequenceq(ktastk(isp),kl))then
@@ -105,7 +105,7 @@ c      call tfdebugprint(kx,'tfleval',1)
       integer*4 mf,i
       logical*4 ,intent(in):: av
       irtc=0
-      if(m .le. 0)then
+      if(m <= 0)then
         return
       endif
       if(av)then
@@ -117,19 +117,19 @@ c      call tfdebugprint(kx,'tfleval',1)
           do i=1,m
             ki=list%dbody(i)
             if(ktflistq(ki,kli))then
-              if(kli%head%k .eq. ktfoper+mtfnull)then
+              if(kli%head%k == ktfoper+mtfnull)then
                 call tfargevalstk(isp0,kli,kli%nl,iaat,mf,
      $               ktfreallistq(kli),irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   return
                 endif
-              elseif(ilist(2,iaat+min(isp-isp0+1,mf+1)) .eq. 0)then
+              elseif(ilist(2,iaat+min(isp-isp0+1,mf+1)) == 0)then
 c                call tfmemcheckprint('aevstk',.false.,irtc)
-c                if(irtc .ne. 0)then
+c                if(irtc /= 0)then
 c                  call tfdebugprint(ki,'argevstk',1)
 c                endif
                 call tflevalstk(kli,.true.,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   return
                 endif
               else
@@ -137,9 +137,9 @@ c                endif
                 dtastk(isp)=ki
               endif
             elseif((ktfsymbolq(ki) .or. ktfpatq(ki)) .and.
-     $             ilist(2,iaat+min(isp-isp0+1,mf+1)) .eq. 0)then
+     $             ilist(2,iaat+min(isp-isp0+1,mf+1)) == 0)then
               call tfevalstk(ki,.true.,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 return
               endif
             else
@@ -152,13 +152,13 @@ c                endif
             ki=list%dbody(i)
             if(ktfsequenceq(ki,kli))then
               call tfevallstkall(kli,isp .gt. isp0,.true.,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 return
               endif
             elseif(isp .gt. isp0)then
               isp=isp+1
               dtastk(isp)=tfeevalref(ki,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 return
               endif
             else
@@ -170,14 +170,14 @@ c                endif
           do i=1,m
             ki=list%dbody(i)
             if(ktfsequenceq(ki,kli))then
-              call tfevallstkall(kli,isp .eq. isp0,.false.,irtc)
-              if(irtc .ne. 0)then
+              call tfevallstkall(kli,isp == isp0,.false.,irtc)
+              if(irtc /= 0)then
                 return
               endif
-            elseif(isp .eq. isp0)then
+            elseif(isp == isp0)then
               isp=isp+1
               dtastk(isp)=tfeevalref(ki,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 return
               endif
             else
@@ -203,7 +203,7 @@ c                endif
       integer*4 i,isp0
       logical*4 ,intent(in):: av
       irtc=0
-      if(m .le. 0)then
+      if(m <= 0)then
         return
       endif
       if(av)then
@@ -213,7 +213,7 @@ c                endif
       else
         do i=1,m
           call tfevalstk(ks(i),.true.,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
         enddo
@@ -230,7 +230,7 @@ c                endif
       integer*4 ,intent(in):: m,i
       logical*4 ,intent(in):: av
       irtc=0
-      if(i .le. m)then
+      if(i <= m)then
         if(av)then
           isp=isp+1
           dtastk(isp)=ks(i)
@@ -259,7 +259,7 @@ c                endif
       integer*4 ,intent(out):: irtc
       integer*4 i,isp1
       logical*4 ev
-      if(ktfreallistq(list) .or. iand(list%attr,kconstarg) .ne. 0)then
+      if(ktfreallistq(list) .or. iand(list%attr,kconstarg) /= 0)then
         kx=sad_descr(list)
         irtc=0
         return
@@ -275,28 +275,28 @@ c        call tfdebugprint(ki,'evallev',1)
         select case(ki%k-kai)
         case (ktflist)
           call loc_dlist(kai,listi)
-          if(iand(lconstlist,listi%attr) .eq. 0)then
+          if(iand(lconstlist,listi%attr) == 0)then
             ki0=ki
             ki=tfleval(listi,.true.,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               go to 9000
             endif
-            ev=ev .or. ki%k .ne. ki0%k
+            ev=ev .or. ki%k /= ki0%k
           endif
         case (ktfsymbol)
           ki0=ki
           ki=tfsyeval(ki0,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 9000
           endif
-          ev=ev .or. ki%k .ne. ki0%k
+          ev=ev .or. ki%k /= ki0%k
         case (ktfpat)
           ki0=ki
           ki=tfpateval(ki0,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 9000
           endif
-          ev=ev .or. ki%k .ne. ki0%k
+          ev=ev .or. ki%k /= ki0%k
         end select
         isp=isp+1
         dtastk(isp)=ki
@@ -328,7 +328,7 @@ c        call tfdebugprint(ki,'evallev',1)
       else
         isp=isp+1
         dtastk(isp)=tfeeval(k,ref,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
         if(ktfsequenceq(ktastk(isp),kl))then
@@ -359,7 +359,7 @@ c        call tfdebugprint(ki,'evallev',1)
           dtastk(isp)=ki
         else
           call tfevalstk(ki,ref1,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
         endif
@@ -370,7 +370,7 @@ c        call tfdebugprint(ki,'evallev',1)
             dtastk(isp)=ki
           else
             call tfevalstk(ki,ref,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               return
             endif
           endif
@@ -389,11 +389,11 @@ c        call tfdebugprint(ki,'evallev',1)
       type (sad_symbol), pointer :: sym
       integer*4 ,intent(out):: irtc
       if(ktflistq(k,list))then
-        if(iand(lconstlist,list%attr) .eq. 0)then
+        if(iand(lconstlist,list%attr) == 0)then
           kx=tfleval(list,.false.,irtc)
           return
         endif
-      elseif(ktfsymbolq(k,sym) .and. sym%override .eq. 0)then
+      elseif(ktfsymbolq(k,sym) .and. sym%override == 0)then
         sym=>tfsydef(sym)
         kx=sad_descr(sym)
         irtc=0
@@ -421,15 +421,15 @@ c        call tfdebugprint(ki,'evallev',1)
       ke=pat%expr
       kae=ktfaddr(ke)
       kte=ke%k-kae
-      if(kte .ne. ktfref)then
+      if(kte /= ktfref)then
         ke=tfeevalref(ke,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
         kae=ktfaddr(ke)
         kte=ke%k-kae
       endif
-      if(ke%k .ne. pat%expr%k)then
+      if(ke%k /= pat%expr%k)then
         kx=kxpcopyss(ke,pat%head,
      $       pat%sym%alloc,pat%default)
       endif
@@ -459,11 +459,11 @@ c        call tfdebugprint(ki,'evallev',1)
       call loc_sym(kas,sym)
       irtc=0
       ig=sym%gen
-      if(ig .eq. -3)then
+      if(ig == -3)then
         kx%k=ktfsymbol+kas
         return
       endif
-      if(sym%override .ne. 0)then
+      if(sym%override /= 0)then
         call loc_symdef(kas,symd)
       else
         call loc_namtbl(sym%loc,loc)
@@ -472,7 +472,7 @@ c        call tfdebugprint(ki,'evallev',1)
         do while(kas .gt. 0)
           call loc1_symdef(kas,symd)
           ig1=max(0,symd%sym%gen)
-          if(ig .eq. ig1)then
+          if(ig == ig1)then
             exit
           elseif(ig .lt. ig1)then
             kas=symd%next
@@ -482,7 +482,7 @@ c        call tfdebugprint(ki,'evallev',1)
         enddo
       endif
       kx=symd%value
-      if(kx%k .ne. ktfsymbol+kas .and. ktfnonrealq(kx%k))then
+      if(kx%k /= ktfsymbol+kas .and. ktfnonrealq(kx%k))then
         level=level+1
         if(level .gt. maxlevel-64)then
           level1=level
@@ -494,7 +494,7 @@ c        call tfdebugprint(ki,'evallev',1)
         kx=tfeevalref(kx,irtc)
         level=level-1
         if(ktfobjq(kx,obj))then
-          if(ktfaddr(obj%alloc) .eq. 0)then
+          if(ktfaddr(obj%alloc) == 0)then
             j=itflocal+levele
             obj%alloc%k=ktftype(obj%alloc%k)+klist(j)
             klist(j)=ksad_loc(obj%alloc%k)
@@ -515,7 +515,7 @@ c        call tfdebugprint(ki,'evallev',1)
       integer*4 itfmessage,narg,m,j,i,ipf0,nap0,isp0
       logical*4 rep
       kx=dxnullo
-      if(kf%nl .eq. 1)then
+      if(kf%nl == 1)then
         isp0=isp
         do i=isp1+1,isp
           dtastk(i)=dtfcopy(dtastk(i))
@@ -534,11 +534,11 @@ c        call tfdebugprint(ki,'evallev',1)
           call tflocald(dtastk(i))
         enddo
         isp=isp0
-      elseif(kf%nl .eq. 2)then
+      elseif(kf%nl == 2)then
         narg=isp-isp1
         ka=kf%dbody(1)
         if(ktfsymbolq(ka))then
-          if(narg .ne. 1)then
+          if(narg /= 1)then
             irtc=itfmessage(9,'General::narg',
      $           '"equal to actual number of args"')
             return
@@ -548,12 +548,12 @@ c        call tfdebugprint(ki,'evallev',1)
           dtastk(isp)=dtastk(isp1+1)
         elseif(tflistq(ka,kla))then
           m=kla%nl
-          if(m .ne. narg)then
+          if(m /= narg)then
             irtc=itfmessage(9,'General::narg',
      $           '"equal to actual number of args"')
             return
           endif
-          if(m .ne. 0)then
+          if(m /= 0)then
             if(ktfreallistq(kla))then
               irtc=itfmessage(9,'General::wrongtype',
      $             '"List of symbols"')
@@ -577,11 +577,11 @@ c        call tfdebugprint(ki,'evallev',1)
           return
         endif
         kx=kf%dbody(2)
-        if(narg .ne. 0)then
+        if(narg /= 0)then
           call tfreplacesymbolstk(kx,isp1+narg,narg,kx,.true.,rep,irtc)
 c          call tfdebugprint(kx,'puref-2',3)
 c          write(*,*)irtc
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             isp=isp1+narg
             return
           endif
@@ -612,20 +612,20 @@ c          write(*,*)irtc
         return
       endif
       k2=dtastk(isp)
-      if(isp1+2 .eq. isp)then
+      if(isp1+2 == isp)then
         k1=dtastk(isp1+1)
         if(ktfsymbolq(k1,sym))then
-          if(sym%override .eq. 0)then
+          if(sym%override == 0)then
             sym=>tfsydef(sym)
             k1=sad_descr(sym)
           endif
         elseif(ktflistq(k1))then
           k1=tfeevaldef(k1,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
         endif
-        if(k1%k .ne. ktastk(isp1+1) .and. upvalue)then
+        if(k1%k /= ktastk(isp1+1) .and. upvalue)then
           k11=k1
           k110=k1
           if(ktflistq(k11,kl11))then
@@ -638,11 +638,11 @@ c          write(*,*)irtc
             endif
           endif
           if(ktfsymbolq(k11,sym))then
-            if(sym%override .eq. 0)then
+            if(sym%override == 0)then
               sym=>tfsydef(sym)
             endif
             call sym_symdef(sym,symd)
-            if(symd%upval .ne. 0)then
+            if(symd%upval /= 0)then
               isp=isp+1
               isp11=isp
               dtastk(isp11)=dtastk(isp1)
@@ -669,7 +669,7 @@ c          write(*,*)irtc
           dtastk(isp-1)=dtastk(i)
           dtastk(isp  )=kx
           kx=tfset(isp0+1,upvalue,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
         enddo
@@ -702,19 +702,19 @@ c          write(*,*)irtc
         irtc=itfmessage(9,'General::narg','"0 or 1"')
         return
       endif
-      if(ns .eq. 0)then
+      if(ns == 0)then
         ind=1
       else
         ka=kls%dbody(1)
         if(ktfoperq(ka,kaa))then
-          if(kaa .eq. mtfnull)then
+          if(kaa == mtfnull)then
             ind=1
           else
             irtc=itfmessage(999,'General::invop',' ')
             return
           endif
         elseif(ktfrealq(ka,ind))then
-        elseif(ktfsymbolq(ka,sym) .and. iopc .eq. mtfslot)then
+        elseif(ktfsymbolq(ka,sym) .and. iopc == mtfslot)then
           call sym_namtbl(sym,nam)
           nc=nam%str%nch+1
           name(2:nc)=nam%str%str(1:nc-1)
@@ -737,8 +737,8 @@ c          write(*,*)irtc
         endif
       endif
       isps=ipurefp+ind
-      if(iopc .eq. mtfslot)then
-        if(ipurefp .eq. 0 .or. ind .le. 0 .or. ind .gt. napuref)then
+      if(iopc == mtfslot)then
+        if(ipurefp == 0 .or. ind <= 0 .or. ind .gt. napuref)then
           call strfromil(ind,inds,ls)
           irtc=itfmessagestr(999,'General::slot',
      $         '#'//inds(:ls))
@@ -746,7 +746,7 @@ c          write(*,*)irtc
         endif
         kx=dtastk(isps)
       else
-        if(ipurefp .eq. 0 .or. ind .le. 0)then
+        if(ipurefp == 0 .or. ind <= 0)then
           call strfromil(ind,inds,ls)
           irtc=itfmessagestr(999,'General::slot',
      $         '##'//inds(:ls))
@@ -807,12 +807,12 @@ c      call tfdebugprint(kx,'puref',1)
       integer*4 j
       type (sad_descriptor), save :: kxlabel
       data kxlabel%k /0/
-      if(kxlabel%k .eq. 0)then
+      if(kxlabel%k == 0)then
         kxlabel=kxsymbolf('Label',5,.true.)
       endif
       do j=1,m
         if(ktflistq(list%dbody(j),listj))then
-          if(listj%nl .eq. 1)then
+          if(listj%nl == 1)then
             if(tfsameq(kxlabel,listj%head))then
               if(tfsameq(kr,listj%dbody(1)))then
                 i=j
@@ -862,13 +862,13 @@ c      call tfdebugprint(kx,'puref',1)
       lastfree=0
       j=itflocal+levele
       i=klist(j)
-      do while(i .ne. j)
+      do while(i /= j)
         ka=ktfaddr(klist(i))
-        if(ilist(1,i+1) .le. 0)then
+        if(ilist(1,i+1) <= 0)then
           kt=klist(i)-ka
-          if(kt .eq. ktflist)then
+          if(kt == ktflist)then
             call loc_sad(i+2,list)
-            if(iand(list%attr,lnonreallist) .ne. 0)then
+            if(iand(list%attr,lnonreallist) /= 0)then
               do kk=list%nl,1,-1
                 call tflocalrel(list%dbody(kk),ka)
               enddo
@@ -876,7 +876,7 @@ c      call tfdebugprint(kx,'puref',1)
             call tflocalrel(list%head,ka)
             i=i-list%lenp
             ilist(1,i-1)=list%lenp+list%lena+list%nl+4
-          elseif(kt .eq. ktfpat)then
+          elseif(kt == ktfpat)then
             call loc_pat(i+2,pat)
             if(pat%sym%ref .gt. 1)then
               call tflocalrel(sad_descr(pat%sym),ka)
@@ -884,7 +884,7 @@ c      call tfdebugprint(kx,'puref',1)
               pat%sym%gen=0
               pat%len=7
             endif
-            if(pat%sym%loc .ne. 0)then
+            if(pat%sym%loc /= 0)then
               call tflocalrel(pat%sym%alloc,ka)
             endif
             pat%sym%alloc%k=ktfsymbol
@@ -913,9 +913,9 @@ c      call tfdebugprint(kx,'puref',1)
       integer*8 ,intent(out):: kan
       if(ktfobjq(k,obj))then
         obj%ref=obj%ref-1
-        if(obj%ref .le. 0)then
+        if(obj%ref <= 0)then
           obj%ref=0
-          if(ktfaddr(obj%alloc%k) .eq. 0)then
+          if(ktfaddr(obj%alloc%k) == 0)then
             obj%alloc%k=ktftype(obj%alloc%k)+kan
             kan=ktfaddr(k%k)-2
           endif
@@ -929,19 +929,19 @@ c      call tfdebugprint(kx,'puref',1)
       implicit none
       integer*8 ,intent(in):: ip
       integer*8 ,intent(inout):: last
-      if(ip .eq. 0)then
-        if(last .ne. 0)then
+      if(ip == 0)then
+        if(last /= 0)then
           call tfree(last)
           last=0
         endif
       else
         ilist(1,ip-1)=max(4,ilist(1,ip-1))
-        if(last .eq. 0)then
+        if(last == 0)then
           last=ip
         else
-          if(ilist(1,last-1)+last .eq. ip)then
+          if(ilist(1,last-1)+last == ip)then
             ilist(1,last-1)=ilist(1,last-1)+ilist(1,ip-1)
-          elseif(ilist(1,ip-1)+ip .eq. last)then
+          elseif(ilist(1,ip-1)+ip == last)then
             ilist(1,ip-1)=ilist(1,ip-1)+ilist(1,last-1)
             last=ip
           else
@@ -963,9 +963,9 @@ c      call tfdebugprint(kx,'puref',1)
         ka=ktfaddr(k)
         call loc_obj(ka,obj)
         obj%ref=obj%ref-1
-        if(obj%ref .le. 0)then
+        if(obj%ref <= 0)then
           obj%ref=0
-          if(ktfaddr(obj%alloc) .eq. 0)then
+          if(ktfaddr(obj%alloc) == 0)then
             itfroot=itflocal+levele
             obj%alloc%k=obj%alloc%k+ktfaddr(klist(itfroot))
             klist(itfroot)=ka-2
@@ -984,9 +984,9 @@ c      call tfdebugprint(kx,'puref',1)
       ka=ktfaddr(k)
       call loc_obj(ka,obj)
       obj%ref=obj%ref-1
-      if(obj%ref .le. 0)then
+      if(obj%ref <= 0)then
         obj%ref=0
-        if(ktfaddr(obj%alloc) .eq. 0)then
+        if(ktfaddr(obj%alloc) == 0)then
           itfroot=itflocal+levele
           obj%alloc%k=obj%alloc%k+ktfaddr(klist(itfroot))
           klist(itfroot)=ka-2

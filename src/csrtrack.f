@@ -1,11 +1,13 @@
       subroutine tfcsrtrack(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_rlist), pointer :: klr,klz,klp,klzl,kll
-      integer*4 isp1,irtc,np,nr,itfmessage,nt,ndiv
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 np,nr,itfmessage,nt,ndiv
       real*8 dz,aw,r56,r65,damp,sigmae,frf,phirf
-      if(isp .ne. isp1+5)then
+      if(isp /= isp1+5)then
         go to 9000
       endif
       if(.not. tfreallistq(ktastk(isp1+1),klz))then
@@ -15,7 +17,7 @@
       if(.not. tfreallistq(ktastk(isp1+2),klp))then
         go to 9010
       endif
-      if(klp%nl .ne. np)then
+      if(klp%nl /= np)then
         go to 9020
       endif
       if(.not. tfreallistq(ktastk(isp1+3),klzl))then
@@ -25,7 +27,7 @@
       if(.not. tfreallistq(ktastk(isp1+4),kll))then
         go to 9010
       endif
-      if(kll%nl .ne. 9)then
+      if(kll%nl /= 9)then
         go to 9010
       endif
       dz=kll%rbody(1)
@@ -84,7 +86,7 @@ c
       type (sad_rlist), pointer :: klr,klzl,kll
       integer*4 isp1,irtc,nr,itfmessage
       real*8 dz,aw,sigz,r65
-      if(isp .ne. isp1+2)then
+      if(isp /= isp1+2)then
         go to 9000
       endif
       if(.not. tfreallistq(ktastk(isp1+1),klzl))then
@@ -94,7 +96,7 @@ c
       if(.not. tfreallistq(ktastk(isp1+2),kll))then
         go to 9010
       endif
-      if(kll%nl .ne. 4)then
+      if(kll%nl /= 4)then
         go to 9010
       endif
       dz=kll%rbody(1)
@@ -104,7 +106,7 @@ c
       kx=kxavaloc(-1,nr,klr)
       call csrhaissin(klr%rbody(1),
      $     klzl%rbody(1),nr,aw,dz,sigz,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         go to 9020
       endif
       return
@@ -238,7 +240,7 @@ c        write(*,*)'CSRHi ',i,iter,sdf,du0,du(0)
       zc=dz*nr/4.d0
       nr1=nr/2
       r56n=r56/ndiv
-      if(frf .ne. 0.d0)then
+      if(frf /= 0.d0)then
         wr=2.d0*pi*frf/cs
         vr=r65/wr
         dpr=vr*sin(phirf)
@@ -402,9 +404,11 @@ c        write(*,*)'CSRHi ',i,iter,sdf,du0,du(0)
 
       subroutine csrwake(rho,zl,nr)
       implicit none
-      integer*4 i,i2,nr
-      real*8 rho(nr),pi,zl(nr),ri2
-      parameter (pi=3.14159265358979324d0)
+      integer*4 ,intent(in):: nr
+      integer*4 i,i2
+      real*8 ,intent(inout):: rho(nr)
+      real*8 ,intent(in):: zl(nr)
+      real*8 ri2
       call trftr(rho,nr,.true.)
       do i=2,nr/2
         i2=i*2-1
@@ -421,8 +425,11 @@ c        write(*,*)'CSRHi ',i,iter,sdf,du0,du(0)
 
       subroutine csrrho(z,rho,dz,np,nr)
       implicit none
-      integer*4 np,nr,ic,i,l
-      real*8 z(np),rho(nr),dz,a,rmin,rmax,r,zc
+      integer*4 ,intent(in):: np,nr
+      integer*4 ic,i,l
+      real*8 ,intent(in):: z(np)
+      real*8 ,intent(out):: rho(nr)
+      real*8 dz,a,rmin,rmax,r,zc
       ic=nr/4
       zc=dz*ic
       rmin=1.d0

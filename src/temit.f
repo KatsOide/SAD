@@ -135,7 +135,7 @@ c     $     beamin(iaidx(3,4)),beamin(iaidx(4,4))
       intpri=.true.
       caltouck=.false.
       calcodr=.not. trpt .and. calcod
-      pri=lfno .gt. 0
+      pri=lfno > 0
       rt=radcod .and. radtaper
       inical=.true.
       fndcod=.true.
@@ -231,7 +231,7 @@ c     $       beamp(1),beamp(6),beamp(21)
           beamsize=-beamsize
         endif
       else
-        call setiamat(iae%iamat,ri,codin,beamp,beam,trans)
+        call setiamat(iae%iamat,ri,codin,beamp,beam,trans,srot)
       endif
       return
       end
@@ -570,10 +570,10 @@ c     enddo
           endif
         endif
       endif
- 7301 if(it .gt. 1 .and. dc .lt. dcmin
-     $     .and. de .lt. resib .or. it .gt. itmax)then
+ 7301 if(it > 1 .and. dc .lt. dcmin
+     $     .and. de .lt. resib .or. it > itmax)then
 c        write(*,*)'tintraconv ',it,dc,de
-        pri=lfno .gt. 0
+        pri=lfno > 0
         if(.not. trpt)then
           if(de .ge. resib .or. dc .ge. dcmin)then
             write(*,*)' Intrabeam/space charge convergence failed.'
@@ -699,7 +699,7 @@ c            endif
               else
                 eemx=sqrt(eemx*emx0)
               endif
-              if(it .gt. 30)then
+              if(it > 30)then
                 emymax=min(max(eemy,emy0),emymax)
                 emymin=max(min(eemy,emy0),emymin)
                 eemy=sqrt(emymax*emymin)
@@ -728,21 +728,21 @@ c     Here was the factor 2 difference from B-M paper.
 c     Pointed out by K. Kubo on 6/18/2001.
 c
           cintrb=rclassic**2/4.d0/pi*pbunch
-          if(emx1 .gt. 0.01d0*eemx)then
+          if(emx1 > 0.01d0*eemx)then
             rx=sqrt(eemx/emx1)
           else
             emitn(iaidx(1,1))=eemx
             emitn(iaidx(2,2))=eemx
             rx=1.d0
           endif
-          if(emy1 .gt. 0.01d0*eemy)then
+          if(emy1 > 0.01d0*eemy)then
             ry=sqrt(eemy/emy1)
           else
             emitn(iaidx(3,3))=eemy
             emitn(iaidx(4,4))=eemy
             ry=1.d0
           endif
-          if(emz1 .gt. 0.01d0*eemz)then
+          if(emz1 > 0.01d0*eemz)then
             rz=sqrt(eemz/emz1)
           else
             emitn(iaidx(5,5))=eemz
@@ -817,8 +817,10 @@ c     $         sqrt(emitn(15)*emitn(21)-emitn(20)**2)
 
       subroutine tinv(r,ri,n,ndimr)
       implicit none
-      integer*4 i,j,n,ndimr
-      real*8 r(ndimr,n),ri(ndimr,n)
+      integer*4 ,intent(in):: n,ndimr
+      integer*4 i,j
+      real*8 ,intent(in):: r(ndimr,n)
+      real*8 ,intent(out):: ri(ndimr,n)
       do 10 i=1,n-1,2
         do 20 j=1,n-1,2
           ri(i  ,j  )= r(j+1,i+1)
@@ -830,13 +832,13 @@ c     $         sqrt(emitn(15)*emitn(21)-emitn(20)**2)
       return
       end
 
-      subroutine setiamat(iamat,ri,codin,beamn,emitp,trans)
+      subroutine setiamat(iamat,ri,codin,beamn,emitp,trans,srot)
       use tfstk
       implicit none
       integer*8 , intent(in)::iamat
       real*8 , intent(in)::ri(6,6),codin(6),beamn(21),emitp(21),
-     $     trans(6,12)
-      if(iamat .gt. 0)then
+     $     trans(6,12),srot(3,9)
+      if(iamat > 0)then
         dlist(iamat+4)=
      $       dtfcopy1(kxm2l(ri,6,6,6,.false.))
         dlist(iamat+1)=
@@ -849,6 +851,8 @@ c     $         sqrt(emitn(15)*emitn(21)-emitn(20)**2)
      $       dtfcopy1(kxm2l(trans,6,6,6,.false.))
         dlist(iamat+3)=
      $       dtfcopy1(kxm2l(trans(1,7),6,6,6,.false.))
+        dlist(iamat+7)=
+     $       dtfcopy1(kxm2l(srot,3,3,3,.false.))
       endif
       return
       end
@@ -924,7 +928,7 @@ c     $         sqrt(emitn(15)*emitn(21)-emitn(20)**2)
           rxrxi(i,i)=rxrxi(i,i)-1.d0
         enddo
         so=sum(abs(rxrxi))
-        if(so .gt. somin)then
+        if(so > somin)then
           write(lfno,*)' *** Deviation from symplectic matrix = ',so
         endif
         do i=1,ntwissfun

@@ -478,10 +478,7 @@ c        kcpklist0=transfer(c_loc(kdummy),i00)-kcpoffset-8
         if(lps .eq. 0)then
           lps=getpagesize()
         endif
-        allocate(pname(0:HTMAX))
-        allocate(lpname(0:HTMAX))
-        allocate(idtype(0:HTMAX))
-        allocate(idval(0:HTMAX))
+        allocate(pname(0:HTMAX),lpname(0:HTMAX),idtype(0:HTMAX),idval(0:HTMAX))
 c$$$        ppname=>pname
 c$$$        plpname=>lpname
 c$$$        pidtype=>idtype

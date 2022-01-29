@@ -14,7 +14,7 @@
       logical*4 in0,in1
       parameter (eps=1.d-6)
       narg=isp-isp1
-      if(narg .ne. 2 .and. narg .ne. 3)then
+      if(narg /= 2 .and. narg /= 3)then
         irtc=itfmessage(9,'General::narg','"2 or 3"')
         return
       endif
@@ -44,7 +44,7 @@ c        write(*,*)'canvasclip-1'
         return
       endif
       kal=ktfaddr(ktastk(isp1+2))
-      if(ilist(2,kal-1) .ne. 2)then
+      if(ilist(2,kal-1) /= 2)then
 c        write(*,*)'canvasclip-2'
         irtc=itfmessage(9,'General::wrongleng','"#2","2"')
         return
@@ -72,7 +72,7 @@ c        write(*,*)'canvasclip-4'
       if(.not. tflistq(ktastk(isp1+1)))then
         go to 9100
       endif
-      if(ilist(2,ka-1) .ne. 2)then
+      if(ilist(2,ka-1) /= 2)then
         go to 9100
       endif
       if(ktfreallistq(ka))then
@@ -85,7 +85,7 @@ c        write(*,*)'canvasclip-4'
         go to 9100
       endif
       np=ilist(2,ka1-1)
-      if(ilist(2,ka2-1) .ne. np)then
+      if(ilist(2,ka2-1) /= np)then
         go to 9100
       endif
       isp0=isp
@@ -105,7 +105,7 @@ c        write(*,*)'canvasclip-4'
      $       y1 .ge. ymin .and. y1 .le. ymax
         if(in1)then
           if(in0)then
-            if(x0 .ne. x1 .or. y0 .ne. y1)then
+            if(x0 /= x1 .or. y0 /= y1)then
               isp=isp+2
               rtastk(isp-1)=anint(x1)
               rtastk(isp  )=anint(y1)
@@ -118,13 +118,13 @@ c        write(*,*)'canvasclip-4'
             t(1)=-1.d0
             if(ux .gt. 0.d0)then
               t(1)=(xmin-x0)/ux
-            elseif(ux .ne. 0.d0)then
+            elseif(ux /= 0.d0)then
               t(1)=(xmax-x0)/ux
             endif
             t(2)=-1.d0
             if(uy .gt. 0.d0)then
               t(2)=(ymin-y0)/uy
-            elseif(uy .ne. 0.d0)then
+            elseif(uy /= 0.d0)then
               t(2)=(ymax-y0)/uy
             endif
             if(t(1) .gt. 0.d0 .and. t(1) .le. 1.d0)then
@@ -151,13 +151,13 @@ c        write(*,*)'canvasclip-4'
             t(1)=-1.d0
             if(ux .gt. 0.d0)then
               t(1)=(xmax-x0)/ux
-            elseif(ux .ne. 0.d0)then
+            elseif(ux /= 0.d0)then
               t(1)=(xmin-x0)/ux
             endif
             t(2)=-1.d0
             if(uy .gt. 0.d0)then
               t(2)=(ymax-y0)/uy
-            elseif(uy .ne. 0.d0)then
+            elseif(uy /= 0.d0)then
               t(2)=(ymin-y0)/uy
             endif
             if(t(1) .ge. 0.d0 .and. t(1) .lt. 1.d0)then
@@ -179,7 +179,7 @@ c        write(*,*)'canvasclip-4'
             uy=y1-y0
             t(1)=-1
             t(2)=-1
-            if(ux .ne. 0.d0)then
+            if(ux /= 0.d0)then
               t1=(xmin-x0)/ux
               ya=y0+t1*uy
               if(ya .ge. ymin .and. ya .le. ymax)then
@@ -193,7 +193,7 @@ c        write(*,*)'canvasclip-4'
             endif
             t(3)=-1
             t(4)=-1
-            if(uy .ne. 0.d0)then
+            if(uy /= 0.d0)then
               t1=(ymin-y0)/uy
               xa=x0+t1*ux
               if(xa .ge. xmin .and. xa .le. xmax)then
@@ -273,7 +273,7 @@ c        write(*,*)'canvasclip-4'
 c        write(*,*)na,isp-isp0
         na=isp-isp0
       endif
-      if(kadash .ne. 0)then
+      if(kadash /= 0)then
         isp2=isp
         if(na .gt. 1)then
           isp3=isp
@@ -387,7 +387,7 @@ c      write(*,*)'canvasclip-4'
       integer*8 ka,kas,kac,kai,kavc,kavs
       integer*4 isp1,irtc,iav(3),nt,m,itfmessage,isp0,j,i,ii,m3
       real*8 xs,ys,zs,xc,yc,zc
-      if(isp .ne. isp1+3)then
+      if(isp /= isp1+3)then
         irtc=itfmessage(9,'General::narg','"3"')
         return
       endif
@@ -405,7 +405,7 @@ c      write(*,*)'canvasclip-4'
       if(.not. tflistq(ktastk(isp1+1)))then
         go to 9000
       endif
-      if(ilist(2,ka-1) .ne. 3)then
+      if(ilist(2,ka-1) /= 3)then
         go to 9000
       endif
       if(ktfreallistq(ka))then
@@ -419,7 +419,7 @@ c      write(*,*)'canvasclip-4'
         kai=ilist(2,ka+i)
         if(m .lt. 0)then
           m=ilist(2,kai-1)
-        elseif(m .ne. ilist(2,kai-1))then
+        elseif(m /= ilist(2,kai-1))then
           go to 9000
         endif
         iav(i)=ilist(2,kai+1)
@@ -624,7 +624,7 @@ c      write(*,*)'canvasclip-4'
       implicit none
       integer*8 kx,kat,kac,kaci,kaci1,kaci2
       integer*4 isp1,irtc,itfmessage,nt,nc,isp0,i
-      if(isp1+2 .ne. isp)then
+      if(isp1+2 /= isp)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
@@ -658,7 +658,7 @@ c      write(*,*)'canvasclip-4'
           go to 9110
         endif
         kaci=ktfaddr(klist(kac+i))
-        if(ktfreallistq(kaci) .or. ilist(2,kaci-1) .ne. 2)then
+        if(ktfreallistq(kaci) .or. ilist(2,kaci-1) /= 2)then
           go to 9110
         endif
         if(.not. tfnumlistqn(dlist(kaci+1),3) .or.
@@ -678,7 +678,7 @@ c      write(*,*)'canvasclip-4'
       call tfcanvas3dlighttriangle1(nt,kat,nc,
      $     rtastk(isp0+1:isp),kx,irtc)
       isp=isp0
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
       return
@@ -711,7 +711,7 @@ c      write(*,*)'canvasclip-4'
             exit do9000
           endif
           kati=ktfaddr(klist(kat+i))
-          if(ilist(2,kati-1) .ne. 3 .or. ktfreallistq(kati))then
+          if(ilist(2,kati-1) /= 3 .or. ktfreallistq(kati))then
             exit do9000
           endif
           if(.not. tfnumlistqn(dlist(kati+1),3)
@@ -781,7 +781,7 @@ c      write(*,*)'canvasclip-4'
       integer*8 kx,kae,kapx,kapy,kaoff,kave,kavx,kavy,kavoff
       integer*4 isp1,irtc,itfmessage
       real*8 d,e(3)
-      if(isp .ne. isp1+5)then
+      if(isp /= isp1+5)then
         irtc=itfmessage(9,'General::narg','"5"')
         return
       endif
@@ -870,7 +870,7 @@ c      write(*,*)'canvasclip-4'
           ki=klist(ka+i)
           call tfcanvas3dprojection1(
      $         ki,e,px,py,d,offset,kxi,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             isp=isp0
             return
           endif
@@ -894,26 +894,28 @@ c      write(*,*)'canvasclip-4'
       use strbuf
       use macmath
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_strbuf), pointer :: strb
       type (sad_string), pointer :: str
       integer*8 ka,kad,kad1,kad2,ks
-      integer*4 isp1,irtc,itfmessage,i,np
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage,i,np
       real*8 x,y,s,a,xmin,ymin,xmax,ymax,yoff,sa,sh,ar(32),s1
 c      parameter (a=sqrt(0.75d0))
       parameter (a=.866025403784439d0)
       character*2 sym
       logical*4 full
-      if(isp .ne. isp1+8)then
+      if(isp /= isp1+8)then
         irtc=itfmessage(9,'General::narg','"10"')
         return
       endif
-      if(iand(ktfmask,ktastk(isp1+8)) .ne. ktflist)then
+      if(iand(ktfmask,ktastk(isp1+8)) /= ktflist)then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"Canvas$Range for #8"')
         return
       endif
-      if(iand(ktfmask,ktastk(isp1+9)) .ne. ktflist)then
+      if(iand(ktfmask,ktastk(isp1+9)) /= ktflist)then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"Canvas$Offset for #9"')
         return
@@ -932,8 +934,8 @@ c      parameter (a=sqrt(0.75d0))
         go to 9000
       endif
       ka=ktfaddr(ktastk(isp1+3))
-      if(klist(ka) .ne. ktfoper+mtflist
-     $     .or. ilist(2,ka-1) .ne. 2 .or.
+      if(klist(ka) /= ktfoper+mtflist
+     $     .or. ilist(2,ka-1) /= 2 .or.
      $     ktfreallistq(ka))then
         go to 9000
       endif
@@ -1061,7 +1063,7 @@ c      parameter (a=sqrt(0.75d0))
         iwidth=kxsalocb(0,'-width',6)
         ibar=kxsymbolf('Bar',3,.true.)
       endif
-      if(isp .ne. isp1+13)then
+      if(isp /= isp1+13)then
         irtc=itfmessage(9,'General::narg','"13"')
         return
       endif
@@ -1091,7 +1093,7 @@ c      parameter (a=sqrt(0.75d0))
         go to 9000
       endif
       ka=ktfaddr(ktastk(isp1+3))
-      if(klist(ka) .ne. ktfoper+mtflist .or.
+      if(klist(ka) /= ktfoper+mtflist .or.
      $     ilist(2,ka-1) .lt. 2 .or. ilist(2,ka-1) .gt. 4)then
         go to 9000
       endif
@@ -1105,13 +1107,13 @@ c      parameter (a=sqrt(0.75d0))
       else
         kavx=ktfaddr(klist(ka+1))
         kavy=ktfaddr(klist(ka+2))
-        if(klist(kavx) .ne. ktfoper+mtflist .or.
-     $       klist(kavy) .ne. ktfoper+mtflist .or.
+        if(klist(kavx) /= ktfoper+mtflist .or.
+     $       klist(kavy) /= ktfoper+mtflist .or.
      $       ktfnonreallistq(kavx) .or. ktfnonreallistq(kavy))then
           go to 9000
         else
           m=ilist(2,kavx-1)
-          if(m .ne. ilist(2,kavy-1))then
+          if(m /= ilist(2,kavy-1))then
             go to 9000
           endif
         endif
@@ -1136,7 +1138,7 @@ c      parameter (a=sqrt(0.75d0))
         irtc=itfmessage(9,'General::wrongtype','"outline for #7"')
         return
       endif
-c      if(itastk(1,isp1+1) .ne. ntfreal)then
+c      if(itastk(1,isp1+1) /= ntfreal)then
 c        irtc=itfmessage(9,'General::wrongtype',
 c     $       '"TkCanvasPointer for #1"')
 c        return
@@ -1145,7 +1147,7 @@ c      endif
         kat=ktfaddr(ktastk(isp1+2))
       elseif(ktflistq(ktastk(isp1+2)))then
         kat=ktfaddr(ktastk(isp1+2))
-        if(ilist(2,kat-1) .ne. m)then
+        if(ilist(2,kat-1) /= m)then
           irtc=itfmessage(9,'General::equalleng',
      $         '"tags (#2) and points (#3)"')
           return
@@ -1168,7 +1170,7 @@ c      endif
         y=rlist(kavy+i)
         if(x .lt. xmin .or. x .gt. xmax)then
           cycle
-        elseif(sym .ne. "BA")then
+        elseif(sym /= "BA")then
           if(y .lt. ymin .or. y .gt. ymax)then
             cycle
           endif
@@ -1256,7 +1258,7 @@ c      endif
         dtastk(isp)=ifill
         isp=isp+1
         rtastk(isp)=rtastk(isp1+6)
-        if(kat .ne. 0)then
+        if(kat /= 0)then
           if(ktfstringq(ktastk(isp1+2)))then
             isp=isp+1
             dtastk(isp)=itag

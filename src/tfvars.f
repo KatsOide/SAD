@@ -39,19 +39,19 @@
      $     '      Couple      Coefficient'
       isp1=isp
       call peekwd(ele,next)
-      if(ele .eq. ' ')then
+      if(ele == ' ')then
         ele='*'
       endif
- 1    exist=nvar .le. 0
+ 1    exist=nvar <= 0
       do i=1,nvar
         iv=nvevx(i)%ivarele
-        if(nvevx(i)%ivcomp .eq. 0)then
+        if(nvevx(i)%ivcomp == 0)then
           kk=nelvx(iv)%klp
         else
           kk=nvevx(i)%ivcomp
         endif
         k=idelc(kk)
-        if(nvevx(i)%ivcomp .eq. 0)then
+        if(nvevx(i)%ivcomp == 0)then
           name=pname(k)
         else
           call elnameK(nvevx(i)%ivcomp,name)
@@ -66,7 +66,7 @@
 c          x3=rlist(idval(k)+ivvar(i))
           v3=autofg(x3,'12.9')
           key=tfkwrd(idtype(k),nvevx(i)%ivvar)
-          if(nvevx(i)%ivvar .eq. nelvx(iv)%ival)then
+          if(nvevx(i)%ivvar == nelvx(iv)%ival)then
             vmin=nelvx(iv)%vlim(1)
             vmax=nelvx(iv)%vlim(2)
             call elname1(icomp(kk),ncoup,nvevx(i)%ivcomp .ne. 0)
@@ -98,7 +98,7 @@ c          write(*,*)': ',irtc
             kx=kxadalocnull(-1,nvar)
             return
           elseif(tfreallistq(kxr,kla))then
-            if(kla%nl .eq. 2)then
+            if(kla%nl == 2)then
               vmin=max(vmin,kla%rbody(1))
               vmax=min(vmax,kla%rbody(2))
             endif
@@ -119,11 +119,11 @@ c          write(*,*)': ',irtc
           endif
 c     Note:
 c     * POSITION of `name'  element: ivcomp(i) == 0 ? kk : ivcomp(i)
-c     * POSITION of `ncoup' element: icomp(kk) if ivvar(i) .eq. ival(iv)
+c     * POSITION of `ncoup' element: icomp(kk) if ivvar(i) == ival(iv)
 c     * icomp(kk) != 0 for 1 =< kk =< nlat
-          if(nvevx(i)%ivvar .eq. nelvx(iv)%ival)then
-            if((nvevx(i)%ivcomp .eq. 0 .and. icomp(kk) .eq. kk)
-     $            .or. (icomp(kk) .eq. nvevx(i)%ivcomp))then
+          if(nvevx(i)%ivvar == nelvx(iv)%ival)then
+            if((nvevx(i)%ivcomp == 0 .and. icomp(kk) == kk)
+     $            .or. (icomp(kk) == nvevx(i)%ivcomp))then
               ncoup='<--'
             endif
           endif
@@ -136,7 +136,7 @@ c     * icomp(kk) != 0 for 1 =< kk =< nlat
         endif
       enddo
       if(.not. exist)then
-        if(ifany(ele,'*%{',1) .le. 0)then
+        if(ifany(ele,'*%{',1) <= 0)then
           ele='*'
           go to 1
         endif

@@ -30,10 +30,8 @@ c      include 'DEBUG.inc'
       real*8 anux0,anuy0,anux0h,anuy0h,anuxi,anuyi,anuxih,anuyih,
      $     rw,drw,rstab,wi,anusumi,anusum0,anudiffi,anudiff0
       logical*4 fam,beg,zerores
-      integer*4 irw,isw,ipr,ifb,ife,idir,
-     $     jjfam(-nfam:nfam),ifpe,ntfun
-      integer*4, external :: waitpid,
-     $     itfdownlevel,itfuplevel,itgetfpe
+      integer*4 irw,isw,ipr,ifb,ife,idir,jjfam(-nfam:nfam),ifpe,ntfun
+      integer*4, external :: waitpid,itfdownlevel,itfuplevel,itgetfpe
       integer*8 iutm,jb
       integer*4 , parameter:: ivoid=9999
       integer*8 ,save :: iprolog=0,iepilog=0,imr=0,inr=0,isl=0
@@ -60,9 +58,9 @@ c      call tfmemcheckprint('tffscalc-before-prolog',.true.,irtc)
       l=itfuplevel()
       kx=tfeeval(dfromk(ktfsymbol+iprolog),.true.,irtc)
       l=itfdownlevel()
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         if(irtc .gt. 0)then
-          if(ierrorprint .ne. 0)then
+          if(ierrorprint /= 0)then
             call tfaddmessage(' ',0,lfno)
           endif
           call tclrfpe
@@ -123,7 +121,7 @@ c     $         aint(twiss(nlat,0,mfitny)/pi2)
             call twmov(1,twiss,nlat,ndim,.false.)
           endif
         endif
-        if(nfam .ne. 0)then
+        if(nfam /= 0)then
           if(parallel)then
             irtc=0
             iutm=ktfallocshared((2*nfam+1)*4)
@@ -264,16 +262,16 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
           endif
           if(ipr .gt. 0)then
             irw=0
-            do while(irw .ne. ipr)
+            do while(irw /= ipr)
               irw=waitpid(-1,isw)
             enddo
-            if(isw .ne. 0)then
+            if(isw /= 0)then
               call termes(lfno,
      1             '?Error in parallel process.',' ')
             endif
             do i=nfam1,nfam
               if(i .gt. 0 .and. i .le. nfr .or.
-     $             kfam(i) .ne. 0 .and. jfam(i) .ge. 0)then
+     $             kfam(i) /= 0 .and. jfam(i) .ge. 0)then
                 jb=iutm+(i+nfam)*4
                 optstat(i)%stabx=ilist(1,jb+1)
                 optstat(i)%staby=ilist(1,jb+2)
@@ -284,7 +282,7 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
           elseif(ipr .eq. 0)then
             do i=nfam1,nfam
               if(i .gt. 0 .and. i .le. nfr .or.
-     $             kfam(i) .ne. 0 .and. jfam(i) .ge. 0)then
+     $             kfam(i) /= 0 .and. jfam(i) .ge. 0)then
                 jb=iutm+(i+nfam)*4
                 ilist(1,jb+1)=optstat(i)%stabx
                 ilist(1,jb+2)=optstat(i)%staby
@@ -310,8 +308,8 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
         zcal=.false.
         do i=1,nvar
           kt=idtypec(nelvx(nvevx(i)%ivarele)%klp)
-          if(kt .ne. 6 .and. kt .ne. 8 .and. kt .ne. 10
-     $         .and. kt .ne. 12)then
+          if(kt /= 6 .and. kt /= 8 .and. kt /= 10
+     $         .and. kt /= 12)then
             zcal=.true.
             exit
           endif
@@ -333,7 +331,7 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
      $               nvevx(j)%ivcomp .eq. ii))then
                   ibegin=i
                   go to 1023
-                elseif(iv .ne. nelvx(ie)%ival .and.
+                elseif(iv /= nelvx(ie)%ival .and.
      $                 nvevx(j)%ivarele .eq. ie1
      $                 .and. (nvevx(j)%ivcomp .eq. 0 .or.
      $                 nvevx(j)%ivcomp .eq. i))then
@@ -375,7 +373,7 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
       residual1(nfam1:nfam)=0.d0
       wsum=0.d0
       do i=1,nqcola
-        if(kdp(i) .ne. 0)then
+        if(kdp(i) /= 0)then
           iq=iqcol(i)
           wi=(offmw/2.d0/
      $         sqrt(dble(max(1,abs(flv%mfitp(flv%kfitp(iq)))))))**2
@@ -385,7 +383,7 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
           wsum=wsum+1.d0
         endif
         df(i)=df(i)*wiq(i)
-        if(df(i) .ne. 0.d0)then
+        if(df(i) /= 0.d0)then
           drw=min(1.d50,max(1.d-50,abs(df(i))))**wexponent
           rw=rw+drw
           residual1(kdp(i))=residual1(kdp(i))+drw
@@ -405,7 +403,7 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
         cellstab=.true.
         zerores=.true.
         do i=nfam1,nfam
-          if(residual1(i) .ne. 0.d0)then
+          if(residual1(i) /= 0.d0)then
             zerores=.false.
             if(.not. optstat(i)%stabx)then
               nstab=nstab+1
@@ -443,9 +441,9 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
       l=itfuplevel()
       kx=tfeeval(dfromk(ktfsymbol+iepilog),.true.,irtc)
       l=itfdownlevel()
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         if(irtc .gt. 0)then
-          if(ierrorprint .ne. 0)then
+          if(ierrorprint /= 0)then
             call tfaddmessage(' ',0,lfno)
           endif
           call tclrfpe
@@ -577,8 +575,8 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
           level=itfuplevel()
           kx=tfleval(klv,.true.,irtc)
           call tfconnect(kx,irtc)
-          if(irtc .ne. 0)then
-            if(ierrorprint .ne. 0)then
+          if(irtc /= 0)then
+            if(ierrorprint /= 0)then
               call tfaddmessage(' ',2,6)
             endif
             call termes(6,'Error in FitWeight '//
@@ -615,7 +613,7 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       real*8 xnlat,offset,tffsmarkoffset
       xnlat=nlat
       offset=tffsmarkoffset(lb)
-      if(offset .ne. 0.d0)then
+      if(offset /= 0.d0)then
         offset=max(1.d0,min(xnlat,lb+offset))
         fbound%lb=int(offset)
         fbound%fb=offset-fbound%lb
@@ -634,7 +632,7 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
         endif
       endif
       offset=tffsmarkoffset(le1)
-      if(offset .ne. 0.d0)then
+      if(offset /= 0.d0)then
         offset=max(1.d0,min(xnlat,le1+offset))
         fbound%le=int(offset)
         fbound%fe=offset-fbound%le
@@ -662,7 +660,7 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       k=kytbl(kwOFFSET,idtype(cmp%id))
       if(k .gt. 0)then
         tffsmarkoffset=cmp%value(k)
-        if(tffsmarkoffset .ne. 0.d0)then
+        if(tffsmarkoffset /= 0.d0)then
           tffsmarkoffset=(tffsmarkoffset-.5d0)*direlc(lp)+.5d0
         endif
       else
@@ -684,12 +682,12 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       real*8 offset,xp,xe,tffsmarkoffset
       nm=0
       xp=l
-      if(l .ne. nlat .and. kytbl(kwOFFSET,idtypec(l)) .ne. 0)then
+      if(l /= nlat .and. kytbl(kwOFFSET,idtypec(l)) /= 0)then
         xe=nlat
         lm=l
         do
           offset=tffsmarkoffset(lm)
-          if(offset .ne. 0.d0)then
+          if(offset /= 0.d0)then
             xp=offset+lm
             if(xp .ge. 1.d0 .and. xp .le. xe)then
               lx=int(xp)

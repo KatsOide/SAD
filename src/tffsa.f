@@ -26,7 +26,8 @@
       integer*4 maxrpt,hsrchz
       type (sad_descriptor) ,intent(out):: kffs
       type (sad_descriptor) kx,tfvars
-      integer*8 itwisso,iparams,kax,iutwiss,ildummy
+      real*8 ,allocatable,dimension(:)::vparams
+      integer*8 itwisso,kax,iutwiss,ildummy
       integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,k,
      $     irtc0,it,itt,lfn,
      $     iuse,l,itfuplevel,
@@ -998,16 +999,18 @@ c        rlist(itlookup('DP',ivtype))=dpmax
         endif
         call tfgeo(.true.)
         mphi2=9
-        iparams=ktaloc(nparams)
+        allocate(vparams(nparams))
+c        iparams=ktaloc(nparams)
         codin=0.d0
         if(codplt)then
           call ffs_init_sizep
 c          ilist(2,iwakepold+6)=int(ifsize)
         endif
         call temits(mphi2,amus0,amus1,amusstep,
-     $     emxe,emye,rese,rlist(iparams),
+     $     emxe,emye,rese,vparams,
      $     lfno,i00,irtc)
-        call tfree(iparams)
+        deallocate(vparams)
+c        call tfree(iparams)
         if(codplt)then
           modesize=6
         else

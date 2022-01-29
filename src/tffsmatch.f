@@ -23,22 +23,18 @@ c      include 'DEBUG.inc'
       integer*4 ,intent(out):: irtc
       integer*4 ibegin,nqumax,nqcol0,nqcol00,
      $     nqcola1,nqcol1a1,nqcola2,nqcol1a2,lout
-      integer*4 kdpa1(maxcond),kdpa2(maxcond),iqcol0(maxcond),
-     $     iqcola1(maxcond),iqcola2(maxcond),nretry,nstab,nstaba1
+      integer*4 ,allocatable,dimension(:)::kdpa1,kdpa2,iqcol0,iqcola1,iqcola2
+      integer*4 nretry,nstab,nstaba1
       real*8 ,intent(out):: df(maxcond),r,dp0
-      real*8 dval(flv%nvar),df0(maxcond),df1(maxcond),df2(maxcond),
-     $     ddf1(maxcond),ddf2(maxcond),
-     $     residuala1(-ndimmax:ndimmax),v00
-      logical*4 free(nele),zcal,error,error2,
-     $     limited1,wcal1,zcal1
-      integer*4 iter,ii,j,kc,nvara, i,
-     $     lfpa1(2,maxcond),lfpa2(2,maxcond),
-     $     ip,ipr,istep,npr(nparallel)
-      real*8 rl,fuzz,a,b,x,crate,aimprv,fact,r0,r00,ra,alate,
-     $     smallf,badcnv,amedcv,rstab,vl1,vl2,
-     $     aitm1,aitm2,bestval(flv%nvar),wvar(flv%nvar),
-     $     dg,f1,f2,g1,g2,ra1,rpa1,rstaba1,valvar0,
-     $     rp,rp0,wlimit(flv%nvar),dv,vl,dvkc
+      real*8 ,allocatable,dimension(:)::dval,df0,df1,df2,
+     $     ddf1,ddf2,residuala1,bestval,wvar,wlimit
+      integer*4 ,allocatable,dimension(:,:)::lfpa1,lfpa2
+      logical*4 ,allocatable,dimension(:)::free
+      logical*4 zcal,error,error2,limited1,wcal1,zcal1
+      integer*4 iter,ii,j,kc,nvara, i,ip,ipr,istep,npr(nparallel)
+      real*8 v00,rl,fuzz,a,b,x,crate,aimprv,fact,r0,r00,ra,alate,
+     $     smallf,badcnv,amedcv,rstab,vl1,vl2,aitm1,aitm2,
+     $     dg,f1,f2,g1,g2,ra1,rpa1,rstaba1,valvar0,rp,rp0,dv,vl,dvkc
       real*8 twisss(ntwissfun)
       real*8 , pointer :: qu(:,:),quw(:,:)
       logical*4 chgmod,newton,imprv,limited,over,wcal,
@@ -64,6 +60,8 @@ c     begin initialize for preventing compiler warning
         inumw       =ktfsymbolz('OffMomentumWeight',17)-4
         iconvergence=ktfsymbolz('CONVERGENCE',11)-4
       endif
+      allocate(dval(flv%nvar),df0(maxcond),df1(maxcond),df2(maxcond),
+     $     ddf1(maxcond),ddf2(maxcond),residuala1(-ndimmax:ndimmax))
       nderiv0=rlist(inumderiv) .ne. 0.d0
       nvara=0
       aitm1=0
@@ -97,6 +95,9 @@ c     end   initialize for preventing compiler warning
       ibegin=1
       rstab=0.d0
       if(fitflg)then
+        allocate(kdpa1(maxcond),kdpa2(maxcond),iqcol0(maxcond),iqcola1(maxcond),
+     $       iqcola2(maxcond),lfpa1(2,maxcond),lfpa2(2,maxcond),bestval(flv%nvar),
+     $       wvar(flv%nvar),wlimit(flv%nvar),free(nele))
         call tffssetlimit(nvar,dlim)
         fact=1.d0
         iter=0
@@ -855,14 +856,16 @@ c        call tfdebugprint(kx,'varfun:',1)
       integer*4 ,intent(out):: irtc,nqumax
       integer*4 npp
       logical*4 ,intent(in):: free(nele),cell
+      logical*4 , allocatable,dimension(:,:)::col
       integer*4 nqu,k,kk,i,kq,j,kf,lp,kp,iv,kkf,kkq,kkk,
      $     ii,ltyp,jj,kc,ik1,iclast(-nfam:nfam),ik,nk,kk1,
      $     ip,ipr,istep,npr(nparallel)
       real*8 s,dtwiss(mfittry),coup,posk,wk,ctrans(4,7,-nfam:nfam)
-      logical*4 col(2,nqcol),disp,nzcod
+      logical*4 disp,nzcod
       integer*4 , parameter :: minnqu=512
       call tffscoupmatrix(kcm,lfno)
       irtc=0
+      allocate(col(2,nqcol))
       nqu=max(minnqu,nqcol*nvar)
       do9000: do kkk=1,1
         if(nqu .gt. nqumax)then
@@ -1131,7 +1134,9 @@ c
       real*8 ,intent(out):: quw(nqcol,nvar),grad(nvar)
       real*8 ,intent(in):: qu(nqcol,nvar),df(nqcol),
      $     wlimit(nvar),wexponent
-      real*8 dfw(nqcol),dfwi,sg,r
+      real*8 ,allocatable,dimension(:)::dfw
+      real*8 dfwi,sg,r
+      allocate(dfw(nqcol))
       do concurrent (i=1:nvar)
         quw(:,i)=qu(:,i)*wlimit(i)
       enddo
@@ -1261,9 +1266,12 @@ c
      $     wexponent,wlimit(nvar),eps
       real*8 ,intent(out):: quw(nqcol,nvar),dval(nvar),dg
       integer*4 ,intent(in):: iqcol(*),kfitp(*),mfitp(*)
-      real*8 b(nqcol),s
-      logical*4 fit(nqcol),again,allneg
+      real*8 ,allocatable,dimension(:)::b
+      real*8 s
       integer*4 nagain,i,nj
+      logical*4 ,allocatable,dimension(:)::fit
+      logical*4 again,allneg
+      allocate(b(nqcol),fit(nqcol))
       allneg=.true.
       do i=1,nqcol
         fit(i)=mfitp(kfitp(iqcol(i))) .gt. 0

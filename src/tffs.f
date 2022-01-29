@@ -34,7 +34,7 @@ c        type (sad_descriptor) elmv
         use tfstk, only:klist,ktaloc
         use iso_c_binding
         implicit none
-        integer*4 n
+        integer*4 ,intent(in):: n
         type (sad_el), pointer, intent(out) :: el
         kmelaloc=ktaloc(n+1)
         call c_f_pointer(c_loc(klist(kmelaloc-1)),el)
@@ -816,7 +816,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         real*8 ,intent(in)::v
         type (sad_comp), pointer :: cmp
         call loc_comp(elatt%comp(i),cmp)
-        cmp%ori=v .gt. 0.d0
+        cmp%ori=v > 0.d0
         return
         end subroutine
 
@@ -833,9 +833,9 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         else
           it=idtypec(i1)
           k=kytbl(kwOFFSET,it)
-          if(k .ne. 0)then
+          if(k /= 0)then
             call loc_comp(elatt%comp(i1),cmp)
-            if(cmp%value(k) .ne. 0.d0)then
+            if(cmp%value(k) /= 0.d0)then
               i1=i1+1
               go to 1
             endif
@@ -891,10 +891,10 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         integer*4 ,intent(in):: ic
         real*8 ,intent(out):: table(4)
         real*8 f1in,f1out,f2in,f2out
-        if(cmp%value(kytbl(kwL,ic)) .ne. 0.d0)then
-          if(cmp%value(kytbl(kwK1,ic)) .ne. 0.d0 .or.
-     $         kytbl(kwSK1,ic) .ne. 0 .and.
-     $         cmp%value(kytbl(kwSK1,ic)) .ne. 0.d0)then
+        if(cmp%value(kytbl(kwL,ic)) /= 0.d0)then
+          if(cmp%value(kytbl(kwK1,ic)) /= 0.d0 .or.
+     $         kytbl(kwSK1,ic) /= 0 .and.
+     $         cmp%value(kytbl(kwSK1,ic)) /= 0.d0)then
             f1in =cmp%value(kytbl(kwF1,ic))
      $           +cmp%value(kytbl(kwF1K1F,ic))
             f1out=cmp%value(kytbl(kwF1,ic))
@@ -928,9 +928,9 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         use tmacro, only:nlat
         implicit none
         integer*4 ,intent(in):: i
-        ielma=merge(merge(min(nlat,i),max(1,nlat+i+1),i .gt. 0),
+        ielma=merge(merge(min(nlat,i),max(1,nlat+i+1),i > 0),
      $       merge(mod(i-1,nlat)+1,max(nlat-mod(-i,nlat)+1,1),
-     $       i .gt. 0),trpt)
+     $       i > 0),trpt)
         return
         end function
 
@@ -1003,8 +1003,8 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
 
         select case (l)
         case (icMULT,icCAVI)
-          tparacheck=rstat(1,l) .ne. amass .or.
-     $         rstat(2,l) .ne. charge .or.
+          tparacheck=rstat(1,l) /= amass .or.
+     $         rstat(2,l) /= charge .or.
      $         lstat(1,l) .neqv. trpt
           if(tparacheck)then
             rstat(1,l)=amass
@@ -1056,16 +1056,16 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
             fb1=cmp%value(ky_F1_BEND)+cmp%value(ky_FB2_BEND)
           endif
           if(cmp%value(ky_FRMD_BEND) .le. 0.d0)then
-            if(cmp%value(ky_FRMD_BEND) .ne. -1.d0)then
+            if(cmp%value(ky_FRMD_BEND) /= -1.d0)then
               fb1=0.d0
             endif
-            if(cmp%value(ky_FRMD_BEND) .ne. -2.d0)then
+            if(cmp%value(ky_FRMD_BEND) /= -2.d0)then
               fb2=0.d0
             endif
           endif
           w=phi-psi1-psi2
-          if((fb1 .ne. 0.d0 .or. fb2 .ne. 0.d0) .and.
-     1         al .ne. 0.d0 .and. phi .ne. 0.d0)then
+          if((fb1 /= 0.d0 .or. fb2 /= 0.d0) .and.
+     1         al /= 0.d0 .and. phi /= 0.d0)then
             al=al-((phi*fb1)**2+(phi*fb2)**2)/al/48.d0
      1           *sin(.5d0*w)/sin(.5d0*phi)
           endif
@@ -1099,7 +1099,7 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
           theta=cmp%value(ky_ROT_QUAD)
           cmp%value(p_THETA2_QUAD)=theta
      $         +akang(dcmplx(cmp%value(ky_K1_QUAD),0.d0),al,cr1)
-          if(al .ne. 0.d0)then
+          if(al /= 0.d0)then
             akk=cmp%value(ky_K1_QUAD)/al
             call tsetfringep(cmp,icQUAD,akk,
      $           cmp%value(p_AKF1F_QUAD:p_AKF2B_QUAD))
@@ -1143,15 +1143,15 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
             frmd=frmd*(11.d0+frmd*(2.d0*frmd-9.d0))/2.d0
           endif
           cmp%ivalue(1,p_FRMD_MULT)=int(frmd)
-          if(frmd .ne. 3.d0 .and. frmd .ne. 1.d0)then
+          if(frmd /= 3.d0 .and. frmd /= 1.d0)then
             fb1=0.d0
           endif
-          if(frmd .ne. 3.d0 .and. frmd .ne. 2.d0)then
+          if(frmd /= 3.d0 .and. frmd /= 2.d0)then
             fb2=0.d0
           endif
           w=phi-psi1-psi2
-          if((fb1 .ne. 0.d0 .or. fb2 .ne. 0.d0) .and.
-     1         al .ne. 0.d0 .and. phi .ne. 0.d0)then
+          if((fb1 /= 0.d0 .or. fb2 /= 0.d0) .and.
+     1         al /= 0.d0 .and. phi /= 0.d0)then
             al=al-((phi*fb1)**2+(phi*fb2)**2)/al/48.d0
      $           *sin(.5d0*w)/sin(.5d0*phi)
           endif
@@ -1161,7 +1161,7 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
           cmp%value(p_PSI2_MULT)=psi2
           cmp%value(p_FB1_MULT)=fb1
           cmp%value(p_FB2_MULT)=fb2
-          if(al .ne. 0.d0)then
+          if(al /= 0.d0)then
             sk1=cmp%value(ky_SK1_MULT)
             if(sk1 .eq. 0.d0)then
               akk=cmp%value(ky_K1_MULT)/al
@@ -1191,8 +1191,8 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
 
           nmmax=-1
           do n=nmult,0,-1
-            if(cmp%value(ky_K0_MULT+n*2) .ne. 0.d0
-     $           .or. cmp%value(ky_SK0_MULT+n*2) .ne. 0.d0)then
+            if(cmp%value(ky_K0_MULT+n*2) /= 0.d0
+     $           .or. cmp%value(ky_SK0_MULT+n*2) /= 0.d0)then
               nmmax=n
               exit
             endif
@@ -1210,7 +1210,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
           eps=eps00m*merge(1.d0,cmp%value(ky_EPS_MULT),
      $         cmp%value(ky_EPS_MULT) .eq. 0.d0)
           ndiv=1
-          if(al .ne. 0.d0)then
+          if(al /= 0.d0)then
             do n=2,nmmax
               ndiv=max(ndiv,int(
      $             sqrt(ampmaxm**(n-1)/6.d0/fact(n-1)/eps*
@@ -1225,9 +1225,9 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
      $           merge(merge(.true.,
      $           hypot(cmp%value(ky_K0_MULT+n*2),
      $           cmp%value(ky_K0_MULT+n*2))/al*ampmaxm**(n+1)*aninv(n+1)
-     $           .gt. eps,n .le. 2),.false.,
-     $           cmp%value(ky_K0_MULT+n*2) .ne. 0.d0
-     $           .or. cmp%value(ky_SK0_MULT+n*2) .ne. 0.d0)
+     $           > eps,n .le. 2),.false.,
+     $           cmp%value(ky_K0_MULT+n*2) /= 0.d0
+     $           .or. cmp%value(ky_SK0_MULT+n*2) /= 0.d0)
           enddo
 
         case (icCAVI)
@@ -1366,7 +1366,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
       ka=tfefunref(isp0+1,.false.,irtc)
       call tfconnect(ka,irtc)
       isp=isp0
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         call tfreseterror
         itftypekey=0
       elseif(ktflistq(ka))then
@@ -1398,7 +1398,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
       kx=tfefunref(isp0+1,.false.,irtc)
       call tfconnect(kx,irtc)
       isp=isp0
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         call tfreseterror
         itfelementkey=0
       else
@@ -1418,7 +1418,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       integer*4 ic,isp0,itfmessage
-      if(isp .ne. isp1+1)then
+      if(isp /= isp1+1)then
         kx=dxnullo
         irtc=itfmessage(9,'General::narg','"1"')
         return
@@ -1430,7 +1430,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
         return
       endif
       ic=int(c)
-      if(ic .lt. 0 .or. ic .gt. icMXEL)then
+      if(ic .lt. 0 .or. ic > icMXEL)then
         kx=dxnullo
         irtc=itfmessage(9,'General::wrongval',
      $       '"Typecode out of range"')
@@ -1455,13 +1455,13 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
       character*(MAXPNAME) key,tfkwrd,tfkwrd1
       do i=1,kytbl(kwMAX,ic)-1
         key=tfkwrd(ic,i)
-        if(all .or. key .ne. '-')then
+        if(all .or. key /= '-')then
           isp=isp+1
           if(key .eq. '-')then
             dtastk(isp)=ksdumm
           else
             dtastk(isp)=kxsalocb(-1,key,len_trim(key))
-            if(kyindex1(i,ic) .ne. 0)then
+            if(kyindex1(i,ic) /= 0)then
               key=tfkwrd1(ic,i)
               isp0=isp
               isp=isp+1
@@ -1494,11 +1494,11 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
       real*8 s
       type (sad_comp), pointer ,intent(out):: cmp
 c     begin initialize for preventing compiler warning
-      kl=merge(i,nelvx(-i)%klp,i .gt. 0)
+      kl=merge(i,nelvx(-i)%klp,i > 0)
       call compelc(kl,cmp)
       plus=.false.
       lk=lenw(keyword)
-      if(lk .gt. 4 .and. keyword(lk-3:lk) .eq. '$SUM')then
+      if(lk > 4 .and. keyword(lk-3:lk) .eq. '$SUM')then
         plus=.true.
         lk=lk-4
       endif
@@ -1506,12 +1506,12 @@ c     begin initialize for preventing compiler warning
       it=idtype(cmp%id)
       do l=1,kytbl(kwMAX,it)-1
         j=kyindex(l,it)
-        if(j .gt. 0)then
+        if(j > 0)then
           if(pname(kytbl(j,0))(2:) .eq. key(1:lk))then
             go to 1
           endif
           j=kyindex1(l,it)
-          if(j .gt. 0)then
+          if(j > 0)then
             if(pname(kytbl(j,0))(2:) .eq. key(1:lk))then
               go to 1
             endif
@@ -1521,7 +1521,7 @@ c     begin initialize for preventing compiler warning
       ia=0
       tfkeyv%k=0
       return
- 1    if(i .gt. 0)then
+ 1    if(i > 0)then
         ia=elatt%comp(i)+l
         tfkeyv=dlist(ia)
         if(.not. ref)then
@@ -1628,7 +1628,7 @@ c     begin initialize for preventing compiler warning
         endif
         if(.not. cmp%updateseg)then
           call tsetupseg(cmp,lprof,lsegp,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
         else
@@ -1669,7 +1669,7 @@ c     begin initialize for preventing compiler warning
               go to 9100
             endif
             if(tflistq(lpi%dbody(1),lpi1))then
-              if(lpi1%nl .gt. 2 .or. lpi1%nl .le. 0)then
+              if(lpi1%nl > 2 .or. lpi1%nl .le. 0)then
                 go to 9100
               endif
               if(.not. ktfstringq(lpi1%dbody(1),stri1))then
@@ -1690,15 +1690,15 @@ c     begin initialize for preventing compiler warning
             endif
             if(nseg .eq. 0)then
               nseg=lvl%nl
-            elseif(lvl%nl .ne. nseg)then
+            elseif(lvl%nl /= nseg)then
               irtc=itfmessage(99,"FFS::unequalkeyleng",'""')
               go to 9000
             endif
             isp=isp+1
             itastk(1,isp)=itftypekey(icMULT,stri1%str,stri1%nch)
             itastk(2,isp)=itftypekey(icMULT,stri2%str,stri2%nch)
-            if(itastk(1,isp) .le. 0 .or. itastk(1,isp) .gt. nc .or.
-     $           itastk(2,isp) .le. 0 .or. itastk(2,isp) .gt. nc)then
+            if(itastk(1,isp) .le. 0 .or. itastk(1,isp) > nc .or.
+     $           itastk(2,isp) .le. 0 .or. itastk(2,isp) > nc)then
               irtc=itfmessage(99,"FFS::wrongkey",'""')
               go to 9000
             elseif(defk(itastk(1,isp),itastk(2,isp)))then
@@ -1720,7 +1720,7 @@ c     begin initialize for preventing compiler warning
           endif
           nk=isp-isp0
           if(tfnonlistq(cmp%dvalue(p_PROF_MULT),lsegp) .or.
-     $         lsegp%nl .ne. nk)then
+     $         lsegp%nl /= nk)then
             call tflocald(cmp%dvalue(p_PROF_MULT))
             cmp%dvalue(p_PROF_MULT)=kxadaloc(0,nk,lsegp)
             lsegp%dbody(1:nk)%k=ktfoper+mtfnull
@@ -1731,7 +1731,7 @@ c     begin initialize for preventing compiler warning
           lk1%dbody(2)=dtfcopy(dtastk2(lls))
           i1=1
           do i=isp0+1,isp
-            if(i .ne. lls .and. itastk(1,i) .eq. itastk(2,i))then
+            if(i /= lls .and. itastk(1,i) .eq. itastk(2,i))then
               i1=i1+1
               call tflocald(lsegp%dbody(i1))
               lsegp%dbody(i1)=kxadaloc(0,2,lk1)
@@ -1740,7 +1740,7 @@ c     begin initialize for preventing compiler warning
             endif
           enddo
           do i=isp0+1,isp
-            if(i .ne. lls .and. itastk(1,i) .ne. itastk(2,i))then
+            if(i /= lls .and. itastk(1,i) /= itastk(2,i))then
               i1=i1+1
               call tflocald(lsegp%dbody(i1))
               lsegp%dbody(i1)=kxadaloc(0,2,lk1)
@@ -1856,7 +1856,7 @@ c     begin initialize for preventing compiler warning
         elseif(tfreallistq(cmpd%dvalue(i),lad))then
           r0=sum(lad%rbody(1:lad%nl))
           lad%rbody(1:lad%nl)=merge(v/r0*lad%rbody(1:lad%nl),
-     $         v/lad%nl,r0 .ne. 0.d0)
+     $         v/lad%nl,r0 /= 0.d0)
         endif
         return
         end subroutine
@@ -2207,7 +2207,7 @@ c      write(*,*)'tfetwiss-3'
       detm=(hi(1,1)*hi(2,2)-hi(2,1)*hi(1,2)
      $     +hi(3,3)*hi(4,4)-hi(4,3)*hi(3,4))*.5d0
 c      write(*,'(a,1p6g15.7)')'tfetwiss-4 ',detm,ax,ay,az,f,xyth
-      normal=detm .gt. xyth
+      normal=detm > xyth
       if(.not. normal)then
         his=hi(1,1:4)
         hi(1,1:4)=hi(3,1:4)
@@ -2466,7 +2466,7 @@ c      crz=sqrt(uz12**2+uz22**2)
       integer*4 itfmessage
       logical*4 normal
       type (sad_rlist), pointer :: kl
-      if(isp .ne. isp1+1)then
+      if(isp /= isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
@@ -2656,9 +2656,7 @@ c         enddo
         implicit none
         type (scmat) , intent(inout):: rm
         integer*4 , intent(in)::nord,id,l
-        allocate(rm%cmat(3,3,l))
-        allocate(rm%ind(lind,l))
-        allocate(rm%ias(l))
+        allocate(rm%cmat(3,3,l),rm%ind(lind,l),rm%ias(l))
         rm%nind=0
         rm%iord=nord
         rm%id=id
@@ -2679,7 +2677,7 @@ c         enddo
           ia=rm%ias(im)
           found=.true.
           do k=1,lind
-            if(rm%ind(k,ia) .gt. ind(k))then
+            if(rm%ind(k,ia) > ind(k))then
               i2=im-1
               found=.false.
               exit
@@ -2702,7 +2700,7 @@ c         enddo
         endif
         rm%ias(im)=ia
         rm%nind=ia
-        if(rm%nind .gt. rm%maxi)then
+        if(rm%nind > rm%maxi)then
           write(*,*)'Insufficient matrix table ',rm%id,rm%nind,
      $         rm%iord,ind
           stop
@@ -2997,12 +2995,7 @@ c     $
 
         do i=1,mord
 c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
-          deallocate(rm(i)%cmat)
-          deallocate(rmi(i)%cmat)
-          deallocate(rm(i)%ind)
-          deallocate(rmi(i)%ind)
-          deallocate(rm(i)%ias)
-          deallocate(rmi(i)%ias)
+          deallocate(rm(i)%cmat,rmi(i)%cmat,rm(i)%ind,rmi(i)%ind,rm(i)%ias,rmi(i)%ias)
         enddo
         return
         end subroutine
@@ -3034,13 +3027,13 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         gx=ct*btx+cl*blx
         gy=ct*bty+cl*bly
         gz=ct*btz+cl*blz
-        if(anph .gt. 0.d0 .and. radpol)then
+        if(anph > 0.d0 .and. radpol)then
 c          bt=abs(dcmplx(btx,abs(dcmplx(bty,btz))))
           bt=norm2([btx,bty,btz])
-          if(bt .ne. 0.d0)then
+          if(bt /= 0.d0)then
             st=(sx*btx+sy*bty+sz*btz)/bt
             dst=(st-pst)*sflc*anph*(bt*gbrhoi)**2
-            if(st .ne. 1.d0)then
+            if(st /= 1.d0)then
               dr=dst/(1.d0-st**2)/bt
               dsx=dr*sx
               dsy=dr*sy
@@ -3059,9 +3052,8 @@ c          bt=abs(dcmplx(btx,abs(dcmplx(bty,btz))))
         endif
 c        g=abs(dcmplx(gx,abs(dcmplx(gy,gz))))
         g=norm2([gx,gy,gz])
-        if(g .ne. 0.d0)then
-c          write(*,'(a,1p9g14.6)')'sprot ',g,ct,h,
-c     $         btx,bty,btz,cphi0,sphi0
+c        write(*,'(a,1p9g16.8)')'sprot-0 ',g,sx,sy,sz
+        if(g /= 0.d0)then
 c          tanuh=tan(g*.5d0)
 c          sinu=2.d0*tanuh/(1.d0+tanuh**2)
 c          dcosu=tanuh*sinu
@@ -3078,6 +3070,8 @@ c          cosu=1.d0-dcosu
         endif
         sx= sx*cphi0+sz*sphi0
         sz=(sz-sx*sphi0)/cphi0
+c        write(*,'(a,1p9g16.8)')'sprot ',g,sx,sy,sz,sinu,cosu,sw
+c        write(*,'(1p10g12.4)')anph,radpol
         return
         end subroutine
 
@@ -3137,13 +3131,13 @@ c        s=abs(dcmplx(sps(1,1),abs(dcmplx(sps(2,1),sps(3,1)))))
         s=norm2(sps(:,1))
         sps(:,1)=sps(:,1)/s
         if(abs(min(sps(1,1),sps(2,1),sps(3,1)))
-     $       .gt. abs(max(sps(1,1),sps(2,1),sps(3,1))))then
+     $       > abs(max(sps(1,1),sps(2,1),sps(3,1))))then
           sps(:,1)=-sps(:,1)
         endif
         dr=sps(:,1)-srot(:,1)*sps(1,1)-srot(:,2)*sps(2,1)
      $       -srot(:,3)*sps(3,1)
         sps(:,2)=0.d0
-        if(abs(sps(1,1)) .gt. abs(sps(2,1)))then
+        if(abs(sps(1,1)) > abs(sps(2,1)))then
           sps(2,2)=1.d0
           s=sps(2,1)
         else
@@ -3242,9 +3236,9 @@ c     $       emitd,emitd,
         enddo
         rm1(1,1)=rm1(1,1)-sdamp
         equpol=epol(1,:)
-        write(*,'(a,1p10g12.4)')'epol ',epol
-        write(*,'(a,1p10g12.4)')'rm1  ',rm1
-        write(*,'(a,1p10g12.4)')'pols ',matmul(rm1,epol)
+c        write(*,'(a,1p10g12.4)')'epol ',epol
+c        write(*,'(a,1p10g12.4)')'rm1  ',rm1
+c        write(*,'(a,1p10g12.4)')'pols ',matmul(rm1,epol)
         return
         end subroutine
 
@@ -3271,7 +3265,7 @@ c     $       emitd,emitd,
       integer*4 irtc
       logical*4 err
       call tffsa(1,lfni,kx,irtc)
-      if(irtc .ne. 0 .and. ierrorprint .ne. 0)then
+      if(irtc /= 0 .and. ierrorprint /= 0)then
         call tfreseterror
       endif
       call tffssaveparams(-1,0,err)
@@ -3367,7 +3361,7 @@ c
       marki=1
       nlat=elatt%nlat0+1
       latt(1:nlat)=>elatt%comp(1:nlat)
-      if(idtypec(1) .ne. icMARK)then
+      if(idtypec(1) /= icMARK)then
         write(*,*)'The first element must be a MARK element.'
         call abort
       endif
@@ -3460,7 +3454,7 @@ c      endif
       nve0=nve
       nve=max(nv,nve0+128)
       ifnvev1=ktaloc(nve*lnvev)
-      if(nve0 .ne. 0)then
+      if(nve0 /= 0)then
         klist(ifnvev1:ifnvev1+nve0*lnvev-1)=
      $       klist(ifnvev:ifnvev+nve0*lnvev-1)
         call tfree(ifnvev)
@@ -3483,7 +3477,7 @@ c      call tfree(ilist(2,ifwakep+2))
 c      call tfree(ifwakep)
       call tfree(ifnvev)
       call tfree(iftwissp)
-      if(ifsize .gt. 0)then
+      if(ifsize > 0)then
         call tfree(ifsize)
         ifsize=0
       endif
@@ -3527,7 +3521,7 @@ c      call tfree(ifibzl)
       integer*4 outfl1,irtc,narg,lfn,isp1,itfmessage,itfmessagestr
       character*10 strfromis
       narg=isp-isp1
-      if(narg .gt. 2)then
+      if(narg > 2)then
         irtc=itfmessage(9,'General::narg','"1 or 2"')
         return
       endif
@@ -3567,7 +3561,7 @@ c      call tfree(ifibzl)
         savep=sav
         call trbassign(lfni)
         outfl=outfl1
-        if(irtc .eq. 0 .and. iffserr .ne. 0)then
+        if(irtc .eq. 0 .and. iffserr /= 0)then
           irtc=itfmessagestr(9,'FFS::error',strfromis(int(iffserr)))
         endif
       endif
@@ -3596,12 +3590,12 @@ c      call tfree(ifibzl)
       ierr=0
       if(isp .eq. isp1+2)then
         ierr=int(rtastk(isp))
-      elseif(isp .ne. isp1+1)then
+      elseif(isp /= isp1+1)then
         irtc=itfmessage(9,'General::narg','"1 or 2"')
         return
       endif
       call tfopenread(isp1,kx,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
       if(.not. ktfrealq(kx,lfn))then
@@ -3611,7 +3605,7 @@ c      call tfree(ifibzl)
       lfni0=lfni
       infl0=infl
       infl=lfn
-      if(infl .ne. lfni)then
+      if(infl /= lfni)then
         call trbassign(infl)
       endif
       ierrfl=errfl
@@ -3626,7 +3620,7 @@ c      call tfree(ifibzl)
       errfl=ierrfl
       call trbclose(lfn)
       infl=lfni0
-      if(lfni .ne. lfni0)then
+      if(lfni /= lfni0)then
         lfni=lfni0
         call trbassign(lfni)
       endif

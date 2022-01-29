@@ -47,9 +47,9 @@
       call compelc(l,cmp)
       it=idtype(cmp%id)
       k=kytbl(kwL,it)
-      if(k .ne. 0)then
+      if(k /= 0)then
         al0=cmp%value(k)
-        if(al0 .ne. 0.d0)then
+        if(al0 /= 0.d0)then
           fr=max(al,almin)/al0
         endif
       endif
@@ -131,7 +131,7 @@ c     $       x1,x2,x3,y1,y2,y3,z1,z2,z3
      $     fr0=>pcvt%fr0)
       fr=merge(fr0,fr0+ds/al,al .eq. 0.d0)
       gv=tfgeofrac(l,fr,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
       call radangle(h1,rho*p1/p0,dpr,thu,thv,xi30,xi2)
@@ -165,7 +165,7 @@ c      cod=[xi,pxir,yi,pyir,0.d0,0.d0]
       rlist(kp+8)=xi2
       rlist(kp+9)=xi3
       ilp=ilp+1
-      if(ilp .gt. lt)then
+      if(ilp > lt)then
         ilp=0
       endif
       return
@@ -193,7 +193,7 @@ c      cod=[xi,pxir,yi,pyir,0.d0,0.d0]
       pxir=pxi+thu
       pyir=pyi+thv
       pzi=1.d0+pxy2dpz(pxir,pyir)
-      if(phi .ne. 0.d0)then
+      if(phi /= 0.d0)then
         phi1=ds/rho
         cp=cos(phi1)
         sp=sin(phi1)
@@ -240,7 +240,7 @@ c      write(*,*)'phconv ',itp,ilp
       rlist(kp+8)=xi2
       rlist(kp+9)=xi3
       ilp=ilp+1
-      if(ilp .gt. lt)then
+      if(ilp > lt)then
         ilp=0
       endif
       end associate
@@ -286,7 +286,7 @@ c        write(*,*)'phlist ',itp,nph
         kt=kphtable(1)
         do i=1,nph
           ilp=ilp+1
-          if(ilp .gt. lt)then
+          if(ilp > lt)then
             ilp=1
             itp=itp+1
             kt=kphtable(itp)
@@ -312,7 +312,7 @@ c     $         +rlist(kp+6)**2)
           klri%rbody(12)=ilist(2,kp)
         enddo
         do i=1,itp
-          if(kphtable(i) .ne. 0)then
+          if(kphtable(i) /= 0)then
             call tfree(kphtable(i))
           endif
         enddo
@@ -409,7 +409,7 @@ c        ppa=hypot(ppx,hypot(ppy,ppz))
         else
           call tdusrn(anp,dph,r1,r2,an)
         endif
-        if(an .ne. 0.d0)then
+        if(an /= 0.d0)then
           uc=cuc*h1**3/p0/rho
           if(photons)then
             do i=1,int(an)
@@ -440,14 +440,14 @@ c     $             dpr(i),p,h1,-rph(i)*al,k)
             pxm=px0+dpx*.5d0
             pym=py0+dpy*.5d0
             call sprot(sx,sy,sz,pxm,pym,
-     $           ppx,ppy,ppz,bsi,merge(theta/ppa*pr,0.d0,ppa .ne. 0.d0),
+     $           ppx,ppy,ppz,bsi,merge(theta/ppa*pr,0.d0,ppa /= 0.d0),
      $           h1,p2*h2/al1,an)
           endif
         elseif(calpol)then
           pxm=px0+dpx*.5d0
           pym=py0+dpy*.5d0
           call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi,
-     $         merge(theta/ppa*pr,0.d0,ppa .ne. 0.d0),h1,
+     $         merge(theta/ppa*pr,0.d0,ppa /= 0.d0),h1,
      $         p*h1/al1,-1.d0)
         endif
         return
@@ -495,7 +495,7 @@ c     $             dpr(i),p,h1,-rph(i)*al,k)
           else
             call tdusrn(anp,dph,r1,r2,an)
           endif
-          if(an .ne. 0.d0)then
+          if(an /= 0.d0)then
             uc=cuc*h1**3/p0/rho
             if(photons)then
               do i=1,int(an)
@@ -527,14 +527,14 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
               pym=pyr0(k)+dpy*.5d0
               call sprot(sxn(k),syn(k),szn(k),pxm,pym,
      $             ppx,ppy,ppz,bsi(k),
-     $             merge(theta/ppa*pr,0.d0,ppa .ne. 0.d0),h1,
+     $             merge(theta/ppa*pr,0.d0,ppa /= 0.d0),h1,
      $             p2*h2/al1,an)
             endif
           elseif(calpol)then
             pxm=px0    +dpx*.5d0
             pym=pyr0(k)+dpy*.5d0
             call sprot(sxn(k),syn(k),szn(k),pxm,pym,ppx,ppy,ppz,
-     $           bsi(k),merge(theta/ppa*pr,0.d0,ppa .ne. 0.d0),
+     $           bsi(k),merge(theta/ppa*pr,0.d0,ppa /= 0.d0),
      $           h1,p*h1/al1,-1.d0)
           endif
         enddo
@@ -587,7 +587,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
           pxm=px0+dpx*.5d0
           pym=py0+dpy*.5d0
           call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi0,
-     $         merge(theta/ppa*pr,0.d0,ppa .ne. 0.d0),
+     $         merge(theta/ppa*pr,0.d0,ppa /= 0.d0),
      $         h2,p2*h2/al1,anp)
         endif
         return
@@ -643,7 +643,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
             pxm=px0    +dpx*.5d0
             pym=pyr0(i)+dpy*.5d0
             call sprot(sxn(i),syn(i),szn(i),pxm,pym,ppx,ppy,ppz,
-     $           bsi(i),merge(theta/ppa*pr,0.d0,ppa .ne. 0.d0)
+     $           bsi(i),merge(theta/ppa*pr,0.d0,ppa /= 0.d0)
      $           ,h2,p2*h2/al1,anp)
           endif
         enddo
@@ -660,7 +660,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
      $       x(np),px(np),y(np),py(np),dv(np),z(np),g(np),
      $       sx(np),sy(np),sz(np)
         real*8 , intent(in)::al,phi0
-        if(al .ne. 0.d0)then
+        if(al /= 0.d0)then
           cphi0=cos(phi0)
           sphi0=sin(phi0)
           if(rfluct)then
@@ -686,8 +686,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
         use mathfun, only:pxy2dpz,p2h,asinz,xsincos
         use tspin, only:cave,cl,cuu,gmin,sflc
         implicit none
-        real*8 , intent(inout)::trans(6,12),cod(6),beam(42),
-     $       srot(3,9)
+        real*8 , intent(inout)::trans(6,12),cod(6),beam(42),srot(3,9)
         real*8 , intent(in)::al,bzh,phir0
         real*8 transi(6,6),tr1(6,6),dxpa(6),tr2(6,6),
      $       ddpz(6),dal(6),duc(6),dddpx(6),dddpy(6),ddg(6),
@@ -751,13 +750,13 @@ c        write(*,'(a,1p10g12.4)')'tradke ',pxi,pyi,px,py,theta,bzhr0,bzh
           p2=p
           h2=h1
         endif
-        if(irad .gt. 6)then
+        if(irad > 6)then
           transi=tinv6(transr)
 c          call tinv6(transr,transi)
           transi=matmul(trans(:,1:6),transi)
 c          call tmultr(transi,trans(:,1:6),6)
           tr2=transi
-          if(bzh .ne. 0.d0)then
+          if(bzh /= 0.d0)then
             tr2(2,:)=tr2(2,:)+bzh*tr2(3,:)
             tr2(4,:)=tr2(4,:)-bzh*tr2(1,:)
           endif
@@ -773,7 +772,7 @@ c          call tmultr(transi,trans(:,1:6),6)
           dxpy=ddpz*pxr0+pz*dpxr0-tr2(2,:)*pz0-px*dpz0
           dxpz=tr2(2,:)*pyi+px*dpyi-tr2(4,:)*pxr0-py*dpxr0
           dh1r=p*p0/h1**2
-          if(xpa .ne. 0.d0)then
+          if(xpa /= 0.d0)then
             dxpa=(xpx*dxpx+xpy*dxpy+xpz*dxpz)/xpa/pr**2
             dxpa(6)=dxpa(6)-2.d0*xpa/pr
             dal=-tr2(5,:)
@@ -808,7 +807,7 @@ c     write(*,'(a,1p8g15.7)')' dpxr0  ',dpxr0,pxr0
 c     do i=1,6
 c     write(*,'(1p6g15.7)')tr1(i,:)
 c     enddo
-            if(bzh .ne. 0.d0)then
+            if(bzh /= 0.d0)then
               tr1(2,:)=tr1(2,:)-bzh  *tr1(3,:)
               tr1(4,:)=tr1(4,:)+bzh  *tr1(1,:)
             endif
@@ -895,7 +894,8 @@ c     enddo
      $           +dgz(3)*transr(3,:)+dgz(4)*transr(4,:)
      $           +dgz(5)*transr(5,:)+dgz(6)*transr(6,:)
             g=norm2([gx,gy,gz])
-            if(g .ne. 0.d0)then
+c            write(*,'(1p3g16.8)')srot(:,1:3)
+            if(g /= 0.d0)then
 c              bt=abs(dcmplx(btx,abs(dcmplx(bty,btz))))
               bt=norm2([btx,bty,btz])
               call xsincos(g,sinu,xsinu,cosu,dcosu)
@@ -921,6 +921,8 @@ c              cosu=1.d0-dcosu
             endif
             srot(1,:)=  cp*srot(1,:)+sp*srot(3,:)
             srot(3,:)=(-sp*srot(1,:)+srot(3,:))/cp
+c            write(*,'(a,1p10g16.8)')'tradke ',g,gx,gy,gz,sinu,cosu,sw
+c            write(*,'(1p3g16.8)')srot(:,1:3)
           endif
         endif
         codr0(1:6)=cod(1:6)

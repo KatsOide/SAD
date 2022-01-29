@@ -39,7 +39,7 @@
         if(n .lt. 0)then
           m=min(minsize,-n)
           mexp=-n
-        elseif(n .eq. 0)then
+        elseif(n == 0)then
           m=minsize
           mexp=-1
         else
@@ -96,22 +96,22 @@ c     ilist(2,kbuf-3)=0       ! llevel
         buff(1:1)='"'
         LOOP_I: do i=1,l
           ch=string(i:i)
-          if(ch .eq. C_NEW_LINE)then
+          if(ch == C_NEW_LINE)then
             str='\\n'
             go to 20
-          elseif(ch .eq. C_CARRIAGE_RETURN)then
+          elseif(ch == C_CARRIAGE_RETURN)then
             str='\\r'
             go to 20
-          elseif(ch .eq. C_FORM_FEED)then
+          elseif(ch == C_FORM_FEED)then
             str='\\f'
             go to 20
-          elseif(ch .eq. C_HORIZONTAL_TAB)then
+          elseif(ch == C_HORIZONTAL_TAB)then
             str='\\t'
             go to 20
-          elseif(ch .eq. '"')then
+          elseif(ch == '"')then
             str='\\"'
             go to 20
-          elseif(ch .eq. '\')then
+          elseif(ch == '\')then
 c'\
             str='\\\\'
             go to 20
@@ -155,10 +155,10 @@ c'\
           v1=v
         endif
         av=aint(v1)
-        fr=av .eq. 0.d0
+        fr=av == 0.d0
         af=v1-av
         i=lbuf
-        if(av .eq. 0.d0)then
+        if(av == 0.d0)then
           buf(i:i)='0'
           i=i-1
         else
@@ -178,7 +178,7 @@ c'\
           enddo
         endif
         call putstringbufb(strb,buf(i+1:lbuf),lbuf-i,full)
-        if(af .eq. 0.d0)then
+        if(af == 0.d0)then
           return
         endif
         lmax=int(56.d0*log(2.d0)/log(base)-(lbuf-i))
@@ -189,7 +189,7 @@ c'\
         do while(af .ne. 0.d0 .and. i .le. lmax)
           af1=aint(af*base)
           ifrac=int(af1)
-          if(ifrac .eq. 0)then
+          if(ifrac == 0)then
             if(fr)then
               lmax=min(lbuf,lmax+1)
             endif
@@ -251,12 +251,12 @@ c'\
           ic=loc%cont
           do i=itfcontextpath,
      $         itfcontextpath+ilist(2,itfcontextpath-1)-1
-            if(klist(i) .eq. ic)then
+            if(klist(i) == ic)then
               nc=0
               go to 1
             endif
           enddo
-          if(ic .eq. itfcontroot)then
+          if(ic == itfcontroot)then
             call putstringbufp(strb,'`',lfno,irtc)
             nc=1
           elseif(klist(ic) .ne. 0)then
@@ -290,7 +290,7 @@ c'\
           kav=ktfaddr(kv)
           ktv=kv-kav
           kpat=merge(merge(int(kav),0,kav .le. 3),-1,
-     $         ktv .eq. ktfref)
+     $         ktv == ktfref)
           if(pat%default%k .ne. ktfref)then
             if(kpat .lt. 0)then
               call putstringbufp(strb,'((',lfno,irtc)
@@ -359,7 +359,7 @@ c'\
           nc=3
           call putstringbufpb(strb,'NaN',nc,.false.,lfno,irtc)        
         elseif(ktfrealq(k,v))then
-          if(form .eq. '*')then
+          if(form == '*')then
             form1=tfgetform()
           else
             form1=form
@@ -400,26 +400,26 @@ c
         if(tfexprq(ktflist+ka))then
           iaaf=int(ktfaddr(klist(ka)))
           kt=klist(ka)-iaaf
-          if(kt .eq. ktfoper .and. iaaf .le. mtfend
+          if(kt == ktfoper .and. iaaf .le. mtfend
      $         .and. (nd .ge. 2
-     $         .or. iaaf .eq. mtfslot
-     $         .or. iaaf .eq. mtfslotseq
-     $         .or. iaaf .eq. mtfincrement
-     $         .or. iaaf .eq. mtfdecrement
-     $         .or. iaaf .eq. mtffun
-     $         .or. iaaf .eq. mtfrepeated
-     $         .or. iaaf .eq. mtfunset
-     $         .or. iaaf .eq. mtfrepeatednull
-     $         .or. iaaf .eq. mtfflag))then
+     $         .or. iaaf == mtfslot
+     $         .or. iaaf == mtfslotseq
+     $         .or. iaaf == mtfincrement
+     $         .or. iaaf == mtfdecrement
+     $         .or. iaaf == mtffun
+     $         .or. iaaf == mtfrepeated
+     $         .or. iaaf == mtfunset
+     $         .or. iaaf == mtfrepeatednull
+     $         .or. iaaf == mtfflag))then
             select case (iaaf)
             case (mtfcomplex)
               if(ktfrealq(klist(ka+1)))then
-                if(rlist(ka+1) .eq. 0.d0)then
+                if(rlist(ka+1) == 0.d0)then
                   if(iand(ktrmask,klist(ka+2)) .ne. ktfnr)then
-                    if(rlist(ka+2) .eq. 1.d0)then
+                    if(rlist(ka+2) == 1.d0)then
                       call putstringbufp(strb,'I',lfno,irtc)
                       return
-                    elseif(rlist(ka+2) .eq. -1.d0)then
+                    elseif(rlist(ka+2) == -1.d0)then
                       call putstringbufp(strb,'(-I)',lfno,irtc)
                       return
                     endif
@@ -450,10 +450,10 @@ c
                 if(rlist(ka+2) .ge. 0.d0)then
                   call putstringbufp(strb,'+',lfno,irtc)
                 endif
-                if(rlist(ka+2) .eq. 1.d0)then
+                if(rlist(ka+2) == 1.d0)then
                   call putstringbufp(strb,'I)',lfno,irtc)
                   return
-                elseif(rlist(ka+2) .eq. -1.d0)then
+                elseif(rlist(ka+2) == -1.d0)then
                   call putstringbufp(strb,'-I)',lfno,irtc)
                   return
                 endif
@@ -473,7 +473,7 @@ c
             case (mtfmult)
               k1=dlist(ka+1)
               if(ktfrealq(k1,v1))then
-                if(v1 .eq. -1.d0)then
+                if(v1 == -1.d0)then
                   call putstringbufp(strb,'(-',lfno,irtc)
                   if(irtc .ne. 0)then
                     return
@@ -522,14 +522,14 @@ c
             case default
               opcx=opcode(iaaf)
               ncx=lenw(opcx)
-              if(iaaf .eq. mtfmult)then
+              if(iaaf == mtfmult)then
                 opcx=' '
               endif
               opce=' '
             end select
-            if(iaaf .eq. mtfincrement .or. iaaf .eq. mtfdecrement)then
+            if(iaaf == mtfincrement .or. iaaf == mtfdecrement)then
               i1=nd
-            elseif(iaaf .eq. mtfinequality)then
+            elseif(iaaf == mtfinequality)then
               istep=2
             endif
           else
@@ -588,14 +588,14 @@ c
               endif
             endif
             call tfconvstrl(strb,kai,lfno,form,gens,irtc)
-          elseif(ki%k .eq. ktfoper+mtfnull)then
+          elseif(ki%k == ktfoper+mtfnull)then
           else
             call tfconvstrb(strb,ki,nc,.true.,gens,lfno,form,irtc)
           endif
  102      if(irtc .ne. 0)then
             go to 8000
           endif
-          if(iaaf .eq. mtfinequality .and. i .lt. nd)then
+          if(iaaf == mtfinequality .and. i .lt. nd)then
             ki=list%dbody(i+1)
             if(ki%k .le. ktfoper+mtfend)then
               opcx=opcode(iand(ktamask,ki%k))
@@ -613,9 +613,9 @@ c
               endif
             endif
           elseif(nd .gt. 2 .and.
-     $           (iaaf .eq. mtfmap .or. iaaf .eq. mtfapply))then
+     $           (iaaf == mtfmap .or. iaaf == mtfapply))then
             opce='])'
-            if(i .eq. 1)then
+            if(i == 1)then
               opcx=opcx(1:2)//'['
               ncx=3
             elseif(i .gt. 1)then
@@ -623,10 +623,10 @@ c
               ncx=1
             endif
           endif
-          if(i .lt. nd .or. iaaf .eq. mtfunset .or.
-     $         iaaf .eq. mtfrepeated .or. iaaf .eq. mtfrepeatednull
-     $         .or. ((iaaf .eq. mtffun .or. iaaf .eq. mtfincrement
-     $         .or. iaaf .eq. mtfdecrement) .and. nd .eq. 1))then
+          if(i .lt. nd .or. iaaf == mtfunset .or.
+     $         iaaf == mtfrepeated .or. iaaf == mtfrepeatednull
+     $         .or. ((iaaf == mtffun .or. iaaf == mtfincrement
+     $         .or. iaaf == mtfdecrement) .and. nd == 1))then
             call putstringbufp(strb,opcx(1:ncx),lfno,irtc)
             if(irtc .ne. 0)then
               go to 8000
@@ -672,7 +672,7 @@ c
         type (sad_strbuf), pointer :: strb
         integer*8 i
         integer*4 lnew,l
-        if(strb%lexp .ge. lnew .or. strb%lexp .eq. -1)then
+        if(strb%lexp .ge. lnew .or. strb%lexp == -1)then
           l=lnew/8+2
           i=ktzaloc(ktfstring,l)
           if(i .le. 0)then
@@ -714,7 +714,7 @@ c
           return
         endif
         if(lfno .lt. 0)then
-          if(l .eq. 1)then
+          if(l == 1)then
             call putstringbufb1(strb,string)
           else
             call putstringbufb(strb,string,l,full)
@@ -769,7 +769,7 @@ c                write(*,*)'psbuf-2 ',lw,lexp,strb%nch
             endif
             indent=.false.
             do i=i1,min(l,lw+i1-1)
-              if(string(i:i) .eq. char(13))then
+              if(string(i:i) == char(13))then
                 call putstringbufb(strb,string(i1:i1),i-i1+1,full)
                 call flushstringbuf(strb,indent,.false.,lfno,irtc)
                 if(irtc .ne. 0)then
@@ -777,7 +777,7 @@ c                write(*,*)'psbuf-2 ',lw,lexp,strb%nch
                 endif
                 i1=i+1
                 cycle do10
-              elseif(string(i:i) .eq. char(10))then
+              elseif(string(i:i) == char(10))then
                 call putstringbufb(strb,string(i1:i1),i-i1,full)
                 call flushstringbuf(strb,indent,.true.,lfno,irtc)
                 if(irtc .ne. 0)then
@@ -900,13 +900,13 @@ c                write(*,*)'psbpb ',i1,lw,l
         integer*4 n,l,m,i,n1,k
         kbuf=sad_loc(strb%nch)
         n=strb%nch
-        if(n .eq. 0)then
+        if(n == 0)then
           kxstringbuftostring=dxnulls
           if(.not. tfonstackq(kbuf))then
             strb%indw=strb%maxnch/8+5
             call tfree(kbuf-2)
           endif
-        elseif(n .eq. 1)then
+        elseif(n == 1)then
           k=strb%istr(1)
           if(k .lt. 0)then
             k=k+256

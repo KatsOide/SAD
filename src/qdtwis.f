@@ -40,8 +40,8 @@ c     $       4100),ke
       case (icDRFT)
         call qddrif(dtrans,dcod,utwiss(1,idp,iutk))
       case (icBEND)
-        if(iv .eq. ky_ANGL_BEND .or.
-     $       iv .eq. ky_K1_BEND)then
+        if(iv == ky_ANGL_BEND .or.
+     $       iv == ky_K1_BEND)then
           if(dir .gt. 0.d0)then
             psi1=cmp%value(ky_E1_BEND)
             psi2=cmp%value(ky_E2_BEND)
@@ -63,8 +63,8 @@ c     $       4100),ke
      $         iv,dtrans,dcod,idp)
         endif
       case (icQUAD)
-        if(iv .eq. ky_K1_QUAD .or.
-     $       iv .eq. ky_ROT_QUAD)then
+        if(iv == ky_K1_QUAD .or.
+     $       iv == ky_ROT_QUAD)then
           call qdquad(dtrans,dcod,
      $         cmp%value(ky_L_QUAD),cmp%value(ky_K1_QUAD),
      $         k,idp,cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
@@ -82,7 +82,7 @@ c     $       4100),ke
      $         iv,dtrans,dcod,idp)
         endif
       case (icSEXT,icOCTU,icDECA,icDODECA)
-        if(iv .eq. 2 .or. iv .eq. 4)then
+        if(iv == 2 .or. iv == 4)then
           call qdthin(dtrans,dcod,ke,
      $         cmp%value(ky_L_THIN),cmp%value(ky_K_THIN),
      1         k,idp,cmp%value(ky_DX_THIN),cmp%value(ky_DY_THIN),
@@ -93,8 +93,8 @@ c     $       4100),ke
       case (icMULT,icSOL)
         call qdtrans(ke,iutk,k,k+1,iv,dtrans,dcod,idp)
       case (icMARK)
-        if(k .eq. 1)then
-          if(iv .eq. mfitddp)then
+        if(k == 1)then
+          if(iv == mfitddp)then
             call tftmatu(utwiss(1,idp,1),utwiss(1,idp,iutl),
      $           0.d0,0.d0,dtrans,1,l,.false.,trpt)
             r=sqrt(gammab(k)/gammab(l))
@@ -280,7 +280,7 @@ c     $       4100),ke
      $     dtwiss(mfitby)
 c      dtwiss(mfitgmz)=2.d0*dtwiss(mfitaz)*az0/(1.d0+az0**2)-
 c     $     dtwiss(mfitbz)
-      if(l .eq. nlat)then
+      if(l == nlat)then
         bxx=sqrt(utwiss(mfitbx,idp,iutl)/utwiss(mfitbx,idp,1))
         cosmx=cos(utwiss(mfitnx,idp,iutl))
         sinmx=sin(utwiss(mfitnx,idp,iutl))
@@ -322,7 +322,7 @@ c     $     dtwiss(mfitbz)
       dtrans=0.d0
       dcod=0.d0
       dir=direlc(1)
-      if(iv .ge. mfitr1 .and. iv .le. mfitr4)then
+      if(iv .ge. mfitr1 .and. iv <= mfitr4)then
         detr=utwiss1(mfitdetr)
       else
 c     begin initialize for preventing compiler warning
@@ -467,8 +467,8 @@ c      equivalence (trans2,trans2s)
       cod2(6)=utwiss(mfitddp,idp,itwk1)
       call tfbndsol(k,ibg,ibe)
       call tffsbound1(k1,l,fbound)
-      if(iclast .gt. 0 .and. iclast .le. fbound%le .and.
-     $     (iclast .ne. fbound%le .or. ctrans(4,7) .le. fbound%fe))then
+      if(iclast .gt. 0 .and. iclast <= fbound%le .and.
+     $     (iclast .ne. fbound%le .or. ctrans(4,7) <= fbound%fe))then
         cod2(1:4)=ctrans(:,6)
         cod2(5)=ctrans(1,7)
         fbound1=fbound
@@ -478,7 +478,7 @@ c      equivalence (trans2,trans2s)
         trans2=tmultr45(ctrans(:,1:5),trans3)
       else
         cod2(1:5)=utwiss(mfitdx:mfitdz, idp,itwk1)+w*dcod(1:5)
-        if(ibg .eq. 0 .or. l .le. max(ibg,ibe))then
+        if(ibg == 0 .or. l <= max(ibg,ibe))then
           call qcod(1,fbound,trans2,cod2,.true.,over)
         else
           if(ibg .lt. ibe)then
