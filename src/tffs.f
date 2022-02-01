@@ -3027,6 +3027,7 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         gx=ct*btx+cl*blx
         gy=ct*bty+cl*bly
         gz=ct*btz+cl*blz
+c        write(*,'(a,1p10g12.4)')'sprot ',pxm,pym,bz0,bz,bsi,blz
         if(anph > 0.d0 .and. radpol)then
 c          bt=abs(dcmplx(btx,abs(dcmplx(bty,btz))))
           bt=norm2([btx,bty,btz])

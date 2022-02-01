@@ -104,7 +104,7 @@ c         endif
          px1=     a22*pxi+a24*pyi
          py1=    -a24*pxi+a22*pyi
          if(enarad)then
-           bsi(i)=bz
+           bsi(i)=bz*al
            if(rfluct)then
              call tradkf1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $            sx(i),sy(i),sz(i),
@@ -406,7 +406,7 @@ c        write(*,'(a,1p10g12.4)')'tsoldz ',dpldpx*phix*xsinphi,sinphi,dpz0dpx*ph
         phiz=bz*al/b
         dphizsq=phix**2+phiy**2
         do i=1,np
-          bsi0=bz+ak0x*y(i)+ak0y*x(i)
+          bsi0=bz*al+ak0x*y(i)+ak0y*x(i)
           pr=(1.d0+g(i))
           alb=al*pr/b
           bzp=bz/pr

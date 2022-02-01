@@ -84,7 +84,7 @@ c                  dcosphi=2.d0*sin(.5d0*phi)**2
                   dphi=(ps2-s)/(pz0+ptz*dcosphi+pbz*sinphi)
                   phi0=phi
                   phi=phi+dphi
-                  if(phi0 .eq. phi .or. abs(dphi/phi) .lt. conv)then
+                  if(phi0 == phi .or. abs(dphi/phi) .lt. conv)then
                     exit
                   endif
                 enddo
@@ -537,7 +537,7 @@ c          call tmultr(trans1,trans2,6)
       real*8 ,save::dummy(256)=0.d0
       kb=merge(k,k+1,insol)
       do i=kb,nlat
-        if(idtypec(i) .eq. icSOL)then
+        if(idtypec(i) == icSOL)then
           if(rlist(idvalc(i)+ky_BND_SOL)
      $         /= 0.d0)then
             ke=i
@@ -569,7 +569,7 @@ c          call tmultr(trans1,trans2,6)
      $       cmp%value(ky_DY_SOL),
      $       cmp%value(ky_DZ_SOL),
      $       rad .and. calpol,.true.)
-        krad=rad .and. cmp%value(ky_RAD_SOL) .eq. 0.d0
+        krad=rad .and. cmp%value(ky_RAD_SOL) == 0.d0
      $       .and. cmp%value(ky_F1_SOL) /= 0.d0 .and. bzs /= 0.d0
         if(krad)then
           pxr0=px
@@ -577,7 +577,7 @@ c          call tmultr(trans1,trans2,6)
           zr0=z
           bsi=0.d0
         endif
-        if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
+        if(cmp%value(ky_FRIN_SOL) == 0.d0)then
           call tsfrin(np,x,px,y,py,z,g,bzs)
         endif
         if(krad)then
@@ -610,7 +610,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           call tffserrorhandle(l,irtc)
           return
         endif
-        if(l .eq. nextwake)then
+        if(l == nextwake)then
           iwpl=abs(kwaketbl(1,nwak))
           lwl=merge((ilist(1,iwpl-1)-2)/2,0,iwpl /= 0)
           iwpt=abs(kwaketbl(2,nwak))
@@ -641,7 +641,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
             endif
           elseif(bzs /= 0.d0)then
             call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $           al,bzs,rad .and. cmp%value(ky_RAD_DRFT) .eq. 0.d0)
+     $           al,bzs,rad .and. cmp%value(ky_RAD_DRFT) == 0.d0)
           else
             call tdrift_free(np,x,px,y,py,z,dv,al)
           endif
@@ -656,7 +656,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           phix= phi*sin(theta)
           call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         al,bzs,phiy,phix,rad .and. al /= 0.d0
-     $         .and. cmp%value(ky_RAD_BEND) .eq. 0.d0)
+     $         .and. cmp%value(ky_RAD_BEND) == 0.d0)
         case(icQUAD)
           if(.not. cmp%update)then
             call tpara(cmp)
@@ -669,20 +669,20 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
               rtaper=1.d0+dptaper
      $             +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
             endif
-            krad=cmp%value(ky_RAD_QUAD) .eq. 0.d0 .and. al /= 0.d0
+            krad=cmp%value(ky_RAD_QUAD) == 0.d0 .and. al /= 0.d0
           endif
           call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,
      $         cmp%value(ky_K1_QUAD)*rtaper,bzs,
      $         cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      1         cmp%value(ky_ROT_QUAD),
      1         cmp%value(p_THETA2_QUAD),
-     1         krad,.true.,cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
+     1         krad,.true.,cmp%value(ky_FRIN_QUAD) == 0.d0,
      $         cmp%value(p_AKF1F_QUAD)*rtaper,
      $         cmp%value(p_AKF2F_QUAD)*rtaper,
      $         cmp%value(p_AKF1B_QUAD)*rtaper,
      $         cmp%value(p_AKF2B_QUAD)*rtaper,
      $         cmp%ivalue(1,p_FRMD_QUAD),cmp%value(ky_EPS_QUAD),
-     $         cmp%value(ky_KIN_QUAD) .eq. 0.d0)
+     $         cmp%value(ky_KIN_QUAD) == 0.d0)
 
         case (icMULT)
           rtaper=1.d0
@@ -712,7 +712,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
      $         0.d0,0.d0,0.d0,
      $         cmp%value(ky_ROT_CAVI),0.d0,cmp%value(ky_ROT_CAVI),
      $         0.d0,.false.,
-     $         cmp%value(ky_FRIN_CAVI) .eq. 0.d0,
+     $         cmp%value(ky_FRIN_CAVI) == 0.d0,
      $         0.d0,0.d0,0.d0,0.d0,
      $         cmp%ivalue(1,p_FRMD_CAVI),
      $         0.d0,0.d0,dofr,
@@ -722,8 +722,8 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
      $         0.d0,1.d0,autophi,1,0,
      $         n,kptbl)
         case (icSOL)
-          bz1=merge(0.d0,tfbzs(l,kbz),l .eq. ke)
-          krad=rad .and. cmp%value(ky_RAD_SOL) .eq. 0.d0
+          bz1=merge(0.d0,tfbzs(l,kbz),l == ke)
+          krad=rad .and. cmp%value(ky_RAD_SOL) == 0.d0
      $         .and. cmp%value(ky_F1_SOL) /= 0.d0 .and. bzs /= bz1          
           if(krad)then
             bzph=.5d0*bzs/(1.d0+g)
@@ -731,10 +731,10 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
             pyr0=py-bzph*x
             zr0=z
           endif
-          if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
+          if(cmp%value(ky_FRIN_SOL) == 0.d0)then
             call tsfrin(np,x,px,y,py,z,g,bz1-bzs)
           endif
-          if(l .eq. ke)then
+          if(l == ke)then
             if(.not. cmp%update)then
               call tpara(cmp)
             endif
@@ -784,7 +784,7 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
           endif
         end select
 
-        if(l .eq. nextwake .and. l /= ke)then
+        if(l == nextwake .and. l /= ke)then
           call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         dx,dy,rot,
      $         int(anbunch),
@@ -872,7 +872,7 @@ c          write(*,'(i5,1p10g12.4)'),i,x(i),z(i),xi,xf,zf,dx,dz,r31
       integer*4 i
       real*8 x0,y0,px0,py0,bq,bp,pr,pphi,phi0,w,c,s,xs,dc
 c     Apply identity map if dbz == 0
-      if(dbz .eq. 0.d0) then
+      if(dbz == 0.d0) then
         return
       endif
       do concurrent (i=1:np)
@@ -964,7 +964,7 @@ c        s     = sin(phi0)
      $     x1,px1,y1,py1,z1
 
 c     Apply identity map if dbz == 0
-c      if(dbz .eq. 0.d0)then
+c      if(dbz == 0.d0)then
 c        call tinitr(trans)
 c        return
 c      endif
