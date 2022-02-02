@@ -156,6 +156,8 @@ c          dpr=a/(1.d0+sqrt(1.d0+a))
         if(lwake .or. twake)then
           if(.not. allocated(itab))then
             allocate(itab(np))
+            itab(np)=np
+            itab(1)=1
           endif
           if(.not. allocated(izs))then
             allocate(izs(np))

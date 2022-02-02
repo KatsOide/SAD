@@ -242,6 +242,8 @@ c        endif
         if(l .eq. nextwake)then
           if(.not. allocated(itab))then
             allocate(itab(np),izs(np))
+            itab(np)=np
+            itab(1)=1
           endif
           iwpl=abs(kwaketbl(1,nwak))
           lwl=merge((ilist(1,iwpl-1)-2)/2,0,iwpl .ne. 0)
@@ -580,6 +582,8 @@ c     print *,'tturn l sspac2',l,sspac2
           if(lele .ne. icCAVI)then
             if(.not. allocated(itab))then
               allocate(itab(np),izs(np))
+              itab(np)=np
+              itab(1)=1
               iwpl=abs(kwaketbl(1,nwak))
               lwl=merge((ilist(1,iwpl-1)-2)/2,0,iwpl .ne. 0)
               iwpt=abs(kwaketbl(2,nwak))
