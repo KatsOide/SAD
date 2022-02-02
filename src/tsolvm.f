@@ -15,7 +15,7 @@
       logical*4 ,intent(in):: svd
       nfail=4
       mn=min(n,m)
-      allocate(v(0:mn),aa(m+l),bb(n),lsep(m+n))
+      allocate(v(0:m+n),aa(m+l),bb(n),lsep(m+n))
 c      do 1 i=1,n
         v(1:n)=1.d0
 c1     continue

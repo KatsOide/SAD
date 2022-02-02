@@ -244,7 +244,7 @@ tbende.o: tbende.f photons.o tbend.o tffs.o tfloor.o tfstk.o toplvl.o
 tbendi.o: tbendi.f photons.o tbend.o tffs.o tfstk.o toplvl.o
 tbfrie.o: tbfrie.f tffs.o tfloor.o tfstk.o toplvl.o
 tbrad.o: tbrad.f tfstk.o toplvl.o
-tcav.o: tcav.f inc/TENT.inc inc/TEXIT.inc tffs.o tfloor.o toplvl.o
+tcav.o: tcav.f inc/TENT.inc inc/TEXIT.inc tffs.o tfloor.o toplvl.o txwake.o
 tcave.o: tcave.f tffs.o tfloor.o tfstk.o toplvl.o
 tceigen.o: tceigen.f
 tcftr.o: tcftr.f
@@ -431,7 +431,7 @@ tserad.o: tserad.f initb1.o tffs.o tfstk.o toplvl.o
 tsgeo.o: tsgeo.f initb1.o tffs.o tfloor.o tfstk.o tgrot.o
 tshow.o: tshow.f tffs.o tfstk.o
 tsmear.o: tsmear.f toplvl.o
-tsol.o: tsol.f initb1.o photons.o tdrift.o tffs.o tfloor.o tfstk.o toplvl.o
+tsol.o: tsol.f initb1.o photons.o tdrift.o tffs.o tfloor.o tfstk.o toplvl.o txwake.o
 tsole.o: tsole.f initb1.o photons.o tffs.o tfstk.o toplvl.o
 tsolqu.o: tsolqu.f photons.o tffs.o tfloor.o tsolque.o
 tsolque.o: tsolque.f photons.o tffs.o tfloor.o tfstk.o toplvl.o
@@ -450,7 +450,7 @@ ttdr.o: ttdr.f toplvl.o
 tthine.o: tthine.f tffs.o toplvl.o
 ttinit.o: ttinit.f initb1.o tffs.o tfstk.o toplvl.o
 ttstat.o: ttstat.f tffs.o tfstk.o
-tturn.o: tturn.f initb1.o photons.o tdrift.o tffs.o tfloor.o tfstk.o toplvl.o
+tturn.o: tturn.f initb1.o photons.o tdrift.o tffs.o tfloor.o tfstk.o toplvl.o txwake.o
 tturne.o: tturne.f initb1.o temit.o tffs.o tfloor.o tfstk.o toplvl.o
 tvcorr.o: tvcorr.f tfstk.o
 twbuf.o: twbuf.f tffs.o

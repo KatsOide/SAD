@@ -181,7 +181,11 @@ c      write(*,*)mode,n1,n2,ihead,indf
           endif
           do i=1,m
             ki=kl%dbody(i)
-            idi=merge(itfdepth(ki),1,ktflistq(ki))
+            if(ktflistq(ki))then
+              idi=itfdepth(ki)
+            else
+              idi=1
+            endif
             if(indf)then
               rind(ind1)=i
             endif
@@ -207,7 +211,11 @@ c      write(*,*)mode,n1,n2,ihead,indf
       endif
       if(n1 == 0)then
         map=.true.
-        id=merge(itfdepth(k),0,n2 < 0)
+        if(n2 < 0)then
+          id=itfdepth(k)
+        else
+          id=0
+        endif
       elseif(n1 < 0)then
         id=itfdepth(k)
         map=id+n1 .le. 0
@@ -221,8 +229,11 @@ c      write(*,*)mode,n1,n2,ihead,indf
           if(match(mode))then
             if(itfpmatc(kx%k,kf) >= 0)then
               if(mode == 5)then
-                dtastk(isp)=merge(dxnulll,kxm2l(rind,0,ind,1,.false.),
-     $               ind == 0)
+                if(ind == 0)then
+                  dtastk(isp)=dxnulll
+                else
+                  dtastk(isp)=kxm2l(rind,0,ind,1,.false.)
+                endif
                 return
               elseif(mode == 6)then
                 return
@@ -246,8 +257,12 @@ c      write(*,*)mode,n1,n2,ihead,indf
           elseif(mode == 4)then
             dtastk(ispf)=kf
             isp=isp+1
-            dtastk(isp)=merge(dxnulll,kxm2l(rind,0,ind,1,.false.),
-     $           ind == 0)
+c            dtastk(isp)=merge(dxnulll,kxm2l(rind,0,ind,1,.false.),ind == 0)
+            if(ind == 0)then
+              dtastk(isp)=dxnulll
+            else
+              dtastk(isp)=kxm2l(rind,0,ind,1,.false.)
+            endif
             call tfefunrefc(ispf,kx,irtc)
           elseif(mode == 1)then
             dtastk(ispf)=kf
@@ -299,7 +314,11 @@ c      write(*,*)'tflevel ',n1,n2
       isp1=isp
       kx=tflevelstk(k,sad_descr(ktfoper+mtfnull),n1,n2,
      $     0,0,rind,1,mstk,irtc)
-      kx=merge(dxnulll,kxmakelist(isp1),isp .le. isp1)
+      if(isp .le. isp1)then
+        kx=dxnulll
+      else
+        kx=kxmakelist(isp1)
+      endif
       isp=isp1
       irtc=0
       return

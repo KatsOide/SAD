@@ -156,6 +156,8 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       use mathfun
       use tracklim
       use kradlib, only:tallocrad
+      use wakez
+      use iso_c_binding
       implicit none
       integer*4,parameter :: la1=15
       type (sad_comp), pointer:: cmp
@@ -166,10 +168,11 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       integer*4 ,intent(inout):: kptbl(np0,6)
       real*8 ,intent(inout):: x(np0),px(np0),y(np0),py(np0),z(np0),
      $     g(np0),dv(np0), sx(np0),sy(np0),sz(np0)
+      real*8 ,pointer,dimension(:,:)::wakel,waket
       real*8 bz,al,ak0,ak1,tgauss,ph,harmf,sspac0,sspac,fw,
      $     dx,dy,rot,sspac1,sspac2,ak,rtaper,cod(6)
-      integer*4 l,lele,i,ke,lwl,lwt,lwlc,lwtc,irtc,
-     $     nextwake,nwak,itab(np),izs(np)
+      integer*4 l,lele,i,ke,lwl,lwt,lwlc,lwtc,irtc,nextwake,nwak
+      integer*4 ,allocatable,dimension(:)::itab,izs
       integer*8 iwpl,iwpt,iwplc,iwptc
       logical*4 sol,out,autophi,seg,krad,wspaccheck
       if(np .le. 0)then
@@ -186,6 +189,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       iwptc=0
       sspac1=0.d0
       if(wake)then
+        dzwr=0.d0
         do i=1,nwakep
           if(iwakeelm(i) .ge. lbegin)then
             nwak=i
@@ -236,10 +240,15 @@ c        endif
           go to 1020
         endif
         if(l .eq. nextwake)then
+          if(.not. allocated(itab))then
+            allocate(itab(np),izs(np))
+          endif
           iwpl=abs(kwaketbl(1,nwak))
           lwl=merge((ilist(1,iwpl-1)-2)/2,0,iwpl .ne. 0)
           iwpt=abs(kwaketbl(2,nwak))
           lwt=merge((ilist(1,iwpt-1)-2)/2,0,iwpt .ne. 0)
+          call c_f_pointer(c_loc(rlist(iwpl)),wakel,[2,lwl])
+          call c_f_pointer(c_loc(rlist(iwpt)),waket,[2,lwt])
           if(lele .ne. icCAVI)then
             fw=(abs(charge)*e*pbunch*anbunch/amass)/np0*.5d0
             kdx=kytbl(kwDX,lele)
@@ -250,7 +259,7 @@ c        endif
             dy=merge(cmp%value(krot),0.d0,krot .ne. 0)
             call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           dx,dy,rot,int(anbunch),
-     $           fw,lwl,rlist(iwpl),lwt,rlist(iwpt),
+     $           fw,lwl,wakel,lwt,waket,
      $           p0,h0,itab,izs,.true.)
           endif
         endif
@@ -569,9 +578,18 @@ c     print *,'tturn l sspac2',l,sspac2
  1010   continue
         if(l .eq. nextwake)then
           if(lele .ne. icCAVI)then
+            if(.not. allocated(itab))then
+              allocate(itab(np),izs(np))
+              iwpl=abs(kwaketbl(1,nwak))
+              lwl=merge((ilist(1,iwpl-1)-2)/2,0,iwpl .ne. 0)
+              iwpt=abs(kwaketbl(2,nwak))
+              lwt=merge((ilist(1,iwpt-1)-2)/2,0,iwpt .ne. 0)
+              call c_f_pointer(c_loc(rlist(iwpl)),wakel,[2,lwl])
+              call c_f_pointer(c_loc(rlist(iwpt)),waket,[2,lwt])
+            endif
             call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           dx,dy,rot,int(anbunch),
-     $           fw,lwl,rlist(iwpl),lwt,rlist(iwpt),
+     $           fw,lwl,wakel,lwt,waket,
      $           p0,h0,itab,izs,.false.)
           endif
           nwak=nwak+1

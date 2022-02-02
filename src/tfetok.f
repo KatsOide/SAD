@@ -458,8 +458,11 @@ c      endif
           endif
           if(index(string(it1:it2),'_') /= 0)then
             irt=0
-            kx=merge(kxpaloc(string(it1:it2)),
-     $           kxpaloc(buf(1:nc-nnl)),nnl == 0)
+            if(nnl == 0)then
+              kx=kxpaloc(string(it1:it2))
+            else
+              kx=kxpaloc(buf(1:nc-nnl))
+            endif
             return
           elseif(string(it1:it1) == '%')then
             if(nc == 1)then

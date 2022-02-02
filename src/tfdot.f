@@ -772,8 +772,11 @@ c          enddo
         call tfl2m(klb,b,n,mb,.true.)
       endif
       call tsolvm(a,b,x,n,m,mx,n,n,m,eps,.true.)
-      kx=merge(kxm2l(x,0,m,1,.false.),
-     $     kxm2l(x,m,mb,m,.true.),mb == 0)
+      if(mb == 0)then
+        kx=kxm2l(x,0,m,1,.false.)
+      else
+        kx=kxm2l(x,m,mb,m,.true.)
+      endif
       deallocate (a,b,x)
       return
       end

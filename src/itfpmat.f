@@ -15,7 +15,7 @@ c      rep=.false.
         pat=>pat%equiv
 c        rep=.true.
       enddo
-c      if(rep .and. pat%mat .eq. 0)then
+c      if(rep .and. pat%mat == 0)then
 c        pat%equiv=>pat0
 c        pat=>pat0
 c        pat%mat=0
@@ -38,7 +38,7 @@ c      endif
       if(ktfpatq(kp,pat))then
         itfpmat=itfpatmat(k,pat)
       elseif(ktflistq(kp,list))then
-        if(ktfnonlistq(k) .and. iand(list%attr,lsimplepat) .ne. 0)then
+        if(ktfnonlistq(k) .and. iand(list%attr,lsimplepat) /= 0)then
           return
         endif
         itfpmat=itflistmat(k,list)
@@ -79,7 +79,7 @@ c      endif
       itflistmat=-1
       kph=listp%head
       main: do
-        if(iand(lsimplepat,listp%attr) .ne. 0)then
+        if(iand(lsimplepat,listp%attr) /= 0)then
           if(ktfnonlistq(k,lista))then
             return
           endif
@@ -91,16 +91,16 @@ c      endif
           endif
           isp1=isp
           np=listp%nl
-          if(tfordlessq(kh) .and. lista%nl .gt. 1)then
+          if(tfordlessq(kh) .and. lista%nl > 1)then
             iop=iordless
-            do while(iop .ne. 0)
-              if(ktastk(iop) .ne. ksad_loc(listp%head%k))then
+            do while(iop /= 0)
+              if(ktastk(iop) /= ksad_loc(listp%head%k))then
                 iop=itastk2(1,iop)
               else
                 exit
               endif
             enddo
-            if(iop .ne. 0)then
+            if(iop /= 0)then
               iordless=iop
               itflistmat=min(itflistmat,
      $             itfseqmatstk(itastk(1,iop+1),itastk(2,iop+1),
@@ -114,7 +114,7 @@ c      endif
             endif
             icm=isp1
             call tfgetllstkall(lista)
-            if(np .eq. 0)then
+            if(np == 0)then
               if(isp1 .lt. isp)then
                 itflistmat=-1
                 call tfresetpat(kph)
@@ -126,7 +126,7 @@ c      endif
             endif
           else
             call tfgetllstkall(lista)
-            if(np .eq. 0)then
+            if(np == 0)then
               if(isp1 .lt. isp)then
                 exit main
               else
@@ -135,19 +135,19 @@ c      endif
               return
             endif
             if(ktfreallistq(listp))then
-              if(np .ne. isp-isp1)then
+              if(np /= isp-isp1)then
                 exit main
               endif
               do i=1,np
                 if(ktfnonrealq(ktastk(isp1+i)) .or.
-     $               ktastk(isp1+i) .ne. listp%dbody(i)%k)then
+     $               ktastk(isp1+i) /= listp%dbody(i)%k)then
                   exit main
                 endif
               enddo
               isp=isp1
               return
             elseif(tfconstpatternlistbodyqo(listp))then
-              if(np .ne. isp-isp1)then
+              if(np /= isp-isp1)then
                 exit main
               endif
               do i=1,np
@@ -159,10 +159,10 @@ c      endif
             endif
             icm=isp1
             ic=itfconstpart(listp,np,0,kc)
-            loop20: do while(ic .ne. 0)
+            loop20: do while(ic /= 0)
               LOOP_I: do i=icm+1,isp
                 if(tfsameq(dtastk(i),kc))then
-                  if(i .eq. icm+1 .and. i-isp1 .eq. ic)then
+                  if(i == icm+1 .and. i-isp1 == ic)then
                     icm=i
                   endif
                   exit loop20
@@ -175,7 +175,7 @@ c      endif
           kpp=0
           isp2=isp
           if(itflistmat .ge. 0)then
-            if(np .eq. icm-isp1+1)then
+            if(np == icm-isp1+1)then
               itflistmat=min(itflistmat,
      $             itfseqmatstk1(icm+1,isp2,listp%dbody(np)))
             else
@@ -194,7 +194,7 @@ c      endif
             if(ktfreallistq(listp))then
               if(ktfrealq(k))then
                 do i=1,listp%nl
-                  if(k%k .eq. listp%dbody(i)%k)then
+                  if(k%k == listp%dbody(i)%k)then
                     itflistmat=1
                     return
                   endif
@@ -210,7 +210,7 @@ c      endif
                 itflistmat=itfpmat(k,ki)
                 if(itflistmat .ge. 0)then
                   if(ra)then
-                    if(i .gt. 1)then
+                    if(i > 1)then
                       listp%dbody(2:i)=listp%dbody(1:i-1)
                       listp%dbody(1)=ki
                     endif
@@ -220,14 +220,14 @@ c      endif
               enddo
             endif
           case (ktfoper+mtfpattest)
-            if(listp%nl .eq. 2)then
+            if(listp%nl == 2)then
               itflistmat=itfpmat(k,listp%dbody(1))
               if(itflistmat .ge. 0)then
                 isp3=isp
                 isp=isp+1
                 dtastk(isp)=tfeevalref(listp%dbody(2),irtc)
-                if(irtc .ne. 0)then
-                  if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
+                if(irtc /= 0)then
+                  if(irtc > 0 .and. ierrorprint /= 0)then
                     call tfreseterror
                   endif
                   itflistmat=-1
@@ -242,12 +242,12 @@ c      endif
                   ierrorth=ierrorth0
                   isp=isp3
                   do
-                    if(irtc .ne. 0)then
-                      if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
+                    if(irtc /= 0)then
+                      if(irtc > 0 .and. ierrorprint /= 0)then
                         call tfreseterror
                       endif
                       exit
-                    elseif(ktfnonrealq(kf) .or. kf%k .eq. 0)then
+                    elseif(ktfnonrealq(kf) .or. kf%k == 0)then
                       exit
                     endif
                     return
@@ -269,8 +269,8 @@ c      endif
                 isp=isp1
               endif
             else
-              if(k%k .eq. ktfoper+mtfnull)then
-                if(kph%k .eq. ktfoper+mtfrepeatednull)then
+              if(k%k == ktfoper+mtfnull)then
+                if(kph%k == ktfoper+mtfrepeatednull)then
                   itflistmat=1
                 endif
               else
@@ -287,9 +287,9 @@ c      endif
               endif
             endif
           case default
-            if(kph%k .eq. kxliteral)then
-              if(listp%nl .eq. 0)then
-                if(k%k .eq. ktfoper+mtfnull)then
+            if(kph%k == kxliteral)then
+              if(listp%nl == 0)then
+                if(k%k == ktfoper+mtfnull)then
                   itflistmat=1
                 endif
               else
@@ -321,7 +321,7 @@ c      endif
       itfconstpart=0
       n1=n+1
       is=list%attr
-      if(iand(kallnofixedarg,is) .ne. 0)then
+      if(iand(kallnofixedarg,is) /= 0)then
         return
       else
         do i=n1,m
@@ -341,7 +341,7 @@ c      endif
             return
           endif
         enddo
-        if(n1 .eq. 1)then
+        if(n1 == 1)then
           list%attr=ior(kallnofixedarg,list%attr)
         endif
       endif
@@ -365,12 +365,12 @@ c      endif
       kv1=pat%value
 c      call tfdebugprint(sad_descr(pat),'patmat',1)
 c      call tfdebugprint(kv1,'value:',1)
-      if(pat%mat .eq. 0)then
+      if(pat%mat == 0)then
         itfpatmat=itfsinglepat(k,pat)
 c        write(*,*)'patmat-result ',itfpatmat,pat%mat
-      elseif(ktfrefq(kv1,kav1) .and. kav1 .gt. 3)then
+      elseif(ktfrefq(kv1,kav1) .and. kav1 > 3)then
         if(ktflistq(k,list))then
-          if(list%head%k .eq. ktfoper+mtfnull)then
+          if(list%head%k == ktfoper+mtfnull)then
             isp1=isp
             call tfgetllstkall(list)
             iss=int(kav1-ispbase)
@@ -399,11 +399,17 @@ c        write(*,*)'patmat-result ',itfpatmat,pat%mat
       type (sad_dlist) ,intent(inout):: kl
       integer*4 ,intent(in):: isp1,isp2,mp1
       integer*4 itfseqmatstk21
-      itfseqmatseq=merge(0,
-     $     itfseqmatstk21(isp1,isp2,kl%dbody(1),
-     $     kl%nl,mp1,ktfreallistq(kl),i00,
-     $     isp1 .gt. isp2 .and. mp1 .gt. kl%nl),
-     $     isp1 .gt. isp2 .and. mp1 .gt. kl%nl)
+      if(isp1 > isp2 .and. mp1 > kl%nl)then
+        itfseqmatseq=0
+      else
+        itfseqmatseq=itfseqmatstk21(isp1,isp2,kl%dbody(1),
+     $     kl%nl,mp1,ktfreallistq(kl),i00,.false.)
+      endif        
+c      itfseqmatseq=merge(0,
+c     $     itfseqmatstk21(isp1,isp2,kl%dbody(1),
+c     $     kl%nl,mp1,ktfreallistq(kl),i00,
+c     $     isp1 > isp2 .and. mp1 > kl%nl),
+c     $     isp1 > isp2 .and. mp1 > kl%nl)
       return
       end
 
@@ -418,8 +424,8 @@ c$$$      isp2=isp20
 c$$$      write(*,*)'seqmat ',mp,mp1,isp1,isp2
 c$$$      itfseqmat=merge(0,merge(itfseqmatstk1(isp1,isp2,kp(1)),
 c$$$     $     itfseqmatstk(isp1,isp2,kp,mp,mp1,.false.,i00),
-c$$$     $     mp .eq. 1 .and. mp1 .eq. 1),
-c$$$     $     isp1 .gt. isp2 .and. mp1 .gt. mp)    
+c$$$     $     mp == 1 .and. mp1 == 1),
+c$$$     $     isp1 > isp2 .and. mp1 > mp)    
 c$$$      return
 c$$$      end
 
@@ -461,7 +467,7 @@ c        write(*,*)'itfsqms1-2 ',i
             return
           endif
           call tfresetpat(kp)
-          if(iordless .ne. iop0)then
+          if(iordless /= iop0)then
             ispm=ispm0
             cycle
           endif
@@ -506,7 +512,7 @@ c        write(*,*)'itfsqms1-2 ',i
      $     isp1a,isp2a,ispt,mstk0,itfseqmatstk1
       logical*4 ,intent(in):: realp
       mop=0
-      if(mp1 .gt. map)then
+      if(mp1 > map)then
         ix=merge(1,-1,isp20 .lt. isp10)
         return
       endif
@@ -514,10 +520,10 @@ c        write(*,*)'itfsqms1-2 ',i
       mstk0=mstk
       ispf=isp20
 c      write(*,*)'itfsqmsk-1 ',isp10,isp20,map,mp1
-      if(kpp .eq. 0)then
+      if(kpp == 0)then
         isp1a=isp10
         isp2a=isp20
-        if(map .eq. mp1+1)then
+        if(map == mp1+1)then
           do while(ispf .ge. isp1a-1)
             iop0=iordless
             ispt=ispf
@@ -529,7 +535,7 @@ c      write(*,*)'itfsqmsk-1 ',isp10,isp20,map,mp1
                   return
                 endif
                 call tfresetpat(kp)
-                if(iordless .ne. iop0)then
+                if(iordless /= iop0)then
                   ispf=ispt
                   cycle
                 endif
@@ -539,7 +545,7 @@ c      write(*,*)'itfsqmsk-1 ',isp10,isp20,map,mp1
               exit
             enddo
           enddo
-        elseif(map .ne. mp1)then
+        elseif(map /= mp1)then
           do while(ispf .ge. isp1a-1)
             iop0=iordless
             ispt=ispf
@@ -552,7 +558,7 @@ c      write(*,*)'itfsqmsk-1 ',isp10,isp20,map,mp1
                   return
                 endif
                 call tfresetpat(kp)
-                if(iordless .ne. iop0)then
+                if(iordless /= iop0)then
                   ispf=ispt
                   cycle
                 endif
@@ -574,7 +580,7 @@ c      write(*,*)'itfsqmsk-1 ',isp10,isp20,map,mp1
                   return
                 endif
                 call tfresetpat(kp)
-                if(iordless .ne. iop0)then
+                if(iordless /= iop0)then
                   ispf=ispt
                   cycle
                 endif
@@ -591,12 +597,12 @@ c      write(*,*)'itfsqmsk-1 ',isp10,isp20,map,mp1
       endif
       iop=iordless
       do
-        if(iop .ne. 0)then
-          if(kpp .gt. 0)then
-            do while(iop .ne. 0 .and. ktastk(iop) .ne. kpp)
+        if(iop /= 0)then
+          if(kpp > 0)then
+            do while(iop /= 0 .and. ktastk(iop) /= kpp)
               iop=itastk2(1,iop)
             enddo
-            if(iop .eq. 0)then
+            if(iop == 0)then
               cycle
             endif
             iordless=iop
@@ -628,7 +634,7 @@ c      write(*,*)'itfsqmsk-1 ',isp10,isp20,map,mp1
           ispt=ispf
           ix=-1
           do while (ix .lt. 0)
-            ispt=merge(isp2a,ispf,map .eq. mp1)
+            ispt=merge(isp2a,ispf,map == mp1)
             i=itfseqm(isp1a,isp2a,kp,ispf,isps,ispt)
             if(i .ge. 0)then
               if(mp1 .ge. map)then
@@ -638,14 +644,14 @@ c      write(*,*)'itfsqmsk-1 ',isp10,isp20,map,mp1
               else
                 ix=min(i,merge(itfseqmatstk1(isps,isp2a,kp0(map)),
      $               itfseqmatstk(isps,isp2a,kp0,map,mp1+1,
-     $               realp,i00),map .eq. mp1+1))
+     $               realp,i00),map == mp1+1))
               endif
               if(ix .ge. 0)then
                 itastk2(2,iop)=ispf
                 return
               endif
               call tfresetpat(kp)
-              if(iordless .ne. iop0)then
+              if(iordless /= iop0)then
                 ispf=ispt
               else
                 exit
@@ -662,7 +668,7 @@ c      write(*,*)'itfsqmsk-1 ',isp10,isp20,map,mp1
         np0=isp2a-isp1a+1
         do i=2,np0+1
           npdi=npd/i
-          if(npdi*i .ne. npd)then
+          if(npdi*i /= npd)then
             mop=np0-i
             exit
           endif
@@ -722,9 +728,9 @@ c        call tflinkedpat(pat0,pat)
         k2=pat%value
 c        call tfdebugprint(sad_descr(pat),'seqm-pat',1)
 c        call tfdebugprint(k2,':=',1)
-        if(k2%k .ne. ktfref)then
+        if(k2%k /= ktfref)then
           ispf=isp1-2
-          if(ktfrefq(k2,ka2) .and. ka2 .gt. 3)then
+          if(ktfrefq(k2,ka2) .and. ka2 > 3)then
             iss=int(ka2-ispbase)
             np=itastk2(1,iss)-iss
             m=isp1+np-1
@@ -745,7 +751,7 @@ c        call tfdebugprint(k2,':=',1)
           endif
           return
         endif
-        if(pat%default%k .ne. ktfref .and. ispt .eq. isp1-1)then
+        if(pat%default%k /= ktfref .and. ispt == isp1-1)then
           pat%value=pat%default
           ix=0
           isps=isp1
@@ -753,12 +759,12 @@ c        call tfdebugprint(k2,':=',1)
           return
         endif
         kd=pat%expr
-        if(.not. ktfrefq(kd,kad) .or. kad .gt. 3)then
+        if(.not. ktfrefq(kd,kad) .or. kad > 3)then
           ix=itfseqm(isp1,isp2,kd,ispf,isps,ispt)
           if(ix .ge. 0)then
             call tfstkpat(isp1-1,isps-1,pat)
           endif
-        elseif(kad .eq. 1)then
+        elseif(kad == 1)then
           ispf=min(ispt,isp1)-1
           if(ispt .ge. isp1 .and. isp2 .ge. isp1)then
             ix=itfsinglepat(dtastk(isp1),pat)
@@ -767,10 +773,10 @@ c        call tfdebugprint(k2,':=',1)
         else
           ispf=ispt-1
           isps=ispt+1
-          if(ispt .eq. isp1)then
+          if(ispt == isp1)then
             ix=itfsinglepat(dtastk(isp1),pat)
           elseif(ispt .ge. isp1-int(kad)+2)then
-            if(pat%head%k .ne. ktfref)then
+            if(pat%head%k /= ktfref)then
               itastk2(1,isp1-1)=ispt
               ix=itfsinglepat(sad_descr(ktfref+isp1-1+ispbase),pat)
               if(ix .lt. 0)then
@@ -797,12 +803,12 @@ c          write(*,*)'==> ',ix
         ispf=min(ispt,isp1)-1
         return
       else
-        if(iand(lsimplepatlist,listp%attr) .eq. 0)then
-          if(listp%head%k .eq. ktfoper+mtfrepeated .or.
-     $         listp%head%k .eq. ktfoper+mtfrepeatednull)then
+        if(iand(lsimplepatlist,listp%attr) == 0)then
+          if(listp%head%k == ktfoper+mtfrepeated .or.
+     $         listp%head%k == ktfoper+mtfrepeatednull)then
             kp1=listp%dbody(1)
             ireppat=merge(-3,-2,
-     $             listp%head%k .eq. ktfoper+mtfrepeatednull)
+     $             listp%head%k == ktfoper+mtfrepeatednull)
             if(ispt .ge. isp1+ireppat+2)then
               ix=1
               ispf=ispt-1
@@ -817,7 +823,7 @@ c          write(*,*)'==> ',ix
               ispf=isp1-2
             endif
             return
-          elseif(listp%head%k .eq. ktfoper+mtfpattest)then
+          elseif(listp%head%k == ktfoper+mtfpattest)then
             kp1=listp%dbody(1)
             ix=itfseqm(isp1,isp2,kp1,ispf,isps,ispt)
             if(ix .lt. 0)then
@@ -826,8 +832,8 @@ c          write(*,*)'==> ',ix
             isp0=isp
             call tfevalstk(listp%dbody(2),.true.,irtc)
             do
-              if(irtc .ne. 0)then
-                if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
+              if(irtc /= 0)then
+                if(irtc > 0 .and. ierrorprint /= 0)then
                   call tfreseterror
                 endif
                 isp=isp0
@@ -840,12 +846,12 @@ c          write(*,*)'==> ',ix
               kf=tfefunref(isp0+1,.true.,irtc)
               ierrorth=ierrorth0
               isp=isp0
-              if(irtc .ne. 0)then
-                if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
+              if(irtc /= 0)then
+                if(irtc > 0 .and. ierrorprint /= 0)then
                   call tfreseterror
                 endif
                 exit
-              elseif(ktfnonrealq(kf) .or. kf%k .eq. 0)then
+              elseif(ktfnonrealq(kf) .or. kf%k == 0)then
                 exit
               endif
               return
@@ -862,7 +868,7 @@ c          write(*,*)'==> ',ix
         endif
         if(isp1 .le. isp2)then
           isps=isp1+1
-          if(listp%head%k .eq. ktfoper+mtfnull)then
+          if(listp%head%k == ktfoper+mtfnull)then
             m=isp1+listp%nl-1
             if(m .le. ispt)then
               ix=itfseqmatseq(isp1,m,listp,1)
@@ -871,10 +877,10 @@ c          write(*,*)'==> ',ix
           else
             ix=merge(-1,itflistmat(dtastk(isp1),listp),
      $           ktfnonlistq(ktastk(isp1)) .and.
-     $           iand(lsimplepat,listp%attr) .ne. 0)
+     $           iand(lsimplepat,listp%attr) /= 0)
           endif
-        elseif(listp%head%k .eq. ktfoper+mtfnull .and.
-     $         listp%nl .eq. 0)then
+        elseif(listp%head%k == ktfoper+mtfnull .and.
+     $         listp%nl == 0)then
           ix=0
           isps=isp1
           return
@@ -898,17 +904,17 @@ c          write(*,*)'==> ',ix
       itfsinglepat=-1
       kx=pat%expr
       if(ktfrefq(kx,kax))then
-        if(pat%head%k .ne. ktfref)then
+        if(pat%head%k /= ktfref)then
           isp3=isp
           kv=tfeevalref(pat%head,irtc)
           isp=isp3
-          if(irtc .ne. 0)then
-            if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
+          if(irtc /= 0)then
+            if(irtc > 0 .and. ierrorprint /= 0)then
               call tfreseterror
             endif
             return
           endif
-          if(ktfrefq(k,ka) .and. kax .gt. 1)then
+          if(ktfrefq(k,ka) .and. kax > 1)then
             ka=ka-ispbase
             isp1=itastk2(1,ka)
             do i=int(ka)+1,isp1
@@ -927,7 +933,7 @@ c          write(*,*)'==> ',ix
         if(ktfpatq(k,pata))then
           k1=pata%expr
           if(ktfrefq(k1,ka1) .and. ka1 .le. 3 .and.
-     $         ka1 .gt. kax)then
+     $         ka1 > kax)then
             return
           endif
         endif
@@ -940,8 +946,8 @@ c          write(*,*)'==> ',ix
         isp3=isp
         ke=tfeevalref(kx,irtc)
         isp=isp3
-        if(irtc .ne. 0)then
-          if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
+        if(irtc /= 0)then
+          if(irtc > 0 .and. ierrorprint /= 0)then
             call tfreseterror
           endif
           return
@@ -952,7 +958,7 @@ c          write(*,*)'==> ',ix
         endif
       endif
       itfsinglepat=0
-      if(pat%sym%loc .ne. 0)then
+      if(pat%sym%loc /= 0)then
         pat%mat=1
         pat%value=k
 c        call tfdebugprint(sad_descr(pat),'singlepat',1)
@@ -968,11 +974,11 @@ c        write(*,*)'at ',sad_loc(pat%value)
       implicit none
       type (sad_pat) ,intent(inout):: pat
       integer*4 ,intent(in):: isp1,isp2
-      if(pat%sym%loc .ne. 0)then
+      if(pat%sym%loc /= 0)then
         pat%mat=1
         if(isp1 .ge. isp2)then
           pat%value=dxnull
-        elseif(isp2 .eq. isp1+1)then
+        elseif(isp2 == isp1+1)then
           pat%value=dtastk(isp2)
 c          call tfdebugprint(sad_descr(pat),'stkstk',1)
 c          call tfdebugprint(ktastk(isp),'stkstk',1)
@@ -1019,7 +1025,7 @@ c          write(*,*)'at ',sad_loc(pat%value)
       type (sad_descriptor) ,intent(in):: k
       type (sad_dlist) ,intent(inout):: klp
       integer*4 mstk0,itflistmat,iop,isp0
-      if(ktfnonlistq(k) .and. iand(klp%attr,lsimplepat) .ne. 0)then
+      if(ktfnonlistq(k) .and. iand(klp%attr,lsimplepat) /= 0)then
         itfpmatcl=-1
         return
       endif
@@ -1027,7 +1033,7 @@ c          write(*,*)'at ',sad_loc(pat%value)
       iordless=0
       mstk0=mstk
       isp0=isp
-      if(iand(klp%attr,lnopatlist) .eq. 0)then
+      if(iand(klp%attr,lnopatlist) == 0)then
         call tfinitpatlist(isp0,klp)
         isp=isp0
         itfpmatcl=itflistmat(k,klp)
@@ -1070,12 +1076,12 @@ c        enddo
       implicit none
       type (sad_dlist) ,intent(inout):: klp
       integer*4 i
-      if(iand(klp%attr,lnopatlist) .ne. 0)then
+      if(iand(klp%attr,lnopatlist) /= 0)then
         return
       endif
       call tfunsetpat(klp%head)
       if(ktfnonreallistqo(klp))then
-        if(iand(klp%attr,knopatarg) .eq. 0)then
+        if(iand(klp%attr,knopatarg) == 0)then
           do i=1,klp%nl
             call tfunsetpat(klp%dbody(i))
           enddo
@@ -1119,12 +1125,12 @@ c        nullify(pat%equiv)
       implicit none
       type (sad_dlist) ,intent(inout):: list
       integer*4 i
-      if(iand(list%attr,lnopatlist) .ne. 0)then
+      if(iand(list%attr,lnopatlist) /= 0)then
         return
       endif
       call tfresetpat(list%head)
       if(ktfnonreallistqo(list))then
-        if(iand(list%attr,knopatarg) .eq. 0)then
+        if(iand(list%attr,knopatarg) == 0)then
           do i=1,list%nl
             call tfresetpat(list%dbody(i))
           enddo
@@ -1149,11 +1155,11 @@ c        nullify(pat%equiv)
       elseif(ktfpatq(k,pat))then
         loop10: do
           nullify(pat%equiv)
-          if(pat%sym%loc .ne. 0)then
+          if(pat%sym%loc /= 0)then
             kas=ktfaddr(pat%sym%alloc)
             do i=isp0+1,isp-1,2
-              if(kas .eq. ktastk(i+1) .and.
-     $             ktastk(i) .ne. k%k)then
+              if(kas == ktastk(i+1) .and.
+     $             ktastk(i) /= k%k)then
                 call loc_pat(ktfaddr(ktastk(i)),pat%equiv)
 c                call tfdebugprint(sad_descr(pat%equiv),'initpat-e',1)
 c                write(*,*)':',ktfaddr(ktastk(i))
@@ -1179,26 +1185,26 @@ c                write(*,*)':',ktfaddr(ktastk(i))
       type (sad_dlist) ,intent(inout):: kl
       integer*4 ,intent(in):: isp0
       integer*4 isp1,m,i
-      if(iand(kl%attr,lnopatlist) .ne. 0)then
+      if(iand(kl%attr,lnopatlist) /= 0)then
         return
       endif
       isp1=isp
       call tfinitpat(isp0,kl%head)
       if(ktfnonreallistqo(kl))then
-        if(iand(kl%attr,knopatarg) .eq. 0)then
+        if(iand(kl%attr,knopatarg) == 0)then
           m=kl%nl
-          if(kl%head%k .eq. ktfoper+mtfpattest)then
+          if(kl%head%k == ktfoper+mtfpattest)then
             m=1
           endif
           do i=1,m
             call tfinitpat(isp0,kl%dbody(i))
           enddo
-          if(isp .eq. isp1)then
+          if(isp == isp1)then
             kl%attr=ior(kl%attr,knopatarg)
           endif
         endif
       endif
-      if(isp .eq. isp1)then
+      if(isp == isp1)then
         kl%attr=ior(kl%attr,lnopatlist)
       endif
       return
@@ -1213,8 +1219,8 @@ c                write(*,*)':',ktfaddr(ktastk(i))
       integer*8 ka
       logical*4 tfconstpatternlistbodyqo
       lx=merge(.false.,
-     $     merge(ka .ne. mtfalt .and. ka .ne. mtfrepeated .and.
-     $     ka .ne. mtfrepeatednull,
+     $     merge(ka /= mtfalt .and. ka /= mtfrepeated .and.
+     $     ka /= mtfrepeatednull,
      $     merge(tfconstpatternheadqk(kl%head) .and.
      $     tfconstpatternlistbodyqo(kl),
      $     merge(.not. tfsamesymbolqk(k%k,kxliteral),.true.,
@@ -1233,9 +1239,9 @@ c                write(*,*)':',ktfaddr(ktastk(i))
       integer*4 i
       tfconstpatternlistbodyqo=.true.
       if(ktfnonreallistqo(list))then
-        if(iand(list%attr,kconstlist) .ne. 0)then
+        if(iand(list%attr,kconstlist) /= 0)then
           return
-        elseif(iand(list%attr,knoconstlist) .ne. 0)then
+        elseif(iand(list%attr,knoconstlist) /= 0)then
           tfconstpatternlistbodyqo=.false.
           return
         endif
@@ -1267,9 +1273,9 @@ c                write(*,*)':',ktfaddr(ktastk(i))
       if(ktfoperq(k))then
         call c_f_pointer(c_loc(klist(klist(ifunbase+ktfaddrd(k))-9)),
      $       fun)
-        tfordlessq=iand(iattrorderless,fun%def%sym%attr) .ne. 0
+        tfordlessq=iand(iattrorderless,fun%def%sym%attr) /= 0
       else
-        tfordlessq=merge(iand(iattrorderless,sym%attr) .ne. 0,.false.,
+        tfordlessq=merge(iand(iattrorderless,sym%attr) /= 0,.false.,
      $       ktfsymbolq(k,sym))
       endif
       return

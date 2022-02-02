@@ -514,6 +514,8 @@ c          call tmultr(trans1,trans2,6)
       use element_drift_common
       use kradlib
       use sol
+      use wakez
+      use iso_c_binding
       implicit none
       real*8 ,parameter ::conv=3.d-16
       type (sad_comp), pointer::cmp
@@ -526,6 +528,7 @@ c          call tmultr(trans1,trans2,6)
      $     g(np),dv(np),sx(np),sy(np),sz(np)
       logical*4 , intent(inout) :: insol
       logical*4 ,intent(out):: out
+      real*8 ,pointer,dimension(:,:)::wakel,waket
       real*8 tfbzs,fw,bzs,al,theta,phi,phix,phiy,
      $     bz1,dx,dy,rot,rtaper,ph
       real*8 ,allocatable,dimension(:)::bzph
@@ -622,10 +625,11 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           dy=merge(cmp%value(kdy),0.d0,kdy /= 0)
           krot=kytbl(kwROT,lt)
           rot=merge(cmp%value(krot),0.d0,krot /= 0)
+          call c_f_pointer(c_loc(rlist(iwpl)),wakel,[2,lwl])
+          call c_f_pointer(c_loc(rlist(iwpt)),waket,[2,lwt])
           call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         dx,dy,rot,
-     $         int(anbunch),
-     $         fw,lwl,rlist(iwpl),lwt,rlist(iwpt),
+     $         dx,dy,rot,int(anbunch),
+     $         fw,lwl,wakel,lwt,waket,
      $         p0,h0,itab,izs,.true.)
         endif
         select case (lt)
@@ -785,10 +789,11 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
         end select
 
         if(l == nextwake .and. l /= ke)then
+          call c_f_pointer(c_loc(rlist(iwpl)),wakel,[2,lwl])
+          call c_f_pointer(c_loc(rlist(iwpt)),waket,[2,lwt])
           call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         dx,dy,rot,
-     $         int(anbunch),
-     $         fw,lwl,rlist(iwpl),lwt,rlist(iwpt),
+     $         dx,dy,rot,int(anbunch),
+     $         fw,lwl,wakel,lwt,waket,
      $         p0,h0,itab,izs,.false.)
           nwak=nwak+1
           nextwake=merge(0,iwakeelm(nwak),nwak .gt. nwakep)

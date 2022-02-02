@@ -4557,7 +4557,7 @@ where k1 .. kk is the wave number k = omega/c, c1 .. ck and s1 .. sk are the cos
          "\
    WakeFunction[Longitudinal, comp]={{z1, wl1}, ..., {zn, wln}};\n\
    WakeFunction[Transverse,   comp]={{z1, wt1}, ..., {zn, wtn}};\n\n\
-specify longitudinal and transverse dipole wake functions at a component comp (string). Each functions is a list of {z, w} where z is the distance (z>=0) and w is the value of the wake, in the unit of either V/C or V/C/m.\n\
+specify longitudinal and transverse dipole wake functions at a component comp (string). Each functions is a list of {z, w} where z is the distance and w is the value of the wake, in the unit of either V/C or V/C/m.\n\
    The wake functions are applied at the component comp, giving kicks to each orbit whose initial conditions are given by InitialOrbits. The sufficient number of orbits depends on the situation.\n\
    WakeFunction is valid only when TRPT and INS, and also either TWAKE or LWAKE is ON.\n\
    For tracking, it is only valid in TrackParticles.",
