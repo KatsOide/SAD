@@ -493,7 +493,7 @@ c     enddo
         params(ipnup)=spinmu/m_2pi
         call sremit(srot,sps,params,beamn,sdamp,spm,equpol)
         params(iptaup)=1.d0/sdamp/params(iprevf)
-        params(ipequpol)=equpol(3)
+        params(ipequpol)=equpol(1)
         params(ipequpol2:ipequpol6)=equpol
         params(ippolx:ippolz)=sps(:,1)
       endif
@@ -635,7 +635,11 @@ c            endif
  9104           format(
      1               ' Momentum acceptance:  ',5(f8.1,2x),'  %')
                 do i=1,5
-                  tt=merge(touckl(5*iii+i)*tf,0.d0,5*iii+i .le. ntouckl)
+                  if(5*iii+i .le. ntouckl)then
+                    tt=touckl(5*iii+i)*tf
+                  else
+                    tt=0.d0
+                  endif
                   if(tt .ne. 0.d0)then
                     vout(i)=autofg(1.d0/tt,'9.6')
                   else
@@ -1136,7 +1140,7 @@ c     kiku ------------------>
             write(lfno,'(a,1p6g15.7)')'        s3',spm(3,:)
           endif
           vout(1)=autofg(spinmu/m_2pi,'11.8')
-          vout(2)=autofg(equpol(3)*100.d0,'11.8')
+          vout(2)=autofg(equpol(1)*100.d0,'11.8')
           write(lfno,9110)vout(1:2)
  9110     format(/'Spin tune              =',a,'    ',
      1         1x,'Equil. polarization    =',a,' %'/)

@@ -642,9 +642,14 @@ c      write(*,*)'itfsqmsk-1 ',isp10,isp20,map,mp1
                   ix=min(1,i)
                 endif
               else
-                ix=min(i,merge(itfseqmatstk1(isps,isp2a,kp0(map)),
-     $               itfseqmatstk(isps,isp2a,kp0,map,mp1+1,
-     $               realp,i00),map == mp1+1))
+c                ix=min(i,merge(itfseqmatstk1(isps,isp2a,kp0(map)),
+c     $               itfseqmatstk(isps,isp2a,kp0,map,mp1+1,
+c     $               realp,i00),map == mp1+1))
+                if(map == mp1+1)then
+                  ix=min(i,itfseqmatstk1(isps,isp2a,kp0(map)))
+                else
+                  ix=min(i,itfseqmatstk(isps,isp2a,kp0,map,mp1+1,realp,i00))
+                endif
               endif
               if(ix .ge. 0)then
                 itastk2(2,iop)=ispf
@@ -875,9 +880,14 @@ c          write(*,*)'==> ',ix
               isps=m+1
             endif
           else
-            ix=merge(-1,itflistmat(dtastk(isp1),listp),
-     $           ktfnonlistq(ktastk(isp1)) .and.
-     $           iand(lsimplepat,listp%attr) /= 0)
+c            ix=merge(-1,itflistmat(dtastk(isp1),listp),
+c     $           ktfnonlistq(ktastk(isp1)) .and.
+c     $           iand(lsimplepat,listp%attr) /= 0)
+            if(ktfnonlistq(ktastk(isp1)) .and. iand(lsimplepat,listp%attr) /= 0)then
+              ix=-1
+            else
+              ix=itflistmat(dtastk(isp1),listp)
+            endif
           endif
         elseif(listp%head%k == ktfoper+mtfnull .and.
      $         listp%nl == 0)then

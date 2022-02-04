@@ -1,5 +1,6 @@
       module wakez
         real*8 dzwr
+        real*8 ,parameter :: dzlim=1.d-5
 
         contains
         subroutine txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -34,7 +35,7 @@
         endif
         include 'inc/TENT.inc'
         if(init .or.
-     $       abs(z(itab(np))-z(itab(1))-dzwr) >= 0.001d0*dzwr)then
+     $       abs(z(itab(np))-z(itab(1))-dzwr) >= dzlim*dzwr)then
           do i=1,np
             itab(i)=i
             if(ktfenanq(z(i)))then

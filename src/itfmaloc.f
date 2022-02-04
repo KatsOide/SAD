@@ -60,8 +60,11 @@ c          call tmov(rlist(ka+1),rlist(kap),n)
           go to 9000
         endif
         if(ktfnonreallistqo(kli))then
-          irtc=merge(itfmessage(9,'General::wrongtype','"Real matrix"'),
-     $           -1,err)
+          if(err)then
+            irtc=itfmessage(9,'General::wrongtype','"Real matrix"')
+          else
+            irtc=-1
+          endif
           return
         endif
       enddo
@@ -95,11 +98,17 @@ c          enddo
       irtc=0
       ktfmalocp=kap
       return
- 9000 irtc=merge(itfmessage(9,'General::wrongtype','"Matrix"'),
-     $     -1,err)
+ 9000 if(err)then
+        irtc=itfmessage(9,'General::wrongtype','"Matrix"')
+      else
+        irtc=-1
+      endif
       return
- 9100 irtc=merge(itfmessage(9,'General::wrongtype',
-     $     '"Numerical List or Matrix"'),-1,err)
+ 9100 if(err)then
+        irtc=itfmessage(9,'General::wrongtype','"Numerical List or Matrix"')
+      else
+        irtc=-1
+      endif
       return
       end
 
@@ -109,9 +118,9 @@ c          enddo
       type (sad_dlist) ,intent(in):: kl
       type (sad_dlist), pointer :: kli
       integer*4 ,intent(in):: n,m
-      integer*4 i
       real*8, intent(out):: a(n,m)
       logical*4 ,intent(in):: trans
+      integer*4 i
       if(trans)then
         do i=1,m
           call loc_sad(ktfaddr(kl%dbody(i)%k),kli)
@@ -374,11 +383,17 @@ c            enddo
         irtc=-1
       endif
       return
- 9000 irtc=merge(itfmessage(9,'General::wrongtype','"Matrix"'),
-     $     -1,err)
+ 9000 if(err)then
+        irtc=itfmessage(9,'General::wrongtype','"Matrix"')
+      else
+        irtc=-1
+      endif
       return
- 9100 irtc=merge(itfmessage(9,'General::wrongtype','"List"'),
-     $     -1,err)
+ 9100 if(err)then
+        irtc=itfmessage(9,'General::wrongtype','"List"')
+      else
+        irtc=-1
+      endif
       return
       end
 

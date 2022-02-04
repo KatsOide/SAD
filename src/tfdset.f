@@ -550,22 +550,25 @@ c        call tfdebugprint(kx,'deval',1)
       ih=0
       if(ktflistq(k,kl))then
         m=kl%nl
-        ih=merge(0,
-     $       merge(itfhash(kl%dbody(1),nh),
-     $       itfhash(kl%dbody(1),nh)+itfhash(kl%dbody(m),nh),
-     $       m .eq. 1),
-     $       m .eq. 0)+m
+        ih=m
+        if(m == 1)then
+          ih=itfhash(kl%dbody(1),nh)+1
+        elseif(m /= 0)then
+          ih=ih+itfhash(kl%dbody(1),nh)+itfhash(kl%dbody(m),nh)
+        endif
       elseif(ktfrefq(k,ka))then
         if(ka .eq. 0)then
           ih=0
         else
           ka=ka-ispbase
           m=itastk2(1,ka)-int(ka)
-          ih=merge(0,
-     $         merge(itfhash(dtastk(ka+1),nh),
-     $         itfhash(dtastk(ka+1),nh)+itfhash(dtastk(ka+m),nh),
-     $         m .eq. 1),
-     $         m .eq. 0)+m
+          if(m == 0)then
+            ih=m
+          elseif(m == 1)then
+            ih=itfhash(dtastk(ka+1),nh)+m
+          else
+            ih=itfhash(dtastk(ka+1),nh)+itfhash(dtastk(ka+m),nh)+m
+          endif
         endif
       else
         call tfdebugprint(k,
@@ -596,22 +599,24 @@ c        call tfdebugprint(kx,'deval',1)
         ih=int(ka)
       elseif(ktflistq(k,kl))then
         m=kl%nl
-        ih=merge(0,
-     $       merge(itfhash1(kl%dbody(1)),
-     $       itfhash1(kl%dbody(1))+itfhash1(kl%dbody(m)),
-     $       m .eq. 1),
-     $       m .eq. 0)+itfhash(kl%head,nh)+m
+        ih=itfhash(kl%head,nh)+m
+        if(m == 1)then
+          ih=ih+itfhash1(kl%dbody(1))
+        elseif(m /= 0)then
+          ih=ih+itfhash1(kl%dbody(1))+itfhash1(kl%dbody(m))
+        endif
       elseif(ktfrefq(k,ka))then
         if(ka .eq. 0)then
           ih=0
         else
           ka=ka-ispbase
           m=itastk2(1,ka)-int(ka)
-          ih=merge(0,
-     $         merge(itfhash1(dtastk(ka+1)),
-     $         itfhash1(dtastk(ka+1))+itfhash1(dtastk(ka+m)),
-     $         m .eq. 1),
-     $         m .eq. 0)+itfhash(dtastk(ka),nh)+m
+          ih=itfhash(dtastk(ka),nh)+m
+          if(m == 1)then
+            ih=ih+itfhash1(dtastk(ka+1))
+          elseif(m /= 0)then
+            ih=ih+itfhash1(dtastk(ka+1))+itfhash1(dtastk(ka+m))
+          endif
         endif
       elseif(ktfstringq(k))then
         ka=ktfaddrd(k)
@@ -956,9 +961,13 @@ c      call tfdebugprint(k,'tfreparg-in',1)
         isp=isp0
         return
       endif
-      kx=merge(dxnull,
-     $     merge(dtastk(isp),tfsequence(isp0,isp),isp .eq. isp0+1),
-     $     isp .eq. isp0)
+      if(isp == isp0)then
+        kx=dxnull
+      elseif(isp == isp0+1)then
+        kx=dtastk(isp)
+      else
+        kx=tfsequence(isp0,isp)
+      endif
       isp=isp0
       return
       end
@@ -1331,7 +1340,11 @@ c          write(*,*)'with ',symd%sym%override
           dtastk(isp)=ki
         end select
       enddo
-      kx=merge(tfcompose(isp1,list%head%k,irtc),sad_descr(list),rep)
+      if(rep)then
+        kx=tfcompose(isp1,list%head%k,irtc)
+      else
+        kx=sad_descr(list)
+      endif
       return
       end
 

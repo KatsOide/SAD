@@ -508,8 +508,11 @@ c      call tfdebugprint(ke,'eexpr-4900',1)
           if(tfnumberq(k) .and. tfnumberq(k1))then
             kx=tfcmplx(k1,k,iopc,irtc)
           else
-            kx=merge(tfecmplxl(k1,k,iopc),tfeexpr(k1,k,iopc),
-     $           tflistq(k1) .or. tflistq(k))
+            if(tflistq(k1) .or. tflistq(k))then
+              kx=tfecmplxl(k1,k,iopc)
+            else
+              kx=tfeexpr(k1,k,iopc)
+            endif
             irtc=0
           endif
         endif

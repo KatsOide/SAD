@@ -1142,7 +1142,11 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
       integer*4 nvar,l,lt
       integer*8 i
       logical*4 save
-      i=merge(idvalc(l),elatt%comp(l),ideal)
+      if(ideal)then
+        i=idvalc(l)
+      else
+        i=elatt%comp(l)
+      endif
       lt=idtypec(l)
       if(save)then
         nvar=kytbl(kwMAX,lt)-1

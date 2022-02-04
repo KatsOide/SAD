@@ -1,3 +1,4 @@
+c Obsolete -> teigen.f
       subroutine thess(a,w,v,n,ndim)
       implicit none
       integer*4 n,ndim,i,i1,j

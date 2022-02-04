@@ -260,9 +260,9 @@ c            endif
       use tmacro
       use ffs_pointer, only:latt
       implicit none
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
-      real*8 sx(np0),sy(np0),sz(np0)
-      integer*4 kptbl(np0,6),np,kturn
+      real*8 ,intent(inout)::  x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),
+     $     sx(np0),sy(np0),sz(np0)
+      integer*4 ,intent(inout):: kptbl(np0,6),np,kturn
       integer*8 lp
       real*8 dpxj,dpyj,ddp,dx1,dy1,dx2,dy2
       lp=latt(l_track)

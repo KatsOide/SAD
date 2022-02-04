@@ -777,8 +777,10 @@ c      call tfmemcheckprint('tturne-end1',0,.true.,irtc)
      $     beamplt
       use macmath
       implicit none
-      integer*4 l,idp,lorg,l0
-      real*8 trans(6,6),ti(6,6),twi(ntwissfun),cod(6),beam(42),gr
+      integer*4 ,intent(in):: l,idp,lorg
+      integer*4 l0
+      real*8 ,intent(in):: trans(6,6),cod(6),beam(42)
+      real*8 gr,ti(6,6),twi(ntwissfun)
       logical*4 norm
       if(codplt)then
         if(trpt)then

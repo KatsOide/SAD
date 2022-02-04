@@ -269,8 +269,10 @@ C     C=(A^3-A)
 C     D=(B^3-B)
 C
       implicit none
-      integer*4 np,i,m,j,md
-      real*8 y(md,np),ddy(md,np),work(np)
+      integer*4 ,intent(in):: np,m,md
+      real*8 ,intent(in)::  y(md,np)
+      real*8 ,intent(inout):: ddy(md,np),work(np)
+      integer*4 i,j
       do j=1,m
         ddy(j,1)=0.d0
         ddy(j,2)=y(j,3)-2.d0*y(j,2)+y(j,1)
@@ -384,7 +386,8 @@ C
       subroutine spline2(m,x,y,ddy,mode,dy)
       implicit none
       integer*4 ,intent(in):: m,mode
-      real*8 x(m),y(m),ddy(m),dy(2)
+      real*8 ,intent(in):: x(m),y(m)
+      real*8 ,intent(inout):: ddy(m),dy(2)
       real*8 ,allocatable,dimension(:)::work
       allocate(work(m))
       call spline(m,x,y,ddy,work,mode,dy)

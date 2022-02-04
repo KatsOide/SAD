@@ -133,11 +133,12 @@ c        call tfdebugprint(ke,'tffindroot-deriv',1)
       integer*4 i,j,iter
       real*8 ,intent(inout):: v0(nvar),d0
       real*8 ,intent(in):: vmin(nvar),vmax(nvar),eps,frac
-      real*8 f(neq),f0(neq),dv(nvar),v(nvar),fact,fact1,fact2,d,d1,d2,
-     $     dg,am,sv,goal,tffsfmin,svi
+      real*8 ,allocatable,dimension(:):: f,f0,dv,v
+      real*8 fact,fact1,fact2,d,d1,d2,dg,am,sv,goal,tffsfmin,svi
       real*8 , allocatable :: a(:,:),a0(:,:)
       logical*4 ,intent(in):: trace
       real*8 , parameter :: factmin=1.d-4,svmin=1.d-7,svdtol=1.d-5
+      allocate (f(neq),f0(neq),dv(nvar),v(nvar))
       iter=0
       call tfevalresidual(sav,v0,ke,f0,am,d0,nvar,neq,trace,irtc)
       goal=am*eps
