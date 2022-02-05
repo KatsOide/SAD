@@ -30,7 +30,7 @@ c
         write(*,*)' TSVDM Too large matrix. ',n,m
         return
       endif
-      allocate(v(0:mn+m),lsep(0:mn+n),aa(m),bb(n))
+      allocate(v(0:m+n),lsep(0:m+n),aa(m),bb(n))
       v(1:n)=1.d0
       x(1:m)=1.d0
       b(1:n1,1:n1)=0.d0
