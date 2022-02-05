@@ -38,7 +38,7 @@ c     end   initialize for preventing compiler warning
         ktastk(isp)=ktfoper+mtfnull
       endif
       levele=levele+1
-      if(levele .ge. maxlevele-10)then
+      if(levele >= maxlevele-10)then
         go to 8120
       endif
       irtc=0
@@ -46,7 +46,7 @@ c     end   initialize for preventing compiler warning
  1    continue
       call tfetok(string(istart:l),istop,kx,itfcontext,irt)
       istop=min(l+1,istop+istart-1)
-      if(irt .ge. 0)then
+      if(irt >= 0)then
         go to 2400
       endif
  2    select case(irt)
@@ -55,16 +55,16 @@ c            oper eol  cmnt clq
 c
       case (-1)
         mopc=int(ktfaddrd(kx))
- 2101   if(ktastk(isp) .eq. ktfoper+mtfnull)then
+ 2101   if(ktastk(isp) == ktfoper+mtfnull)then
           if(isp .gt. isp0)then
             m1=itastk2(1,isp-1)
             select case(m1)
             case(mtfslot,mtfslotseq)
               go to 910
             case(mtfrightbra)
-              if(mopc .ne. mtfrightbra)then
+              if(mopc /= mtfrightbra)then
                 do i=isp-2,isp0,-1
-                  if(itastk2(1,i) .eq. mtfpart)then
+                  if(itastk2(1,i) == mtfpart)then
                     isp=isp-1
                     dtastk(i)=kxmakelist(i-1,klx)
                     klx%head%k=ktfoper+mtfpart
@@ -83,12 +83,12 @@ c
             select case (mopc)
             case (mtfminus)
               mopc=merge(mtfneg,mtftimes,
-     $             m1 .eq. mtfpower .or. m1 .eq. mtfrevpower)
+     $             m1 == mtfpower .or. m1 == mtfrevpower)
               rtastk(isp)=-1.d0
             case (mtfplus)
               go to 1010
             case (mtftimes)
-              if(m1 .eq. mtfdot)then
+              if(m1 == mtfdot)then
                 kx%k=ktfoper+mtfnull
                 istop=ist1
                 irtc=0
@@ -99,44 +99,44 @@ c
               mopc=mtfflag
             case default
               if(.not. nullfirst(mopc))then
-                if(m1 .eq. mtfpower .and. mopc .eq. mtfpower)then
+                if(m1 == mtfpower .and. mopc == mtfpower)then
                   go to 8600
                 endif
                 go to 8700
               endif
             end select
           else
-            if(mopc .eq. mtfcomp .and.
-     $           itastk2(1,isp) .eq. mtfnull)then
+            if(mopc == mtfcomp .and.
+     $           itastk2(1,isp) == mtfnull)then
               kx%k=ktfoper+mtfnull
               irtc=-1
               if(re)then
                 istop=istop-1
               endif
               go to 9000
-            elseif(mopc .eq. mtfminus)then
+            elseif(mopc == mtfminus)then
               mopc=mtftimes
               rtastk(isp)=-1.d0
-            elseif(mopc .eq. mtfplus)then
+            elseif(mopc == mtfplus)then
               go to 1010
-            elseif(mopc .eq. mtfpattest)then
+            elseif(mopc == mtfpattest)then
               mopc=mtfflag
             elseif(.not. nullfirst(mopc))then
               go to 8700
             endif
           endif
         else
-          if(mopc .eq. mtfleftparen .or. mopc .eq. mtflist
-     $         .or. mopc .eq. mtfslot
-     $         .or. mopc .eq. mtfslotseq)then
+          if(mopc == mtfleftparen .or. mopc == mtflist
+     $         .or. mopc == mtfslot
+     $         .or. mopc == mtfslotseq)then
             do i=isp0,isp-1
-              if(itastk2(1,i) .eq. mtflist
-     $             .or. itastk2(1,i) .eq. mtfleftbra
-     $             .or. itastk2(1,i) .eq. mtfleftparen
-     $             .or. itastk2(1,i) .eq. mtfpart)then
+              if(itastk2(1,i) == mtflist
+     $             .or. itastk2(1,i) == mtfleftbra
+     $             .or. itastk2(1,i) == mtfleftparen
+     $             .or. itastk2(1,i) == mtfpart)then
                 itastk2(1,isp)=mtftimes
                 call tfestk(isp0,iprior,lastfirst,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   go to 8900
                 endif
                 isp=isp+1
@@ -153,17 +153,17 @@ c
           itastk2(1,isp)=mopc
           if(isp .gt. isp0)then
             call tfestk(isp0,iprior,lastfirst,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               go to 8900
             endif
           endif
           select case(mopc)
           case (mtfcomma)
-            if(isp .eq. isp0)then
+            if(isp == isp0)then
               go to 7000
             endif
           case (mtfcomp)
-            if(isp .eq. isp0 .and. re)then
+            if(isp == isp0 .and. re)then
               istop=istop-1
               go to 7000
             endif
@@ -179,18 +179,18 @@ c
             itastk2(1,isp)=mtfrevpower
           case (mtfunset,mtfrepeated,mtfrepeatednull,
      $           mtfincrement,mtfdecrement)
-            if(ktastk(isp) .ne. ktfoper+mtfnull)then
+            if(ktastk(isp) /= ktfoper+mtfnull)then
               dtastk(isp)=kxmakelist(isp-1,kla)
               kla%head%k=ktfoper+mopc
               itastk2(1,isp)=mtfnull
             endif
           case default
-            if(itastk2(1,isp) .eq. mtfrightbrace
-     $           .or. itastk2(1,isp) .eq. mtfrightparen)then
+            if(itastk2(1,isp) == mtfrightbrace
+     $           .or. itastk2(1,isp) == mtfrightparen)then
               go to 8050
             endif
           end select
-          if(itastk2(1,isp) .ne. mtfnull)then
+          if(itastk2(1,isp) /= mtfnull)then
             isp=isp+1
             if(isp .gt. mstk)then
               go to 8110
@@ -203,26 +203,26 @@ c
           go to 8010
         endif
       case (-2)
-        if(ktastk(isp) .eq. ktfoper+mtfnull)then
-          if(isp .eq. isp0 .and.
-     $         itastk2(1,isp) .eq. mtfnull)then
+        if(ktastk(isp) == ktfoper+mtfnull)then
+          if(isp == isp0 .and.
+     $         itastk2(1,isp) == mtfnull)then
             irtc=-1
           elseif(isp .gt. isp0)then
             iop1=itastk2(1,isp-1)
-            if(iop1 .eq. mtffun)then
+            if(iop1 == mtffun)then
               isp=isp-1
               dtastk(isp)=kxpfaloc(dtastk(isp))
               itastk2(1,isp)=mtfnull
               go to 3
             endif
             if(re)then
-c              if(string(istop-1:istop-1) .eq. char(10))then
+c              if(string(istop-1:istop-1) == char(10))then
                 if(tfreadevalbuf(istart,istop,l,iop1))then
                   eol=.true.
                   go to 1
                 endif
 c              endif
-            elseif(iop1 .eq. mtfcomp .or. iop1 .eq. mtfleftparen)then
+            elseif(iop1 == mtfcomp .or. iop1 == mtfleftparen)then
               go to 3
             endif
             go to 8700
@@ -234,7 +234,7 @@ c              endif
           if(.not. re)then
             itastk2(1,isp)=mtfrightparen
             call tfestk(isp0,iprior,lastfirst,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               go to 8900
             endif
             if(isp .le. isp0)then
@@ -242,12 +242,12 @@ c              endif
             endif
           endif
           do i=isp0,isp
-            if(itastk2(1,i) .eq. mtflist
-     $           .or. itastk2(1,i) .eq. mtfleftbra
-     $           .or. itastk2(1,i) .eq. mtfleftparen
-     $           .or. itastk2(1,i) .eq. mtfpart)then
+            if(itastk2(1,i) == mtflist
+     $           .or. itastk2(1,i) == mtfleftbra
+     $           .or. itastk2(1,i) == mtfleftparen
+     $           .or. itastk2(1,i) == mtfpart)then
               if(re)then
-c                if(string(istop-1:istop-1) .eq. char(10))then
+c                if(string(istop-1:istop-1) == char(10))then
                   if(tfreadevalbuf(istart,istop,l,
      $                 int(itastk2(1,i))))then
                     itastk2(1,isp)=mtfnull
@@ -263,23 +263,23 @@ c     Sanity check for SAD stack
 c     Stack MIGHT not have mtfright(brace|bra|paren),
 c     because stack does not have mtfleft(brace|bra|paren)!!
           do i=isp,isp0,-1
-            if(itastk2(1,i) .eq. mtfrightbrace
-     $           .or. itastk2(1,i) .eq. mtfrightbra
-     $           .or. itastk2(1,i) .eq. mtfrightparen)then
+            if(itastk2(1,i) == mtfrightbrace
+     $           .or. itastk2(1,i) == mtfrightbra
+     $           .or. itastk2(1,i) == mtfrightparen)then
               mopc=1
               go to 8050
             endif
           enddo
           itastk2(1,isp)=mtfend
           call tfestk(isp0,iprior,lastfirst,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 8900
           endif
         endif
         go to 7000
       case (-3)
         if(re)then
-c          if(string(istop-1:istop-1) .eq. char(10))then
+c          if(string(istop-1:istop-1) == char(10))then
  3001       if(tfreadevalbuf(istart,istop,l,
      $           mtfleftcomment))then
               ist2=index(string(istart:l),'*)')
@@ -303,12 +303,12 @@ c          endif
         call abort
       end select
 
- 2400 if(ktastk(isp) .ne. ktfoper+mtfnull)then
+ 2400 if(ktastk(isp) /= ktfoper+mtfnull)then
         do i=isp0,isp-1
-          if(itastk2(1,i) .eq. mtflist
-     $         .or. itastk2(1,i) .eq. mtfleftbra
-     $         .or. itastk2(1,i) .eq. mtfleftparen
-     $         .or. itastk2(1,i) .eq. mtfpart)then
+          if(itastk2(1,i) == mtflist
+     $         .or. itastk2(1,i) == mtfleftbra
+     $         .or. itastk2(1,i) == mtfleftparen
+     $         .or. itastk2(1,i) == mtfpart)then
             if(eol)then
               irtc=itfmessagestr(9999,'General::missop',
      $             string(ist1:min(ist1+80,istop-1,l)))
@@ -316,7 +316,7 @@ c          endif
             endif
             itastk2(1,isp)=mtftimes
             call tfestk(isp0,iprior,lastfirst,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               go to 8900
             endif
             isp=isp+1
@@ -327,9 +327,9 @@ c     Sanity check for SAD stack
 c     Stack MIGHT not have mtfright(brace|bra|paren),
 c     because stack does not have mtfleft(brace|bra|paren)!!
         do i=isp-1,isp0,-1
-          if(itastk2(1,i) .eq. mtfrightbrace
-     $         .or. itastk2(1,i) .eq. mtfrightbra
-     $         .or. itastk2(1,i) .eq. mtfrightparen)then
+          if(itastk2(1,i) == mtfrightbrace
+     $         .or. itastk2(1,i) == mtfrightbra
+     $         .or. itastk2(1,i) == mtfrightparen)then
             mopc=1
             go to 8050
           endif
@@ -360,19 +360,19 @@ c        call tfdebugprint(dtastk(isp),'tfeval-8',3)
         if(re)then
           savep=sav
         endif
-        if(irtc .eq. -1)then
+        if(irtc == -1)then
           kx%k=ktfoper+mtfnull
           go to 9000
-        elseif(irtc .eq. irtcabort)then
+        elseif(irtc == irtcabort)then
           kx%k=ktfoper+mtfnull
           irtc=itfmessagestr(999,'General::abort',
      $         string(ist1:min(istop-1,l)))
           go to 8900
-        elseif(irtc .ne. 0)then
+        elseif(irtc /= 0)then
           iste=ist10
           go to 8900
         endif
-        if(itgetfpe() .ne. 0)then
+        if(itgetfpe() /= 0)then
           irtc=itfmessagestr(9,'General::fpe',
      $         string(ist1:min(istop-1,l)))
           go to 8900
@@ -404,7 +404,7 @@ c        call tfdebugprint(dtastk(isp),'tfeval-8',3)
      $     string(ist1:min(istop-1,l)))
  8710 kx%k=ktfoper+mtfnull
       istop=ist1
- 8800 if(re .and. icslfni() .eq. 5)then
+ 8800 if(re .and. icslfni() == 5)then
         go to 8910
       endif
  8900 if(irtc .lt. -1 .and. irtc .gt. irtcabort)then
@@ -416,10 +416,10 @@ c        call tfdebugprint(dtastk(isp),'tfeval-8',3)
         irtc=itfmessagestr(999,'General::unexpbreak',
      $       string(max(ist1,iste-16):min(l,iste+20)))
       endif
-      if(ierrorprint .ne. 0)then
+      if(ierrorprint /= 0)then
         kx%k=ktfoper+mtfnull
         ierrorf=0
-        if(kerror .ne. 0)then
+        if(kerror /= 0)then
           call tfaddmessage(string(1:l),min(istop,l+1),icslfno())
         endif
       endif

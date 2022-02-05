@@ -1,6 +1,6 @@
       subroutine tmulti(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     al,ak,akr0,bz,phia,psi1,psi2,
-     $     dx,dy,dz,chi1,chi2,theta,dtheta,theta2,
+     $     dx,dy,dz,chi1,chi2,theta,dtheta,theta2,alg,phig,
      $     eps0,krad,fringe,f1in,f2in,f1out,f2out,
      $     mfring,fb1,fb2,dofr,
      $     radius,rtaper,ndiv0,nmmax,
@@ -25,12 +25,13 @@ c      use ffs_pointer, only:inext,iprev
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),
      $     dv(np),sx(np),sy(np),sz(np),bz
       real*8 ,intent(in):: al,phia,psi1,psi2,
-     $     dx,dy,dz,chi1,chi2,theta,dtheta,theta2,
+     $     dx,dy,dz,chi1,chi2,theta,dtheta,theta2,alg,phig,
      $     eps0,f1in,f2in,f1out,f2out,fb1,fb2,radius,rtaper
       complex*16 ,intent(in):: ak(0:nmult),akr0(0:nmult)
       logical*4 ,intent(in):: fringe,krad
       logical*1 ,intent(in):: dofr(0:nmult)
-      type (tzparams) tzs(np),tzs1(np)
+c      type (tzparams) tzs(np),tzs1(np)
+      type (tzparams) ,dimension(:),allocatable:: tzs,tzs1
       integer*4 i,m,n,ndiv,ibsi
       real*8 bxs,bys,bzs,b,a,epsr,wi,
      $     akr1,ak1,al1,p,ea,pxf,pyf,sv,wm,alx
@@ -41,16 +42,18 @@ c      use ffs_pointer, only:inext,iprev
      $       np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al,ak,phia,
      $       psi1,psi2,bz,
-     1       dx,dy,theta,dtheta,
+     1       dx,dy,theta,dtheta,chi2,alg,phig,
      $       eps0,krad,fb1,fb2,mfring,fringe)
         return
       endif
+c      write(*,'(a,1p10g12.4)')'tmulti ',al,ak(1),chi1,chi2,alg,phig
       b0=0.d0
       nzleng=al .ne. 0.d0
       spac1=.false.
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
-     $     al,bz,dx,dy,dz,
-     $     chi1,chi2,theta2,bxs,bys,bzs,.true.)
+     $     alg,bz,dx,dy,dz,
+     $     -chi1,-chi2,theta2,bxs,bys,bzs,.true.)
+c      write(*,'(a,1p10g12.4)')'tmulti-1 ',x(1),px(1),y(1),py(1),z(1),g(1)
       akr(0)=(akr0(0)+dcmplx(bys*al,bxs*al))*rtaper
       if(nmmax .eq. 0 .and. .not. spac)then
         call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -138,10 +141,16 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
               call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al1,0.d0)
               pcvt%fr0=pcvt%fr0+al1/al
             elseif(m .eq. 1)then
+              if(.not. allocated(tzs1))then
+                allocate(tzs1(np))
+              endif
               call tsolqum(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $             al1,ak1,bzs,dble(ak01),imag(ak01),-1,eps0,
      $             tzs1,.true.)
             else
+              if(.not. allocated(tzs))then
+                allocate(tzs(np))
+              endif
               call tsolqum(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $             al1,ak1,bzs,dble(ak01),imag(ak01),-1,eps0,
      $             tzs,m .eq. 2)
@@ -185,6 +194,9 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
             call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           al1,ak1,bzs,dble(ak01),imag(ak01),2,eps0)
           else
+            if(.not. allocated(tzs1))then
+              allocate(tzs1(np))
+            endif
             call tsolqum(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $            al1,ak1,bzs,dble(ak01),imag(ak01),-1,eps0,
      $           tzs1,.false.)
@@ -240,15 +252,22 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
      $         0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
         endif
       endif
+c      if(allocated(tzs1))then
+c        deallocate(tzs1)
+c      endif
+c      if(allocated(tzs))then
+c        deallocate(tzs)
+c      endif
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
-     $     al,bz,dx,dy,dz,
-     $     chi1,chi2,theta2,bxs,bys,bzs,.false.)
+     $     alg-al,bz,dx,dy,dz,
+     $     -chi1,-chi2,theta2,bxs,bys,bzs,.false.)
+c      write(*,'(a,1p10g12.4)')'tmulti-9 ',x(1),px(1),y(1),py(1),z(1),g(1)
       return
       end
 
       subroutine tmultiacc(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     al,ak,akr0,bz,phia,psi1,psi2,
-     $     dx,dy,dz,chi1,chi2,theta,dtheta,theta2,
+     $     dx,dy,dz,chi1,chi2,theta,dtheta,theta2,alg,phig,
      $     eps0,krad,fringe,f1in,f2in,f1out,f2out,
      $     mfring,fb1,fb2,dofr,
      $     vc,w,phirf,dphirf,vnominal,
@@ -273,7 +292,7 @@ c      use ffs_pointer, only:inext,iprev
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),
      $     dv(np),sx(np),sy(np),sz(np),bz
       real*8 ,intent(in):: al,phia,psi1,psi2,
-     $     dx,dy,dz,chi1,chi2,theta,dtheta,theta2,
+     $     dx,dy,dz,chi1,chi2,theta,dtheta,theta2,alg,phig,
      $     eps0,f1in,f2in,f1out,f2out,fb1,fb2,w,
      $     vc,phirf,dphirf,vnominal,radius,rtaper
       complex*16 ,intent(in):: ak(0:nmult),akr0(0:nmult)
@@ -296,7 +315,7 @@ c      use ffs_pointer, only:inext,iprev
      $       np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al,ak,phia,
      $       psi1,psi2,bz,
-     1       dx,dy,theta,dtheta,
+     1       dx,dy,theta,dtheta,chi2,alg,phig,
      $       eps0,krad,fb1,fb2,mfring,fringe)
         return
       endif
@@ -305,8 +324,8 @@ c      use ffs_pointer, only:inext,iprev
       nzleng=al .ne. 0.d0
       spac1=.false.
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
-     $     al,bz,dx,dy,dz,
-     $     chi1,chi2,theta2,bxs,bys,bzs,.true.)
+     $     alg,bz,dx,dy,dz,
+     $     -chi1,-chi2,theta2,bxs,bys,bzs,.true.)
       akr(0)=(akr0(0)+dcmplx(bys*al,bxs*al))*rtaper
       if(nmmax .eq. 0 .and. vc .eq. 0.d0 .and. .not. spac)then
         call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -564,8 +583,8 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
       endif
  1000 continue
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
-     $     al,bz,dx,dy,dz,
-     $     chi1,chi2,theta2,bxs,bys,bzs,.false.)
+     $     alg-al,bz,dx,dy,dz,
+     $     -chi1,-chi2,theta2,bxs,bys,bzs,.false.)
       if(vnominal .ne. 0.d0)then
         h2=h0+vnominal
         p2=h2p(h2)

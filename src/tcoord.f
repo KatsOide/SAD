@@ -3,14 +3,15 @@
       use tmacro
       use mathfun, only:sqrt1
       implicit none
-      integer*4 np,i
+      integer*4 ,intent(in):: np
+      integer*4 i
       real*8 dx,dy,dz,chi1,chi2,chi3,cchi1,schi1,
      $     cchi2,schi2,cchi3,schi3,dx0,dy0,dz0,dx1,dy1,dz1,
      $     r11,r12,r13,r21,r22,r23,r31,r32,r33,
      $     pxi,pyi,a,dpz,pzi,zi,yi,xi,xf,yf,zf,
      $     pzf
-      logical*4 dir
-      real*8 x(np),px(np),y(np),py(np),z(np)
+      logical*4 ,intent(in):: dir
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np)
 c
 c   xi        c3 -s3 0      1  0  0      c1 0  s1      x-dx
 c   eta  =    s3  c3 0      0  c2 s2     0  1  0       y-dy

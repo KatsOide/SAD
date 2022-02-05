@@ -1,6 +1,6 @@
       subroutine tmulte(trans,cod,beam,srot,l,al,ak,bz,
      $     phia,psi1,psi2,apsi1,apsi2,
-     1     dx,dy,dz,chi1,chi2,theta,dtheta,
+     1     dx,dy,dz,chi1,chi2,theta,dtheta,alg,phig,
      $     eps0,enarad,fringe,
      $     f1in,f2in,f1out,f2out,mfring,
      $     fb1,fb2,bfrm,vc,harm,phi,freq,wakew1,
@@ -23,7 +23,7 @@
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 ,intent(in):: f1in,f2in,f1out,f2out,
      $     al,vc,harm,phi,freq,bz,dx,dy,dz,chi1,chi2,theta,dtheta,
-     $     fb1,fb2,rtaper,wakew1,eps0,phia,psi1,psi2,
+     $     fb1,fb2,rtaper,wakew1,eps0,phia,psi1,psi2,alg,phig,
      $     apsi1,apsi2
       complex*16 ,intent(in):: ak(0:nmult)
       logical*4 ,intent(in):: enarad,fringe,autophi,bfrm
@@ -40,14 +40,14 @@
       if(phia .ne. 0.d0)then
         call tmultae(trans,cod,beam,srot,al,ak,
      $       phia,psi1,psi2,apsi1,apsi2,bz,
-     1       dx,dy,theta,dtheta,
+     1       dx,dy,theta,dtheta,chi2,alg,phig,
      $       eps0,enarad,fringe,fb1,fb2,mfring,l)
         return
       endif
       code=cod
       theta2=theta+dtheta+akang(ak(1),al,cr1)
-      call tsolrote(trans,cod,beam,srot,al,bz,dx,dy,dz,
-     $     chi1,chi2,theta2,bxs,bys,bzs,.true.)
+      call tsolrote(trans,cod,beam,srot,alg,bz,dx,dy,dz,
+     $     -chi1,-chi2,theta2,bxs,bys,bzs,.true.)
       akn0=(ak(0)*cr1+dcmplx(bys,bxs)*al)*rtaper
       krad=enarad .and. al .ne. 0.d0
       if(krad)then
@@ -62,6 +62,7 @@
       if(vc .ne. 0.d0 .or. gammab(l+1) .ne. gammab(l))then
         nmmax=0
       else
+c        write(*,'(a,1p12g12.4)')'tmulte-drife ',al,ak(0),akn0
         call tdrife(trans,cod,beam,srot,
      $       al,bzs,dble(akn0),imag(akn0),al,
      $       .true.,krad,irad)
@@ -352,12 +353,8 @@ c$$$     $         +trans1(4,3)*trans(3,6)
         call tradke(trans,cod,beam,srot,f1out,0.d0,bzs*.5d0)
       endif
  1000 continue
-c      if(ktfenanq(cod(5)) .or. ktfenanq(trans(5,6)))then
-c        write(*,'(a,2i5)')'tmulte-1000 ',l,ndiv
-c        write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6),cod
-c      endif
-      call tsolrote(trans,cod,beam,srot,al,bz,dx,dy,dz,
-     $     chi1,chi2,theta2,bxs,bys,bzs,.false.)
+      call tsolrote(trans,cod,beam,srot,alg-al,bz,dx,dy,dz,
+     $     -chi1,-chi2,theta2,bxs,bys,bzs,.false.)
       if(dhg .ne. 0.d0)then
         rg2=p0/gammab(l+1)
         call tinitr(trans1)
@@ -375,9 +372,5 @@ c      endif
         call tphyzp
         call tesetdv(cod(6))
       endif
-c      if(ktfenanq(cod(5)) .or. ktfenanq(trans(5,6)))then
-c        write(*,'(a,i5)')'tmulte-end ',l
-c        write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6),cod
-c      endif
       return
       end

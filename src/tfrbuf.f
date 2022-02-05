@@ -95,7 +95,7 @@ c
       select case (itbuf(lfn))
       case (modewrite)
         close(lfn)
-        if(ibuf(lfn) .gt. 0)then
+        if(ibuf(lfn) > 0)then
           if(ilist(2,ibuf(lfn)-1) .ne. 0)then
             irtc=unixclose(ilist(2,ibuf(lfn)-1))
             ilist(2,ibuf(lfn)-1)=0
@@ -134,7 +134,7 @@ c        write(*,*)'trbclose ',cm(1:str%nch+3)
       subroutine trbnextl(lfn)
       implicit none
       integer*4 lfn
-      if(lfn .gt. 0)then
+      if(lfn > 0)then
         mbuf(lfn)=lbuf(lfn)+1
       endif
       return
@@ -143,7 +143,7 @@ c        write(*,*)'trbclose ',cm(1:str%nch+3)
       subroutine trbeor2bor(lfn)
       implicit none
       integer*4 lfn
-      if(lfn .gt. 0)then
+      if(lfn > 0)then
         if(mbuf(lfn) .eq. lbuf(lfn))then
           mbuf(lfn)=lbuf(lfn)+1
         endif
@@ -154,7 +154,7 @@ c        write(*,*)'trbclose ',cm(1:str%nch+3)
       integer*8 function itrbibuf(lfn,mode) result(ia)
       implicit none
       integer*4 , intent(in) :: lfn,mode
-      if(lfn .gt. 0 .and. itbuf(lfn) .eq. mode)then
+      if(lfn > 0 .and. itbuf(lfn) .eq. mode)then
         ia=ibuf(lfn)
       else
         ia=0
@@ -165,7 +165,7 @@ c        write(*,*)'trbclose ',cm(1:str%nch+3)
       subroutine trbmovepoint(lfn,nc)
       implicit none
       integer*4 , intent(in) :: lfn,nc
-      if(lfn .gt. 0)then
+      if(lfn > 0)then
         mbuf(lfn)=min(lbuf(lfn)+1,max(1,mbuf(lfn)+nc))
       endif
       return
@@ -309,7 +309,7 @@ c      write(*,*)'reststr ',in
       call tfreadbuf(in,lbuf(in)+1,nc)
 c      write(*,*)': ',nc,'''',buffer(mbuf(in):mbuf(in)+nc-1),''''
       irtc=0
-      if(nc .gt. 0)then
+      if(nc > 0)then
         str=buffer(mbuf(in):mbuf(in)+nc-1)
         mbuf(in)=mbuf(in)+nc
         if(str(nc:nc) .eq. char(10))then
@@ -484,7 +484,7 @@ c          write(*,*)'readshared-other '
         ka=ktfaddr(k)
         kt=k-ka
         if(kt .eq. ktfstring)then
-          if(ilist(1,ka) .gt. ilist(1,kas)*8)then
+          if(ilist(1,ka) > ilist(1,kas)*8)then
             ilist(2,kas)=0
             irtc=itfmessageexp(9,'Shared::toolarge',
      $         dble(ilist(1,ka)-ilist(1,kas)*8))
@@ -503,7 +503,7 @@ c          write(*,*)'writeshared-string ',kas,klist(kas+1)
             isp=isp1+2
             return
           endif
-          if(n .gt. ilist(1,kas))then
+          if(n > ilist(1,kas))then
             ilist(2,kas)=0
             irtc=itfmessageexp(9,'Shared::toolarge',
      $           dble((n-ilist(1,kas))*8))

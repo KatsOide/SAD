@@ -10,11 +10,12 @@
       use ffs_pointer
       use ffs_fit
       use tffitcode
+      use gfun
       implicit none
       integer*4 , intent(in)::l,icolm,mf
       character*(*) , intent(in)::form
       real*8 , intent(in), optional::a
-      real*8 v,tgetgm
+      real*8 v
       logical*4 ,intent(in):: dref
       v=0.d0
       if(dref)then
@@ -51,7 +52,7 @@
       s=autofg(v,form)
       if(v .eq. 0.d0)then
         i=index(s,'.')
-        if(i .ne. 0 .and. i .lt. len(s)-1)then
+        if(i /= 0 .and. i .lt. len(s)-1)then
           s(i+2:)=' '
         endif
       endif
@@ -86,6 +87,7 @@
       use ffs_seg
       use tfcsi, only:lfni
       use geolib
+      use gfun
       implicit none
       type (sad_comp), pointer:: cmp
       integer*4 , intent(inout):: idisp1,idisp2
@@ -122,7 +124,7 @@ c     end   initialize for preventing compiler warning
       buff=' '
 270   call getwdl2(word,wordp)
 c      write(*,*)'tfdisp ',word,wordp
-      if(word(1:3) .ne. '***' .and.
+      if(word(1:3) /= '***' .and.
      1   ifany(word,'|<{*%',1) .gt. 0)then
         seldis=.true.
         word1=wordp
@@ -176,7 +178,7 @@ c      write(*,*)'tfdisp ',word,wordp
       if(exist)then
         idisp1=id0
       else
-        if(wordp .ne. ' ')then
+        if(wordp /= ' ')then
           return
         endif
         go to 250
@@ -225,7 +227,7 @@ c      write(*,*)'tfdisp ',word,wordp
      1         ' Element    DX     DPX    DY     DPY   '//
      1         '   AY      BY      NY      EY      EPY    DetR     #'
         case (modeb)
-          if(dref .or. icolm .ne. 0)then
+          if(dref .or. icolm /= 0)then
             call termes(lfno,
      $           'Info-REF and DREF not implemented for DISP B.',' ')
             return
@@ -288,7 +290,7 @@ c      write(*,*)'tfdisp ',word,wordp
         endif
         call compelc(l,cmp)
         if(iele1(icomp((l))) .gt. 0 .and.
-     $       id .ne. icMARK .and. id .ne. 34)then
+     $       id /= icMARK .and. id /= 34)then
           if(nelvx(iele1(icomp(l)))%ival .gt. 0)then
             call tdtrimz(vout,
      $           tfvcmp(cmp,nelvx(iele1(icomp(l)))%ival),'10.7')
@@ -300,7 +302,7 @@ c      write(*,*)'tfdisp ',word,wordp
         else
           vout=' 0'
         endif
-        if(mod(lines,nlc) .eq. 0 .and. lines .ne. 0
+        if(mod(lines,nlc) .eq. 0 .and. lines /= 0
      $       .and. lfni .eq. 5 .and. lfno .eq. 6 .and.
      $       .not. range)then
           write(lfno,'(a,$)')'(c_ontinue, q_uit, a_ll)? '
@@ -338,7 +340,7 @@ c          read(lfni,'(a)')ans
           endif
           call tdtrimz(buff(37:48),pos(l)/scale(mfitleng),'12.6')
           call tdtrimz(buff(49:58),tfvl(cmp,id),'10.6')
-          if(id .ne. 41 .and. id .ne. 42 .and. id .ne. 34)then
+          if(id /= 41 .and. id /= 42 .and. id /= 34)then
             buff(59:69)=' '//vout(1:10)
           else
             buff(59:69)=' 0'
@@ -362,7 +364,7 @@ c          if(mdisp .eq. modeg .or. tfinsol(l))then
             enddo
           endif
           dir=' '
-          if(l .ne. nlat)then
+          if(l /= nlat)then
             if(direlc(l) .le. 0.d0)then
               dir='-'
             endif
@@ -435,7 +437,7 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             buff(25:32)=tdispv(mfitex,l,icolm,dref,'8.5')
             buff(33:40)=tdispv(mfitepx,l,icolm,dref,'8.5')
           end select
-          if(l .ne. nlat .and.
+          if(l /= nlat .and.
      $         direlc(l) .le. 0.d0)then
             bname(1:max(10,lname+2))=' -'//name(1:lname)
             lname=max(10,lname+2)
@@ -492,7 +494,7 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
      $           /scale(mfitddp),'7.4')
           case default
             call tdtrimz(buff(51:68),tfvl(cmp,id),'8.5')
-            if(id .ne. 41 .and. id .ne. 42 .and. id .ne. 34)then
+            if(id /= 41 .and. id /= 42 .and. id /= 34)then
               buff(59:68)=vout(1:10)
             else
               buff(59:68)=' 0'

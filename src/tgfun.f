@@ -1,3 +1,7 @@
+      module gfun
+
+      contains
+
       real*8 function tgfun(kf,kp,idp)
       use tfstk
       use ffs
@@ -7,7 +11,6 @@
       use geolib
       implicit none
       integer*4 ,intent(in):: kf,kp,idp
-      real*8 tphysdisp
       if(kf .le. mfitzpy)then
         tgfun=utwiss(kf,idp,itwissp(kp))
       elseif(kf .ge. mfitpex .and. kf .le. mfitgmz)then
@@ -263,3 +266,30 @@ c        write(*,*)'tphysdisp ',kf
       endif
       return
       end
+
+      type (sad_descriptor) function tgetbmag(i,kt) result(kx)
+      use tfstk
+      use tffitcode
+      use ffs_pointer
+      implicit none
+      integer*4 ,intent(in):: i,kt
+      select case (kt)
+      case (mfitbmagx)
+        kx%x(1)=.5d0*(twiss(i,0,mfitbx)/twiss(i,-1,mfitbx)+twiss(i,-1,mfitbx)/twiss(i,0,mfitbx)
+     $       +(twiss(i,0,mfitax)*twiss(i,-1,mfitbx)-twiss(i,-1,mfitax)*twiss(i,0,mfitbx))**2
+     $       /twiss(i,0,mfitbx)/twiss(i,-1,mfitbx))
+      case (mfitbmagy)
+        kx%x(1)=.5d0*(twiss(i,0,mfitby)/twiss(i,-1,mfitby)+twiss(i,-1,mfitby)/twiss(i,0,mfitby)
+     $       +(twiss(i,0,mfitay)*twiss(i,-1,mfitby)-twiss(i,-1,mfitay)*twiss(i,0,mfitby))**2
+     $       /twiss(i,0,mfitby)/twiss(i,-1,mfitby))
+      case (mfitbmagz)
+        kx%x(1)=.5d0*(twiss(i,0,mfitbz)/twiss(i,-1,mfitbz)+twiss(i,-1,mfitbz)/twiss(i,0,mfitbz)
+     $       +(twiss(i,0,mfitaz)*twiss(i,-1,mfitbz)-twiss(i,-1,mfitaz)*twiss(i,0,mfitbz))**2
+     $       /twiss(i,0,mfitbz)/twiss(i,-1,mfitbz))
+      case default
+        kx%x(1)=0.d0
+      end select
+      return
+      end function
+
+      end module gfun

@@ -104,7 +104,7 @@ c         endif
          px1=     a22*pxi+a24*pyi
          py1=    -a24*pxi+a22*pyi
          if(enarad)then
-           bsi(i)=bz
+           bsi(i)=bz*al
            if(rfluct)then
              call tradkf1(x(i),px1,y(i),py1,z(i),g(i),dv(i),
      $            sx(i),sy(i),sz(i),
@@ -134,17 +134,17 @@ c      write(*,'(a,106g15.7)')'td_sol ',x(1),px(1),y(1),py(1),z(1),g(1)
       integer*4 ,intent(inout):: ndiag
       integer*4 j
       phi=asinz((bpr-pbz)/hypot(pz0,pbz))+atan(pbz,pz0)
-      if(plz .eq. 0.d0)then
+      if(abs(plz) == 0.d0)then
         call xsincos(phi,sinphi,xsinphi,cosphi,dcosphi)
       else
         do j=1,itmax
           call xsincos(phi,sinphi,xsinphi,cosphi,dcosphi)
           s=plz*xsinphi+pz0*sinphi-pbz*dcosphi
           u=-plz*dcosphi+pz0*cosphi+pbz*sinphi
-          dphi=merge((bpr-s)/u,(bpr-s)/pz0,u .ne. 0.d0)
+          dphi=merge((bpr-s)/u,(bpr-s)/pz0,abs(u) /= 0.d0)
           phi0=phi
           phi=phi+dphi
-          if(phi0 .eq. phi .or. abs(dphi) .le. conv*abs(phi))then
+          if(phi0 == phi .or. abs(dphi) .le. conv*abs(phi))then
             return
           endif
         enddo
@@ -152,7 +152,7 @@ c      write(*,'(a,106g15.7)')'td_sol ',x(1),px(1),y(1),py(1),z(1),g(1)
           ndiag=ndiag-1
           write(*,'(a,1p8g13.5)')'tsolconv convergence error: ',
      $         phi,dphi,bpr,s,u,plz,pz0,pbz
-          if(ndiag .eq. -1)then
+          if(ndiag == -1)then
             write(*,*)
      $           'Further tsolconv messages will be suppressed.'
           endif
@@ -175,7 +175,7 @@ c      write(*,'(a,106g15.7)')'td_sol ',x(1),px(1),y(1),py(1),z(1),g(1)
      $     alb,pbx,pby,pbz,pl,dpl,dphizsq,a,r,
      $     dpldpx,dpldpy,dpldp,dplz,plx,ply,plz,ptx,pty,ptz,
      $     cosphi,sinphi,dcosphi,dphi,
-     $     xsinphi,ax,ay,az,cx,cy,albabs,ap,bpr,db
+     $     xsinphi,ax,ay,az,cx,cy,albabs,ap,db
       real*8 ,parameter ::conv=1.d-15,bzthre=1.d-20,ptmax=0.9999d0
       logical*4 ,intent(in):: drift
       bxs=bxs0
@@ -200,13 +200,13 @@ c cod does NOT have canonical momenta!
       dpz0dpx= -pxi/pz0
       dpz0dpy= -pyi/pz0
       dpz0dp =   pr/pz0
-      if(bxs .eq. 0.d0 .and. bys .eq. 0.d0)then
+      if(abs(bxs) == 0.d0 .and. abs(bys) == 0.d0)then
         phi=bzs*r
         dphidz  = 1.d0/pz0
         dphidpx = -r/pz0*dpz0dpx
         dphidpy = -r/pz0*dpz0dpy
         dphidp  = -r/pz0*dpz0dp
-        if(bzs .eq. 0.d0)then
+        if(abs(bzs) == 0.d0)then
           a24=0.d0
           a12=r
           a22=1.d0
@@ -217,7 +217,7 @@ c cod does NOT have canonical momenta!
           a24=sin(phi)
           a12=a24/bzs
           a22=cos(phi)
-          a14=merge(a24**2/(1.d0+a22),1.d0-a22,a22 .eq. 0.d0)/bzs
+          a14=merge(a24**2/(1.d0+a22),1.d0-a22,abs(a22) == 0.d0)/bzs
           da12=a22
           da14=a24
         endif
@@ -264,6 +264,7 @@ c cod does NOT have canonical momenta!
         dpldpx=phix+phiz*dpz0dpx
         dpldpy=phiy+phiz*dpz0dpy
         dpldp =     phiz*dpz0dp
+c        dpldp =phiz+phiz*dpz0dp
         plx=pl*phix
         ply=pl*phiy
         plz=pl*phiz
@@ -273,16 +274,16 @@ c cod does NOT have canonical momenta!
         pbx=pty*phiz-ptz*phiy
         pby=ptz*phix-ptx*phiz
         pbz=ptx*phiy-pty*phix
-        bpr=albabs/pr
-        db=bpr-pbz
+        db=albabs-pbz
         ap=hypot(pz0,pbz)
         dphi=-atan(pbz,pz0)
         phi=asinz(db/ap)-dphi
-        if(al .ne. 0.d0)then
-          if(plz .eq. 0.d0)then
+c        write(*,'(a,1p10g12.4)')'tsoldz-phi ',phi,db,ap,dphi,pbz,pz0
+        if(abs(al) /= 0.d0)then
+          if(abs(plz) == 0.d0)then
             call xsincos(phi,sinphi,xsinphi,cosphi,dcosphi)
           else
-            call tsolconv(pz0,plz,pbz,bpr,
+            call tsolconv(pz0,plz,pbz,albabs,
      $           phi,sinphi,xsinphi,cosphi,dcosphi,ndiag)
           endif
         else
@@ -309,6 +310,7 @@ c cod does NOT have canonical momenta!
 c cod does NOT have canonical momenta!
         trans(1,2)=alb*(dpldpx*phix*xsinphi+sinphi
      $       +dpz0dpx*phiy       *dcosphi+ax*dphidpx)
+c        write(*,'(a,1p10g12.4)')'tsoldz ',dpldpx*phix*xsinphi,sinphi,dpz0dpx*phiy*dcosphi,ax*dphidpx,alb,trans(1,2)
         trans(1,4)=alb*(dpldpy*phix*xsinphi
      $       -(phiz-dpz0dpy*phiy)*dcosphi+ax*dphidpy)
         trans(1,6)=alb*(dpldp *phix*xsinphi
@@ -368,17 +370,18 @@ c cod does NOT have canonical momenta!
       integer*4 np,i,itmax,ndiag
       real*8 conv
       parameter (itmax=15,conv=1.d-15)
-      real*8 x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),dv(np),g(np),
      $     sx(np),sy(np),sz(np)
-      real*8 al,bz,pr,bzp,phi,px1,py1,px0,py0,z0,
-     $     sinphi,cosphi,ak0x,ak0y,b,phix,phiy,phiz,
+      real*8 ,intent(in):: al,bz,ak0x,ak0y
+      real*8 pr,bzp,phi,px1,py1,px0,py0,z0,
+     $     sinphi,cosphi,b,phix,phiy,phiz,
      $     dphizsq,dpz0,pz0,plx,ply,plz,ptx,pty,ptz,
      $     pbx,pby,pbz,dphi,dcosphi,pl,dpl,alb,
      $     xsinphi,bpr,bsi0,ap,db
-      logical*4 enarad
+      logical*4 ,intent(in):: enarad
       data ndiag/15/
-      if(ak0x .eq. 0.d0 .and. ak0y .eq. 0.d0)then
-        if(bz .eq. 0.d0)then
+      if(abs(ak0x) == 0.d0 .and. abs(ak0y) == 0.d0)then
+        if(abs(bz) == 0.d0)then
           call tdrift_free(np,x,px,y,py,z,dv,al)
           return
         else
@@ -403,7 +406,7 @@ c cod does NOT have canonical momenta!
         phiz=bz*al/b
         dphizsq=phix**2+phiy**2
         do i=1,np
-          bsi0=bz+ak0x*y(i)+ak0y*x(i)
+          bsi0=bz*al+ak0x*y(i)+ak0y*x(i)
           pr=(1.d0+g(i))
           alb=al*pr/b
           bzp=bz/pr

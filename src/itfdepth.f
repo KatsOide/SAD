@@ -51,7 +51,7 @@ c            Level    Scan   Apply     Map MapIndx
 c          Positio   Cases DeCases     
       integer*4 ,parameter ::ioff(0:7)=[0,1,1,1,1,0,0,0]
       irtc=0
-      if(isp .ge. ispmax)then
+      if(isp >= ispmax)then
         return
       endif
       stack=stacktbl(mode)
@@ -64,16 +64,16 @@ c      write(*,*)mode,n1,n2,ihead,indf
       if(n2 .ne. 0 .and. ktflistq(k,kl))then
         isp1=isp
         m=kl%nl
-        if(stack .and. ihead .eq. 1)then
+        if(stack .and. ihead == 1)then
           isp=isp+1
           dtastk(isp)=kl%head
         endif
-        if(isp .ge. ispmax)then
+        if(isp >= ispmax)then
           go to 4000
         endif
-        if(n1 .ge. 0)then
+        if(n1 >= 0)then
           if(n2 .gt. 0)then
-            if(ihead .eq. 0)then
+            if(ihead == 0)then
               if(indf)then
                 rind(ind+1)=0.d0
                 kxi=tflevelstk(kl%head,kf,
@@ -84,7 +84,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
      $               max(0,n1-1),n2-1,mode,0,rind,0,ispmax,irtc)
               endif
             endif
-            if(isp .ge. ispmax)then
+            if(isp >= ispmax)then
               go to 4000
             endif
             if(indf)then
@@ -96,7 +96,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
                 if(irtc .ne. 0)then
                   go to 9000
                 endif
-                if(isp .ge. ispmax)then
+                if(isp >= ispmax)then
                   go to 4000
                 endif
               enddo
@@ -108,16 +108,16 @@ c      write(*,*)mode,n1,n2,ihead,indf
                 if(irtc .ne. 0)then
                   go to 9000
                 endif
-                if(isp .ge. ispmax)then
+                if(isp >= ispmax)then
                   go to 4000
                 endif
               enddo
             endif
           else
             ind1=ind+1
-            if(ihead .eq. 0)then
+            if(ihead == 0)then
               idi=itfdepth(kl%head)
-              if(idi .ge. -n2)then
+              if(idi >= -n2)then
                 if(indf)then
                   rind(ind1)=0.d0
                 endif
@@ -132,7 +132,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
                 dtastk(isp)=kl%head
               endif
             endif
-            if(isp .ge. ispmax)then
+            if(isp >= ispmax)then
               go to 4000
             endif
             do i=1,m
@@ -142,7 +142,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
               else
                 idi=1
               endif
-              if(idi .ge. -n2)then
+              if(idi >= -n2)then
                 if(indf)then
                   rind(ind1)=i
                 endif
@@ -156,14 +156,14 @@ c      write(*,*)mode,n1,n2,ihead,indf
                 isp=isp+1
                 dtastk(isp)=ki
               endif
-              if(isp .ge. ispmax)then
+              if(isp >= ispmax)then
                 go to 4000
               endif
             enddo
           endif
         else
           ind1=ind+1
-          if(ihead .eq. 0)then
+          if(ihead == 0)then
             ki=kl%head
             idi=itfdepth(ki)
             if(indf)then
@@ -175,13 +175,17 @@ c      write(*,*)mode,n1,n2,ihead,indf
             if(irtc .ne. 0)then
               go to 9000
             endif
-            if(isp .ge. ispmax)then
+            if(isp >= ispmax)then
               go to 4000
             endif
           endif
           do i=1,m
             ki=kl%dbody(i)
-            idi=merge(itfdepth(ki),1,ktflistq(ki))
+            if(ktflistq(ki))then
+              idi=itfdepth(ki)
+            else
+              idi=1
+            endif
             if(indf)then
               rind(ind1)=i
             endif
@@ -191,7 +195,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
             if(irtc .ne. 0)then
               go to 9000
             endif
-            if(isp .ge. ispmax)then
+            if(isp >= ispmax)then
               exit
             endif
           enddo
@@ -205,26 +209,33 @@ c      write(*,*)mode,n1,n2,ihead,indf
       else
         kx=k
       endif
-      if(n1 .eq. 0)then
+      if(n1 == 0)then
         map=.true.
-        id=merge(itfdepth(k),0,n2 .lt. 0)
-      elseif(n1 .lt. 0)then
+        if(n2 < 0)then
+          id=itfdepth(k)
+        else
+          id=0
+        endif
+      elseif(n1 < 0)then
         id=itfdepth(k)
         map=id+n1 .le. 0
       else
         map=.false.
       endif
       if(map)then
-        if(n2 .ge. 0 .or. id .ge. -n2)then
+        if(n2 >= 0 .or. id >= -n2)then
           isp=isp+1
           dtastk(isp)=kx
           if(match(mode))then
-            if(itfpmatc(kx%k,kf) .ge. 0)then
-              if(mode .eq. 5)then
-                dtastk(isp)=merge(dxnulll,kxm2l(rind,0,ind,1,.false.),
-     $               ind .eq. 0)
+            if(itfpmatc(kx%k,kf) >= 0)then
+              if(mode == 5)then
+                if(ind == 0)then
+                  dtastk(isp)=dxnulll
+                else
+                  dtastk(isp)=kxm2l(rind,0,ind,1,.false.)
+                endif
                 return
-              elseif(mode .eq. 6)then
+              elseif(mode == 6)then
                 return
               endif
               kx=dxnull
@@ -233,27 +244,31 @@ c      write(*,*)mode,n1,n2,ihead,indf
               isp=isp-1
               return
             endif
-          elseif(mode .eq. 3)then
+          elseif(mode == 3)then
             dtastk(ispf)=kf
             call tfefunrefc(ispf,kx,irtc)
-          elseif(mode .eq. 2)then
+          elseif(mode == 2)then
             if(ktflistq(kx,klx))then
               isp=ispf
               call tfgetllstkall(klx)
               dtastk(ispf)=kf
               call tfefunrefc(ispf,kx,irtc)
             endif
-          elseif(mode .eq. 4)then
+          elseif(mode == 4)then
             dtastk(ispf)=kf
             isp=isp+1
-            dtastk(isp)=merge(dxnulll,kxm2l(rind,0,ind,1,.false.),
-     $           ind .eq. 0)
+c            dtastk(isp)=merge(dxnulll,kxm2l(rind,0,ind,1,.false.),ind == 0)
+            if(ind == 0)then
+              dtastk(isp)=dxnulll
+            else
+              dtastk(isp)=kxm2l(rind,0,ind,1,.false.)
+            endif
             call tfefunrefc(ispf,kx,irtc)
-          elseif(mode .eq. 1)then
+          elseif(mode == 1)then
             dtastk(ispf)=kf
             call tfefunrefc(ispf,kx,irtc)
             isp=ispf-1
-            if(irtc .eq. -2)then
+            if(irtc == -2)then
               irtc=0
             endif
             return
@@ -265,13 +280,13 @@ c      write(*,*)mode,n1,n2,ihead,indf
       if(stack)then
         dtastk(ispf)=kx
         isp=ispf
-      elseif(mode .eq. 1)then
+      elseif(mode == 1)then
         isp=ispf-1
       endif
       return
  9000 if(stack)then
         isp=ispf
-      elseif(mode .eq. 1)then
+      elseif(mode == 1)then
         isp=ispf-1  
       endif
       return
@@ -290,8 +305,8 @@ c      write(*,*)mode,n1,n2,ihead,indf
       if(irtc .ne. 0)then
         return
       endif
-      if(n2 .ge. 0 .and. n1 .gt. n2 .or.
-     $     n1 .lt. 0 .and. n1 .gt. n2)then
+      if(n2 >= 0 .and. n1 .gt. n2 .or.
+     $     n1 < 0 .and. n1 .gt. n2)then
         kx=dxnulll
         return
       endif
@@ -299,7 +314,11 @@ c      write(*,*)'tflevel ',n1,n2
       isp1=isp
       kx=tflevelstk(k,sad_descr(ktfoper+mtfnull),n1,n2,
      $     0,0,rind,1,mstk,irtc)
-      kx=merge(dxnulll,kxmakelist(isp1),isp .le. isp1)
+      if(isp .le. isp1)then
+        kx=dxnulll
+      else
+        kx=kxmakelist(isp1)
+      endif
       isp=isp1
       irtc=0
       return
@@ -327,10 +346,10 @@ c      write(*,*)'tflevel ',n1,n2
         return
       else
         m=kl%nl
-        if(m .eq. 1)then
+        if(m == 1)then
           n1=int(max(-vlmax,min(vlmax,kl%rbody(1))))
           n2=n1
-        elseif(m .eq. 2)then
+        elseif(m == 2)then
           n1=int(max(-vlmax,min(vlmax,kl%rbody(1))))
           n2=int(max(-vlmax,min(vlmax,kl%rbody(2))))
         else

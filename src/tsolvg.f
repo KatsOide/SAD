@@ -36,10 +36,12 @@ c
       real*8 ,intent(inout):: a(ndim,m),b(n)
       real*8 ,intent(out):: x(m)
       real*8 ,intent(in):: epslon
-      real*8 v(0:nmax),anorm,enorm
+      real*8 ,allocatable,dimension(:)::v,aam,bbm
+      integer*4  ,allocatable,dimension(:)::lsep
+      real*8 anorm,enorm
       real*8 aa,f,g,s,r,w,u,h,xmin,z,vv,d,c,p,bb,y,an
-      real*8 q,h1,h2,t,r1,r2,ra,aam(m),bbm(n)
-      integer*4 lsep(0:nmax),i,j,k,kkk,nfail,
+      real*8 q,h1,h2,t,r1,r2,ra
+      integer*4 i,j,k,kkk,nfail,
      $     mn,it,isep,ibegin,iend,ma,i1,i1mn
       logical*4 svd
 c     begin initialize for preventing compiler warning
@@ -48,17 +50,18 @@ c     end   initialize for preventing compiler warning
 
       nfail=4
       mn=min(n,m)
-      if(max(mn+m,n) .gt. nmax)then
+      if(max(mn+m,n) > nmax)then
         write(*,*)' TSVD Too large matrix. ',n,m
         return
       endif
+      allocate(v(0:nmax),aam(m),bbm(n),lsep(0:nmax))
       v(1:n)=1.d0
       x=1.d0
       do 10 i=1,mn
         i1=i+1
         if(i .lt. n)then
           do 5110 j=i1,n
-            if(abs(a(i,i)) .gt. abs(a(j,i)))then
+            if(abs(a(i,i)) > abs(a(j,i)))then
               p=a(j,i)/a(i,i)
               h1=v(i)+v(j)*p**2
               q=v(j)*p/h1
@@ -94,7 +97,7 @@ c     end   initialize for preventing compiler warning
             if(r .ne. 0.d0)then
               c=r1/r
               s=r2/r
-              if(abs(c) .gt. abs(s))then
+              if(abs(c) > abs(s))then
                 a(i,j)=0.d0
                 h1=x(i1)/c
                 h2=x(j )*c
@@ -154,7 +157,7 @@ c     end   initialize for preventing compiler warning
  20   continue
       if(.not. svd)then
         enorm=anorm*epslon
-        if(xmin .gt. enorm)then
+        if(xmin > enorm)then
           x(mn+2:m)=0.d0
           r=hypot(x(mn),v(mn))
           if(r .ne. 0.d0)then
@@ -206,7 +209,7 @@ c     end   initialize for preventing compiler warning
               if(j .lt. n+2)then
                 c=a(j-1,i)
               else
-                if(abs(s) .gt. 1.d0)then
+                if(abs(s) > 1.d0)then
                   c=abs(1.d0/s)
                   s=sign(1.d0-c**2/(1.d0+sqrt((1.d0-c)*(1.d0+c))),s)
                 else
@@ -231,14 +234,14 @@ c     end   initialize for preventing compiler warning
             c=a(j-1,i)
             a(j-1,i)=0.d0
           else
-            if(abs(s) .gt. 1.d0)then
+            if(abs(s) > 1.d0)then
               c=abs(1.d0/s)
               s=sign(1.d0-c**2/(1.d0+sqrt((1.d0-c)*(1.d0+c))),s)
             else
               c=1.d0-s**2/(1.d0+sqrt((1.d0-s)*(1.d0+s)))
             endif
           endif
-          if(abs(c) .gt. abs(s))then
+          if(abs(c) > abs(s))then
             h1=v(i1mn)*c
             h2=v(j +mn)/c
             p=s*v(j +mn)/h1
@@ -384,7 +387,7 @@ c            an=max(abs(x(i)),abs(x(i+1)))
               w=-s*g+c*y
               g=v(i1)*s
               h=v(i1)*c
-              if(abs(c) .gt. abs(s))then
+              if(abs(c) > abs(s))then
                 h1=v(i+mn)/c
                 h2=v(i1+mn)*c
                 r=s*v(i+mn)/h2
@@ -431,7 +434,7 @@ c            an=max(abs(x(i)),abs(x(i+1)))
         do concurrent (i=1:mn)
           s=x(i)
           w=merge(v(i+mn)/s,s*v(i+mn)/anorm**2,
-     $         abs(s) .gt. anorm)
+     $         abs(s) > anorm)
           v(i)=w/v(i+mn)
           b(i)=b(i)*w
           a(i,1:m)=a(i,1:m)*w
@@ -446,7 +449,7 @@ c            an=max(abs(x(i)),abs(x(i+1)))
         do concurrent (i=1:mn)
           s=x(i)
           w=merge((v(i+mn)/s)**2,(s*v(i+mn)/anorm**2)**2,
-     $         abs(s) .gt. anorm)
+     $         abs(s) > anorm)
           b(i)=b(i)*w
         enddo
         do concurrent (i=1:m)

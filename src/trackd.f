@@ -4,12 +4,13 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       use tfstk
       use ffs_flag
       use tmacro,only:np0,codin,dvfs,omega0,taurdx,taurdy,taurdz,
-     $     nparallel,tsetintm,intffsm
+     $     nparallel,tsetintm
       use ffs_pointer, only:idelc
       use tftr
       use tfshare
       use macmath
       use iso_c_binding
+      use macfile, only:outfl
       implicit none
       integer*4 ,parameter ::n1p0=256,n2p=51,maxturn=2**29,
      $     maxpara=256,nw=16,nkptbl = 6, minnp=16,limw=600
@@ -36,6 +37,7 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       character*12 autos
       logical*4 damp,ini,remain,pol0
       character rad62a
+c      write(*,'(a,1p10g12.4)')'trackd-1 ',codin
 c     begin initialize for preventing compiler warning
       ipr=0
 c     end   initialize for preventing compiler warning
@@ -155,36 +157,19 @@ c      lp0=latt(1)+kytbl(kwmax,idtype(idelc(1)))+1
       npz=npmax
       np00=np0
       np0=npz
-      allocate (x(npz))
-      allocate (px(npz))
-      allocate (y(npz))
-      allocate (py(npz))
-      allocate (z(npz))
-      allocate (g(npz))
-      allocate (dv(npz))
-      allocate (spx(npz))
-      allocate (spy(npz))
-      allocate (spz(npz))
-      allocate (aenox(npz))
-      allocate (aenoy(npz))
-      allocate (aenoz(npz))
+      allocate(x(npz),px(npz),y(npz),py(npz),z(npz),g(npz),dv(npz),
+     $     spx(npz),spy(npz),spz(npz),aenox(npz),aenoy(npz),aenoz(npz))
       call tfevals('`ExtMap$@InitMap['//autos(dble(npz))//',1]',
      $     kxm,irtc)
       allocate(kptbl(npmax,6))
       allocate(mturn(npmax))
       allocate(kzx(2,npmax))
-c      if(muls .ne. 10)then
-c        write(*,*)'trackd-5 ',npri,muls
-c      endif
       do i=1,npmax
         kptbl(i,1)=i
         kptbl(i,2)=i
       enddo
       kzx(1,1:npmax)=0
       kzx(2,1:npmax)=0
-c      if(muls .ne. 10)then
-c        write(*,*)'trackd-6 ',npri,muls
-c      endif
       n=1
       jzout=1
       loop_1: do
@@ -268,9 +253,9 @@ c     Reinit kptbl(ip,4) to reuse particle array slot `ip'
                       call tinip1(x(ip),px(ip),y(ip),py(ip),
      $                     z(ip),g(ip),dv(ip),
      $                     emx,emz,codin,dvfs)
-c     write(*,'(a,7i5,1p3g15.7)')
-c     $                   ' trackd-Launch ',npr1,i,j,ivar1,ivar2,ivar3,
-c     $                     nxm(i),x(ip),y(ip),py(ip)
+c      write(*,'(a,6i5,1p7g13.5)')
+c     $                   'trackd-Launch ',i,j,ivar1,ivar2,ivar3,
+c     $                     nxm(i),x(ip),px(ip),y(ip),py(ip),z(ip),g(ip),dv(ip)
                       cycle LOOP_K
                     endif
                   enddo
@@ -333,10 +318,10 @@ c     $     'trackd-tturn-2 ',n,np,(kptbl(i,1),y(i),i=1,14)
             else
               kz=kzx(1,i)
               kx=kzx(2,i)
-c     if(kz .eq. 1)then
-c     write(*,'(a,1x,8i10)')'trackd-Lost: ',
+c      if(kz .eq. 1)then
+c        write(*,'(a,1x,8i10)')'trackd-Lost: ',
 c     $           kz,kx,mturn(i),i,np,np1,kp,npri
-c     endif
+c      endif
               ntloss(kz,kx)=mturn(i)
               kzx(1,i)=0
               ini=.true.
@@ -516,8 +501,7 @@ c      write(*,'(a,1p6g15.7)')'tinip ',xa(6),emx,emz
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
      $     dv(np),g(np)
       real*8 xa(7)
-      real*8 ,intent(in):: dampx,dampy,dampz,
-     $     aenox(np),aenoy(np),aenoz(np)
+      real*8 ,intent(in):: dampx,dampy,dampz,aenox(np),aenoy(np),aenoz(np)
       integer*4 ,intent(inout):: mturn(np)
       integer*4 i,j
       logical*4 damp

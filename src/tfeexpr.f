@@ -638,7 +638,7 @@ c              write(*,*)'tfecmplx-rl*2 '
       implicit none
       type (sad_descriptor) kx
       type (sad_descriptor) ,intent(in):: k
-      type (sad_dlist), pointer :: kl,klx
+      type (sad_dlist), pointer :: kl
       type (sad_rlist), pointer :: klr
       integer*4 ,intent(in):: mode,iaf
       integer*4 ,intent(out):: irtc
@@ -659,8 +659,11 @@ c              write(*,*)'tfecmplx-rl*2 '
         irtc=0
         return
       elseif(tfreallistq(k,klr))then
-        kx=merge(k,kxraaloc(-1,klr%nl),
-     $       mode .eq. 1 .or. mode .eq. 3)    
+        if(mode .eq. 1 .or. mode .eq. 3)then
+          kx=k
+        else
+          kx=kxraaloc(-1,klr%nl)
+        endif
         irtc=0
         return
       elseif(tflistq(k,kl))then

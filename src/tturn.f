@@ -156,6 +156,8 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       use mathfun
       use tracklim
       use kradlib, only:tallocrad
+      use wakez
+      use iso_c_binding
       implicit none
       integer*4,parameter :: la1=15
       type (sad_comp), pointer:: cmp
@@ -166,10 +168,11 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       integer*4 ,intent(inout):: kptbl(np0,6)
       real*8 ,intent(inout):: x(np0),px(np0),y(np0),py(np0),z(np0),
      $     g(np0),dv(np0), sx(np0),sy(np0),sz(np0)
+      real*8 ,pointer,dimension(:,:)::wakel,waket
       real*8 bz,al,ak0,ak1,tgauss,ph,harmf,sspac0,sspac,fw,
      $     dx,dy,rot,sspac1,sspac2,ak,rtaper,cod(6)
-      integer*4 l,lele,i,ke,lwl,lwt,lwlc,lwtc,irtc,
-     $     nextwake,nwak,itab(np),izs(np)
+      integer*4 l,lele,i,ke,lwl,lwt,lwlc,lwtc,irtc,nextwake,nwak
+      integer*4 ,allocatable,dimension(:)::itab,izs
       integer*8 iwpl,iwpt,iwplc,iwptc
       logical*4 sol,out,autophi,seg,krad,wspaccheck
       if(np .le. 0)then
@@ -186,6 +189,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       iwptc=0
       sspac1=0.d0
       if(wake)then
+        dzwr=0.d0
         do i=1,nwakep
           if(iwakeelm(i) .ge. lbegin)then
             nwak=i
@@ -208,17 +212,6 @@ c      isb=ilist(2,iwakepold+6)
       call tallocrad(np0)
       bsi=0.d0
       do l=lbegin,lend
-        l_track=l
-c        if(abs(x(1))+abs(y(1)) .gt. 0.01d0)then
-c        write(*,'(a,2i5,1p10g12.4)')'tturn1-l ',l,np,sx(1),sy(1),sz(1)
-c          write(*,*)'tturn1 ',l,np,kptbl(1,1:6)
-c        endif
-c        call tfmemcheckprint('tturn',l,.false.,irtc)
-c        if(trpt .and. codplt)then
-c          call ttstat(np,x,px,y,py,z,g,dv,0.d0,
-c     1         ' ',sa,ss,0.d0,
-c     1         .false.,.false.,0)
-c        endif
         if(la .le. 0)then
           call tapert(x,px,y,py,z,g,dv,sx,sy,sz,
      1         kptbl,np,n,
@@ -231,6 +224,10 @@ c        endif
         endif
         call compelc(l,cmp)
         lele=idtype(cmp%id)
+c        if(l > 3270)then
+c          write(*,'(a,2i5)')'tturn ',l,lele
+c        endif
+        l_track=l
         if(sol)then
           if(l .eq. lbegin)then
             call tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,l,lend,
@@ -243,10 +240,17 @@ c        endif
           go to 1020
         endif
         if(l .eq. nextwake)then
+          if(.not. allocated(itab))then
+            allocate(itab(np),izs(np))
+            itab(np)=np
+            itab(1)=1
+          endif
           iwpl=abs(kwaketbl(1,nwak))
           lwl=merge((ilist(1,iwpl-1)-2)/2,0,iwpl .ne. 0)
           iwpt=abs(kwaketbl(2,nwak))
           lwt=merge((ilist(1,iwpt-1)-2)/2,0,iwpt .ne. 0)
+          call c_f_pointer(c_loc(rlist(iwpl)),wakel,[2,lwl])
+          call c_f_pointer(c_loc(rlist(iwpt)),waket,[2,lwt])
           if(lele .ne. icCAVI)then
             fw=(abs(charge)*e*pbunch*anbunch/amass)/np0*.5d0
             kdx=kytbl(kwDX,lele)
@@ -257,7 +261,7 @@ c        endif
             dy=merge(cmp%value(krot),0.d0,krot .ne. 0)
             call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           dx,dy,rot,int(anbunch),
-     $           fw,lwl,rlist(iwpl),lwt,rlist(iwpt),
+     $           fw,lwl,wakel,lwt,waket,
      $           p0,h0,itab,izs,.true.)
           endif
         endif
@@ -313,8 +317,7 @@ c            write(*,*)'twspac-end'
      $        cmp%value(p_L_BEND) .ne. 0.d0
          if(rad)then
            if(radcod .and. radtaper)then
-             rtaper=-dp0
-     $            +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+             rtaper=(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0+dptaper
              ak0=cmp%value(ky_ANGL_BEND)*rtaper+ak0*(1.d0+rtaper)
              ak1=ak1*(1.d0+rtaper)
            endif
@@ -334,6 +337,8 @@ c            write(*,*)'twspac-end'
      1        cmp%value(p_THETA_BEND),cmp%value(ky_DROT_BEND),
 c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      1        cmp%value(p_COSTHETA_BEND),cmp%value(p_SINTHETA_BEND),
+     $        cmp%value(ky_CHI2_BEND),
+     $        cmp%value(p_LGEO_BEND),cmp%value(p_ANGLGEO_BEND),
      $        cmp%value(p_FB1_BEND),cmp%value(p_FB2_BEND),
      $        cmp%ivalue(1,p_FRMD_BEND),
      $        cmp%value(ky_FRIN_BEND) .eq. 0.d0,
@@ -347,8 +352,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
          endif
          rtaper=1.d0
          if(rad .and. radcod .and. radtaper)then
-           rtaper=(2.d0+gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
-     $          -dp0
+           rtaper=(2.d0+gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0+dptaper
          endif
          call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,
      1        cmp%value(ky_K1_QUAD)*rtaper,0.d0,
@@ -387,8 +391,8 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
        case (icMULT)
          rtaper=1.d0
          if(rad .and. radcod .and. radtaper)then
-           rtaper=1.d0-dp0
-     $          +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+           rtaper=1.d0
+     $          +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0+dptaper
          endif
          bz=0.d0
          if(seg)then
@@ -489,7 +493,9 @@ c     endif
          endif
 
        case (icMAP)
+         call tfmemcheckprint('tturn-temap',l,.false.,irtc)
          call temap(np,np0,x,px,y,py,z,g,dv,sx,sy,sz,l,n,kptbl)
+         call tfmemcheckprint('tturn-temap-end',l,.false.,irtc)
          go to 1010
 
        case (icBEAM)
@@ -574,9 +580,20 @@ c     print *,'tturn l sspac2',l,sspac2
  1010   continue
         if(l .eq. nextwake)then
           if(lele .ne. icCAVI)then
+            if(.not. allocated(itab))then
+              allocate(itab(np),izs(np))
+              itab(np)=np
+              itab(1)=1
+              iwpl=abs(kwaketbl(1,nwak))
+              lwl=merge((ilist(1,iwpl-1)-2)/2,0,iwpl .ne. 0)
+              iwpt=abs(kwaketbl(2,nwak))
+              lwt=merge((ilist(1,iwpt-1)-2)/2,0,iwpt .ne. 0)
+              call c_f_pointer(c_loc(rlist(iwpl)),wakel,[2,lwl])
+              call c_f_pointer(c_loc(rlist(iwpt)),waket,[2,lwt])
+            endif
             call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           dx,dy,rot,int(anbunch),
-     $           fw,lwl,rlist(iwpl),lwt,rlist(iwpt),
+     $           fw,lwl,wakel,lwt,waket,
      $           p0,h0,itab,izs,.false.)
           endif
           nwak=nwak+1
@@ -742,10 +759,11 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
      $       cmp%value(p_PSI1_MULT),cmp%value(p_PSI2_MULT),
      1       cmp%value(ky_DX_MULT),cmp%value(ky_DY_MULT),
      $       cmp%value(ky_DZ_MULT),
-     $       cmp%value(p_CHI1_MULT),cmp%value(p_CHI2_MULT),
+     $       cmp%value(ky_CHI1_MULT),cmp%value(ky_CHI2_MULT),
      $       cmp%value(ky_ROT_MULT),
      $       cmp%value(ky_DROT_MULT),
      $       cmp%value(p_THETA2_MULT),
+     $       cmp%value(p_LGEO_MULT),cmp%value(p_ANGLGEO_MULT),
      $       cmp%value(ky_EPS_MULT),
      $       rad .and. cmp%value(ky_RAD_MULT) .eq. 0.d0 .and.
      $       cmp%value(p_L_MULT) .ne. 0.d0,
@@ -771,10 +789,11 @@ c      call tfmemcheckprint('tturn',1,.false.,irtc)
      $       cmp%value(p_PSI1_MULT),cmp%value(p_PSI2_MULT),
      1       cmp%value(ky_DX_MULT),cmp%value(ky_DY_MULT),
      $       cmp%value(ky_DZ_MULT),
-     $       cmp%value(p_CHI1_MULT),cmp%value(p_CHI2_MULT),
+     $       cmp%value(ky_CHI1_MULT),cmp%value(ky_CHI2_MULT),
      $       cmp%value(ky_ROT_MULT),
      $       cmp%value(ky_DROT_MULT),
      $       cmp%value(p_THETA2_MULT),
+     $       cmp%value(p_LGEO_MULT),cmp%value(p_ANGLGEO_MULT),
      $       cmp%value(ky_EPS_MULT),
      $       rad .and. cmp%value(ky_RAD_MULT) .eq. 0.d0 .and.
      $       cmp%value(p_L_MULT) .ne. 0.d0,

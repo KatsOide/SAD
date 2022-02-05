@@ -7,7 +7,7 @@ c
 
       contains
       subroutine tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
-     $     al,bz,dx,dy,dz,
+     $     alg,bz,dx,dy,dz,
      $     chi1,chi2,chi3,bxs,bys,bzs,ent)
       use mathfun, only:sqrt1,xsincos,pxy2dpz,asinz
       use ffs_flag, only:calpol,rad
@@ -16,8 +16,8 @@ c
       real*8 ,intent(inout)::
      $     x(np),px(np),y(np),py(np),z(np),g(np),
      $     sx(np),sy(np),sz(np),bxs,bys,bzs
-      real*8 , intent(in)::al,bz,dx,dy,dz,
-     $     chi1,chi2,chi3
+      real*8 , intent(in)::bz,dx,dy,dz,
+     $     chi1,chi2,chi3,alg
       logical*4 ,intent(in)::ent
       integer*4 i,j
       real*8 b,phix,phiy,phiz,a,a12,a14,a22,a24,cosphi,
@@ -28,11 +28,11 @@ c
       integer*4 , parameter ::itmax=10
       real*8 ,parameter :: conv=3.d-16
       if(ent)then
-        if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or. chi2 .ne. 0.d0)then
-          s0s=-al*.5d0
+        if(dz /= 0.d0 .or. chi1 /= 0.d0 .or. chi2 /= 0.d0)then
+          s0s=-alg
           call xsincos(chi1,schi1,xs,cchi1,dcchi1)
           call xsincos(chi2,schi2,xs,cchi2,dcchi2)
-          if(bz .ne. 0.d0)then
+          if(bz /= 0.d0)then
             b=abs(bz)
             phix=(-schi1)         *sign(1.d0,bz)
             phiy=( cchi1)*(-schi2)*sign(1.d0,bz)
@@ -73,7 +73,7 @@ c     dpz0=-s/(1.d0+sqrt(1.d0-s))
               pbx=pty*phiz-ptz*phiy
               pby=ptz*phix-ptx*phiz
               pbz=ptx*phiy-pty*phix
-              if(ds2 .ne. 0.d0)then
+              if(ds2 /= 0.d0)then
                 ps2=ds2/alb
                 phi=asinz(ps2/pz0)
                 do j=1,itmax
@@ -84,7 +84,7 @@ c                  dcosphi=2.d0*sin(.5d0*phi)**2
                   dphi=(ps2-s)/(pz0+ptz*dcosphi+pbz*sinphi)
                   phi0=phi
                   phi=phi+dphi
-                  if(phi0 .eq. phi .or. abs(dphi/phi) .lt. conv)then
+                  if(phi0 == phi .or. abs(dphi/phi) .lt. conv)then
                     exit
                   endif
                 enddo
@@ -142,7 +142,7 @@ c     pz2=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
           px=px+fx/(1.d0+g)
           py=py+fy/(1.d0+g)
         endif
-        if(chi3 .ne. 0.d0)then
+        if(chi3 /= 0.d0)then
           cchi3=cos(chi3)
           schi3=sin(chi3)
           do i=1,np
@@ -161,7 +161,7 @@ c     pz2=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
           schi3=0.d0
         endif
       else
-        if(chi3 .ne. 0.d0)then
+        if(chi3 /= 0.d0)then
           do i=1,np
             x0=x(i)
             x(i)= cchi3*x0+schi3*y(i)
@@ -171,8 +171,9 @@ c     pz2=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
             py(i)=-schi3*px0+cchi3*py(i)
           enddo
         endif
-        if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or. chi2 .ne. 0.d0)then
-          if(bz .ne. 0.d0)then
+        if(dz /= 0.d0 .or. chi1 /= 0.d0 .or. chi2 /= 0.d0)then
+          s0s=alg
+          if(bz /= 0.d0)then
             do i=1,np
               pr=(1.d0+g(i))
               px(i)=px(i)+bzs/pr*y(i)*.5d0
@@ -233,6 +234,7 @@ c              endif
       endif
       if(rad .and. calpol)then
         call trot33(rr,ent)
+c        write(*,'(a,1p9g13.5)')'tsolrot ',rr
         do i=1,np
           sv=matmul(rr,(/sx(i),sy(i),sz(i)/))
           sx(i)=sv(1)
@@ -243,7 +245,7 @@ c              endif
       return
       end subroutine
 
-      subroutine tsolrote(trans,cod,beam,srot,al,bz,dx,dy,dz,
+      subroutine tsolrote(trans,cod,beam,srot,alg,bz,dx,dy,dz,
      $     chi1,chi2,chi3,bxs,bys,bzs,ent)
       use tmacro, only:irad
       use ffs_flag, only:calpol
@@ -253,7 +255,7 @@ c              endif
       implicit none
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 trans1(6,6),trans2(6,6),tb(6)
-      real*8 ,intent(in):: bz,dx,dy,chi3,dz,chi1,chi2,al
+      real*8 ,intent(in):: bz,dx,dy,chi3,dz,chi1,chi2,alg
       real*8 ,intent(out):: bxs,bys,bzs
       real*8 s0,rr(3,3),xs,x0,px0,bzh,
      $     ds1,pr,pz0,dpz0dpx,dpz0dpy,dpz0dp,
@@ -264,14 +266,14 @@ c              endif
       mul=.false.
 c     cod in/outs canonical momenta!
       if(ent)then
-        if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or.
-     $       chi2 .ne. 0.d0)then
+        if(dz /= 0.d0 .or. chi1 /= 0.d0 .or.
+     $       chi2 /= 0.d0)then
           call tinitr(trans1)
           mul=.true.
           bzh1=bz*.5d0
           cod(2)=cod(2)+bzh1*cod(3)
           cod(4)=cod(4)-bzh1*cod(1)
-          s0=-.5d0*al
+          s0=-alg
           call xsincos(chi1,schi1,xs,cchi1,dcchi1)
           call xsincos(chi2,schi2,xs,cchi2,dcchi2)
           bzs=cchi2*cchi1*bz
@@ -330,7 +332,7 @@ c     cod in/outs canonical momenta!
           bys=0.d0
           bzs=bz
         endif
-        if(chi3 .ne. 0.d0)then
+        if(chi3 /= 0.d0)then
           if(.not. mul)then
             call tinitr(trans1)
           endif
@@ -357,7 +359,7 @@ c     cod in/outs canonical momenta!
           schi3=0.d0
         endif
       else
-        if(chi3 .ne. 0.d0)then
+        if(chi3 /= 0.d0)then
           call tinitr(trans1)
           mul=.true.
           x0=cod(1)
@@ -376,13 +378,13 @@ c     cod in/outs canonical momenta!
           cchi3=1.d0
           schi3=0.d0
         endif
-        if(dz .ne. 0.d0 .or. chi1 .ne. 0.d0 .or.
-     $       chi2 .ne. 0.d0)then
+        if(dz /= 0.d0 .or. chi1 /= 0.d0 .or.
+     $       chi2 /= 0.d0)then
           if(.not. mul)then
             call tinitr(trans1)
           endif
           mul=.true.
-          s0=-.5d0*al
+          s0=alg
           call tinitr(trans2)
           pr=1.d0+cod(6)
           bzh=bzs*.5d0
@@ -512,6 +514,8 @@ c          call tmultr(trans1,trans2,6)
       use element_drift_common
       use kradlib
       use sol
+      use wakez
+      use iso_c_binding
       implicit none
       real*8 ,parameter ::conv=3.d-16
       type (sad_comp), pointer::cmp
@@ -524,19 +528,21 @@ c          call tmultr(trans1,trans2,6)
      $     g(np),dv(np),sx(np),sy(np),sz(np)
       logical*4 , intent(inout) :: insol
       logical*4 ,intent(out):: out
+      real*8 ,pointer,dimension(:,:)::wakel,waket
       real*8 tfbzs,fw,bzs,al,theta,phi,phix,phiy,
-     $     bz1,dx,dy,rot,rtaper,ph,bzph(np)
-      integer*4 i,l,lt,itab(np),izs(np),
-     $     kdx,kdy,krot,kb,lwl,lwt,irtc,kbz
+     $     bz1,dx,dy,rot,rtaper,ph
+      real*8 ,allocatable,dimension(:)::bzph
+      integer*4 i,l,lt,kdx,kdy,krot,kb,lwl,lwt,irtc,kbz
+      integer*4 ,allocatable,dimension(:)::itab,izs
       integer*8 iwpl,iwpt
       logical*4 seg,autophi,krad
       logical*1,save::dofr(0:1)=[.false.,.false.]
       real*8 ,save::dummy(256)=0.d0
       kb=merge(k,k+1,insol)
       do i=kb,nlat
-        if(idtypec(i) .eq. icSOL)then
+        if(idtypec(i) == icSOL)then
           if(rlist(idvalc(i)+ky_BND_SOL)
-     $         .ne. 0.d0)then
+     $         /= 0.d0)then
             ke=i
             go to 20
           endif
@@ -544,6 +550,7 @@ c          call tmultr(trans1,trans2,6)
       enddo
       write(*,*)' ???-TRACK-?Missing end of solenoid ',
      $     pname(idelc(k))(1:lpnamec(k))
+      allocate(bzph(np),itab(np),izs(np))
       ke=nlat
  20   bzs=tfbzs(k,kbz)
       if(.not. insol)then
@@ -551,7 +558,7 @@ c          call tmultr(trans1,trans2,6)
         if(.not. cmp%update)then
           call tpara(cmp)
         endif
-        call trots(np,x,px,y,py,z,dv,
+        call trots(np,x,px,y,py,z,dv,sx,sy,sz,
      $       cmp%value(p_R11_SOL),
      $       cmp%value(p_R12_SOL),
      $       cmp%value(p_R13_SOL),
@@ -564,16 +571,16 @@ c          call tmultr(trans1,trans2,6)
      $       cmp%value(ky_DX_SOL),
      $       cmp%value(ky_DY_SOL),
      $       cmp%value(ky_DZ_SOL),
-     $       .true.)
-        krad=rad .and. cmp%value(ky_RAD_SOL) .eq. 0.d0
-     $       .and. cmp%value(ky_F1_SOL) .ne. 0.d0 .and. bzs .ne. 0.d0
+     $       rad .and. calpol,.true.)
+        krad=rad .and. cmp%value(ky_RAD_SOL) == 0.d0
+     $       .and. cmp%value(ky_F1_SOL) /= 0.d0 .and. bzs /= 0.d0
         if(krad)then
           pxr0=px
           pyr0=py
           zr0=z
           bsi=0.d0
         endif
-        if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
+        if(cmp%value(ky_FRIN_SOL) == 0.d0)then
           call tsfrin(np,x,px,y,py,z,g,bzs)
         endif
         if(krad)then
@@ -602,42 +609,43 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
         lt=idtypec(l)
         call compelc(l,cmp)
         seg=tcheckseg(cmp,lt,al,lsegp,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           call tffserrorhandle(l,irtc)
           return
         endif
-        if(l .eq. nextwake)then
+        if(l == nextwake)then
           iwpl=abs(kwaketbl(1,nwak))
-          lwl=merge((ilist(1,iwpl-1)-2)/2,0,iwpl .ne. 0)
+          lwl=merge((ilist(1,iwpl-1)-2)/2,0,iwpl /= 0)
           iwpt=abs(kwaketbl(2,nwak))
-          lwt=merge((ilist(1,iwpt-1)-2)/2,0,iwpt .ne. 0)
+          lwt=merge((ilist(1,iwpt-1)-2)/2,0,iwpt /= 0)
           fw=(abs(charge)*e*pbunch*anbunch/amass)/np0*.5d0
           kdx=kytbl(kwDX,lt)
-          dx=merge(cmp%value(kdx),0.d0,kdx .ne. 0)
+          dx=merge(cmp%value(kdx),0.d0,kdx /= 0)
           kdy=kytbl(kwDY,lt)
-          dy=merge(cmp%value(kdy),0.d0,kdy .ne. 0)
+          dy=merge(cmp%value(kdy),0.d0,kdy /= 0)
           krot=kytbl(kwROT,lt)
-          rot=merge(cmp%value(krot),0.d0,krot .ne. 0)
+          rot=merge(cmp%value(krot),0.d0,krot /= 0)
+          call c_f_pointer(c_loc(rlist(iwpl)),wakel,[2,lwl])
+          call c_f_pointer(c_loc(rlist(iwpt)),waket,[2,lwt])
           call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         dx,dy,rot,
-     $         int(anbunch),
-     $         fw,lwl,rlist(iwpl),lwt,rlist(iwpt),
+     $         dx,dy,rot,int(anbunch),
+     $         fw,lwl,wakel,lwt,waket,
      $         p0,h0,itab,izs,.true.)
         endif
         select case (lt)
         case (icDRFT)
           al=cmp%value(ky_L_DRFT)
           if(spac)then
-            if(bzs .ne. 0.d0)then
+            if(bzs /= 0.d0)then
               call spdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,al,bzs,
      $             cmp%value(ky_RADI_DRFT),n,kptbl)
             else
               call spdrift_free(np,x,px,y,py,z,g,dv,sx,sy,sz,al,
      $             cmp%value(ky_RADI_DRFT),n,kptbl)
             endif
-          elseif(bzs .ne. 0.d0)then
+          elseif(bzs /= 0.d0)then
             call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $           al,bzs,rad .and. cmp%value(ky_RAD_DRFT) .eq. 0.d0)
+     $           al,bzs,rad .and. cmp%value(ky_RAD_DRFT) == 0.d0)
           else
             call tdrift_free(np,x,px,y,py,z,dv,al)
           endif
@@ -651,8 +659,8 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           phiy= phi*cos(theta)
           phix= phi*sin(theta)
           call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         al,bzs,phiy,phix,rad .and. al .ne. 0.d0
-     $         .and. cmp%value(ky_RAD_BEND) .eq. 0.d0)
+     $         al,bzs,phiy,phix,rad .and. al /= 0.d0
+     $         .and. cmp%value(ky_RAD_BEND) == 0.d0)
         case(icQUAD)
           if(.not. cmp%update)then
             call tpara(cmp)
@@ -662,29 +670,28 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           krad=rad
           if(rad)then
             if(radcod .and. radtaper)then
-              rtaper=1.d0-dp0
+              rtaper=1.d0+dptaper
      $             +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
             endif
-            krad=cmp%value(ky_RAD_QUAD) .eq. 0.d0 .and. al .ne. 0.d0
+            krad=cmp%value(ky_RAD_QUAD) == 0.d0 .and. al /= 0.d0
           endif
           call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,
      $         cmp%value(ky_K1_QUAD)*rtaper,bzs,
      $         cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      1         cmp%value(ky_ROT_QUAD),
      1         cmp%value(p_THETA2_QUAD),
-     1         krad,.true.,cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
+     1         krad,.true.,cmp%value(ky_FRIN_QUAD) == 0.d0,
      $         cmp%value(p_AKF1F_QUAD)*rtaper,
      $         cmp%value(p_AKF2F_QUAD)*rtaper,
      $         cmp%value(p_AKF1B_QUAD)*rtaper,
      $         cmp%value(p_AKF2B_QUAD)*rtaper,
      $         cmp%ivalue(1,p_FRMD_QUAD),cmp%value(ky_EPS_QUAD),
-     $         cmp%value(ky_KIN_QUAD) .eq. 0.d0)
+     $         cmp%value(ky_KIN_QUAD) == 0.d0)
 
         case (icMULT)
           rtaper=1.d0
           if(rad .and. radcod .and. radtaper)then
-            rtaper=1.d0-dp0
-     $           +(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
+            rtaper=1.d0+dptaper+(gettwiss(mfitddp,l)+gettwiss(mfitddp,l+1))*.5d0
           endif
           if(seg)then
             call tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -697,7 +704,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           if(.not. cmp%update)then
             call tpara(cmp)
           endif
-          autophi=cmp%value(ky_APHI_CAVI) .ne. 0.d0
+          autophi=cmp%value(ky_APHI_CAVI) /= 0.d0
           ph=cmp%value(ky_DPHI_CAVI)
           if(autophi)then
             ph=ph+gettwiss(mfitdz,l_track)*cmp%value(p_W_CAVI)
@@ -709,7 +716,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
      $         0.d0,0.d0,0.d0,
      $         cmp%value(ky_ROT_CAVI),0.d0,cmp%value(ky_ROT_CAVI),
      $         0.d0,.false.,
-     $         cmp%value(ky_FRIN_CAVI) .eq. 0.d0,
+     $         cmp%value(ky_FRIN_CAVI) == 0.d0,
      $         0.d0,0.d0,0.d0,0.d0,
      $         cmp%ivalue(1,p_FRMD_CAVI),
      $         0.d0,0.d0,dofr,
@@ -719,19 +726,19 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
      $         0.d0,1.d0,autophi,1,0,
      $         n,kptbl)
         case (icSOL)
-          bz1=merge(0.d0,tfbzs(l,kbz),l .eq. ke)
-          krad=rad .and. cmp%value(ky_RAD_SOL) .eq. 0.d0
-     $         .and. cmp%value(ky_F1_SOL) .ne. 0.d0 .and. bzs .ne. bz1          
+          bz1=merge(0.d0,tfbzs(l,kbz),l == ke)
+          krad=rad .and. cmp%value(ky_RAD_SOL) == 0.d0
+     $         .and. cmp%value(ky_F1_SOL) /= 0.d0 .and. bzs /= bz1          
           if(krad)then
             bzph=.5d0*bzs/(1.d0+g)
             pxr0=px+bzph*y
             pyr0=py-bzph*x
             zr0=z
           endif
-          if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
+          if(cmp%value(ky_FRIN_SOL) == 0.d0)then
             call tsfrin(np,x,px,y,py,z,g,bz1-bzs)
           endif
-          if(l .eq. ke)then
+          if(l == ke)then
             if(.not. cmp%update)then
               call tpara(cmp)
             endif
@@ -740,7 +747,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
      $             cmp%value(ky_F1_SOL),0.d0)
 c              call tserad(np,x,px,y,py,g,dv,lp,rho)
             endif
-            call trots(np,x,px,y,py,z,dv,
+            call trots(np,x,px,y,py,z,dv,sx,sy,sz,
      $           cmp%value(p_R11_SOL),
      $           cmp%value(p_R12_SOL),
      $           cmp%value(p_R13_SOL),
@@ -753,7 +760,7 @@ c              call tserad(np,x,px,y,py,g,dv,lp,rho)
      $           cmp%value(ky_DX_SOL),
      $           cmp%value(ky_DY_SOL),
      $           cmp%value(ky_DZ_SOL),
-     $           .false.)
+     $           rad .and. calpol,.false.)
           elseif(krad)then
             call tradks(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           bz1,cmp%value(ky_F1_SOL),bzph)
@@ -781,11 +788,12 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
           endif
         end select
 
-        if(l .eq. nextwake .and. l .ne. ke)then
+        if(l == nextwake .and. l /= ke)then
+          call c_f_pointer(c_loc(rlist(iwpl)),wakel,[2,lwl])
+          call c_f_pointer(c_loc(rlist(iwpt)),waket,[2,lwt])
           call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         dx,dy,rot,
-     $         int(anbunch),
-     $         fw,lwl,rlist(iwpl),lwt,rlist(iwpt),
+     $         dx,dy,rot,int(anbunch),
+     $         fw,lwl,wakel,lwt,waket,
      $         p0,h0,itab,izs,.false.)
           nwak=nwak+1
           nextwake=merge(0,iwakeelm(nwak),nwak .gt. nwakep)
@@ -794,17 +802,17 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
       return
       end
 
-      subroutine trots(np,x,px,y,py,z,dv,
+      subroutine trots(np,x,px,y,py,z,dv,sx,sy,sz,
      $     r11,r12,r13,r21,r22,r23,r31,r32,r33,
-     $     dx,dy,dz,ent)
+     $     dx,dy,dz,pol,ent)
       use mathfun
       implicit none
       integer*4 ,intent(in):: np
-      real*8,intent(inout):: x(np),px(np),y(np),py(np),z(np),dv(np)
+      real*8,intent(inout):: x(np),px(np),y(np),py(np),z(np),dv(np),sx(np),sy(np),sz(np)
       real*8 ,intent(in)::dx,dy,dz,r11,r12,r13,r21,r22,r23,r31,r32,r33
-      logical*4,intent(in):: ent
+      logical*4,intent(in):: pol,ent
       integer*4 i
-      real*8 pxi,pyi,pzi,xi,yi,xf,yf,zf,pxf,pyf,pzf
+      real*8 pxi,pyi,pzi,xi,yi,xf,yf,zf,pxf,pyf,pzf,r(3,3),sv(3)
       if(ent)then
         do concurrent (i=1:np)
           pxi=px(i)
@@ -842,7 +850,20 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
           z(i)=z(i)+zf/pzf+dz-dv(i)*dz
           px(i)=pxf
           py(i)=pyf
+c          write(*,'(i5,1p10g12.4)'),i,x(i),z(i),xi,xf,zf,dx,dz,r31
         enddo
+      endif
+      if(pol)then
+        r=reshape((/
+     $       r11,r21,r31,
+     $       r12,r22,r32,
+     $       r13,r23,r33/),(/3,3/))
+        do i=1,np
+          sv=matmul(r,(/sx(i),sy(i),sz(i)/))
+          sx(i)=sv(1)
+          sy(i)=sv(2)
+          sz(i)=sv(3)
+        enddo        
       endif
       return
       end
@@ -856,7 +877,7 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
       integer*4 i
       real*8 x0,y0,px0,py0,bq,bp,pr,pphi,phi0,w,c,s,xs,dc
 c     Apply identity map if dbz == 0
-      if(dbz .eq. 0.d0) then
+      if(dbz == 0.d0) then
         return
       endif
       do concurrent (i=1:np)
@@ -948,7 +969,7 @@ c        s     = sin(phi0)
      $     x1,px1,y1,py1,z1
 
 c     Apply identity map if dbz == 0
-c      if(dbz .eq. 0.d0)then
+c      if(dbz == 0.d0)then
 c        call tinitr(trans)
 c        return
 c      endif

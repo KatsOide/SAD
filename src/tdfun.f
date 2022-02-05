@@ -4,6 +4,7 @@
       use ffs_pointer
       use ffs_fit
       use tffitcode
+      use gfun
       implicit none
       real*8 ,parameter :: abmax=1.d-8
       real*8 ,parameter::factor=0.97d0,dmax=1.d10
@@ -11,7 +12,7 @@
       integer*4 ,intent(out):: nqcola,nqcola1,
      $     iqcol(*),lfp(2,maxcond),kdp(*)
       real*8 ,intent(out):: df1(*)
-      real*8 vpeak(npeak),vf,tdfun1,tgfun,vb,ve,v,vf1
+      real*8 vpeak(npeak),vf,vb,ve,v,vf1,tdfun1
       logical*4 ,intent(out):: error
       integer*4 ipeak(npeak),j,i,ka,kf,kp,kp1,mp,idp,kpb,kpe,
      $     k,ip,irtc,m
@@ -59,7 +60,7 @@ c        write(*,*)'TDFUN ',j,ka,kf,mfitgx
         endif
         kp=flv%ifitp(ka)
         kp1=flv%ifitp1(ka)
-        if(flv%mfitp(ka) .ne. 0)then
+        if(flv%mfitp(ka) /= 0)then
           mp=(abs(flv%mfitp(ka))-1)/2
           do20:     do idp=nfam1,nfam
             vf=flv%fitval(ka)
@@ -67,12 +68,12 @@ c        write(*,*)'TDFUN ',j,ka,kf,mfitgx
      $           .or. jfam(idp) .ge. -mp .and. jfam(idp) .le. mp)then
               if(kf .ge. mfitdx .and. kf .le. mfitdpy .and.
      $             (idp .lt. -nfr .or. idp .gt. nfr ))then
-c     $             .or. inicond .and. idp .ne. 0))then
+c     $             .or. inicond .and. idp /= 0))then
                 cycle
-              elseif(idp .ne. 0 .and. kf .gt. mfittry)then
+              elseif(idp /= 0 .and. kf .gt. mfittry)then
                 cycle
               endif
-              if(idp .ne. 0 .or. mp*2+1 .ne. abs(flv%mfitp(ka)))then
+              if(idp /= 0 .or. mp*2+1 /= abs(flv%mfitp(ka)))then
                 if(kp .eq. nlat)then
                   if(idp .ge. -1 .and. idp .le. 1)then
                     if(kf .eq. mfitnx)then
@@ -84,7 +85,7 @@ c     $             .or. inicond .and. idp .ne. 0))then
                   endif
                 endif
                 maxfit=flv%mfitp(ka) .lt. 0
-                if(kp .ne. kp1)then
+                if(kp /= kp1)then
                   maxfit=maxfit .and. .not. tftype1fit(kf)
                   kpb=min(kp,kp1)
                   kpe=max(kp,kp1)
@@ -100,7 +101,7 @@ c     $             .or. inicond .and. idp .ne. 0))then
                         endif
                         df1(i)=tdfun1(vf,vpeak(k),
      $                       kf,maxfit,idp,ttrans(idp))
-                        if(df1(i) .ne. 0.d0)then
+                        if(df1(i) /= 0.d0)then
                           iqcol(i)=j
                           lfp(1,i)=ip
                           lfp(2,i)=0
@@ -243,15 +244,15 @@ c      call tfdebugprint(kfid,'gfv-1',1)
       else
         call elname(kp1,name1)
         ln1=lenw(name1)
-        retry1=kp1 .ne. nlat
+        retry1=kp1 /= nlat
         klv1%rbody(5)=vf0
         klv1%rbody(6)=vf
         klv1%rbody(7)=v
       endif
-      retry=kp .ne. nlat
+      retry=kp /= nlat
  100  call tfpadstr(name,ifvloc+1,ln)
       ilist(1,ifvloc)=ln
-      if(kp1 .ne. 0)then
+      if(kp1 /= 0)then
         call tfpadstr(name1,ifvloc1+1,ln1)
         ilist(1,ifvloc1)=ln1
       endif
@@ -266,8 +267,8 @@ c        call tfdebugprint(kfv1,'FitValue-2',1)
       endif
 c      call tfdebugprint(kx,'==> ',1)
       level=itfdownlevel()
- 110  if(irtc .ne. 0)then
-        if(ierrorprint .ne. 0)then
+ 110  if(irtc /= 0)then
+        if(ierrorprint /= 0)then
           call tfaddmessage(' ',0,6)
         endif
         call termes(6,
@@ -298,7 +299,7 @@ c     however, we need scan candidates for 2nd argument(name1)
       elseif(retry1)then
         retry1=.false.
 c     Reset `kp'-element name in name(1:ln)
-        retry=kp .ne. nlat
+        retry=kp /= nlat
         if(retry)then
           call elname(kp,name)
           ln=lenw(name)
@@ -341,7 +342,7 @@ c     Note: index(name1,'.') > 0 if kp1 != 0
       kx%k=0
       kx=tfsyeval(kff,irtc)
 c      call tfdebugprint(kx,'fitfun',3)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         level=itfdownlevel()
         call tfaddmessage(' ',2,icslfno())
         call termes(6,'Error in FitFunction ',' ')
@@ -486,12 +487,13 @@ c        write(*,*)'tdfun1 ',kf,maxfit,vf,v,tdfun1
       subroutine tfpeak(idp,kf,ibegin,iend,ipeak,vpeak,npeak)
       use ffs_pointer
       use tffitcode
+      use gfun
       implicit none
       integer*4 ,intent(in)::ibegin,iend,kf,npeak,idp
       integer*4 ,intent(out)::ipeak(npeak)
       real*8 ,intent(out)::vpeak(npeak)
       integer*4 i,j,k
-      real*8 va,va0,va1,tgfun
+      real*8 va,va0,va1
       vpeak=0.d0
       ipeak=0
       va0=0.d0

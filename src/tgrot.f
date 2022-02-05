@@ -153,7 +153,7 @@
       geo1=geo(:,:,lxp+1)
       pos0=pos(lxp+1)
       gam0=gammab(lxp+1)
-      call tfgeo1(lxp,lxp+1,.true.,.false.)
+      call tfgeo1(lxp,lxp+1,.true.,.false.,.false.)
       gv=geo(:,:,lxp+1)
       geo(:,:,lxp+1)=geo1
       gammab(lxp+1)=gam0

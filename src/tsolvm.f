@@ -1,5 +1,4 @@
-      subroutine tsolvm(a,b,x,n,m,l,ndim,ndimb,ndimx,
-     $     epslon,svd)
+      subroutine tsolvm(a,b,x,n,m,l,ndim,ndimb,ndimx,epslon,svd)
       implicit none
       integer*4 ,parameter ::itmax=256
       integer*4 ,intent(in):: n,m,l,ndim,ndimb,ndimx
@@ -7,14 +6,16 @@
       real*8 ,intent(inout):: a(ndim,m),b(ndimb,l)
       real*8 ,intent(out):: x(ndimx,l)
       real*8 ,intent(in):: epslon
-      real*8 v(0:m+n),anorm,enorm
-      real*8 aa(m+l),f,g,s,r,w,u,h,xmin,z,vv,d,c,p,bb(n),y,an
+      real*8 ,allocatable,dimension(:)::v,bb,aa
+      real*8 anorm,enorm
+      real*8 f,g,s,r,w,u,h,xmin,z,vv,d,c,p,y,an
       real*8 q,h1,h2,t,r1,r2,ra
-      integer*4 lsep(m+n),i,j,k,mn,it,isep,ibegin,iend,ma,i1,i1mn,
-     $     kk,nfail
+      integer*4 ,allocatable,dimension(:)::lsep
+      integer*4 i,j,k,mn,it,isep,ibegin,iend,ma,i1,i1mn,kk,nfail
       logical*4 ,intent(in):: svd
       nfail=4
       mn=min(n,m)
+      allocate(v(0:m+n),aa(m+l),bb(n),lsep(m+n))
 c      do 1 i=1,n
         v(1:n)=1.d0
 c1     continue
@@ -23,7 +24,7 @@ c      do 2 i=1,m
 c2     continue
       do 10 i=1,mn
         i1=i+1
-        if(i .lt. n)then
+        if(i < n)then
           do 5110 j=i1,n
             if(abs(a(i,i)) .gt. abs(a(j,i)))then
               p=a(j,i)/a(i,i)
@@ -61,7 +62,7 @@ c              enddo
             endif
 5110      continue
         endif
-        if(i1 .lt. m)then
+        if(i1 < m)then
           do 5210 j=i1+1,m
             r1=x(i1,1)*a(i,i1)
             r2=x(j ,1)*a(i,j )
@@ -101,8 +102,8 @@ c5221            continue
               s=0.d0
             endif
             a(i,j)=s
-C           if(j .lt. ndim+2)then
-            if(j .lt. n+2)then
+C           if(j < ndim+2)then
+            if(j < n+2)then
               a(j-1,i)=c
             else
               if(c .le. abs(s) .and. c .ne. 0.d0)then
@@ -122,7 +123,7 @@ C           if(j .lt. ndim+2)then
 c        do k=1,l
           b(i,1:l)=b(i,1:l)*p
 c        enddo
-        if(i .lt. m)then
+        if(i < m)then
           a(i,i+1)=a(i,i+1)*p
           v(i)=a(i,i+1)*x(i+1,1)
         else
@@ -148,7 +149,7 @@ c          enddo
           v(mn)=v(mn)*w
 c          do k=1,l
             b(mn,1:l)=b(mn,1:l)*w
-            if(mn .lt. m)then
+            if(mn < m)then
               x(mn+1,1:l)=v(mn)*b(mn,1:l)
             endif
             x(mn,1:l)=d*b(mn,1:l)
@@ -161,7 +162,7 @@ c          enddo
 c          do k=1,l
           b(mn,1:l)=0.d0
           x(mn,1:l)=0.d0
-          if(mn .lt. m)then
+          if(mn < m)then
             x(mn+1,1:l)=0.d0
           endif
 c          enddo
@@ -201,8 +202,8 @@ c            enddo
         do 4040 i=min(mn,m-2),1,-1
           do 4050 j=m,i+2,-1
             s=a(i,j)
-C           if(j .lt. ndim+2)then
-            if(j .lt. n+2)then
+C           if(j < ndim+2)then
+            if(j < n+2)then
               c=a(j-1,i)
             else
               if(abs(s) .gt. 1.d0)then
@@ -229,8 +230,8 @@ c5301  continue
         i1mn=i1+mn
         do 5320 j=m,i+2,-1
           s=a(i,j)
-C         if(j .lt. ndim+2)then
-          if(j .lt. n+2)then
+C         if(j < ndim+2)then
+          if(j < n+2)then
             c=a(j-1,i)
             a(j-1,i)=0.d0
           else
@@ -304,7 +305,7 @@ c1510  continue
           go to 1001
         endif
         do 1210 it=1,itmax
-          if(x(iend,1) .eq. 0.d0)then
+          if(x(iend,1) == 0.d0)then
             iend=iend-1
             go to 1002
           endif
@@ -312,7 +313,7 @@ c1510  continue
             an=abs(x(i,1))+abs(x(i+1,1))
             if(abs(v(i)) .le. an*1.d-16)then
               v(i)=0.d0
-              if(i .eq. iend-1)then
+              if(i == iend-1)then
                 iend=iend-1
               else
                 isep=isep+1
@@ -357,14 +358,14 @@ c                  enddo
           w=x(ibegin,1)
           z=x(iend,1)
           y=x(iend-1,1)
-          if(ibegin .lt. iend-1)then
+          if(ibegin < iend-1)then
             g=v(iend-2)
           else
             g=0.d0
           endif
           h=v(iend-1)
           f=((y-z)*(y+z)+(g-h)*(g+h))*.5d0
-          if(w .eq. 0.d0)then
+          if(w == 0.d0)then
             f=0.d0
           else
             g=h*y
@@ -449,7 +450,7 @@ c                enddo
  1210   continue
         if(nfail .ge. 0)then
           write(*,*)' TSOLVM convergence fail: ',iend
-          if(nfail .eq. 0)then
+          if(nfail == 0)then
             write(*,*)' -- further message will be suppressed.'
           endif
           nfail=nfail-1

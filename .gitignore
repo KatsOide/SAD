@@ -4,7 +4,6 @@ TclTk/*
 arch/*
 obj/*
 sad/*
-contrib/BBBrem_dir/*
 contrib/*
 .DS_Store
 .svn/*
@@ -43,8 +42,6 @@ src/tfsk.f
 *.r6448
 *.bak
 bin/HostArch~
-contrib/BBBrem_dir
-contrib/BBBrem_dir/*
 Library/lib/*
 Library/lib/App/*
 Library/lib/App/LogBrowser/*

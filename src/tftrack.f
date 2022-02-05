@@ -16,15 +16,17 @@
       use tftr
       use iso_c_binding
       implicit none
-      type (sad_descriptor) kx,kx1,kx2,ks,kp
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kx1,kx2,ks,kp
       type (sad_dlist), pointer :: klx,kl
       integer, parameter :: nkptbl = 6
       integer*4, parameter :: npparamin=9,npnlatmin=3000
       integer*8 kz,kzp,kzf,kaxl,ktfmalocp,ktfresetparticles,kdv,
      $     kpsx,kpsy,kpsz
-      integer*4 isp1,irtc,narg,itfloc,outfl0,ld,ls,mc,npa,np00,
-     $     np1,ne,nend,npara,
-     $     npp,m,itfmessage,nt,mt,kseed,mcf
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 narg,itfloc,outfl0,ld,ls,mc,npa,np00,
+     $     np1,ne,nend,npara,npp,m,itfmessage,nt,mt,kseed,mcf
       integer*8 ikptblw,ikptblm
       real*8 trf00,p00,vcalpha0
       real*8 , pointer::zx(:,:),zx0(:,:)
@@ -32,14 +34,14 @@
       logical*4 dapert0,normal
       character*32 autos
       narg=isp-isp1
-      if(narg .gt. 4)then
+      if(narg > 4)then
         irtc=itfmessage(9,'General::narg','"1, 2, 3, or 4"')
         return
       endif
       nt=1
       nend=1
       mt=1
-      if(narg .ge. 3)then
+      if(narg >= 3)then
         if(ktastk(isp1+3) .eq. ktfoper+mtfnull)then
         elseif(ktfrealq(ktastk(isp1+3),nt))then
           nend=nt
@@ -49,7 +51,7 @@
         if(narg .eq. 4)then
           if(ktastk(isp) .eq. ktfoper+mtfnull)then
           elseif(ktfrealq(ktastk(isp),nend))then
-            if(nend .lt. nt)then
+            if(nend < nt)then
               irtc=itfmessage(9,'General::wrongval',
      $             '"#4 >= #3"')
               return
@@ -62,11 +64,11 @@
       endif
 
       ld=nlat
-      if(narg .ge. 2)then
+      if(narg >= 2)then
         if(ktastk(isp1+2) .eq. ktfoper+mtfnull)then
         else
           ld=itfloc(ktastk(isp1+2),irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
         endif
@@ -76,12 +78,12 @@
       endif
       ks=kl%dbody(1)
       ls=itfloc(ks%k,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
-      ls=merge(mod(ls-1,nlat-1)+1,nlat-mod(1-ls,nlat-1),ls .gt. 0)
+      ls=merge(mod(ls-1,nlat-1)+1,nlat-mod(1-ls,nlat-1),ls > 0)
       ld=merge(mod(ld-2,nlat-1)+2,nlat+1-mod(2-ld,nlat-1),
-     $     ld .gt. 1)
+     $     ld > 1)
       if(ld .le. ls)then
         mt=mt+1
       endif
@@ -90,19 +92,19 @@
         go to 9000
       endif
       call tfmsize(kp,mc,npz,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
-      if(npz .lt. 0)then
+      if(npz < 0)then
         go to 9000
       endif
       if(calpol)then
-        if(.not. (mc .ge. 9 .and. mc .le. 11))then
+        if(.not. (mc >= 9 .and. mc .le. 11))then
           go to 9000
         endif
         mcf=9
       else
-        if(.not. (mc .ge. 7 .and. mc .le. 9))then
+        if(.not. (mc >= 7 .and. mc .le. 9))then
           go to 9000
         endif
         mcf=7
@@ -116,7 +118,7 @@
       npara=min(nprmax,max(nparallel,1))
       if(wake)then
         call tffssetupwake(icslfno(),irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
         if(nwakep .eq. 0)then
@@ -129,7 +131,7 @@
       npr=0
       npp=npz
       kz=ktfmalocp(kp%k,mc,npz,.false.,.true.,.true.,.true.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         go to 8900
       endif
       call c_f_pointer(c_loc(rlist(kz)),zx0,[npz,mc])
@@ -149,7 +151,7 @@
       endif
       call tfevals('`ExtMap$@InitMap['//autos(dble(npz))//']',kx,irtc)
 c      call omp_set_num_threads(1)
-      if(npara .gt. 1)then
+      if(npara > 1)then
         kseed=0
 c        write(*,*)'tftrack ',nparallel,npz,npparamin,
 c     $       ne,npnlatmin
@@ -158,21 +160,21 @@ c     $       ne,npnlatmin
           ne=ne+nlat
         endif
         npara=min(npara,npz/npparamin+1,ne*npz/npnlatmin+1)
-        if(npara .gt. 1)then
+        if(npara > 1)then
           irtc=1
           ikptblm=ktfallocshared(npz*int((nkptbl+1)/2))
           npr=npara-1
           np1=npz/npara+1
           ipn=0
           npr=0
-          do while(ipn+np1 .lt. npz)
+          do while(ipn+np1 < npz)
             kseed=kseed+2
             npri=npr
             npr=npr+1
             iprid=itffork()
             if(iprid .eq. 0)then
               call tfaddseed(kseed,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 write(*,*)'addseed-error ',irtc
                 call exit_without_hooks(0)
               endif
@@ -218,14 +220,14 @@ c      call tclrparaall
       call c_f_pointer(c_loc(ilist(1,ikptblm)),jptbl,[npz,nkptbl])
       call tfsetparticles(zx,rlist(kdv:kdv+npp-1),
      $     iptbl,npp,npa,npz,mc,nlat,nt,mcf)
-      if(npa .gt. 0)then
+      if(npa > 0)then
         outfl0=outfl
         outfl=0
         dapert0=dapert
         dapert=.false.
         np00=np0
         np0=npp
-        if(mt .gt. 1)then
+        if(mt > 1)then
           call tturn0(npa,ls,nlat,
      $         zx(1:npa,1),zx(1:npa,2),zx(1:npa,3),zx(1:npa,4),
      $         zx(1:npa,5),zx(1:npa,6),
@@ -238,7 +240,7 @@ c      call tclrparaall
           call tphyzp
         endif
         do m=1,mt-1
-          if(npr .ge. 0)then
+          if(npr >= 0)then
             call tftclupdate(7)
           endif
           if(npa .le. 0)then
@@ -257,7 +259,7 @@ c      call tclrparaall
         normal=.true.
         if(ld .le. ls)then
           normal=.false.
-        elseif(mt .ge. 1 .and. npa .gt. 0)then
+        elseif(mt >= 1 .and. npa > 0)then
           call tturn0(npa,ls,ld,
      $         zx(1:npa,1),zx(1:npa,2),zx(1:npa,3),zx(1:npa,4),
      $         zx(1:npa,5),zx(1:npa,6),
@@ -273,7 +275,7 @@ c     $         zx(npa,3)
       trf0=trf00
       vcalpha=vcalpha0
       irtc=0
-      if(npr .ne. 0)then
+      if(npr /= 0)then
 c       - Copy particle ID to array index map[kptbl(#,1)] with ipn offset
         jptbl(ipn+1:ipn+npp,1)=iptbl(1:npp,1)+ipn
 c        ilist(ipn+1:ipn+npp,ikptblm)=ilist(1:npp,ikptblw)+ipn
@@ -345,7 +347,7 @@ c      return
       type (sad_dlist), pointer :: kll,klx
       type (sad_rlist), pointer :: klf
       integer*4 isp1,irtc,npx,i,j,k,itfmessage,np,ii,kcf
-      if(isp .ne. isp1+1)then
+      if(isp /= isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
@@ -353,12 +355,12 @@ c      return
         go to 9000
       endif
       if(calpol)then
-        if(kll%nl .ne. 9 .and. kll%nl .ne. 11)then
+        if(kll%nl /= 9 .and. kll%nl /= 11)then
           go to 9000
         endif
         kcf=9
       else
-        if(kll%nl .ne. 7 .and. kll%nl .ne. 9)then
+        if(kll%nl /= 7 .and. kll%nl /= 9)then
           go to 9000
         endif
         kcf=7
@@ -372,7 +374,7 @@ c      return
       np=klf%nl
       npx=0
       do i=1,np
-        if(klf%rbody(i) .ne. 0.d0)then
+        if(klf%rbody(i) /= 0.d0)then
           npx=npx+1
         endif
       enddo
@@ -392,14 +394,14 @@ c      return
         if(.not. tfreallistq(kll%dbody(i),kli(i)%kl))then
           go to 8900
         endif
-        if(kli(i)%kl%nl .ne. np)then
+        if(kli(i)%kl%nl /= np)then
           go to 8900
         endif
         klx%dbody(i)=kxavaloc(0,npx,klxi(i)%kl)
       enddo
       j=0
       do i=1,np
-        if(klf%rbody(i) .ne. 0.d0)then
+        if(klf%rbody(i) /= 0.d0)then
           j=j+1
           do k=1,kll%nl
             klxi(k)%kl%rbody(j)=kli(k)%kl%rbody(i)
@@ -452,7 +454,7 @@ c      return
           rlist(kaj(mcf+1)+i)=merge(dble(k),0.d0,
      $         (-nlati .le. k) .and. (k .le. nlati))
           rlist(kaj(mcf+2)+i)=merge(dble(iptbl(iptbl(i,1),5)),
-     $         dble(tend+1),k .ne. 0)
+     $         dble(tend+1),k /= 0)
         enddo
       endif
       ktfresetparticles=ka
@@ -503,11 +505,11 @@ c       Initialize particle lost position[0:alive, -nlat-1:initial-dead]
       enddo
 
 c     Load particle lost position/turn from zx(#,8/9)
-      if(mc .ge. mcf+1)then
+      if(mc >= mcf+1)then
         do i=1,np
-          if(iptbl(i,4) .ne. 0)then
+          if(iptbl(i,4) /= 0)then
             p=abs(nint(zx(i,mcf+1)))
-            if(p .gt. 0 .and. nlat .ge. p)then
+            if(p > 0 .and. nlat >= p)then
               iptbl(i,4)=-p
             endif
           endif
@@ -515,9 +517,9 @@ c     Load particle lost position/turn from zx(#,8/9)
       endif
 
 c     Load particle lost turn from zx(#,9)
-      if(mc .ge. mcf+2)then
+      if(mc >= mcf+2)then
         do i=1,np
-          if(iptbl(i,4) .ne. 0)then
+          if(iptbl(i,4) /= 0)then
             iptbl(i,5)=nint(zx(i,mcf+2))
           endif
         enddo
@@ -527,9 +529,9 @@ c     Compact dead particles into list-tail
       i=1
       npa=np
       do while(i .le. npa)
-         if(iptbl(i,4) .ne. 0)then
+         if(iptbl(i,4) /= 0)then
 c           Search avlive particle from tail: (i, npa]
-            do while((i .lt. npa) .and. (iptbl(npa,4) .ne. 0))
+            do while((i < npa) .and. (iptbl(npa,4) /= 0))
                npa=npa-1
             enddo
             if(iptbl(npa,4) .eq. 0)then
@@ -576,7 +578,7 @@ c              - Swap particle coordinates
          endif
          i=i+1
       enddo
-      if(npa .gt. 0)then
+      if(npa > 0)then
         call tconvm(npa,zx(:,2),zx(:,4),zx(:,6),dv,-1)
         if(calpol)then
           do i=1,npa
@@ -620,13 +622,13 @@ c              - Swap particle coordinates
       isp=isp1+1
       ktastk(isp)=ktfoper+mtfnull
       call SeedRandom(isp1,kx,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       elseif(ktfnonlistq(kx,klx))then
         irtc=-1
         return
       endif
-      if(klx%nl .lt. 2)then
+      if(klx%nl < 2)then
         irtc=-1
         return
       endif

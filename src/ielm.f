@@ -236,7 +236,11 @@ c     *     by tfinit(), tfinimult() initialization
       do j=0,nelmhash
         n=nelm(j)
         ilist(1,k+j*2+1)=0
-        klist(k+j*2+2)=merge(ktaloc(n),i00,n .gt. 0)
+        if(n > 0)then
+          klist(k+j*2+2)=ktaloc(n)
+        else
+          klist(k+j*2+2)=i00
+        endif
       enddo
       do i=1,nlat-1
         j=itehash(pnamec(i),MAXPNAME)*2

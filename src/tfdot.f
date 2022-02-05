@@ -14,7 +14,7 @@
         return
       endif
       n=kl1%nl
-      if(n .eq. 0)then
+      if(n == 0)then
         kx%k=0
         return
       endif
@@ -23,7 +23,7 @@
         do i=1,n
           isp=isp+1
           dtastk(isp)=tfdot(kl1%dbody(i),k2,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             isp=isp0
             return
           endif
@@ -32,7 +32,7 @@
         isp=isp0
         return
       endif
-      if(kl2%nl .ne. n)then
+      if(kl2%nl /= n)then
         irtc=itfmessage(9,'General::equalleng','"arguments"')
         return
       endif
@@ -50,19 +50,19 @@ c          enddo
             m=kl2i%nl
             isp=isp+m
             call tfloadrcstk(isp0,kl2i,kl1%rbody(1),irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               go to 3000
             endif
             do i=2,n
               if(tflistq(kl2%dbody(i),kl2i))then
-                if(kl2i%nl .ne. m)then
+                if(kl2i%nl /= m)then
                   irtc=itfmessage(9,'General::equalleng',
      $                 '"elements of matrix"')
                   isp=isp0
                   return
                 endif
                 call tfaddrcstk(isp0,kl2i,kl1%rbody(i),irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   go to 3000
                 endif
               else
@@ -110,7 +110,7 @@ c          enddo
             rtastk2(isp0+1:isp0+m)=0.d0
             do i=1,n
               call descr_sad(kl2%dbody(i),kl2i)
-              if(kl2i%nl .ne. m)then
+              if(kl2i%nl /= m)then
                 irtc=itfmessage(9,'General::equalleng',
      $               '"elements of matrix"')
                 isp=isp0
@@ -118,12 +118,12 @@ c          enddo
               endif
               if(ktfrealq(kl1%dbody(i)))then
                 call tfaddrcstk(isp0,kl2i,kl1%rbody(i),irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   go to 3000
                 endif
               elseif(tfcomplexq(kl1%dbody(i),cx))then
                 call tfaddccstk(isp0,kl2i,cx,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   go to 3000
                 endif
               else
@@ -157,7 +157,7 @@ c          enddo
         endif
       endif
       do i=isp0,isp
-        if(rtastk2(i) .ne. 0.d0)then
+        if(rtastk2(i) /= 0.d0)then
           dtastk(i)=kxcalocv(-1,rtastk(i),rtastk2(i))
         endif
       enddo
@@ -286,7 +286,7 @@ c          enddo
         do i=1,m1
           k1i=kl1%dbody(i)
           call tfinner(k1i,k2,ki,ks,kp,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             klx%dbody(1:m1)%k=merge(ktfoper+mtfnull,i00,
      $           ktfnonreallistqo(klx))
             return
@@ -301,7 +301,7 @@ c          enddo
         return
       endif
       m2=kl2%nl
-      if(m2 .ne. m1)then
+      if(m2 /= m1)then
         irtc=itfmessage(9,'General::equalleng','"arguments"')
         return
       endif
@@ -313,11 +313,11 @@ c          enddo
         dtastk(isp  )=kl2%dbody(i)
         ki=tfefunref(isp-2,.true.,irtc)
         isp=isp0
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           isp=isp-3
           return
         endif
-        if(i .eq. 1)then
+        if(i == 1)then
           kx=ki
         else
           dtastk(isp-2)=ks
@@ -325,7 +325,7 @@ c          enddo
           dtastk(isp  )=ki
           kx=tfefunref(isp-2,.true.,irtc)
           isp=isp0
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             isp=isp-3
             return
           endif
@@ -375,7 +375,7 @@ c          enddo
         isp=isp+1
         ktastk(isp)=klist(ktfaddr(ktastk(isp1+narg))+i)
         call tfefunrefstk(isp0,isp0,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           call tflocal(kh)
           return
         endif
@@ -424,7 +424,7 @@ c          enddo
         if(tfnonlistq(kl%dbody(i),kli))then
           go to 9000
         endif
-        if(kli%nl .ne. n)then
+        if(kli%nl /= n)then
           irtc=itfmessage(9,'General::equalleng','"rows of matrix"')
           return
         endif
@@ -463,17 +463,17 @@ c          enddo
       real*8 s
       logical*4 cmplm,realm,vec
       narg=isp-isp1
-      if(narg .ne. 1 .and. narg .ne. 2)then
+      if(narg /= 1 .and. narg /= 2)then
         irtc=itfmessage(9,'General::narg','"1 or 2"')
         return
       endif
       call tfmatrixmaybeq(dtastk(isp1+1),cmplm,realm,vec,n,m,kl)
-      if(m .eq. 0)then
+      if(m == 0)then
         go to 9000
         return
       endif
       nm=min(n,m)
-      if(narg .eq. 1)then
+      if(narg == 1)then
         if(realm)then
           s=0.d0
           do i=1,nm
@@ -532,18 +532,18 @@ c          enddo
       integer*4 n,m,narg,itfmessage
       logical*4 cmplm,realm,vec
       narg=isp-isp1
-      if(narg .ne. 1)then
+      if(narg /= 1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
       call tfmatrixmaybeq(dtastk(isp),cmplm,realm,vec,n,m,kl)
-      if(n .ne. m .or. m .eq. 0)then
+      if(n /= m .or. m == 0)then
         go to 9000
         return
       endif
       if(cmplm)then
         call tfcdet(kl,kx,n,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
       elseif(realm)then
@@ -584,7 +584,7 @@ c          enddo
       complex*16 cx,tcdet
       allocate (c(n,n))
       call tfl2cm(kl,c,n,n,.false.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         deallocate(c)
         return
       endif
@@ -608,7 +608,7 @@ c          enddo
       logical*4 inv
       logical*4 realm,cmplm,vec
       narg=isp-isp1
-      if(narg .ne. 3)then
+      if(narg /= 3)then
         irtc=itfmessage(9,'General::narg','"3"')
         return
       endif
@@ -618,7 +618,7 @@ c          enddo
         return
       endif
       eps=rtastk(isp-1)
-      inv=rtastk(isp) .ne. 0.d0
+      inv=rtastk(isp) /= 0.d0
       k=dtastk(isp1+1)
       call tfmatrixmaybeq(k,cmplm,realm,vec,n,m,kl)
       if(cmplm)then
@@ -626,7 +626,7 @@ c          enddo
           call tftclupdate(3)
         endif
         call tcsvdma(kl,kux,kvx,kwx,n,m,eps,inv,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
       elseif(realm)then
@@ -662,7 +662,7 @@ c          enddo
       logical*4 ,intent(in)::inv
       allocate (ca(n,m),cu(n,n),w(m))
       call tfl2cm(kl,ca,n,m,.false.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         deallocate(ca,cu,w)
         return
       endif
@@ -710,10 +710,10 @@ c          enddo
       real*8 eps
       logical*4 cmplm,realm,vec
       narg=isp-isp1
-      if(narg .ne. 2 .and. narg .ne. 3)then
+      if(narg /= 2 .and. narg /= 3)then
         irtc=itfmessage(9,'General::narg','"2 (+ option)"')
         return
-      elseif(narg .eq. 2)then
+      elseif(narg == 2)then
         k=dtastk(isp-1)
         kb=dtastk(isp)
         eps=1.d-8
@@ -734,11 +734,11 @@ c          enddo
       if(.not. realm .and. .not. vec)then
         go to 9100
       endif
-      if(nb .eq. 0 .or. vec)then
+      if(nb == 0 .or. vec)then
         nb=mb
         mb=0
       endif
-      if(n .ne. nb)then
+      if(n /= nb)then
         irtc=itfmessage(9,'General::equalleng','"matrix and vector"')
         return
       endif
@@ -766,14 +766,17 @@ c          enddo
       real*8 , allocatable:: a(:,:),b(:,:),x(:,:)
       allocate (a(n,m),b(n,mx),x(m,mx))
       call tfl2m(kl,a,n,m,.false.)
-      if(mb .eq. 0)then
+      if(mb == 0)then
         b(:,1)=klb%rbody(1:n)
       else
         call tfl2m(klb,b,n,mb,.true.)
       endif
       call tsolvm(a,b,x,n,m,mx,n,n,m,eps,.true.)
-      kx=merge(kxm2l(x,0,m,1,.false.),
-     $     kxm2l(x,m,mb,m,.true.),mb .eq. 0)
+      if(mb == 0)then
+        kx=kxm2l(x,0,m,1,.false.)
+      else
+        kx=kxm2l(x,m,mb,m,.true.)
+      endif
       deallocate (a,b,x)
       return
       end
@@ -846,12 +849,12 @@ c          enddo
       integer*4 n,m,itfmessage
       logical*4 realm,cmplm,vec
       call tfmatrixmaybeq(k,cmplm,realm,vec,n,m,kl)
-      if(n .ne. m)then
+      if(n /= m)then
         go to 9000
       endif
       if(cmplm)then
         call tfceigen(kl,n,kvx,kex,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
       elseif(realm)then
@@ -880,7 +883,7 @@ c          enddo
       integer*4 ,intent(in):: m
       allocate (c(m,m),cw(m,m),ce(m))
       call tfl2cm(kl,c,m,m,.false.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         deallocate (c,cw,ce)
         return
       endif
@@ -924,7 +927,7 @@ c          enddo
               kzi2=ktaaloc(0,m)
               d=.false.
               do j=1,m
-                if(rlist(kvxkvi+j) .ne. 0.d0)then
+                if(rlist(kvxkvi+j) /= 0.d0)then
                   d=.true.
                   dlist(kzi1+j)=
      $                 kxcalocv(0,rlist(kvxkvr+j),rlist(kvxkvi+j))
@@ -973,15 +976,15 @@ c          enddo
       endif
       m=kl%nl
       irtc=-1
-      if(m .eq. 0)then
+      if(m == 0)then
         return
-      elseif(m .eq. 1)then
+      elseif(m == 1)then
         kx=k
         irtc=0
         return
       endif
       call tffft(kl,m,kx,inv,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         go to 9000
       endif
       return
@@ -1002,20 +1005,20 @@ c          enddo
       integer*4 ,intent(in):: m
       integer*4 ,intent(out):: irtc
       integer*4 n,i
-      complex*16 cx(m),cy(m)
+      complex*16 ,allocatable,dimension(:)::cx,cy,ay
       complex*16 , pointer ::ca(:)
+      real*8 , allocatable,dimension(:),target::a
       real*8 c,s,f,w
-      complex*16 ay(m)
-      real*8 , target::a(m*2)
       logical*4 ,intent(in):: inv
       logical*4 power2,even
+      allocate(cx(m),cy(m),ay(m),a(m*2))
       irtc=-1
       n=2
       do while(n .lt. m)
         n=n*2
       enddo
-      power2=n .eq. m
-      even=iand(m,1) .eq. 0
+      power2=n == m
+      even=iand(m,1) == 0
       if(ktfnonreallistqo(kl))then
         f=1.d0/sqrt(dble(m))
         do i=1,m
@@ -1139,21 +1142,21 @@ C
       REAL*8 THETA
 C
       IF(NN.LE.1) GOTO 900
-      IF(ABS(ISGN).NE.1) GOTO 920
+      IF(ABS(ISGN)/=1) GOTO 920
       M=NN
       KPRIME=1
       KK=2
  200  N1=M
- 220  IF(MOD(N1,KK).EQ.0) THEN
+ 220  IF(MOD(N1,KK)==0) THEN
         N1=N1/KK
         GOTO 220
       ELSE
         L=NN/M
         N=M/N1
         M=N1
-        IF(N.NE.1) THEN
+        IF(N/=1) THEN
           CALL ZFFTW0(A,L*M,N,KK,ISGN,WORK)
-          IF(M.NE.1) THEN
+          IF(M/=1) THEN
             W0=1
             THETA=PI2/(ISGN*M*N)
             WP=DCMPLX(COS(THETA),SIN(THETA))
@@ -1172,7 +1175,7 @@ c              W0=W0*WP+W0
             CALL ZFTWTR(A,L,M,N,WORK)
           ENDIF
         ENDIF
-        IF(M.NE.1) THEN
+        IF(M/=1) THEN
           KPRIME=KPRIME+1
           IF(KPRIME.LE.MPRIME) THEN
 c            IF(KPRIME.GT.MPRIME0) CALL NEXTPRIM(PRIME,KPRIME)
@@ -1206,7 +1209,7 @@ C-------------------------- NEXTPRIM ------------------------------
         PRIME(KPRIME)=P
         RETURN
       ENDIF
-      IF(MOD(P,PRIME(K)).EQ.0) GOTO 100
+      IF(MOD(P,PRIME(K))==0) GOTO 100
       GOTO 120
       END
 C-------------------------- ZFFTW0 --------------------------------------

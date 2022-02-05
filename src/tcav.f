@@ -5,12 +5,14 @@
      $     fringe,mfring,autophi)
       use ffs_flag
       use tmacro
+      use wakez
       use mathfun
       implicit none
       integer*4, parameter ::ndivmax=1000
       real*8, parameter::eps=1.d-3,oneev=1.d0+3.83d-12
       integer*4 ,intent(in):: np,mfring,lwl,lwt
-      integer*4 ndiv,i,n,itab(np),izs(np)
+      integer*4 ndiv,i,n
+      integer*4 ,dimension(:),allocatable :: itab,izs
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
      $     g(np),dv(np),sx(np),sy(np),sz(np)
       real*8 ,intent(in):: wakel(2,lwl),waket(2,lwt),
@@ -152,11 +154,18 @@ c          dpr=a/(1.d0+sqrt(1.d0+a))
           z(i)=-t*p2r*p0/h2-dzn
 20      continue
         if(lwake .or. twake)then
+          if(.not. allocated(itab))then
+            allocate(itab(np))
+            itab(np)=np
+            itab(1)=1
+          endif
+          if(.not. allocated(izs))then
+            allocate(izs(np))
+          endif
           fw=fw0*wsn
           call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         0.d0,0.d0,0.d0,
-     $         int(anbunch),
-     $         fw,lwl,wakel,lwt,waket,p0,h0,itab,izs,n .eq. 1)
+     $         0.d0,0.d0,0.d0,int(anbunch),
+     $         fw,lwl,wakel,lwt,waket,p0,h0,itab,izs,.false.)
         endif
 110   continue
 c      write(*,'(a,1p5g15.7)')'tcav-2 ',y(1),py(1),z(1),g(1),dv(1)
@@ -199,8 +208,9 @@ c          h1=sqrt(1.d0+(pe*pr1)**2)
      $     dphis,dvfs,offset)
       use mathfun
       implicit none
-      integer*4 np,i
-      real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np)
+      integer*4 ,intent(in):: np
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),dv(np)
+      integer*4 i
       real*8 al,v,p0,dphis,offset,h0,w,s0,dvfs,
      $     vf,dp1r,p1r,p1,h1,t,ph,dpt,dh,h2,a,dpr,dp2r,p2r,pmin
       parameter (pmin=1.e-10)

@@ -930,7 +930,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       type (sad_descriptor) kaopt(nopt),tfgetoption1
       integer*4 isp1,nopt,ispopt,i,j,isp0,irtc,lenw
       logical*4 rep
-      character*(*) optname(nopt)
+      character*(*) ,intent(in):: optname(nopt)
       isp0=isp
       if(kaopt(1)%k .eq. 0)then
         do i=1,nopt

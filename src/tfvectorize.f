@@ -2,14 +2,17 @@
       use tfstk
       use efun
       implicit none
-      type (sad_descriptor) kx,kx1,kf,ki,k1
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kx1,kf,ki,k1
       type (sad_dlist), pointer :: kli,kli1,klx1,kl,klx
       integer*8 kaf,kaf1,kai
-      integer*4 isp1,irtc,i,j,isp0,isp2,nv,idsp,itfmessage
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 i,j,isp0,isp2,nv,idsp,itfmessage
       kf=dtastk(isp1+1)
       if(ktfoperq(kf,kaf))then
-        if(kaf .eq. mtfplus .or. kaf .eq. mtftimes
-     $       .or. kaf .eq. mtfpower .or. kaf .eq. mtfrevpower)then
+        select case (kaf)
+        case (mtfplus,mtftimes,mtfpower,mtfrevpower)
           nv=0
           do i=isp1+2,isp
             if(ktflistq(dtastk(i),kli) .and. (kli%head%k .eq. kxvect
@@ -36,7 +39,7 @@ c          call tfdebugprint(kx1,'vectorize',1)
           endif
           kx=kx1
           return
-        elseif(kaf .eq. mtfset .or. kaf .eq. mtfsetdelayed)then
+        case (mtfset,mtfsetdelayed)
           do i=isp1+2,isp
             if(ktflistq(ktastk(i),kli) .and.
      $           kli%head%k .eq. kxvect1)then
@@ -48,7 +51,7 @@ c          call tfdebugprint(kx1,'vectorize',1)
           enddo
           kx=tfefunref(isp1+1,.false.,irtc)
           return
-        elseif(kaf .gt. mtfend)then
+        case (mtfend)
           kaf1=klist(ifunbase+kaf)+1
           if(ilist(1,kaf1) .eq. 1 .and. ilist(1,kaf1+1) .ne. 0 .and.
      $         isp .eq. isp1+2 .and. ktflistq(ktastk(isp),kl) .and.
@@ -63,7 +66,7 @@ c          call tfdebugprint(kx1,'vectorize',1)
               return
             endif
           endif
-        endif
+        end select
       endif
       nv=0
       do i=isp1+2,isp

@@ -1865,8 +1865,8 @@ RFSW turns on the acceleration by CAVI and TCAVI element in the particle-trackin
       {}},
 
      {"RADTAPER",
-      " Scales all magnets except for solenoids according to the local momentum (DDP) of the closed orbit. It uses the average of DDPs at the entrance and the exit. For tracking, RADCOD and ( CAL/GO with CALC6D or EMIT(Emittance[]) ) is necessary. CAL/GO with CALC4D will clear the necessary information for tracking with RADTAPER.\n\
- RADTAPER sets the momentum deviation of the closed orbit to DP0, which is an arbitrary choice of an under-deterministic problem of tapering. Thus the difference in the path length around the ring is adjusted by automatically updating FSHIFT.",
+      "Scales all magnets except for solenoids according to the local momentum (DDP) of the closed orbit. It uses the average of DDPs at the entrance and the exit. For tracking, RADCOD and ( CAL/GO with CALC6D or EMIT(Emittance[]) ) is necessary. CAL/GO with CALC4D will clear the necessary information for tracking with RADTAPER.\n\
+ RADTAPER sets the momentum deviation by the local momentum of the closed orbit + an amount to satisfy the path length condition given by FSHIFT. The momentum deviation at the entrance, DP0, is always maintained.",
       "RADCOD CALC6D CALC4D EMIT CAL GO DP0 FSHIFT",
        {}},
 
@@ -2093,7 +2093,7 @@ POL turns on spin tracking and the calculation of equilibrium polarization in EM
 
       {"LOSSMAP",
         "\
-If LOSSMAP is on, TrackParticles returns the location and turn where the particle lost is detected, in the 7/9th and 8/10th element of the result, for  NOPOL/POL, respectively. The default is NOLOSSMAP",
+If LOSSMAP is on, TrackParticles returns the location and turn where the particle lost is detected, in the 8/10th and 9/11th element of the result, for  NOPOL/POL, respectively. The default is NOLOSSMAP",
         "TrackParticles POL",
         {}},
 
@@ -4049,7 +4049,12 @@ Example:\n\
 
         {"FitPlot",
           "\
-Usage: FitPlot[data, fun, var, {par1,ini1}, .. , {parn, inin}, opt].",
+Usage: FitPlot[data, fun, var, {par1,ini1}, .. , {parn, inin}, opt].\n\n\
+options        defaults\n\
+-----------------------------------------\n\
+FunctionLabel  Default     Shows the fit function within FrameLabel[[3]].\n\
+ResultLabel    Default     Shows the fit results within FrameLabel[[3]].\n\
+",
           "Fit",
           {}},
 
@@ -4425,14 +4430,14 @@ The argument nbegin is the initial turn number to be passed to tracking to indic
 The argument nend is the last turn number. The default is nbegin.\n\n\
    The variable beam and also the result of TrackParticles are lists of the form \n\n\
    {location, coordinates}\n\n\
-where location is the position-number of the starting point. If location is same as or in the downstream of destination, the tracking is done by folding across the beginning of the beam line. The coordinates are in a list of {7 or 9, np} form, where np is the number of particles. The first 6 or 8 elements of coordinates specifies either\n\n\
+where location is the position-number of the starting point. If location is same as or in the downstream of destination, the tracking is done by folding across the beginning of the beam line. The coordinates are in a list of {7 or 9, np} form, where np is the number of particles. The first 6 or 8 elements of coordinates specifie either\n\n\
    {x, px/p0, y, py/p0, z, dp/p0} (NOPOL)\n\
-   {x, px/p0, y, py/p0, z, dp/p0 sy, sarg} (NOPOL)\n\b\
-in this order. The {-1, i} is the flag which is True(==1) when the particle is alive, and False(==0) when lost.\n\n\
+   {x, px/p0, y, py/p0, z, dp/p0, sarg, sy} (POL)\n\n\
+in this order, depending on POL. The row [[-1, i]] is the alive flag which is True (==1) when the particle is alive, and False (==0) when lost.\n\n\
    If the flag POL is on, TrackParticles performs spin tracking. Then the coordinates has two more components sy and sarg, which correspond to the y-component of the classical spin vector and the angle ArcTan[sx, sz], respectively. If POL is on, another flag RADPOL turns on the Sokolov-Ternov effect.\n\n\
    When a flag RADLIGHT is on, TrackParticles returns the trajectories of particles which are used to calculate the radiation fields. See RadiationField and RadiationSpectrum.\n\n\
 When PHOTONS is ON (default is OFF), TrackParticles generates a list of all photons radiated through the tracking. The list is assigned to a symbol PhotonList.\n\n\
-When LOSSMAP is ON (default is OFF), TrackParticles returns the component and the turn where the loss of each particle is detected.",
+When LOSSMAP is ON (default is OFF), the input list must have two more lines resulting in a shape of {9 or 11, np}. Then TrackParticles returns into these lines the component and the turn where the loss of each particle is detected.",
         "components LINE PHOTONS PhotonList RADLIGHT TouschekLifetime WakeFunction SurvivedParticles LOSSMAP POL RADPOL",
         {}},
 
@@ -4552,7 +4557,7 @@ where k1 .. kk is the wave number k = omega/c, c1 .. ck and s1 .. sk are the cos
          "\
    WakeFunction[Longitudinal, comp]={{z1, wl1}, ..., {zn, wln}};\n\
    WakeFunction[Transverse,   comp]={{z1, wt1}, ..., {zn, wtn}};\n\n\
-specify longitudinal and transverse dipole wake functions at a component comp (string). Each functions is a list of {z, w} where z is the distance (z>=0) and w is the value of the wake, in the unit of either V/C or V/C/m.\n\
+specify longitudinal and transverse dipole wake functions at a component comp (string). Each functions is a list of {z, w} where z is the distance and w is the value of the wake, in the unit of either V/C or V/C/m.\n\
    The wake functions are applied at the component comp, giving kicks to each orbit whose initial conditions are given by InitialOrbits. The sufficient number of orbits depends on the situation.\n\
    WakeFunction is valid only when TRPT and INS, and also either TWAKE or LWAKE is ON.\n\
    For tracking, it is only valid in TrackParticles.",

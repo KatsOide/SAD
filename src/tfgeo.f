@@ -15,9 +15,9 @@
       logical*4 calgeo,calpol0,chg
       call tfsetparam
       if(.not. geocal)then
-        if(gammab(1) .ne. p0)then
+        if(gammab(1) /= p0)then
           gammab(1)=p0
-          call tfgeo1(1,nlat,calgeo,.true.)
+          call tfgeo1(1,nlat,calgeo,.true.,.true.)
           go to 9000
         endif
         return
@@ -28,7 +28,7 @@
       calgeo=calgeo0
       if(.not. calgeo)then
         do i=1,nlat-1
-          if(idtypec(i) .eq. 20)then
+          if(idtypec(i) == 20)then
             calgeo=.true.
             exit
           endif
@@ -41,16 +41,16 @@
       gammab(1)=p0
       inext=0
       iprev=0
-      call tfgeo1(1,nlat,calgeo,.false.)
+      call tfgeo1(1,nlat,calgeo,.false.,.true.)
       do i=1,nlat-1
         it=idtypec(i)
-        if(it .eq. icMARK)then
+        if(it == icMARK)then
           offset=tffsmarkoffset(i)
-          if(offset .ne. 0.d0)then
+          if(offset /= 0.d0)then
             xp=max(1.d0,min(dble(nlat),offset+dble(i)))
             lxp=int(xp)
             fr=xp-lxp
-            if(fr .eq. 0.d0)then
+            if(fr == 0.d0)then
               geo(:,:,i)=geo(:,:,lxp)
               pos(i)=pos(lxp)
             else
@@ -63,8 +63,8 @@
               if(chg)then
                 geo1=geo(:,:,lxp+1)
                 pos0=pos(lxp+1)
-                call tfgeo1(lxp,lxp+1,calgeo,.false.)
-                if(i .ne. lxp+1)then
+                call tfgeo1(lxp,lxp+1,calgeo,.false.,.false.)
+                if(i /= lxp+1)then
                   geo(:,:,i)=geo(:,:,lxp+1)
                   pos(i)=pos(lxp+1)
                   geo(:,:,lxp+1)=geo1
@@ -79,11 +79,11 @@
               else
                 rlist(latt(lxp)+1:latt(lxp)+nv)=vsave(1:nv)
               endif
-              if(i .eq. 1)then
+              if(i == 1)then
                 dpos=pos(1)
                 pos=pos-dpos
               endif
-              if(i .eq. nlat-1)then
+              if(i == nlat-1)then
                 geo(:,:,nlat)=geo(:,:,i)
                 pos(nlat)=pos(i)
               endif
@@ -93,12 +93,12 @@
           j=i+1
           posi=pos(j)
           do
-            if(pos(j) .ne. posi)then
+            if(pos(j) /= posi)then
               exit
-            elseif(j .eq. nlat)then
+            elseif(j == nlat)then
               j=0
               posi=pos(1)
-            elseif(idtypec(j) .eq. it)then
+            elseif(idtypec(j) == it)then
               inext(i)=j
               iprev(j)=i
               exit
@@ -132,9 +132,9 @@
       circ=pos(nlat)-pos(1)
       rlist(elatt%aux+1)=circ
       dleng=rgetgl1('FSHIFT')*circ
-      if(circ .ne. 0.d0)then
+      if(circ /= 0.d0)then
         omega0=pi2*c*p0/h0/circ
-        if(omega0 .eq. 0.d0)then
+        if(omega0 == 0.d0)then
           write(*,*)'Design orbit length =',circ
         endif
         call rsetgl1('OMEGA0',omega0)
@@ -142,7 +142,7 @@
       return
       end
 
-      subroutine tfgeo1(istart0,istop,calgeo,acconly)
+      subroutine tfgeo1(istart0,istop,calgeo,acconly,savela)
       use kyparam
       use tfstk
       use ffs
@@ -156,7 +156,7 @@
       implicit none
       type (sad_comp), pointer :: cmp
       integer*4 ,intent(in):: istart0,istop
-      logical*4 ,intent(in):: calgeo,acconly
+      logical*4 ,intent(in):: calgeo,acconly,savela
       integer*4 istart,ke,ke1,i,k,i1
       integer*8 id
       real*8 p1,h1,ali,v,dchi3,rho0,sp0,cp0,r1,r2,cchi1,schi1,
@@ -180,7 +180,7 @@ c      h1=p1*sqrt(1.d0+1.d0/p1**2)
 c      h1=sqrt(1.d0+p1**2)
       do i=istart,istop-1
         k=idtypec(i)
-        if(trpt .and. (k .eq. icCAVI .or. k .eq. icMULT))then
+        if(trpt .and. (k == icCAVI .or. k == icMULT))then
           p1=tfacc(i,p1,h1,.true.)
         endif
         gammab(i+1)=p1
@@ -198,17 +198,27 @@ c      h1=sqrt(1.d0+p1**2)
         endif
         k=idtypec(i)
         id=merge(idvalc(i),elatt%comp(i),ideal)
-        if(k .eq. icSOL)then
+        if(k == icSOL)then
           call tsgeo(i,ke,ke1,sol)
           cycle
         endif
         call compelc(i,cmp)
         ali=merge(cmp%value(kytbl(kwL,k)),0.d0,kytbl(kwL,k) .gt. 0)
-        if(kytbl(kwANGL,k) .ne. 0)then
+        if(kytbl(kwANGL,k) /= 0)then
           phi=cmp%value(kytbl(kwANGL,k))
-          if(cmp%value(kytbl(kwFRMD,k)) .ne. 0.d0)then
-            if(phi*ali .ne. 0.d0)then
-              if(k .eq. icBEND)then
+          if(savela)then
+            select case (k)
+            case(icBEND)
+              cmp%value(p_ANGLGEO_BEND)=.5d0*phi
+              cmp%value(p_LGEO_BEND)=.5d0*ali
+            case(icMULT)
+              cmp%value(p_ANGLGEO_MULT)=.5d0*phi
+              cmp%value(p_LGEO_MULT)=.5d0*ali
+            end select
+          endif
+          if(cmp%value(kytbl(kwFRMD,k)) /= 0.d0)then
+            if(phi*ali /= 0.d0)then
+              if(k == icBEND)then
                 fb1=cmp%value(kytbl(kwF1,icBEND))
      $               +cmp%value(kytbl(kwFB1,icBEND))
                 fb2=cmp%value(kytbl(kwF1,icBEND))
@@ -217,7 +227,7 @@ c      h1=sqrt(1.d0+p1**2)
                 fb1=cmp%value(kytbl(kwFB1,k))
                 fb2=cmp%value(kytbl(kwFB2,k))
               endif
-              if(fb1 .ne. 0.d0 .or. fb2 .ne. 0.d0)then
+              if(fb1 /= 0.d0 .or. fb2 /= 0.d0)then
                 ali=ali-((phi*fb1)**2+(phi*fb2)**2)/ali/48.d0
      $               *sin(.5d0*(phi*(1.d0-cmp%value(kytbl(kwE1,k))
      $               -cmp%value(kytbl(kwE2,k)))
@@ -230,9 +240,9 @@ c      h1=sqrt(1.d0+p1**2)
         endif
         pos(i1)=pos(i)+ali
         if(calgeo)then
-          if(k .eq. icMARK)then
-            if(ke .ne. 0 .and. ke1 .ne. 0)then
-              if(rlist(idvalc(i)+ky_GEO_MARK) .ne. 0)then
+          if(k == icMARK)then
+            if(ke /= 0 .and. ke1 /= 0)then
+              if(rlist(idvalc(i)+ky_GEO_MARK) /= 0)then
                 dchi3=tfchi(geo(:,:,i),3)
                 geo(:,1:3,ke1)=matmul(matmul(
      $               tfderotgeo(geo(:,1:3,i),(/0.d0,0.d0,dchi3/)),
@@ -248,16 +258,16 @@ c      h1=sqrt(1.d0+p1**2)
           if(k .ge. 36)then
             geo(:,:,i1)=geo(:,:,i)
           endif
-          if(kytbl(kwANGL,k) .ne. 0)then
+          if(kytbl(kwANGL,k) /= 0)then
             v=cmp%value(kytbl(kwANGL,k))
             ald=ali
-            if(v .eq. 0.d0)then
+            if(v == 0.d0)then
               geo(:,4,i1)=geo(:,3,i)*ald+geo(:,4,i)
               geo(:,1:3,i1)=geo(:,1:3,i)
             else
               theta=merge(cmp%value(kytbl(kwROT,k)),0.d0,
-     $             kytbl(kwROT,k) .ne. 0)
-              if(theta .ne. 0.d0)then
+     $             kytbl(kwROT,k) /= 0)
+              if(theta /= 0.d0)then
                 cost=cos(theta)
                 sint=sin(theta)
                 x= cost*geo(:,1,i)-sint*geo(:,2,i)
@@ -276,7 +286,7 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
               geo(:,4,i1)=geo(:,4,i)+(r1*geo(:,3,i)-r2*x)
               geo(:,1,i1)= cp0*x+sp0*geo(:,3,i)
               geo(:,3,i1)=-sp0*x+cp0*geo(:,3,i)
-              if(theta .ne. 0.d0)then
+              if(theta /= 0.d0)then
                 geo(:,2,i1)=-sint*geo(:,1,i1)+cost*y
                 geo(:,1,i1)= cost*geo(:,1,i1)+sint*y
               else
@@ -295,7 +305,7 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
               schi2=sin(cmp%value(ky_CHI2_COORD))
               cchi3=cos(cmp%value(ky_CHI3_COORD))
               schi3=sin(cmp%value(ky_CHI3_COORD))
-              dir=cmp%value(ky_DIR_COORD) .eq. 0.d0
+              dir=cmp%value(ky_DIR_COORD) == 0.d0
               if(dir)then
                 dx=cmp%value(ky_DX_COORD)
                 dy=cmp%value(ky_DY_COORD)
@@ -353,7 +363,7 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
       type (sad_descriptor) kx
       integer*4 irtc
       logical*4 err,geocal0
-      if(geocal .or. omega0 .eq. 0.d0)then
+      if(geocal .or. omega0 == 0.d0)then
         geocal0=geocal
         geocal=.true.
         call tffsa(0,lfni,kx,irtc)
@@ -381,10 +391,10 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
       id=idtypec(i)
       v=merge(1.d0,-1.d0,dir)*
      $       abs(charge)*rlist(ip+kytbl(kwVOLT,id))/amass
-      if(v .ne. 0.d0)then
+      if(v /= 0.d0)then
         harm=rlist(ip+kytbl(kwHARM,id))
         w=merge(pi2*rlist(ip+kytbl(kwFREQ,id)),omega0*harm,
-     $       harm .eq. 0.d0)/c
+     $       harm == 0.d0)/c
         phic=rlist(ip+kytbl(kwPHI,id))*sign(1.d0,charge)
         dh=max(oneev-h1,-v*sin(phic))
         h2=h1+dh

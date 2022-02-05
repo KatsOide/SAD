@@ -25,20 +25,20 @@
       lpw=min(131,itfgetrecl())
       name1=' '
 1     call getwdl(word)
-      if(word .eq. 'ALL' .or. word .eq. ' ' .and. .not. exist1)then
+      if(word == 'ALL' .or. word == ' ' .and. .not. exist1)then
         patt='*'
-      elseif(word .eq. ' ')then
+      elseif(word == ' ')then
         patt=' '
         exist=.false.
         go to 21
-      elseif(notchar(word,'*',1) .eq. 0)then
+      elseif(notchar(word,'*',1) == 0)then
         patt='*'
         call getwdl(word)
       else
         patt=word
       endif
       exist=.false.
-      if(patt .eq. ' ')then
+      if(patt == ' ')then
         go to 21
       endif
       call tfgetlineps(patt,len_trim(patt),nl,kavl,1,irtc)
@@ -58,7 +58,7 @@ c          if(klp(iele1(kx)) .ne. kx)cycle
           kp=idelc(kx)
           if(tmatch(pname(kp),patt))then
             exist=.true.
-            if(idtype(kp) .eq. lt)then
+            if(idtype(kp) == lt)then
               if(start)then
                 write(lfno,*)';'
                 call twbuf(' ','',lfno,1,lpw,0,0)
@@ -118,7 +118,7 @@ c      endif
       start=.true.
       do ioff=1,100
         kw=tfkwrd(lt,ioff)
-        if(kw .eq. ' ')then
+        if(kw == ' ')then
           if(start)then
             call twbuf(pname(kp)(1:max(8,lpname(kp))),'=()',
      $           lfno,7,lpw,7,1)
@@ -126,37 +126,37 @@ c      endif
             call twbuf(')','',lfno,10,lpw,1,1)
           endif
           return
-        elseif(kw .eq. '-')then
+        elseif(kw == '-')then
           cycle
         endif
         coeff=1.d0
         list=.false.
-        if(lt .eq. icMARK)then
+        if(lt == icMARK)then
           if(ioff .le. ntwissfun)then
-            if(l .eq. 1)then
+            if(l == 1)then
               v=cmp%value(ioff)
             else
               v=twiss(l,0,ioff)
-              if(ioff .eq. mfitax .or. ioff .eq. mfitay
-     $             .or. ioff .eq. mfitepx .or. ioff .eq. mfitepy
-     $             .or. ioff .eq. mfitr2 .or. ioff .eq. mfitr3
-     $             .or. ioff .eq. mfitdpx .or. ioff .eq. mfitdpy
-     $             .or. ioff .eq. mfitaz .or. ioff .eq. mfitzpx
-     $             .or. ioff .eq. mfitzpy)then
+              if(ioff == mfitax .or. ioff == mfitay
+     $             .or. ioff == mfitepx .or. ioff == mfitepy
+     $             .or. ioff == mfitr2 .or. ioff == mfitr3
+     $             .or. ioff == mfitdpx .or. ioff == mfitdpy
+     $             .or. ioff == mfitaz .or. ioff == mfitzpx
+     $             .or. ioff == mfitzpy)then
                 v=v*direlc(l)
               endif
             endif
-          elseif(ioff .eq. ky_EMIX_MARK)then
+          elseif(ioff == ky_EMIX_MARK)then
             v=emx
-          elseif(ioff .eq. ky_EMIY_MARK)then
+          elseif(ioff == ky_EMIY_MARK)then
             v=emy
-          elseif(ioff .eq. ky_EMIZ_MARK)then
+          elseif(ioff == ky_EMIZ_MARK)then
             v=emz
-          elseif(ioff .eq. ky_SIGZ_MARK)then
+          elseif(ioff == ky_SIGZ_MARK)then
             v=sigzs
-          elseif(ioff .eq. ky_SIGE_MARK)then
+          elseif(ioff == ky_SIGE_MARK)then
             v=sizedp
-          elseif(ioff .eq. ky_DP_MARK)then
+          elseif(ioff == ky_DP_MARK)then
             v=dpmax
           else
             v=cmp%value(ioff)
@@ -174,14 +174,14 @@ c      endif
           endif
         else
           real=ktfrealq(cmp%dvalue(ioff),v)
-          if(ioff .eq. nelvx(kx)%ival)then
+          if(ioff == nelvx(kx)%ival)then
             coeff=1.d0/errk(1,l)
           endif
         endif
-        if(kw(1:7 ) .eq. 'ROTATE ')then
+        if(kw(1:7 ) == 'ROTATE ')then
           coeff=coeff*180.d0/m_pi
           unit=' DEG'
-        elseif(kw(1:7) .eq. 'SIGMAZ ' .and. .not. k64)then
+        elseif(kw(1:7) == 'SIGMAZ ' .and. .not. k64)then
           kw(1:6)='SIGZ  '
         else
           unit=' '
@@ -190,7 +190,7 @@ c      endif
           v=v*coeff
           vout=kw(1:lenw(kw))//' ='//autos1(v)
           call trim(vout)
-          if(v .ne. 0.d0 .or. ioff .eq. nelvx(kx)%ival)then
+          if(v .ne. 0.d0 .or. ioff == nelvx(kx)%ival)then
 c            if(abs(v) .gt. 1.d10 .and. index(vout,'.') .le. 0
 c     $           .and. v .ne. dinfinity)then
 c              lv=len_trim(vout)
@@ -204,7 +204,7 @@ c            endif
               call twbuf(vout,unit(:len_trim(unit)),lfno,10,lpw-2,5,1)
             endif
           endif
-        elseif(ioff .eq. kytbl(kwPROF,lt) .and. k64)then
+        elseif(ioff == kytbl(kwPROF,lt) .and. k64)then
           if(tflistq(cmp%dvalue(ioff),klv))then
             if(start)then
               vout=pname(kp)(1:max(8,lpname(kp)))//
@@ -224,7 +224,7 @@ c            endif
             j=1
             do while(j .le. nc)
               j1=index(strb%str(j:nc),',')
-              if(j1 .eq. 0)then
+              if(j1 == 0)then
                 call twbuf(strb%str(j:nc),'',lfno,10,lpw-2,1,1)
                 j=nc+1
               else

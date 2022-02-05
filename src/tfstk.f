@@ -266,7 +266,7 @@ c     Spin precession coefficient (ge-2)/2
 c     NIST 2014 0.00115965218091
 c     CODATA 2018: (2.002 319 304 362 56(35))/2-1 = 0.001159652181280002
 c
-      real*8 , parameter :: gspin = 0.001159652181280002
+      real*8 , parameter :: gspin = 0.001159652181280002d0
 
       end module
 
@@ -478,10 +478,7 @@ c        kcpklist0=transfer(c_loc(kdummy),i00)-kcpoffset-8
         if(lps .eq. 0)then
           lps=getpagesize()
         endif
-        allocate(pname(0:HTMAX))
-        allocate(lpname(0:HTMAX))
-        allocate(idtype(0:HTMAX))
-        allocate(idval(0:HTMAX))
+        allocate(pname(0:HTMAX),lpname(0:HTMAX),idtype(0:HTMAX),idval(0:HTMAX))
 c$$$        ppname=>pname
 c$$$        plpname=>lpname
 c$$$        pidtype=>idtype
@@ -826,6 +823,7 @@ c     endif
      $     ktamask  =int8(z'0001ffffffffffff'),
      $     ktftrue  =int8(z'3ff0000000000000'),
      $     ktffalse =int8(z'0000000000000000'),
+     $     ktfmzero =int8(z'8000000000000000'),
      $     ktfnan   =int8(z'fff8000000000000'),
      $     ktfenan  =int8(z'7ff0000000000000'),
      $     ktfenanb =int8(z'000fffffffffffff')

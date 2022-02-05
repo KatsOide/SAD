@@ -55,7 +55,7 @@
       call tphyzp
       if(gammab(1) .ne. p0 .and. geocal)then
         gammab(1)=p0
-        call tfgeo1(1,nlat,calgeo,.true.)
+        call tfgeo1(1,nlat,calgeo,.true.,.true.)
       endif
       call tsetgcut
       xixf  =rfromd(kxsymbolv('XIX',3))*pi2

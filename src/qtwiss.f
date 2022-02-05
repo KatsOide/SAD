@@ -36,7 +36,7 @@
      $     r1,r2,r3,r4,detr,rr,sqrdet,trtr,bx0,by0,
      $     ax0,ay0,al,pxi,pyi,pxisq,pyisq,pzi,ale,alz,psi1,psi2,
      $     theta0,x,px,y,dpsix,dpsiy,bz,
-     $     pr,a,dpz,trf00,dtheta,
+     $     pr,a,dpz,trf00,dtheta,dchi2,
      $     apsi1,apsi2,sspc0,sspc,vcalpha0,fb1,fb2,
      $     ak1,ftable(4),dir
       logical*4 ,intent(out):: over
@@ -100,7 +100,7 @@ c     end   initialize for preventing compiler warning
         tr(4,4)=1.d0
       else
         do i=mfitex,ntwissfun
-          if(abs(twiss(ipa,i)) .lt. epschop)then
+          if(abs(twiss(ipa,i)) < epschop)then
             twiss(ipa,i)=0.d0
           endif
         enddo
@@ -111,7 +111,7 @@ c     end   initialize for preventing compiler warning
         r4=twiss(ipa,mfitr4)
         detr=r1*r4-r2*r3
         sqrdet=sqrt(1.d0-detr)
-        normal=twiss(ipa,mfitdetr) .lt. 1.d0
+        normal=twiss(ipa,mfitdetr) < 1.d0
       endif
       dvfs=0.d0
       call tesetdv(cod(6))
@@ -127,8 +127,8 @@ c        call tfmemcheckprint1('qtwiss',l,.false.)
           cod=twiss(ip1,mfitdx:mfitddp)
           call tesetdv(cod(6))
         endif
-c        if(l .gt. 20200 .and. l .lt. 20300)then
-c        if(l .gt. 20200 .and. mod(l,100) .eq. 0)then
+c        if(l .gt. 20200 .and. l < 20300)then
+c        if(l .gt. 20200 .and. mod(l,100) == 0)then
 c          write(*,'(a,2i5,1p6g15.7)')'qtwiss1 ',l,ltyp,cod
 c        endif
         if(ltyp .gt. icMARK)then
@@ -137,7 +137,7 @@ c        endif
           endif
         else
           if(mat)then
-            if(itgetfpe() .ne. 0)then
+            if(itgetfpe() /= 0)then
               call tclrfpe
               over=.true.
               go to 9000
@@ -148,7 +148,7 @@ c        endif
               go to 9000
             endif
             if(insmat)then
-              if(ltyp .eq. icINS)then
+              if(ltyp == icINS)then
                 insmat=.false.
               endif
               go to 1010
@@ -157,8 +157,9 @@ c        endif
             bx0=twiss(ip1,mfitbx)
             by0=twiss(ip1,mfitby)
             if(bx0 .gt. 0.d0 .and. by0 .gt. 0.d0 .and.
-     $           itgetfpe() .eq. 0)then
+     $           itgetfpe() == 0)then
             else
+c              write(*,'(a,4i8,1p2g15.7)')'qtwiss-over 3 ',l,ip1,ip0,l1,bx0,by0
               do j=ip1-1,ip0+la,-1
                 if(twiss(j,mfitbx) .gt. 0.d0
      $               .and. twiss(j,mfitby) .gt. 0.d0)then
@@ -191,7 +192,7 @@ c          write(*,*)'qtwiss ',seg,ltyp,al,irtc
 c          if(seg)then
 c            write(*,*)'qtwiss-seg ',cmp%value(1),cmp%value(ky_K1_MULT)
 c          endif
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             call tffserrorhandle(l,irtc)
             go to 1010
           endif
@@ -231,7 +232,7 @@ c          endif
               tr(3,5)=tr(3,5)+a32*tr(2,5)+a34*tr(4,5)+a35
               go to 10
             else
-              coup=a14 .ne. 0.d0
+              coup=a14 /= 0.d0
               a11=1.d0
               a13=0.d0
               a21=0.d0
@@ -269,6 +270,7 @@ c          endif
               fb1=cmp%value(ky_F1_BEND)
      $             +cmp%value(ky_FB2_BEND)
             endif
+            dchi2=cmp%value(ky_CHI2_BEND)
             dtheta=cmp%value(ky_DROT_BEND)
             theta0=cmp%value(ky_ROT_BEND)
             cod1=cod
@@ -278,17 +280,18 @@ c          endif
      $           cmp%value(ky_K1_BEND),
      1           cmp%value(ky_DX_BEND),
      $           cmp%value(ky_DY_BEND),
-     $           theta0,dtheta,
+     $           theta0,dtheta,dchi2,
+     $           cmp%value(p_LGEO_BEND),cmp%value(p_ANGLGEO_BEND),
      $           fb1,fb2,
      $           nint(cmp%value(ky_FRMD_BEND)),
-     $           cmp%value(ky_FRIN_BEND) .eq. 0.d0,
+     $           cmp%value(ky_FRIN_BEND) == 0.d0,
      $           cmp%value(ky_EPS_BEND),
      1           coup)
             go to 20
 
           case (icQUAD)
             mfr=nint(cmp%value(ky_FRMD_QUAD))
-            if(dir .lt. 0.d0)then
+            if(dir < 0.d0)then
               mfr=mfr*(11+mfr*(2*mfr-9))/2
             endif
             ak1=cmp%value(ky_K1_QUAD)
@@ -296,11 +299,11 @@ c          endif
             call qquad(trans,cod,al,
      1           ak1,cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      1           cmp%value(ky_ROT_QUAD),
-     $           cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
+     $           cmp%value(ky_FRIN_QUAD) == 0.d0,
      $           ftable(1),ftable(2),ftable(3),ftable(4),
      $           mfr,cmp%value(ky_EPS_QUAD),
-     $           cmp%value(ky_KIN_QUAD) .eq. 0.d0,
-     $           cmp%value(ky_CHRO_QUAD) .ne. 0.d0,
+     $           cmp%value(ky_KIN_QUAD) == 0.d0,
+     $           cmp%value(ky_CHRO_QUAD) /= 0.d0,
      $           coup)
             go to 20
 
@@ -349,8 +352,8 @@ c     $             kxx,irtc)
      $           cmp%value(ky_ROT_CAVI),
      $           cmp%value(ky_V1_CAVI),cmp%value(ky_V20_CAVI),
      $           cmp%value(ky_V11_CAVI),cmp%value(ky_V02_CAVI),
-     $           cmp%value(ky_FRIN_CAVI) .eq. 0.d0,mfr,
-     $           cmp%value(ky_APHI_CAVI) .ne. 0.d0,
+     $           cmp%value(ky_FRIN_CAVI) == 0.d0,mfr,
+     $           cmp%value(ky_APHI_CAVI) /= 0.d0,
      $           coup)
             go to 20
 
@@ -389,13 +392,13 @@ c     $             kxx,irtc)
      1           cmp%value(ky_DX_COORD),cmp%value(ky_DY_COORD),
      $           cmp%value(ky_DZ_COORD),cmp%value(ky_CHI1_COORD),
      $           cmp%value(ky_CHI2_COORD),cmp%value(ky_CHI3_COORD),
-     1           cmp%value(ky_DIR_COORD) .eq. 0.d0,coup)
+     1           cmp%value(ky_DIR_COORD) == 0.d0,coup)
             go to 20
 
           case default
           end select
  1010     if(wspac)then
-            if(l .eq. lb)then
+            if(l == lb)then
               trans=0.d0
               trans(1,1)=1.d0
               trans(2,2)=1.d0
@@ -496,6 +499,7 @@ c            write(*,*)'qtwiss-qwsapc ',l1,ifsize,rlist(ifsize+(l1-1)*21)
             endif
             twiss(ip,mfitnx)=twiss(ip1,mfitnx)+dpsix
             twiss(ip,mfitny)=twiss(ip1,mfitny)+dpsiy
+c            write(*,'(a,i8,2l2,106g15.7)')'qtwiss1-8 ',ip,coup,normal,twiss(ip,1:6)
             call limitnan(twiss(ip,:),twissnan)
           endif
         endif
@@ -832,7 +836,7 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       call c_f_pointer(c_loc(tr1),tr1v,[20])
       call c_f_pointer(c_loc(rlist(iftwis)),
      $     ptwiss,[nlat*(2*ndim+1),ntwissfun])
-      do while(it .le. itmax)
+      do while(it <= itmax)
         cod=cod0
         if(fbound%fb .gt. 0.d0)then
           call qtwissfrac1(ftwiss,transb,cod,idp,
@@ -910,7 +914,7 @@ c            cycle
 c          endif
           cy=1.d0/cy
         else
-          stab=abs(cx) .le. 1.d0
+          stab=abs(cx) <= 1.d0
         endif
         sx=sign(sqrt(max(1.d-6,1.d0-cx**2)),trans(1,2))
         ax=.5d0*(trans(1,1)-trans(2,2))/sx
@@ -924,14 +928,14 @@ c          endif
         if(ktfenanq(r))then
           r=1.d300
         endif
-        if(r .le. conv)then
+        if(r <= conv)then
           codfnd=.true.
           return
         endif
 c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
         it=it+1
         if(r .gt. r0)then
-          if(fact .lt. factmin)then
+          if(fact < factmin)then
             fact=fact*16.d0
             cod0=(1.d0+fact)*cod00-fact*cod0
           else
@@ -1004,7 +1008,7 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
         call qfracsave(l,dsave,nvar,.true.)
         call compelc(l,cmp)
         call qfracseg(cmp,cmp,0.d0,fr,chg,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           call tffserrorhandle(l,irtc)
         else
           tw1=twiss(l,0,1:ntwissfun)
@@ -1138,17 +1142,21 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
       integer*4 nvar,l,lt
       integer*8 i
       logical*4 save
-      i=merge(idvalc(l),elatt%comp(l),ideal)
+      if(ideal)then
+        i=idvalc(l)
+      else
+        i=elatt%comp(l)
+      endif
       lt=idtypec(l)
       if(save)then
         nvar=kytbl(kwMAX,lt)-1
         dsave(1:nvar)=dlist(i+1:i+nvar)
-        if(lt .eq. icMULT)then
+        if(lt == icMULT)then
           dsave(nvar+1)=dlist(i+p_PROF_MULT)
         endif
       else
         dlist(i+1:nvar)=dsave(1:nvar)
-        if(lt .eq. icMULT)then
+        if(lt == icMULT)then
           dlist(i+p_PROF_MULT)=dsave(nvar+1)
         endif
       endif
@@ -1168,11 +1176,11 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
       logical*4 ideal,chg
       chg=.false.
       r=rx2-rx1
-      if(r .eq. 1.d0)then
+      if(r == 1.d0)then
         return
       endif
-      f1=merge(1.d0,0.d0,rx1 .eq. 0.d0)
-      f2=merge(1.d0,0.d0,rx2 .eq. 0.d0)
+      f1=merge(1.d0,0.d0,rx1 == 0.d0)
+      f2=merge(1.d0,0.d0,rx2 == 0.d0)
       lt=idtype(cmp%id)
       select case (lt)
 
@@ -1180,11 +1188,12 @@ c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
         go to 9000
         
       case (icBEND)
-        if(cmp%value(ky_FRMD_BEND) .eq. 0)then
+        if(cmp%value(ky_FRMD_BEND) == 0)then
           cmp%value(ky_F1_BEND)=0.d0
+        else
+          cmp%value(ky_FRMD_BEND)=-f1-2.d0*f2
         endif
-        cmp%value(ky_FRMD_BEND)=-f1-2.d0*f2
-        if(r .ne. 0.d0)then
+        if(r /= 0.d0)then
 c          if(cmp%orient .gt. 0.d0)then
           if(cmp%ori)then
             cmp%value(ky_E1_BEND)=
@@ -1229,12 +1238,13 @@ c     $     cmp%value(ky_K0_BEND)
         cmp%value(ky_VOLT_MULT)=cmp%value(ky_VOLT_MULT)*r
         cmp%value(ky_DVOLT_MULT)=cmp%value(ky_DVOLT_MULT)*r
         cmp%value(ky_W1_MULT)=cmp%value(ky_W1_MULT)*r
-        if(cmp%value(ky_ANGL_MULT) .ne. 0.d0)then
-          if(cmp%value(ky_FRMD_MULT) .eq. 0.d0)then
+        if(cmp%value(ky_ANGL_MULT) /= 0.d0)then
+          if(cmp%value(ky_FRMD_MULT) == 0.d0)then
             cmp%value(ky_FB1_MULT)=0.d0
             cmp%value(ky_FB2_MULT)=0.d0
+          else
+            cmp%value(ky_FRMD_BEND)=-f1-2.d0*f2
           endif
-          cmp%value(ky_FRMD_BEND)=-f1-2.d0*f2
           if(cmp%ori)then
             cmp%value(ky_E1_MULT)=
      $           cmp%value(ky_E1_MULT)*f1/r
@@ -1266,51 +1276,51 @@ c     $     cmp%value(ky_K0_BEND)
         return
       end select
       fr0=cmp%value(kytbl(kwFRMD,lt))
-      if(fr0 .eq. 0.d0 .or. fr0 .eq. 2)then
-        if(kytbl(kwFB1,lt) .ne. 0)then
+      if(fr0 == 0.d0 .or. fr0 == 2)then
+        if(kytbl(kwFB1,lt) /= 0)then
           cmp%value(kytbl(kwFB1,lt))=0.d0
         endif
       endif
-      if(fr0 .eq. 0.d0 .or. fr0 .eq. 1)then
-        if(kytbl(kwFB2,lt) .ne. 0)then
+      if(fr0 == 0.d0 .or. fr0 == 1)then
+        if(kytbl(kwFB2,lt) /= 0)then
           cmp%value(kytbl(kwFB2,lt))=0.d0
         endif
       endif
-      if(fr0 .eq. 0)then
+      if(fr0 == 0)then
         fr0=3.d0
       endif
       cmp%value(kytbl(kwFRMD,lt))=0.d0
-      if(f1 .ne. 0.d0)then
+      if(f1 /= 0.d0)then
         if(cmp%ori)then
-          if(fr0 .eq. 3.d0 .or. fr0 .eq. 1.d0)then
+          if(fr0 == 3.d0 .or. fr0 == 1.d0)then
             cmp%value(kytbl(kwFRMD,lt))=1.d0
           endif
         else
-          if(fr0 .eq. 3.d0 .or. fr0 .eq. 2.d0)then
+          if(fr0 == 3.d0 .or. fr0 == 2.d0)then
             cmp%value(kytbl(kwFRMD,lt))=2.d0
           endif
         endif
       endif
-      if(f2 .ne. 0.d0)then
+      if(f2 /= 0.d0)then
         if(cmp%ori)then
-          if(fr0 .eq. 3.d0 .or. fr0 .eq. 2.d0)then
+          if(fr0 == 3.d0 .or. fr0 == 2.d0)then
             cmp%value(kytbl(kwFRMD,lt))=cmp%value(kytbl(kwFRMD,lt))+2.d0
           endif
         else
-          if(fr0 .eq. 3.d0 .or. fr0 .eq. 1.d0)then
+          if(fr0 == 3.d0 .or. fr0 == 1.d0)then
             cmp%value(kytbl(kwFRMD,lt))=cmp%value(kytbl(kwFRMD,lt))+1.d0
           endif
         endif
       endif
-      if(cmp%value(kytbl(kwFRMD,lt)) .eq. 0.d0)then
+      if(cmp%value(kytbl(kwFRMD,lt)) == 0.d0)then
         cmp%value(kytbl(kwFRMD,lt))=-4.d0
       endif
- 9000 if(kytbl(kwL,lt) .ne. 0)then
+ 9000 if(kytbl(kwL,lt) /= 0)then
         cmp%value(kytbl(kwL,lt))=cmp%value(kytbl(kwL,lt))*r
       endif
       chg=.true.
       if(.not. ideal)then
-        cmp%update=cmp%nparam .le. 0
+        cmp%update=cmp%nparam <= 0
       endif
       return
       end
@@ -1336,18 +1346,18 @@ c     $     cmp%value(ky_K0_BEND)
       df2=fr2
       lt=idtype(cmp%id)
       k=kytbl(kwPROF,lt)
-      if(k .eq. 0 .or. .not. tflistq(cmp%dvalue(k),lprof))then
+      if(k == 0 .or. .not. tflistq(cmp%dvalue(k),lprof))then
         go to 100
       endif
       al0=cmp%value(kytbl(kwL,lt))
-      if(al0 .eq. 0.d0)then
+      if(al0 == 0.d0)then
         go to 100
       endif
       if(ideal)then
         chg=.true.
         cmp0%dvalue(p_PROF_MULT)%k=ktfoper+mtfnull
         call tsetupseg(cmp0,lprof,lsegp,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
       else
@@ -1356,7 +1366,7 @@ c     $     cmp%value(ky_K0_BEND)
       call descr_sad(lsegp%dbody(1),ls1)
       call descr_sad(ls1%dbody(2),kl)
       n=kl%nl
-      if(n .le. 1)then
+      if(n <= 1)then
         i1=1
         i2=1
         go to 100
@@ -1376,27 +1386,27 @@ c     $     cmp%value(ky_K0_BEND)
       endif
       do i=j1,j2,js
         s=s+kl%rbody(i)*al0
-        if(i1 .eq. 0 .and. s .ge. al1)then
+        if(i1 == 0 .and. s .ge. al1)then
           i1=i
           df1=1.d0-(s-al1)/(kl%rbody(i)*al0)
         endif
         if(s .ge. al2)then
           i2=i
           df2=1.d0-(s-al2)/(kl%rbody(i)*al0)
-          if(i1 .eq. 0)then
+          if(i1 == 0)then
             i1=i2
             df1=df2
           endif
           go to 100
         endif
       enddo
-      if(i1 .eq. 0)then
+      if(i1 == 0)then
         i1=j2
         df1=1.d0
       endif
       i2=j2
       df2=1.d0
- 100  if(i1 .eq. 0)then
+ 100  if(i1 == 0)then
         call qfraccomp(cmp,fr1,fr2,ideal,chg1)
       else
         call qfraccompseg(cmp,cmp0,i1,df1,i2,df2,lsegp,ideal,chg1)
@@ -1429,19 +1439,19 @@ c     $     cmp%value(ky_K0_BEND)
       enddo
       is=merge(1,-1,i2 .ge. i1)
       do i=i1,i2,is
-        if(i1 .eq. i2)then
-          f1=merge(1.d0,0.d0,rx1 .eq. 0.d0)
-          f2=merge(1.d0,0.d0,rx2 .eq. 0.d0)
+        if(i1 == i2)then
+          f1=merge(1.d0,0.d0,rx1 == 0.d0)
+          f2=merge(1.d0,0.d0,rx2 == 0.d0)
           r1=rx1
           r2=rx2
-        elseif(i .eq. i1)then
+        elseif(i == i1)then
           r1=rx2
-          f1=merge(1.d0,0.d0,rx1 .eq. 0.d0)
+          f1=merge(1.d0,0.d0,rx1 == 0.d0)
           r2=1.d0
-        elseif(i .eq. i2)then
+        elseif(i == i2)then
           r1=0.d0
           r2=rx2
-          f2=merge(1.d0,0.d0,rx2 .eq. 0.d0)
+          f2=merge(1.d0,0.d0,rx2 == 0.d0)
         else
           r1=0.d0
           r2=1.d0
@@ -1526,12 +1536,12 @@ c        write(*,'(a,3i5,1p2g15.7)')'qputfracseg ',k,i1,i,r,lkv0%rbody(i)
           kk=ktfaddr(lsegp%dbody(k))
           k1=ilist(1,kk+1)
           k2=ilist(2,kk+1)
-          if(k1 .eq. k2)then
+          if(k1 == k2)then
             cmp%value(k1)=0.d0
           endif
           cmp%value(k1)=cmp%value(k1)+rsave(k2)*lkv%rbody(i)
         enddo
-        call qmult1(trans,cod,l1,cmp,bz,i .eq. i1,coup1)
+        call qmult1(trans,cod,l1,cmp,bz,i == i1,coup1)
         coup=coup .or. coup1
       enddo
       cmp%value(1:nc)=rsave(1:nc)
@@ -1582,16 +1592,17 @@ c        write(*,'(a,3i5,1p2g15.7)')'qputfracseg ',k,i1,i,r,lkv0%rbody(i)
      $     cmp%value(ky_DZ_MULT),
      $     chi1m,chi2m,cmp%value(ky_ROT_MULT),
      $     cmp%value(ky_DROT_MULT),
+     $     cmp%value(p_LGEO_MULT),cmp%value(p_ANGLGEO_MULT),
      $     cmp%value(ky_EPS_MULT),
-     $     cmp%value(ky_FRIN_MULT) .eq. 0.d0,
+     $     cmp%value(ky_FRIN_MULT) == 0.d0,
      $     ftable(1),ftable(2),ftable(3),ftable(4),
      $     mfr,fb1,fb2,
-     $     cmp%value(ky_K0FR_MULT) .eq. 0.d0,
+     $     cmp%value(ky_K0FR_MULT) == 0.d0,
      $     cmp%value(ky_VOLT_MULT)+cmp%value(ky_DVOLT_MULT),
      $     cmp%value(ky_HARM_MULT),
      $     cmp%value(ky_PHI_MULT),cmp%value(ky_FREQ_MULT),
      $     cmp%value(ky_W1_MULT),
-     $     cmp%value(ky_APHI_MULT) .ne. 0.d0,ini,
+     $     cmp%value(ky_APHI_MULT) /= 0.d0,ini,
      $     coup)
       return
       end
@@ -1607,8 +1618,8 @@ c        write(*,'(a,3i5,1p2g15.7)')'qputfracseg ',k,i1,i,r,lkv0%rbody(i)
       call tthine(transe,cod,beam,srot,nord,al,ak,
      1     dx,dy,theta,.false.,1)
       call qcopymat(trans,transe,.false.)
-      coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.
-     $     trans(2,3) .ne. 0.d0 .or. trans(2,4) .ne. 0.d0
+      coup=trans(1,3) /= 0.d0 .or. trans(1,4) /= 0.d0 .or.
+     $     trans(2,3) /= 0.d0 .or. trans(2,4) /= 0.d0
       return
       end
 
@@ -1625,7 +1636,7 @@ c        write(*,'(a,3i5,1p2g15.7)')'qputfracseg ',k,i1,i,r,lkv0%rbody(i)
      1     dx,dy,theta,.false.,fringe,f1in,f2in,f1out,f2out,mfring,eps0,
      $     kin,achro,.false.)
       call qcopymat(trans,transe,.false.)
-      coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.
-     $     trans(2,3) .ne. 0.d0 .or. trans(2,4) .ne. 0.d0
+      coup=trans(1,3) /= 0.d0 .or. trans(1,4) /= 0.d0 .or.
+     $     trans(2,3) /= 0.d0 .or. trans(2,4) /= 0.d0
       return
       end

@@ -5,7 +5,8 @@
       use tparastat
       use tfcsi, only:icslfno
       implicit none
-      type (sad_descriptor) :: kmode,kc,kx
+      type (sad_descriptor),intent(inout) :: kx
+      type (sad_descriptor) :: kmode,kc
       type (sad_dlist), pointer :: klc
       type (sad_rlist), pointer :: klar,klc1,klp,kml,klcx
       integer*4 ,intent(in):: isp1
@@ -13,7 +14,7 @@
       integer*4 narg,i,lfno,n1,itfmessage,np00,iv(3)
       real*8 range(3,3),damp,rgetgl1,phi(3),codsave(6),dampenough
       narg=isp-isp1
-      if(narg .ne. 7)then
+      if(narg /= 7)then
         irtc=itfmessage(9,'General::narg','"7"')
         return
       endif
@@ -22,7 +23,7 @@
         irtc=itfmessage(9,'General::wrongtype','"{v1, v2} for #7"')
         return
       endif
-      if(kml%nl .ne. 2)then
+      if(kml%nl /= 2)then
         irtc=itfmessage(9,'General::wrongtype','"{v1, v2} for #7"')
         return
       endif
@@ -33,7 +34,7 @@
         irtc=itfmessage(9,'General::wrongtype','"List for #1"')
         return
       endif
-      if(klc%nl .ne. 3)then
+      if(klc%nl /= 3)then
         irtc=itfmessage(9,'General::wrongleng','"#1","3"')
         return
       endif
@@ -42,7 +43,7 @@
           irtc=itfmessage(9,'General::wrongtype','"Real List"')
           return
         endif
-        if(klcx%nl .ne. 2)then
+        if(klcx%nl /= 2)then
           irtc=itfmessage(9,'General::wrongtype','"{min, max}"')
           return
         endif
@@ -64,7 +65,7 @@
      $       '"{PhaseX, PhaseY, PhaseZ} for #4"')
         return
       endif
-      if(klp%nl .ne. 3)then
+      if(klp%nl /= 3)then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"{PhaseX, PhaseY, PhaseZ} for #4"')
         return
@@ -82,7 +83,7 @@
       endif
       codsave=codin
       if(tfreallistq(dtastk(isp1+3),klar))then
-        if(klar%nl .ne. 6 )then
+        if(klar%nl /= 6 )then
           irtc=itfmessage(9,'General::wrongtype',
      $         '"{x0, px0, y0, py0, z0, dp0} for #3"')
           return
@@ -123,8 +124,9 @@ c      y(1:2)=range(1:2,2)
 c      g(1:n1)=r1
       call trackd(range,r1,n1,nturn,
      1     trval,phi,damp,dampenough,ivar1,ivar2,lfno)
+      call tftclupdate(7)
       dapert=dapert0
-      if(itgetfpe() .ne. 0)then
+      if(itgetfpe() /= 0)then
         write(*,*)'DynamicApertureSurvey-FPE ',itgetfpe()
         call tclrfpe
       endif

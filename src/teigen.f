@@ -57,9 +57,12 @@ c   radix is the machine radix of floating.
 
       subroutine thess(a,w,n,ndim)
       implicit none
-      integer*4 n,ndim,i,i1,j
-      real*8 a(n,n),w(ndim,n),aa(n)
+      integer*4 ,intent(in):: n,ndim
+      integer*4 i,i1,j
+      real*8 ,intent(inout):: a(n,n),w(ndim,n)
+      real*8 ,allocatable,dimension(:)::aa
       real*8 h1,p,q
+      allocate (aa(n))
       vx(2:n)=vx(2:n)**2
       do 10 i=1,n-2
         i1=i+1
@@ -116,7 +119,7 @@ c   radix is the machine radix of floating.
       integer*4 ibtab(n)
       real*8 , intent(inout)::a(n,n)
       real*8 , intent(out):: w(ndim,n),eig(2,n)
-      real*8 aa(n),aa1(n)
+      real*8 ,allocatable,dimension(:)::aa,aa1
       real*8 px(2),py(2)
       real*8 anorm,c,s,p,q,v1,v2,am,am1,w1,w2,w3,
      $     dec,sqrd,r,da,pk,pl,u,v,pm,pn,a1,a2,x,y,ee,sa,
@@ -136,6 +139,7 @@ c     end   initialize for preventing compiler warning
       ibtab(1)=1
       ib=1
       ie=n
+      allocate (aa(n),aa1(n))
       do i=1,ie-2
         a(i+2,i)=0.d0
         a(min(i+3,ie),i)=0.d0

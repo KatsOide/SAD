@@ -17,10 +17,11 @@ c
       real*8 ,intent(inout):: a(ndim,m),b(ndimb,n)
       real*8 ,intent(out):: x(m)
       real*8 ,intent(in):: epslon
-      real*8 v(0:nmax),anorm
-      real*8 aa(m),f,g,s,r,w,h,xmin,z,vv,c,p,bb(n),y,an
+      real*8 ,allocatable,dimension(:)::v,aa,bb
+      integer*4 ,allocatable,dimension(:)::lsep
+      real*8 anorm
+      real*8 f,g,s,r,w,h,xmin,z,vv,c,p,y,an
       real*8 q,h1,h2,t,r1,r2
-      integer*4 lsep(0:nmax)
       integer*4 i,j,mn,it,isep,ibegin,iend,i1,i1mn,n1,kkk
       logical*4 inv
       mn=min(n,m)
@@ -29,6 +30,7 @@ c
         write(*,*)' TSVDM Too large matrix. ',n,m
         return
       endif
+      allocate(v(0:m+n),lsep(0:m+n),aa(m),bb(n))
       v(1:n)=1.d0
       x(1:m)=1.d0
       b(1:n1,1:n1)=0.d0

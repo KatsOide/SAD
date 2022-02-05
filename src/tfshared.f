@@ -14,13 +14,13 @@
       integer*4 ,intent(in):: n
       integer*4 irtc,getpagesize,nsh1,i,na
       integer*8 k,kpb,kcp
-      if(lps .eq. 0)then
+      if(lps == 0)then
         lps=getpagesize()/8
       endif
       na=((n+3)/lps+2)*lps
       nsh1=0
       do i=1,kstshare(0)
-        if(kstshare(i) .eq. 0 .and. lshare(i) .ge. na)then
+        if(kstshare(i) == 0 .and. lshare(i) .ge. na)then
           kstshare(i)=1
           ktfallocshared=kashare(i)
           return
@@ -30,7 +30,7 @@
       enddo
       kstshare(0)=nsh1
       nsh1=0
-      if(kstshare(0) .eq. nshmax)then
+      if(kstshare(0) == nshmax)then
         do i=1,kstshare(0)
           if(kstshare(i) .le. 0)then
             if(lshare(i) .gt. 0)then
@@ -41,7 +41,7 @@
               call tfreleaseshared(kashare(i))
               nsh1=i
               exit
-            elseif(nsh1 .eq. 0)then
+            elseif(nsh1 == 0)then
               kstshare(i)=1-kstshare(i)
               nsh1=i
             endif
@@ -86,7 +86,7 @@ c     $     transfer(c_loc(klist(kpb)),k)/8
         is=ist
       endif
       do i=1,kstshare(0)
-        if(kashare(i) .eq. kpb)then
+        if(kashare(i) == kpb)then
           kstshare(i)=is
           if(is .lt. 0)then
             lshare(i)=0
@@ -111,7 +111,7 @@ c     $     transfer(c_loc(klist(kpb)),k)/8
         call abort
       endif
 c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
-      if(itfcbk(k) .eq. 0)then
+      if(itfcbk(k) == 0)then
         call tfentercbk(k,klist(kpb-1)+1)
       endif
       call tfree(k)
@@ -152,7 +152,7 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       implicit none
       integer*4, save :: lps=0
       integer*4 getpagesize
-      if(lps .eq. 0)then
+      if(lps == 0)then
         lps=getpagesize()/8
       endif
       return
@@ -172,7 +172,7 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       integer*4 m,itfmessage,i
       logical*4 tfcheckelement
       do i=isp0+1,isp
-        if(ktastk(i) .eq. k%k)then
+        if(ktastk(i) == k%k)then
           kx=dtastk2(i)
           return
         endif
@@ -196,7 +196,7 @@ c        call tfdebugprint(k,'recallshared',3)
           endif
         endif
         m=kl%nl
-        if(kl%ref .eq. 0)then
+        if(kl%ref == 0)then
           kax=ktavaloc(-1,m)
           dlist(kax+1:kax+m)=kl%dbody(1:m)
         else
@@ -236,17 +236,17 @@ c        call tfdebugprint(k,'recallshared',3)
       integer*4 i,j,m
       ka=ktfaddr(k)
       kt=k-ka
-      if(kt .eq. ktfstring)then
+      if(kt == ktfstring)then
         klist(kap)=klist(ka)
         do i=1,(ilist(1,ka)+7)/8
           rlist(kap+i)=rlist(ka+i)
         enddo
-      elseif(kt .eq. ktflist)then
+      elseif(kt == ktflist)then
         kh=klist(ka)
         klist(kap+1)=kh
         if(ktfobjq(kh) .and. ktfnonsymbolq(kh))then
           do j=isp0,isp
-            if(ktastk(j) .eq. kh)then
+            if(ktastk(j) == kh)then
               klist(kap+1)=merge(ktfstring+ktastk2(j),
      $             ktflist+ktastk2(j)+1,ktfstringq(kh))
               exit
@@ -269,7 +269,7 @@ c          enddo
               klist(kap+i+1)=ki
             else
               do j=isp0,isp
-                if(ktastk(j) .eq. ki)then
+                if(ktastk(j) == ki)then
                   if(ktfstringq(ki))then
                     klist(kap+i+1)=ktfstring+ktastk2(j)
                   else
@@ -299,10 +299,10 @@ c          enddo
       else
         ka=ktfaddr(k)
         kt=k-ka
-        if(kt .eq. ktfstring)then
+        if(kt == ktfstring)then
           n=3+(ilist(1,ka)+7)/8
           do i=isp0+1,isp
-            if(ktastk(i) .eq. k)then
+            if(ktastk(i) == k)then
               n=1
               exit
             endif
@@ -310,9 +310,9 @@ c          enddo
           isp=isp+1
           ktastk(isp)=k
           itastk2(1,isp)=n
-        elseif(kt .eq. ktflist)then
+        elseif(kt == ktflist)then
           do i=isp0+1,isp
-            if(ktastk(i) .eq. k)then
+            if(ktastk(i) == k)then
               n=1
               return
             endif

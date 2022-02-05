@@ -35,7 +35,7 @@
         theta1=theta
         ak1=ak
       endif
-      call tsolrote(trans,cod,beam,srot,al,bz,dx,dy,0.d0,
+      call tsolrote(trans,cod,beam,srot,0.d0,bz,dx,dy,0.d0,
      $     0.d0,0.d0,theta1,bxs,bys,bzs,.true.)
 c cod has canonical momenta!
       if(krad)then
@@ -71,7 +71,7 @@ c cod has canonical momenta!
       if(krad .and. f1out .ne. 0.d0)then
         call tradke(trans,cod,beam,srot,f1out,0.d0,bzs*.5d0)
       endif
-      call tsolrote(trans,cod,beam,srot,al,bz,dx,dy,0.d0,
+      call tsolrote(trans,cod,beam,srot,0.d0,bz,dx,dy,0.d0,
      $     0.d0,0.d0,theta1,bxs,bys,bzs,.false.)
       return
       end

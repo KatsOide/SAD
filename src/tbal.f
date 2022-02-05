@@ -2,8 +2,9 @@
       implicit none
 c   radix is the machine radix of floating.
       real*8 , parameter ::radix=2.d0,sqrdx=radix**2
-      integer*4 n,ndim,i,j
-      real*8 a(n,n),w(ndim,n),v(n)
+      integer*4;iin  n,ndim
+      real*8 ,intent(inout):: a(n,n),w(ndim,n),v(n)
+      integer*4 i,j
       real*8 c,r,g,f,s,u
       logical*4 last
       a=w(1:n,:)

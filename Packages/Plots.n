@@ -239,100 +239,124 @@ With[{def={PlotStyle->ColumnPlot,Orientation->Vertical,
       ]
     ]];
 
-FitPlot[data_,fun_,x_,par0__]:=
-  Module[{s,g1,g,fun1,dy=0.28,xl,yl,dx,d,dm,x0,y0,lsym,
-    {opt,par}=SwitchCases[{par0},{_Rule|_RuleDelayed,_}],
-    x1,x2,ci,g3,xa=data[[,1]],lp,sc,ts,fn,re,col,pr,res,rf},
-    lp=Length[par];
-    sc=Weight/.opt/.Weight->None;
-    ts=TextSize/.opt/.TextSize->1;
-    fn=FunctionLabel/.opt/.FunctionLabel->{0.5,Null};
-    re=ResultLabel/.opt/.ResultLabel->{0.5,Null};
-    col=Columns/.opt/.Columns->Min[3,lp];
-    pr=PlotRange/.opt/.PlotRange->Automatic;
-    rf=RaiseFit/.opt/.RaiseFit->False;
-    If[res=(Head[re]===List),{x0,y0}=re];
-    s=Which[
-      sc===Signal,
-      d=Thread[data];
-      dm=Max[Second[d]];
-      Fit[
-        Thread[Switch[Length[First[data]],
-          2,
-          d,
-          3,
-          {First[d],Second[d],Third[d]/Second[d]*dm},
-          4,
-          {First[d],Second[d],Third[d],d[[4]]/Second[d]*dm}]],
-        fun,x,par0],
-      Head[sc]===List,
-      d=Thread[data];
-      Fit[
-        Thread[Switch[Length[First[data]],
-          2,
-          {First[d],Second[d],sc},
-          3,
-          {First[d],Second[d],Third[d]*sc},
-          4,
-          {First[d],Second[d],Third[d]*sc,d[[4]]*sc}]],
-        fun,x,par0],
-      True,
-      Fit[data,fun,x,par0]];
-    g1=ListPlot[data,DisplayFunction->Identity,Null@@opt];
-!    ReleaseHold[Hold[fun1[y_]:=With[{x=y},fun]]/.s];
-    {x1,x2}=Switch[pr,
-      {{_Real,_Real},_},First[pr],
-      {{_Real,Automatic},_},{pr[[1,1]],Max[xa]},
-      {{Automatic,_Real},_},{Min[xa],pr[[1,2]]},
-      _,MinMax[xa]];
-    Block[{x},
-      g=Unevaluated$[Plot[fun,{x,x1,x2},
-        DisplayFunction->Identity,Null@@opt,PlotColor->"blue"]]/.s];
-    lsym=Min[Max[StringLength[SymbolNameRoot[#]]&/@par[[,1]]],8];
-    StandardForm[$FORM="8.5";
-      ci=ConfidenceInterval/.s;
-      If[Head[fn]===List||Head[re]===List,
-        g3=Graphics[Flatten[{
-          If[Head[fn]===List,
-            StandardForm[
-              Text[{"Function = "//Unevaluated[fun],
-                {WindowScaled[First[fn]],
-                  If[RealQ[fn[[2]]],
-                    WindowScaled[Second[fn]],
-                    BelowTags["T$LC","F$X1","FL$X1","LF$X1","ELF$X1","LF$Y1","LF$Y2",0]]}},
-                Tags:>"FP$FUN"//The$CanvasObject@Canvas$Frame,
-                TextSize->ts,Anchor->"nw"]],
-            Null[]],
-          If[res,
-            dx=13/col;
-            xl=x0+(Mod[#,col]&/@Range[0,lp-1])*dx;
-            If[RealQ[y0],
-              yl=y0-(Floor[Range[0,lp-1]/col]+2.5)*dy,
-              yl=AboveTags["T$TH","T$T","F$X2","FL$X2","LF$X2","LF$Y1","LF$Y2","ELF$Y1","ELF$Y2",#]&
-                /@((Floor[(lp-1)/col]-Floor[Range[0,lp-1]/col])*dy)];
-            Null@@{Text[{"ChiSquare ="//(ChiSquare/.s)//
-              "  Goodness  ="//(GoodnessOfFit/.s),
-              {WindowScaled[x0],
-                If[RealQ[y0],
-                  WindowScaled[y0-dy],
-                  ReplacePart[yl[[1]],(Floor[(lp-1)/col]+1.2)*dy,-1]]
-                }},
-              Tags:>"FP$RES"//The$CanvasObject@Canvas$Frame,
-              TextSize->ts,Anchor->"sw"],
-              MapThread[Text[{(SymbolNameRoot[#[[1]]]//"        ")[1,lsym]
-                //" ="//(#[[1]]/.s)//" \261"//#2,
-                {WindowScaled[#3],
+FP$StackLabel[s0_,m_String,cw_]:=Module[{s=s0,ls=StringLength[s0[[-1]]],lm=StringLength[m]},
+  If[s[[-1]][-1]==="\n",
+    Append[s,m],
+    If[ls+lm+2>cw,
+      s[[-1]]=s[[-1]]//",\n";
+      Append[s,m],
+      s[[-1]]=s[[-1]]//If[StringLength[s[[-1]]],", ",""]//m;
+      s]]];
+
+With[{def={Weight->None,TextSize->1,FunctionLabel->Default,
+  ResultLabel->Default,Columns->3,PlotRange->Automatic,RaiseFit->False,
+  FrameLabel->{"","","",""}},cw=80},
+  FitPlot[data_,fun_,x_,par0__]:=
+    Module[{s,g1,g,fun1,dy=0.28,xl,yl,dx,d,dm,x0,y0,lsym,
+      {opt,par}=SwitchCases[{par0},{_Rule|_RuleDelayed,_}],
+      x1,x2,ci,g3,xa=data[[,1]]},
+      {{sc,ts,fn,re,col,pr,rf,fl}=
+        {Weight,TextSize,FunctionLabel,ResultLabel,Columns,PlotRange,RaiseFit,FrameLabel}/.opt/.def,
+        lp=Length[par]},
+!      If[res=(Head[re]===List),{x0,y0}=re];
+      s=Which[
+        sc===Signal,
+        d=Thread[data];
+        dm=Max[Second[d]];
+        Fit[
+          Thread[Switch[Length[First[data]],
+            2,
+            d,
+            3,
+            {First[d],Second[d],Third[d]/Second[d]*dm},
+            4,
+            {First[d],Second[d],Third[d],d[[4]]/Second[d]*dm}]],
+          fun,x,par0],
+        Head[sc]===List,
+        d=Thread[data];
+        Fit[
+          Thread[Switch[Length[First[data]],
+            2,
+            {First[d],Second[d],sc},
+            3,
+            {First[d],Second[d],Third[d]*sc},
+            4,
+            {First[d],Second[d],Third[d]*sc,d[[4]]*sc}]],
+          fun,x,par0],
+        True,
+        Fit[data,fun,x,par0]];
+      g1=ListPlot[data,DisplayFunction->Identity,Null@@opt];
+      {x1,x2}=Switch[pr,
+        {{_Real,_Real},_},First[pr],
+        {{_Real,Automatic},_},{pr[[1,1]],Max[xa]},
+        {{Automatic,_Real},_},{Min[xa],pr[[1,2]]},
+        _,MinMax[xa]];
+      Block[{x},
+        With[{f=fun/.s},
+          g=Plot[f,{x,x1,x2},
+            DisplayFunction->Identity,Null@@opt,PlotColor->"blue"]/.(PlotRange->_):>Null[];
+          ci=ConfidenceInterval/.s;
+          lsym=Min[Max[StringLength[SymbolNameRoot[#]]&/@par[[,1]]],8];
+          fl=Take[Join[fl,{"","","",""}],4];
+          fl3={""};
+          StandardForm[
+            If[fn===Default,
+              fl3=FP$StackLabel[fl3,"Fit function: "//fun//"\n",cw]];
+            If[re===Default,
+              $FORM="S8.5";
+              fl3=FP$StackLabel[fl3,"`fc`n`u2`n ="//(ChiSquare/.s),cw];
+              fl3=FP$StackLabel[fl3,"Goodness ="//(GoodnessOfFit/.s)//"\n",cw];
+              Do[
+                fl3=FP$StackLabel[fl3,SymbolNameRoot[par[[i,1]]]//" = "//(par[[i,1]]/.s)//"\261 "//ci[[i]],cw],
+                {i,Length[par]}]]
+            ];
+          fl[[3]]=If[fl[[3]]<=>"",fl[[3]]//"\n",""]//(StringJoin@@fl3)
+          ]];
+(*
+        If[Head[fn]===List||Head[re]===List,
+          g3=Graphics[Flatten[{
+            If[Head[fn]===List,
+              StandardForm[
+                Text[{"Function = "//Unevaluated[fun],
+                  {WindowScaled[First[fn]],
+                    If[RealQ[fn[[2]]],
+                      WindowScaled[Second[fn]],
+                      BelowTags["T$LC","F$X1","FL$X1","LF$X1","ELF$X1","LF$Y1","LF$Y2",0]]}},
+                  Tags:>"FP$FUN"//The$CanvasObject@Canvas$Frame,
+                  TextSize->ts,Anchor->"nw"]],
+              Null[]],
+            If[res,
+              dx=13/col;
+              xl=x0+(Mod[#,col]&/@Range[0,lp-1])*dx;
+              If[RealQ[y0],
+                yl=y0-(Floor[Range[0,lp-1]/col]+2.5)*dy,
+                yl=AboveTags["T$TH","T$T","F$X2","FL$X2","LF$X2","LF$Y1","LF$Y2","ELF$Y1","ELF$Y2",#]&
+                  /@((Floor[(lp-1)/col]-Floor[Range[0,lp-1]/col])*dy)];
+              Null@@{Text[{"ChiSquare ="//(ChiSquare/.s)//
+                "  Goodness  ="//(GoodnessOfFit/.s),
+                {WindowScaled[x0],
                   If[RealQ[y0],
-                    WindowScaled[#4],
-                    #4]}},
+                    WindowScaled[y0-dy],
+                    ReplacePart[yl[[1]],(Floor[(lp-1)/col]+1.2)*dy,-1]]
+                  }},
                 Tags:>"FP$RES"//The$CanvasObject@Canvas$Frame,
-                TextSize->ts,Anchor->"sw"]&,
-                {par,ci,xl,yl}]},
-            Null[]]}]],
-        g3:=Null[]]];
-    {s,If[rf,
-      Show[g1,g,g3,If[leg<=>False,gl,Null[]],Null@@opt],
-      Show[g,g1,g3,If[leg<=>False,gl,Null[]],Null@@opt]]}];
+                TextSize->ts,Anchor->"sw"],
+                MapThread[Text[{(SymbolNameRoot[#[[1]]]//"        ")[1,lsym]
+                  //" ="//(#[[1]]/.s)//" \261"//#2,
+                  {WindowScaled[#3],
+                    If[RealQ[y0],
+                      WindowScaled[#4],
+                      #4]}},
+                  Tags:>"FP$RES"//The$CanvasObject@Canvas$Frame,
+                  TextSize->ts,Anchor->"sw"]&,
+                  {par,ci,xl,yl}]},
+              Null[]]}]],
+          g3:=Null[]]];*)
+       {s,If[rf,
+          Show[g1,g,FrameLabel->fl,If[leg<=>False,gl,Null[]],Null@@opt],
+          Show[g,g1,FrameLabel->fl,If[leg<=>False,gl,Null[]],Null@@opt]]}
+      ]];
+
 SetAttributes[FitPlot,HoldRest];
 
 CP$ColorScale[False,__]:=Unevaluated$[Null[]];

@@ -6,7 +6,7 @@
       integer*4 ,intent(out):: irtc
       type (sad_descriptor) kf,kl,tflevelstk,tfmap1
       integer*4 ,parameter::maxind=4096
-      real*8 rind(maxind)
+      real*8 ,allocatable,dimension(:)::rind
       integer*4 narg,n1,n2,ispf,isp0,ind,itfmessage
       narg=isp-isp1
       kx%k=ktfoper+mtfnull
@@ -35,6 +35,7 @@
      $       mode .ne. 0 .and. mode .ne. 4)
         return
       endif
+      allocate(rind(maxind))
       kf=dtfcopy(dtastk(ispf))
       kl=dtfcopy(dtastk(ispf+1))
       ind=0
@@ -275,7 +276,7 @@
       type (sad_rlist), pointer :: klir
       integer*4 maxind
       parameter (maxind=4096)
-      real*8 rind(maxind)
+      real*8 ,allocatable,dimension(:)::rind
       integer*4 narg,n1,n2,ispf,ind,isp0,
      $     ihead,ispmax,itfmessage,ispa,
      $     i,ii,nl,ispb,itfpmat,mstk0,iop
@@ -418,6 +419,7 @@
           return
         endif
       endif
+      allocate(rind(maxind))
       kf=dtfcopy(dtastk(ispf))
       kl=dtfcopy(dtastk(ispf-1))
       ind=0

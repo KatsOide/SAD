@@ -165,8 +165,11 @@
           kres=ktsydefc(name,l,icont,.true.)
         endif
       elseif(i .eq. 1)then
-        kres=merge(ktsydefc('`',1,itfcontroot,.true.),
-     $       ktfsymbolc(name(2:l),l-1,itfcontroot),l .eq. 1)
+        if(l == 1)then
+          kres=ktsydefc('`',1,itfcontroot,.true.)
+        else
+          kres=ktfsymbolc(name(2:l),l-1,itfcontroot)
+        endif
       else
         ic=ktsydefc(name(1:i),i,
      $       merge(itfcontroot,icont,icont .eq. 0),.true.)
@@ -178,7 +181,11 @@
         else
           ic1=ktfaddr(ic1)
         endif
-        kres=merge(ic,ktfsymbolc(name(i+1:l),l-i,ic1),i .eq. l)
+        if(i == l)then
+          kres=ic
+        else
+          kres=ktfsymbolc(name(i+1:l),l-i,ic1)
+        endif
       endif
       return
       end

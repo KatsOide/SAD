@@ -269,8 +269,10 @@ C     C=(A^3-A)
 C     D=(B^3-B)
 C
       implicit none
-      integer*4 np,i,m,j,md
-      real*8 y(md,np),ddy(md,np),work(np)
+      integer*4 ,intent(in):: np,m,md
+      real*8 ,intent(in)::  y(md,np)
+      real*8 ,intent(inout):: ddy(md,np),work(np)
+      integer*4 i,j
       do j=1,m
         ddy(j,1)=0.d0
         ddy(j,2)=y(j,3)-2.d0*y(j,2)+y(j,1)
@@ -298,10 +300,13 @@ C
       subroutine tfspline(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx,kd,k1,k2
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kd,k1,k2
       type (sad_dlist), pointer :: klx,kld
       integer*8 ka1,ka2,ix,iy,iddy,ka
-      integer*4 isp1,irtc,itfmessage,n,m,mode
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage,n,m,mode
       real*8 dy(2)
       type (sad_descriptor), save :: kxperiodic
       data kxperiodic%k /0/
@@ -380,8 +385,11 @@ C
 
       subroutine spline2(m,x,y,ddy,mode,dy)
       implicit none
-      integer*4 m,mode
-      real*8 x(m),y(m),ddy(m),work(m),dy(2)
+      integer*4 ,intent(in):: m,mode
+      real*8 ,intent(in):: x(m),y(m)
+      real*8 ,intent(inout):: ddy(m),dy(2)
+      real*8 ,allocatable,dimension(:)::work
+      allocate(work(m))
       call spline(m,x,y,ddy,work,mode,dy)
       return
       end
@@ -389,10 +397,12 @@ C
       subroutine tffindindex(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer ::kl
       type (sad_rlist), pointer ::klr,kll
-      integer*4 isp1,irtc,itfmessage,i1,i2,ih,n,i,m
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage,i1,i2,ih,n,i,m
       real*8 x
       if(isp1+2 .ne. isp)then
         irtc=itfmessage(9,'General::narg','"2"')

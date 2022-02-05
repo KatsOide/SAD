@@ -428,7 +428,7 @@
       real*8 pure elemental function sqrtl(x)
       implicit none
       real*8 ,intent(in)::  x
-      real*8 ,parameter :: am=1.d-100
+      real*8 ,parameter :: am=1.d-200
       sqrtl=sqrt(max(x,am))
       return
       end function
@@ -982,9 +982,17 @@ c              enddo
         endif
         klx%attr=ior(klx%attr,lconstlist)
       elseif(mode .eq. 1)then
-        kx=merge(kxcalocv(-1,xmin,ymin),dfromr(xmin),cpx)
+        if(cpx)then
+          kx=kxcalocv(-1,xmin,ymin)
+        else
+          kx=dfromr(xmin)
+        endif
       else
-        kx=merge(kxcalocv(-1,xmax,ymax),dfromr(xmax),cpx)
+        if(cpx)then
+          kx=kxcalocv(-1,xmax,ymax)
+        else
+          kx=dfromr(xmax)
+        endif
       endif
       irtc=0
       return

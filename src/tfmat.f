@@ -90,6 +90,7 @@
       trans(5,:)= cz*ri1(5,:)+sz*ri1(6,:)
       trans(6,:)=-sz*ri1(5,:)+cz*ri1(6,:)
       trans=matmul(tinv6(etwiss2ri(tw2,normal2)),trans)
+c      write(*,'(a,1p10g13.5)')'tfmat6 ',cz,sz,trans(5,1:6)
 c      call tinv6(ri2,ri2i)
 c      call tmultr(trans,ri2i,6)
       if(.not. normal2)then

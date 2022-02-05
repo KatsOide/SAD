@@ -90,17 +90,17 @@
 
       subroutine trftr(a,m,conj)
       use iso_c_binding
+      use macmath,only:m_pi
       implicit none
       integer*4 ,intent(in):: m
       integer*4 i,i2,j2
       real*8 , target::a(0:m-1)
-      real*8 pi,w,ci,si,ai2,ai21,aj2,aj21,a1
-      parameter (pi=3.14159265358979324d0)
+      real*8 w,ci,si,ai2,ai21,aj2,aj21,a1
       logical*4 ,intent(in):: conj
       complex*16 , pointer ::ca(:)
       call c_f_pointer(c_loc(a),ca,[m/2])
       call tcftr(ca,m/2,conj)
-      w=merge(-2.d0,2.d0,conj)*pi/m
+      w=merge(-2.d0,2.d0,conj)*m_pi/m
       do i=1,m/4
         ci=cos(w*i)
         si=sin(w*i)
@@ -127,14 +127,14 @@ c Inversion of trftr
 c tftrr(trftr(f)) = m*f
 c
       use iso_c_binding
+      use macmath, only:m_pi
       implicit none
       integer*4 m,i,i2,j2
       real*8 ,target:: a(0:m-1)
-      real*8 pi,w,ci,si,ai2,ai21,aj2,aj21,a1
-      parameter (pi=3.14159265358979324d0)
+      real*8 w,ci,si,ai2,ai21,aj2,aj21,a1
       logical*4 conj
       complex*16 ,pointer :: ca(:)
-      w= merge(2.d0,-2.d0,conj)*pi/m
+      w= merge(2.d0,-2.d0,conj)*m_pi/m
       do i=1,m/4
         ci=cos(w*i)
         si=sin(w*i)

@@ -46,11 +46,11 @@
       logical*4 trace,used
       integer*8 itfres
       data itfres /0/
-      if(isp .lt. isp1+2)then
+      if(isp < isp1+2)then
         irtc=itfmessage(9,'General::narg','"2 or more"')
         return
       endif
-      if(itfres .eq. 0)then
+      if(itfres == 0)then
         itfres=ktfsymbolz('Residual',8)
       endif
       maxi=maxi0
@@ -58,32 +58,32 @@
       trace=.false.
       used=.true.
       ispv=isp
-      if(isp .ge. isp1+3)then
+      if(isp >= isp1+3)then
         if(tfreallistq(dtastk(isp),klo)
-     $       .and. klo%nl .ge. 4)then
+     $       .and. klo%nl >= 4)then
           ispv=isp-1
           maxi=int(klo%rbody(1))
           eps=klo%rbody(2)
-          trace=klo%rbody(3) .ne. 0.d0
-          used=klo%rbody(4) .ge. 1.d0
+          trace=klo%rbody(3) /= 0.d0
+          used=klo%rbody(4) >= 1.d0
         endif          
       endif
       if(.not. used)then
-        frac=merge(klo%rbody(4),frac0,klo%rbody(4) .gt. 0.d0)
+        frac=merge(klo%rbody(4),frac0,klo%rbody(4) > 0.d0)
       endif
-      if(ispv .lt. isp1+2)then
+      if(ispv < isp1+2)then
         irtc=itfmessage(9,'General::narg','"2 or more"')
         return
       endif
       call tfsetupeqs(ktastk(isp1+1),ke%k,neq,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
       allocate (sav(nvmax),sav0(nvmax),
      $     v0(nvmax),vmin(nvmax),vmax(nvmax))
       call tfsetupvars(isp1+2,ispv,
      $     nvar,sav,sav0,v0,vmin,vmax,nvmax,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         deallocate (sav,sav0,v0,vmin,vmax)
         return
       endif
@@ -92,7 +92,7 @@
 c      write(*,*)'findroot-D ',used
       if(used)then
         call tfderiv(ke,nvar,sav,kdl,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           call tflocal1(ke%k)
           go to 9000
         endif
@@ -101,7 +101,7 @@ c        call tfdebugprint(ke,'tffindroot-deriv',1)
       call tfnewton(ke%k,sav,v0,d0,kdl,
      $     vmin,vmax,neq,nvar,maxi,eps,trace,frac,irtc)
       call tflocal1(ke%k)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         go to 9000
       endif
       call tfassignrules(sav0,v0,nvar,klx)
@@ -133,11 +133,12 @@ c        call tfdebugprint(ke,'tffindroot-deriv',1)
       integer*4 i,j,iter
       real*8 ,intent(inout):: v0(nvar),d0
       real*8 ,intent(in):: vmin(nvar),vmax(nvar),eps,frac
-      real*8 f(neq),f0(neq),dv(nvar),v(nvar),fact,fact1,fact2,d,d1,d2,
-     $     dg,am,sv,goal,tffsfmin,svi
+      real*8 ,allocatable,dimension(:):: f,f0,dv,v
+      real*8 fact,fact1,fact2,d,d1,d2,dg,am,sv,goal,tffsfmin,svi
       real*8 , allocatable :: a(:,:),a0(:,:)
       logical*4 ,intent(in):: trace
       real*8 , parameter :: factmin=1.d-4,svmin=1.d-7,svdtol=1.d-5
+      allocate (f(neq),f0(neq),dv(nvar),v(nvar))
       iter=0
       call tfevalresidual(sav,v0,ke,f0,am,d0,nvar,neq,trace,irtc)
       goal=am*eps
@@ -150,28 +151,28 @@ c      enddo
       fact=1.d0
       d1=d0
       fact1=0.d0
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
       allocate (a(neq,nvar),a0(neq,nvar))
- 1    if(d0 .lt. goal)then
+ 1    if(d0 < goal)then
         deallocate (a0,a)
         return
       endif
       iter=iter+1
-      if(iter .gt. maxi)then
+      if(iter > maxi)then
         deallocate (a0,a)
         return
       endif
       v=v0
       do i=1,nvar
         kx=tfeevalref(kdl(i),irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           deallocate (a0,a)
           return
         endif
         if(ktflistq(kx,klx))then
-          if(klx%nl .eq. neq*2 .and. ktfreallistq(klx))then
+          if(klx%nl == neq*2 .and. ktfreallistq(klx))then
             do j=1,neq
               a(j,i)=klx%rbody(j*2-1)-klx%rbody(j*2)
             enddo
@@ -184,12 +185,12 @@ c      enddo
         svi=max(abs(v(i))*frac,sv)
         v(i)=v0(i)+svi
         call tfevalresidual(sav,v,ke,f,am,d1,nvar,neq,.false.,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           deallocate (a0,a)
           return
         endif
         a(1:neq,i)=(f(1:neq)-f0(1:neq))/svi
-        if(d1 .lt. d0)then
+        if(d1 < d0)then
           v0=v
           f0=f
           d0=d1
@@ -216,11 +217,11 @@ c        write(*,*)'newton ',i,v0(i),dv(i)
 c        v(i)=min(vmax(i),max(vmin(i),v0(i)+dv(i)*fact))
 c      enddo
       call tfevalresidual(sav,v,ke,f0,am,d,nvar,neq,trace,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         deallocate (a0,a)
         return
       endif
-      if(d .lt. d0)then
+      if(d < d0)then
         v0=v
         d0=d
         fact=min(1.d0,fact*4.d0)
@@ -229,7 +230,7 @@ c      enddo
         go to 1
       else
         iter=iter+1
-        if(iter .gt. maxi)then
+        if(iter > maxi)then
           deallocate (a0,a)
           return
         endif
@@ -238,7 +239,7 @@ c      enddo
         fact2=fact1
         fact1=fact
         fact=tffsfmin(fact1,fact2,d1,d2,d0,dg)
-        if(fact .lt. factmin)then
+        if(fact < factmin)then
           deallocate (a0,a)
           return
         endif
@@ -273,7 +274,7 @@ c      enddo
       call loc_sad(ktfaddr(ke),kl)
       kx=tfleval(kl,.true.,irtc)
 c      call tfdebugprint(kx,'evalres-2',1)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         go to 9000
       endif
       if(.not. tflistq(kx))then
@@ -281,7 +282,7 @@ c      call tfdebugprint(kx,'evalres-2',1)
         go to 9000
       endif
       kax=ktfaddr(kx%k)
-      if(ilist(2,kax-1) .ne. neq*2)then
+      if(ilist(2,kax-1) /= neq*2)then
         irtc=itfmessage(9,'General::wrongleng','"results","equations"')
         go to 9000
       endif
@@ -334,7 +335,7 @@ c      call tfdebugprint(kx,'evalres-2',1)
       type (symv) ,intent(inout):: sav(nvmax),sav0(nvmax)
       real*8 ,intent(out):: v0(nvmax),vmin(nvmax),vmax(nvmax)
       nvar=isp2-isp1+1
-      if(nvar .gt. nvmax)then
+      if(nvar > nvmax)then
         irtc=itfmessage(9,'General::toomany','"variables"')
         return
       endif
@@ -345,21 +346,21 @@ c      call tfdebugprint(kx,'evalres-2',1)
         if(.not. tflistq(ki,kli))then
           go to 8900
         endif
-        if(kli%nl .eq. 3)then
+        if(kli%nl == 3)then
           k3=tfeevalref(kli%dbody(3),irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 9000
           endif
           if(.not. tflistq(k3,kl3))then
             go to 8900
           endif
-          if(ktfnonreallistqo(kl3) .or. kl3%nl .ne. 2)then
+          if(ktfnonreallistqo(kl3) .or. kl3%nl /= 2)then
             go to 8900
           endif
           vmin(j+1)=kl3%rbody(1)
           vmax(j+1)=kl3%rbody(2)
         else
-          if(kli%nl .ne. 2)then
+          if(kli%nl /= 2)then
             go to 8900
           endif
           vmin(j+1)=-1.d300
@@ -379,7 +380,7 @@ c        isp=isp+2
 c        ktastk(isp-1)=sad_loc(symd%sym%loc)
 c        ktastk(isp)=ig
         kv=tfeevalref(kli%dbody(2),irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
         if(ktfnonrealq(kv,v0(j)))then
@@ -387,8 +388,9 @@ c        ktastk(isp)=ig
      $         '"initial value","Real"')
           go to 9000
         endif
+        v0(j)=min(vmax(j),max(vmin(j),v0(j)))
       enddo
-c      if(isp .gt. isp0)then
+c      if(isp > isp0)then
 c        isp4=isp
 c        call tfredefsymbol(isp0+1,isp4,
 c     $       ite1,iae1,ve1,ite,iae,ve,rep)
@@ -417,19 +419,19 @@ c      endif
       if(ktfnonlistq(kl,list))then
         go to 9000
       endif
-      if(list%head%k .eq. ktfoper+mtfequal)then
+      if(list%head%k == ktfoper+mtfequal)then
         neq=1
         list=>tfduplist(list)
         call tfreplist(list%list(1),0,ktfoper+mtflist,eval)
         kae=ksad_loc(list%head%k)
         irtc=0
-      elseif(list%head%k .eq. ktfoper+mtflist)then
+      elseif(list%head%k == ktfoper+mtflist)then
         neq=list%nl
         kae=ktadaloc(-1,neq*2,liste)
         do i=1,neq
           kei=list%dbody(i)
           if(ktflistq(kei,listi))then
-            if(listi%head%k .eq. ktfoper+mtfequal)then
+            if(listi%head%k == ktfoper+mtfequal)then
               liste%dbody(i*2-1)=dtfcopy(listi%dbody(1))
               liste%dbody(i*2  )=dtfcopy(listi%dbody(2))
               cycle
@@ -477,7 +479,7 @@ c      endif
       data itfchisq%k,itfsigma%k,itfgood%k,itfconf%k,itfcov%k,
      $     itfdm%k
      $     /0,0,0,0,0,0/
-      if(isp1 .gt. isp-4)then
+      if(isp1 > isp-4)then
         irtc=itfmessage(9,'General::narg','"4 or more"')
         return
       endif
@@ -486,7 +488,7 @@ c      endif
      $       '"Symbol for indep. var as #3"')
         return
       endif
-      if(itfchisq%k .eq. 0)then
+      if(itfchisq%k == 0)then
         itfchisq=kxsymbolf('ChiSquare',9,.true.)
         itfsigma=kxsymbolf('StandardDeviation',17,.true.)
         itfgood=kxsymbolf('GoodnessOfFit',13,.true.)
@@ -500,13 +502,13 @@ c      endif
       ispv=isp
       do i=isp,isp1+4,-1
         call tfgetoption('MaxIterations',ktastk(i),kx,irtc)
-        if(irtc .eq. -1)then
+        if(irtc == -1)then
           ispv=i
           allocate (sav(nvmax),sav0(nvmax),
      $         v0(nvmax),vmin(nvmax),vmax(nvmax),v0s(nvmax))
           go to 1
         endif
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
         if(ktfrealq(kx,maxi))then
@@ -514,16 +516,16 @@ c      endif
           cycle
         endif
         call tfgetoption('D',ktastk(i),kx,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
         if(ktfrealq(kx,vx))then
           ispv=i-1
-          used=vx .ne. 0.d0
+          used=vx /= 0.d0
           cycle
         endif
         call tfgetoption('Cutoff',ktastk(i),kx,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
         if(ktfrealq(kx))then
@@ -538,19 +540,19 @@ c      endif
       call descr_symdef(kxnaloc1(ig,sym%loc),symdv)
       call tfsetupvars(isp1+4,ispv,
      $     nvar,sav,sav0,v0,vmin,vmax,nvmax,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         go to 9000
       endif
       ke=dtastk(isp1+2)
       kdp=ktfmaloc(dtastk(isp1+1),m,n,.false.,.true.,irtc)
-      if(irtc .ne. 0)then
-        if(irtc .eq. -1)then
+      if(irtc /= 0)then
+        if(irtc == -1)then
           irtc=itfmessage(9,'General::wrongval',
      $         '"data","List of {x, y}, {x, y, dy}, or {x, y, dx, dy}"')
         endif
         go to 9100
       endif
-      if(n .le. 1 .or. n .gt. 4)then
+      if(n <= 1 .or. n > 4)then
         irtc=itfmessage(9,'General::wrongval',
      $       '"data","List of {x, y}, {x, y, dy}, or {x, y, dx, dy}"')
         go to 9200
@@ -564,31 +566,34 @@ c      endif
       endif
       call tflocald(symdv%value)
       symdv%value%k=0
-      if(irtc .eq. 0)then
+      if(irtc == 0)then
         cut=cutoff
-        if(n .le. 2)then
-          if(cutoff .ne. 0.d0)then
+        if(n <= 2)then
+          if(cutoff /= 0.d0)then
+            v0(1:nvar)=max(vmin(1:nvar),min(vmax(1:nvar),v0(1:nvar)))
             v0s(1:nvar)=v0(1:nvar)
             call tffit1(datap,n,m,ke,symdv,nvar,sav,v0,
      $           kdl,vmin,vmax,r,kdm,kcv,kci,eps0,maxi,0.d0,irtc)
             cut=sqrt(r/max(1,m-nvar))*cutoff
           endif
         endif
+        v0(1:nvar)=max(vmin(1:nvar),min(vmax(1:nvar),v0(1:nvar)))
         call tffit1(datap,n,m,ke,symdv,nvar,sav,v0,
      $       kdl,vmin,vmax,r,kdm,kcv,kci,eps0,maxi,cut,irtc)
       endif
+      v0(1:nvar)=max(vmin(1:nvar),min(vmax(1:nvar),v0(1:nvar)))
       do i=1,nvar
         call tflocal(kdl(i))
       enddo
       call tflocald(ke)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         go to 9200
       endif
       call tfassignrules(sav0,v0,nvar,klr)
       isp2=isp
       call tfgetllstkall(klr)
       call tfmakerulestk(itfchisq,r)
-      if(n .eq. 2)then
+      if(n == 2)then
         call tfmakerulestk(itfgood,
      $       sad_descr(gammaq(dble(m-nvar)*.5d0,dble(m-nvar)*.5d0)))
       else
@@ -621,7 +626,7 @@ c      call tfdebugprint(kx,'tffit-8',3)
       real*8 s
       real*8, save:: rnan=0.d0
 c      write(*,*)'covmat ',n,m,ndim
-      if(rnan .eq. 0.d0)then
+      if(rnan == 0.d0)then
         rnan=rtfnan
       endif
       do i=1,n
@@ -667,6 +672,7 @@ c      write(*,*)'covmat ',n,m,ndim
      $     vbest(nvar),dv(nvar),df2(m))
       kdm%k=0
       kcv%k=0
+      v0=max(vmin,min(vmax,v0))
       v00=v0
       iter=0
       ajump=1.d0
@@ -675,14 +681,15 @@ c      write(*,*)'covmat ',n,m,ndim
       kaxvec=ktadaloc(0,1)
       klist(kaxvec+1)=ktflist+ktavaloc(0,m)
       klist(kaxvec)=ktfcopy1(kxvect)
- 21   call tfevalfit(df0,d0,data,n,m,ke,symdv,nvar,sav,v0,
+ 21   v0=max(vmin,min(vmax,v0))
+      call tfevalfit(df0,d0,data,n,m,ke,symdv,nvar,sav,v0,
      $     kaxvec,.false.,cut,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         deallocate(a0,a,abest,df,df0,v00,w,cv,vbest,dv,df2)
         call tflocal1(kaxvec)
         return
       endif
-      if(d0 .lt. dbest)then
+      if(d0 < dbest)then
         dbest=d0
         vbest=v0
         if(acalc)then
@@ -695,20 +702,20 @@ c      write(*,*)'covmat ',n,m,ndim
       fact1=0.d0
       d00=d0
  1    iter=iter+1
-      if(iter .le. maxi)then
+      if(iter <= maxi)then
         v=v0
         do i=1,nvar
           call tfevalfit(df2,db,data,n,m,kdl(i),symdv,nvar,sav,v,
      $         kaxvec,.true.,0.d0,irtc)
-          if(irtc .eq. 0)then
+          if(irtc == 0)then
             a(:,i)=df2
 c            do j=1,m
 c              a(j,i)=df2(j)
 c            enddo
-          elseif(irtc .eq. -1)then
+          elseif(irtc == -1)then
             svi=min(max(svmin,abs(v0(i))*frac),
      $           (vmax(i)-vmin(i))*factmin)
-            if(vmax(i)-v0(i) .ge. v0(i)-vmin(i))then
+            if(vmax(i)-v0(i) >= v0(i)-vmin(i))then
               svi=min(svi,(vmax(i)-v0(i))*.5d0)
             else
               svi=max(-svi,(vmin(i)-v0(i))*.5d0)
@@ -716,7 +723,7 @@ c            enddo
             v(i)=v0(i)+svi
             call tfevalfit(df2,db,data,n,m,ke,symdv,nvar,sav,v,
      $           kaxvec,.false.,0.d0,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               deallocate(a0,a,abest,df,df0,v00,w,cv,vbest,dv,df2)
               call tflocal1(kaxvec)
               return
@@ -725,7 +732,7 @@ c            enddo
 c            do j=1,m
 c              a(j,i)=(df2(j)-df0(j))/svi
 c            enddo
-            if(db .lt. d0)then
+            if(db < d0)then
               d0=db
               v0(i)=v0(i)+svi
               df0=df2
@@ -760,9 +767,9 @@ c          enddo
           dg=dg+df0(i)*dot_product(a0(i,1:nvar),dv(1:nvar))
         enddo
         dg=dg*2.d0
-        if(abs(dg) .lt. d0*eps)then
+        if(abs(dg) < d0*eps)then
           good=gammaq(dble(m-nvar)*.5d0,d0*.5d0)
-          if(good .gt. 0.001d0 .or. n .eq. 2)then
+          if(good > 0.001d0 .or. n == 2)then
             iter=maxi
             go to 1
           else
@@ -780,14 +787,14 @@ c          v(i)=min(vmax(i),max(vmin(i),v0(i)+dv(i)*fact))
 c        enddo
         call tfevalfit(df0,d,data,n,m,ke,symdv,nvar,sav,v,
      $       kaxvec,.false.,cut,irtc)
-        if(irtc .ne. 0)then
+         if(irtc /= 0)then
           deallocate(a0,a,abest,df,df0,v00,w,cv,vbest,dv,df2)
           call tflocal1(kaxvec)
           return
         endif
-        if(d .lt. d0)then
+        if(d < d0)then
           v0=v
-          if(d .lt. dbest)then
+          if(d < dbest)then
             vbest=v0
             abest=a0
             dbest=d
@@ -797,7 +804,7 @@ c        enddo
           fact1=0.d0
           d1=d
           if(.not. newton)then
-            newton=d .lt. 0.99d0*d00
+            newton=d < 0.99d0*d00
             if(newton)then
               go to 11
             endif
@@ -805,20 +812,20 @@ c        enddo
           go to 1
         endif
         iter=iter+1
-        if(iter .le. maxi)then
+        if(iter <= maxi)then
           d2=d1
           d1=d
           fact2=fact1
           fact1=fact
           fact=tffsfmin(fact1,fact2,d1,d2,d0,dg)
           if(newton)then
-            if(fact .ge. factmin)then
+            if(fact >= factmin)then
               go to 2
             endif
             newton=.false.
             go to 11
           else
-            if(fact .ge. factmin1)then
+            if(fact >= factmin1)then
               go to 2
             else
               v0=max(vmin,min(vmax,2.d0*v00-v0))
@@ -833,9 +840,9 @@ c              enddo
       v0=vbest
       a0=abest
       d0=dbest
-      if(cut .ne. 0.d0)then
+      if(cut /= 0.d0)then
         do j=1,m
-          if(abs(df(j)) .gt. cut)then
+          if(abs(df(j)) > cut)then
             a0(j,:)=0.d0
 c            do i=1,nvar
 c              a0(j,i)=0.d0
@@ -844,7 +851,7 @@ c            enddo
         enddo
       endif
       call tsvdm(a0,0.d0,w,m,nvar,m,0,svdeps,.true.)
-      if(n .eq. 2)then
+      if(n == 2)then
         sigma=sqrt(d0/max(1,m-nvar))
         do i=1,nvar
 c          wi=w(i)*sigma
@@ -907,13 +914,13 @@ c     call tfdebugprint(ke,'ke',1)
       kx=tfeevalref(ke,irtc)
       call tflocal1(kaxvec)
       symdv%value%k=0
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
       if(ktflistq(kx,klx))then
-        if(klx%head%k .eq. kxvect .and. klx%nl .eq. 1)then
+        if(klx%head%k == kxvect .and. klx%nl == 1)then
           k1=klx%dbody(1)
-          if(tfcomplexnumlistqk(k1%k,kl1) .and. kl1%nl .eq. m)then
+          if(tfcomplexnumlistqk(k1%k,kl1) .and. kl1%nl == m)then
             if(deriv)then
               if(ktfnonreallistqo(kl1))then
                 do i=1,m
@@ -946,7 +953,7 @@ c     call tfdebugprint(ke,'ke',1)
       do i=1,m
         symdv%value=dfromr(a(1,i))
         kx=tfeevalref(ke,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
         if(ktfnonrealq(kx))then
@@ -969,19 +976,19 @@ c     call tfdebugprint(ke,'ke',1)
       enddo
  1000 r=0.d0
       if(deriv)then
-        if(n .eq. 3)then
+        if(n == 3)then
           df=df/a(3,:)
-        elseif(n .eq. 4)then
+        elseif(n == 4)then
           df=df/a(4,:)
         endif
       else
-        if(cutoff .ne. 0.d0)then
-          if(n .eq. 3)then
+        if(cutoff /= 0.d0)then
+          if(n == 3)then
             do i=1,m
               df(i)=df(i)/a(3,i)
               r=r+min(cutoff,max(-cutoff,df(i)))**2
             enddo
-          elseif(n .eq. 4)then
+          elseif(n == 4)then
             do i=1,m
               df(i)=df(i)/a(4,i)
               r=r+min(cutoff,max(-cutoff,df(i)))**2
@@ -992,12 +999,12 @@ c     call tfdebugprint(ke,'ke',1)
             enddo
           endif
         else
-          if(n .eq. 3)then
+          if(n == 3)then
             do i=1,m
               df(i)=df(i)/a(3,i)
               r=r+df(i)**2
             enddo
-          elseif(n .eq. 4)then
+          elseif(n == 4)then
             do i=1,m
               df(i)=df(i)/a(4,i)
               r=r+df(i)**2
@@ -1029,10 +1036,10 @@ c     call tfdebugprint(ke,'ke',1)
       logical*4 euv
       type(sad_descriptor) ,save::iads,iader
       data iads%k /0/
-      if(iads%k .eq. 0)then
+      if(iads%k == 0)then
         iads=kxsymbolz('System`D',8)
         ks=tfsyeval(iads,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
         iader=kxsymbolz('CheckDerivative',15)
@@ -1055,8 +1062,8 @@ c        call tfdebugprint(dtastk(isp),'by ',2)
         call tfdeval(isp0+1,iads,kd,1,.false.,euv,irtc)
 c        call tfdebugprint(kd,'==>',2)
         ierrorexp=ierr0
-        if(irtc .ne. 0)then
-          if(irtc .gt. 0. and. ierrorprint .ne. 0)then
+        if(irtc /= 0)then
+          if(irtc > 0. and. ierrorprint /= 0)then
             call tfreseterror
           endif
           go to 100
@@ -1069,12 +1076,12 @@ c        call tfdebugprint(kd,'==>',2)
         ierrorexp=1
         call tfdeval(isp0+2,iader,kr,1,.false.,euv,irtc)
         ierrorexp=ierr0
-        if(irtc .eq. 0 .and. ktfrealq(kr))then
+        if(irtc == 0 .and. ktfrealq(kr))then
           kdl(i)=kd
         else
           call tflocald(kd)
           kdl(i)%k=ktfoper+mtfnull
-          if(irtc .gt. 0. and. ierrorprint .ne. 0)then
+          if(irtc > 0. and. ierrorprint /= 0)then
             call tfreseterror
           endif
         endif
@@ -1093,7 +1100,7 @@ c      write(*,*)'tfderiv-end'
       implicit none
       real*8 ,intent(in)::an
       real*8 c0,x0,gn,erfc,df,dfdx,anh
-      if(an .eq. 1.d0)then
+      if(an == 1.d0)then
         tinvgr=1.d0
         return
       endif
@@ -1102,7 +1109,7 @@ c      write(*,*)'tfderiv-end'
       x0=anh
       gn=gamma(anh)
       df=gammaq(anh,x0)-c0
-      do while(abs(df) .gt. 1.d-14)
+      do while(abs(df) > 1.d-14)
         dfdx=-exp(-x0)*x0**(anh-1.d0)/gn
         x0=x0-df/dfdx
 c        write(*,*)'tinvgr ',x0,dfdx,df

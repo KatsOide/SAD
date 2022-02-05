@@ -79,6 +79,7 @@ c      enddo
      $     calem0,iae,plot,params,stab,lfno)
       use tfstk
       use temw
+      use codm
       use ffs, only:limitcod
       use ffs_flag
       use ffs_pointer
@@ -134,7 +135,7 @@ c     $     beamin(iaidx(3,4)),beamin(iaidx(4,4))
       intpri=.true.
       caltouck=.false.
       calcodr=.not. trpt .and. calcod
-      pri=lfno .gt. 0
+      pri=lfno > 0
       rt=radcod .and. radtaper
       inical=.true.
       fndcod=.true.
@@ -179,7 +180,7 @@ c          write(*,*)'temit-inical ',calint,intra,econv,postcal,plot
           irad=12
           call tecalc(trans,cod,beam,beamn,beamp,
      $         emitn,emitp,btr,srot,srot1,
-     $         rx,rd,params,ceig,dc,cd,stab,calem)
+     $         rx,rd,sps,spm,params,ceig,dc,cd,stab,calem)
           inical=.false.
         endif
         if(pri)then
@@ -230,14 +231,14 @@ c     $       beamp(1),beamp(6),beamp(21)
           beamsize=-beamsize
         endif
       else
-        call setiamat(iae%iamat,ri,codin,beamp,beam,trans)
+        call setiamat(iae%iamat,ri,codin,beamp,beam,trans,srot)
       endif
       return
       end
 
       subroutine tecalc(trans,cod,beam,beamn,beamp,
      $     emitn,emitp,btr,srot,srot1,
-     $     rx,rd,params,ceig,dc,cd,stab,calem)
+     $     rx,rd,sps,spm,params,ceig,dc,cd,stab,calem)
       use tfstk
       use temw
       use ffs_flag
@@ -253,14 +254,14 @@ c     $       beamp(1),beamp(6),beamp(21)
       integer*4 lfno,i,j,k,k1,k2,k3,m,l,n
       real*8 ,intent(inout):: beam(42),srot1(3,3),srot(3,9)
       real*8 ,intent(in):: trans(6,12),cod(6)
-      real*8 ,intent(out):: dc
+      real*8 ,intent(out):: dc,sps(3,3),spm(3,3)
       real*8 sdamp,sqr2,bb,bbv(21),sr,rgetgl1,
      $     tune,ab(6),emxe,emye,emze,rirx(6,6)
       complex*16 ,intent(out):: cd(6)
       complex*16 dceig(6),cc(6),ceig(6)
       real*8 ,intent(out):: btr(21,21),emitn(21),emitp(21),beamn(21),
      1     beamp(21),params(nparams),rx(6,6),rd(6,6)
-      real*8 tw(ntwissfun),sps(3,3),spm(3,3),rdb(6,12)
+      real*8 tw(ntwissfun),rdb(6,12)
       logical*4 ,intent(in):: calem
       logical*4 ,intent(out):: stab
       rx=trans(:,1:6)
@@ -488,11 +489,11 @@ c     enddo
       params(ipnnup)=h0*gspin
       if(calpol)then
         call spnorm(srot,sps,spinmu,sdamp)
-        params(iptaup)=1.d0/sdamp/params(iprevf)
         srot1=srot(:,1:3)
         params(ipnup)=spinmu/m_2pi
         call sremit(srot,sps,params,beamn,sdamp,spm,equpol)
-        params(ipequpol)=equpol(3)
+        params(iptaup)=1.d0/sdamp/params(iprevf)
+        params(ipequpol)=equpol(1)
         params(ipequpol2:ipequpol6)=equpol
         params(ippolx:ippolz)=sps(:,1)
       endif
@@ -569,10 +570,10 @@ c     enddo
           endif
         endif
       endif
- 7301 if(it .gt. 1 .and. dc .lt. dcmin
-     $     .and. de .lt. resib .or. it .gt. itmax)then
+ 7301 if(it > 1 .and. dc .lt. dcmin
+     $     .and. de .lt. resib .or. it > itmax)then
 c        write(*,*)'tintraconv ',it,dc,de
-        pri=lfno .gt. 0
+        pri=lfno > 0
         if(.not. trpt)then
           if(de .ge. resib .or. dc .ge. dcmin)then
             write(*,*)' Intrabeam/space charge convergence failed.'
@@ -634,7 +635,11 @@ c            endif
  9104           format(
      1               ' Momentum acceptance:  ',5(f8.1,2x),'  %')
                 do i=1,5
-                  tt=merge(touckl(5*iii+i)*tf,0.d0,5*iii+i .le. ntouckl)
+                  if(5*iii+i .le. ntouckl)then
+                    tt=touckl(5*iii+i)*tf
+                  else
+                    tt=0.d0
+                  endif
                   if(tt .ne. 0.d0)then
                     vout(i)=autofg(1.d0/tt,'9.6')
                   else
@@ -698,7 +703,7 @@ c            endif
               else
                 eemx=sqrt(eemx*emx0)
               endif
-              if(it .gt. 30)then
+              if(it > 30)then
                 emymax=min(max(eemy,emy0),emymax)
                 emymin=max(min(eemy,emy0),emymin)
                 eemy=sqrt(emymax*emymin)
@@ -727,21 +732,21 @@ c     Here was the factor 2 difference from B-M paper.
 c     Pointed out by K. Kubo on 6/18/2001.
 c
           cintrb=rclassic**2/4.d0/pi*pbunch
-          if(emx1 .gt. 0.01d0*eemx)then
+          if(emx1 > 0.01d0*eemx)then
             rx=sqrt(eemx/emx1)
           else
             emitn(iaidx(1,1))=eemx
             emitn(iaidx(2,2))=eemx
             rx=1.d0
           endif
-          if(emy1 .gt. 0.01d0*eemy)then
+          if(emy1 > 0.01d0*eemy)then
             ry=sqrt(eemy/emy1)
           else
             emitn(iaidx(3,3))=eemy
             emitn(iaidx(4,4))=eemy
             ry=1.d0
           endif
-          if(emz1 .gt. 0.01d0*eemz)then
+          if(emz1 > 0.01d0*eemz)then
             rz=sqrt(eemz/emz1)
           else
             emitn(iaidx(5,5))=eemz
@@ -816,8 +821,10 @@ c     $         sqrt(emitn(15)*emitn(21)-emitn(20)**2)
 
       subroutine tinv(r,ri,n,ndimr)
       implicit none
-      integer*4 i,j,n,ndimr
-      real*8 r(ndimr,n),ri(ndimr,n)
+      integer*4 ,intent(in):: n,ndimr
+      integer*4 i,j
+      real*8 ,intent(in):: r(ndimr,n)
+      real*8 ,intent(out):: ri(ndimr,n)
       do 10 i=1,n-1,2
         do 20 j=1,n-1,2
           ri(i  ,j  )= r(j+1,i+1)
@@ -829,13 +836,13 @@ c     $         sqrt(emitn(15)*emitn(21)-emitn(20)**2)
       return
       end
 
-      subroutine setiamat(iamat,ri,codin,beamn,emitp,trans)
+      subroutine setiamat(iamat,ri,codin,beamn,emitp,trans,srot)
       use tfstk
       implicit none
       integer*8 , intent(in)::iamat
       real*8 , intent(in)::ri(6,6),codin(6),beamn(21),emitp(21),
-     $     trans(6,12)
-      if(iamat .gt. 0)then
+     $     trans(6,12),srot(3,9)
+      if(iamat > 0)then
         dlist(iamat+4)=
      $       dtfcopy1(kxm2l(ri,6,6,6,.false.))
         dlist(iamat+1)=
@@ -848,6 +855,8 @@ c     $         sqrt(emitn(15)*emitn(21)-emitn(20)**2)
      $       dtfcopy1(kxm2l(trans,6,6,6,.false.))
         dlist(iamat+3)=
      $       dtfcopy1(kxm2l(trans(1,7),6,6,6,.false.))
+        dlist(iamat+7)=
+     $       dtfcopy1(kxm2l(srot,3,3,3,.false.))
       endif
       return
       end
@@ -923,7 +932,7 @@ c     $         sqrt(emitn(15)*emitn(21)-emitn(20)**2)
           rxrxi(i,i)=rxrxi(i,i)-1.d0
         enddo
         so=sum(abs(rxrxi))
-        if(so .gt. somin)then
+        if(so > somin)then
           write(lfno,*)' *** Deviation from symplectic matrix = ',so
         endif
         do i=1,ntwissfun
@@ -1120,9 +1129,9 @@ c     kiku ------------------>
             write(lfno,*)'                x              px'//
      $           '             y              py'//
      $           '             z              pz'
-            write(lfno,'(a,1p6g15.7)')'        sx',srot(1,4:9)
-            write(lfno,'(a,1p6g15.7)')'        sy',srot(2,4:9)
-            write(lfno,'(a,1p6g15.7)')'        sz',srot(3,4:9)
+            write(lfno,'(a,1p6g15.7)')'        gx',srot(1,4:9)
+            write(lfno,'(a,1p6g15.7)')'        gy',srot(2,4:9)
+            write(lfno,'(a,1p6g15.7)')'        gz',srot(3,4:9)
             write(lfno,*)'\n'//'   Spin depolarization matrix:'
             write(lfno,*)'                s1             s2'//
      $           '             s3'
@@ -1131,7 +1140,7 @@ c     kiku ------------------>
             write(lfno,'(a,1p6g15.7)')'        s3',spm(3,:)
           endif
           vout(1)=autofg(spinmu/m_2pi,'11.8')
-          vout(2)=autofg(equpol(3)*100.d0,'11.8')
+          vout(2)=autofg(equpol(1)*100.d0,'11.8')
           write(lfno,9110)vout(1:2)
  9110     format(/'Spin tune              =',a,'    ',
      1         1x,'Equil. polarization    =',a,' %'/)

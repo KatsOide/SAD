@@ -757,7 +757,7 @@ CanvasGraphics=Class[{},
   MakeTitle[t_List,size_,p_]:=MakeTitle[First[t],size,p];
 
   With[{def={Dashing->{1},Plot->False,ErrorBarTickSize->1,
-    ErrorBarThickness->1,PlotJoined->True,StepRatio->1,
+    ErrorBarThickness->1,ErrorBarColor->Default,PlotJoined->True,StepRatio->1,
     PointSize->1,PointSymbol->"1O",PlotColor->"Black",Thickness->1,
     PointBorderColor->Automatic,Legend->False,Arrow->Null,Clip->True,
     LineTags->Null,PointTags->Null,PointColor->"forest green"}},
@@ -765,10 +765,11 @@ CanvasGraphics=Class[{},
     Primitive[Line[body_,opt___]]:=Module[
       {pc,pl,pj,sr,size,sym,ebl,ptc,dash,ltag,ptag,thick,pbc,leg,arr,clip,canvr=Canvas$Range,
         bt=Thread[body],op=Override[opt,def],cmd,ebth},
-      {pc,pl,pj,sr,size,sym,ebl,ptc,dash,ltag,ptag,thick,pbc,leg,ebth,arr,clip}=
+      {pc,pl,pj,sr,size,sym,ebl,ptc,dash,ltag,ptag,thick,pbc,leg,ebth,ebc,arr,clip}=
         {PlotColor,Plot,PlotJoined,StepRatio,PointSize,PointSymbol,
 	  ErrorBarTickSize,PointColor,Dashing,LineTags,PointTags,Thickness,
-          PointBorderColor,Legend,ErrorBarThickness,Arrow,Clip}/.op;
+          PointBorderColor,Legend,ErrorBarThickness,ErrorBarColor,Arrow,Clip}/.op;
+      ebc=ebc/.Default->pc;
       dash=Switch[dash,
         1,{1},
         _Real,{dash,dash/3},
@@ -786,7 +787,7 @@ CanvasGraphics=Class[{},
 	_,     (* Unsupported *)
 	];
       If[pl, CanvasDrawerPoints[sym, ptag, ptc, pc, size, pbc, bt]];
-      CanvasDrawerErrorBar[ebl * 0.1 * DPI, ebth, pc, bt];
+      CanvasDrawerErrorBar[ebl * 0.1 * DPI, ebth, ebc, bt];
       If[leg<=>False,
         AppendTo[LegendList[[Canvas$Frame]],
           {op,leg}]];
@@ -795,13 +796,15 @@ CanvasGraphics=Class[{},
   Primitive[Line[{},___]]:=Null;
 
   With[{CanvasW=Extract[CanvasWidget,{1},Unevaluated$]},
-    CanvasDrawerErrorBar[ebl_, ebt_, pc_, bt_]:=If[Length[bt]>2,
-      Module[{d=Take[bt,2]},
-	ScanThread[ErrorBar[ebl, ##, {Width->ebt, Fill->pc}]&,
-	  Join[Canvas$Coord[d],
-	    Canvas$Scale * ErrorBarData[Canvas$Axes, bt, d]]];
-	]];
-
+    CanvasDrawerErrorBar[ebl_, ebt_Real, pc_, bt_]:=If[Length[bt]>2,
+      Module[{d=Take[bt,2],a},
+        a=Join[Canvas$Coord[d],
+          Canvas$Scale * ErrorBarData[Canvas$Axes, bt, d]];
+        If[ebt<=0,
+	  ScanThread[ErrorBar0[ebl, ##, {Width->Max[1,-ebt],Fill->pc}]&,a],
+	  ScanThread[ErrorBar[ebl, ##, {Width->ebt, Fill->pc}]&,a]
+	  ]]];
+  
     CanvasDrawerLine[cmd_, {1} , bt_] := (
       CanvasW[Create$Line]={
         CanvasClipLine[Canvas$Coord[Take[bt, 2]],
@@ -928,7 +931,62 @@ CanvasGraphics=Class[{},
       CanvasDrawClipLine[{x+{dx,dx,dx,-dx,-dx,-dx},y+{-ebl,ebl,0,0,-ebl,ebl}},cmd];
 
     ErrorBar[ebl_,x_,y_,{dx1_,dx2_},0,cmd_]:=
-      CanvasDrawClipLine[{x+{dx2,dx2,dx2,-dx1,-dx1,-dx1},y+{-ebl,ebl,0,0,-ebl,ebl}},cmd]
+      CanvasDrawClipLine[{x+{dx2,dx2,dx2,-dx1,-dx1,-dx1},y+{-ebl,ebl,0,0,-ebl,ebl}},cmd];
+
+    ErrorBar0[ebl_,x_,y_,0,dy_,cmd_]:=(
+      CanvasDrawClipLine[
+        {x+{-ebl,ebl},y+{-dy,-dy}},cmd];
+      CanvasDrawClipLine[
+        {x+{-ebl,ebl},y+{ dy, dy}},cmd]);
+
+    ErrorBar0[ebl_,x_,y_,0,{dy1_,dy2_},cmd_]:=(
+      CanvasDrawClipLine[
+        {x+{-ebl,ebl},y+{-dy1,-dy1}},cmd];
+      CanvasDrawClipLine[
+        {x+{-ebl,ebl},y+{ dy2, dy2}},cmd]);
+
+    ErrorBar0[ebl_,x_,y_,dx_,dy_,cmd_]:=(
+      CanvasDrawClipLine[
+        {x+{-ebl,ebl},y+{-dy,-dy}},cmd];
+      CanvasDrawClipLine[
+        {x+{-ebl,ebl},y+{ dy, dy}},cmd];
+      CanvasDrawClipLine[
+        {x+{-dx,-dx},y+{-ebl, ebl}},cmd];
+      CanvasDrawClipLine[
+        {x+{ dx, dx},y+{-ebl, ebl}},cmd]);
+
+    ErrorBar0[ebl_,x_,y_,{dx1_,dx2_},dy_,cmd_]:=(
+      CanvasDrawClipLine[
+        {x+{-ebl,ebl},y+{-dy,-dy}},cmd];
+      CanvasDrawClipLine[
+        {x+{-ebl,ebl},y+{ dy, dy}},cmd];
+      CanvasDrawClipLine[
+        {x+{-dx1,-dx1},y+{-ebl, ebl}},cmd];
+      CanvasDrawClipLine[
+        {x+{ dx2, dx2},y+{-ebl, ebl}},cmd]);
+
+    ErrorBar0[ebl_,x_,y_,dx_,{dy1_,dy2_},cmd_]:=(
+      CanvasDrawClipLine[
+        {x+{-ebl,ebl},y+{-dy1,-dy1}},cmd];
+      CanvasDrawClipLine[
+        {x+{-ebl,ebl},y+{ dy2, dy2}},cmd];
+      CanvasDrawClipLine[
+        {x+{-dx,-dx},y+{-ebl, ebl}},cmd];
+      CanvasDrawClipLine[
+        {x+{ dx, dx},y+{-ebl, ebl}},cmd]);
+
+    ErrorBar0[ebl_,x_,y_,{dx1_,dx2_},{dy1_,dy2_},cmd_]:=(
+      CanvasDrawClipLine[
+        {x+{-ebl,ebl},y+{-dy1,-dy1}},cmd];
+      CanvasDrawClipLine[
+        {x+{-ebl,ebl},y+{ dy2, dy2}},cmd];
+      CanvasDrawClipLine[
+        {x+{-dx1,-dx1},y+{-ebl, ebl}},cmd];
+      CanvasDrawClipLine[
+        {x+{ dx2, dx2},y+{-ebl, ebl}},cmd]);
+
+    ErrorBar0[0,___]:=Null;
+
     ];
 
   WindowBG[frid_,wc_,fr_,ib_,ftc_]:=Module[
@@ -1708,23 +1766,25 @@ CanvasGraphics=Class[{},
 
   With[{def={PointSize->1,PointSymbol->"1O",PointColor->"forest green",
     PlotColor->"black",PlotJoined->False,
-    ErrorBarTickSize->1,ErrorBarThickness->1,
+    ErrorBarTickSize->1,ErrorBarThickness->1,ErrorBarColor->Default,
     PointTags->Null,PointBorderColor->Automatic,
     Legend->False,Thickness->0,Plot->True}},
 
     Primitive[Point[body_,opt___]]:=Module[
-      {size,sym,pc,ptc,ebl,tag,pbc,leg,ebth,bt=Thread[body],
+      {size,sym,pc,ptc,ebl,tag,pbc,leg,ebth,ebc,bt=Thread[body],
         op=Override[opt,def]},
-      {size,sym,pc,ptc,ebl,tag,pbc,leg,ebth}=
+      {size,sym,pc,ptc,ebl,tag,pbc,leg,ebth,ebc}=
         {PointSize,PointSymbol,PlotColor,PointColor,ErrorBarTickSize,PointTags,
-          PointBorderColor,Legend,ErrorBarThickness}/.op;
+          PointBorderColor,Legend,ErrorBarThickness,ErrorBarColor}/.op;
+      ebc=ebc/.Default->pc;
       CanvasDrawerPoints[sym, tag, ptc, pc, size, pbc, bt];
-      CanvasDrawerErrorBar[ebl * 0.1 * DPI, ebth, pc, bt];
+      CanvasDrawerErrorBar[ebl * 0.1 * DPI, ebth, ebc, bt];
       If[leg<=>False,
         AppendTo[LegendList[[Canvas$Frame]],
           {op,leg}]]
-      ];
-    Primitive[Point[{},___]]:=Null];
+      ]];
+
+  Primitive[Point[{},___]]:=Null;
 
   With[{def={PlotColor->Null,FillColor->Null,MeshStyle->Null,Tags->False,
     BelowFrame->False}},

@@ -1,0 +1,4 @@
+#!/bin/bash 
+eosfusebind -g
+export DISPLAY=IMACBE16083.cern.ch.dyndns.cern.ch:0
+~/SAD/oldsad/bin/gs $*
