@@ -6,16 +6,16 @@
       real*8 ,intent(inout):: a(ndim,m),b(ndimb,l)
       real*8 ,intent(out):: x(ndimx,l)
       real*8 ,intent(in):: epslon
-      real*8 ,allocatable,dimension(:)::v,bb,aa
+      real*8 ,allocatable::v(:),bb(:),aa(:)
       real*8 anorm,enorm
       real*8 f,g,s,r,w,u,h,xmin,z,vv,d,c,p,y,an
       real*8 q,h1,h2,t,r1,r2,ra
-      integer*4 ,allocatable,dimension(:)::lsep
+      integer*4 ,allocatable::lsep(:)
       integer*4 i,j,k,mn,it,isep,ibegin,iend,ma,i1,i1mn,kk,nfail
       logical*4 ,intent(in):: svd
       nfail=4
       mn=min(n,m)
-      allocate(v(0:m+n),aa(m+l),bb(n),lsep(m+n))
+      allocate(v(0:2*max(m,n)),aa(m+l),bb(n),lsep(0:n))
 c      do 1 i=1,n
         v(1:n)=1.d0
 c1     continue

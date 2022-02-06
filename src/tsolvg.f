@@ -36,8 +36,8 @@ c
       real*8 ,intent(inout):: a(ndim,m),b(n)
       real*8 ,intent(out):: x(m)
       real*8 ,intent(in):: epslon
-      real*8 ,allocatable,dimension(:)::v,aam,bbm
-      integer*4  ,allocatable,dimension(:)::lsep
+      real*8 ,allocatable::v(:),aam(:),bbm(:)
+      integer*4  ,allocatable::lsep(:)
       real*8 anorm,enorm
       real*8 aa,f,g,s,r,w,u,h,xmin,z,vv,d,c,p,bb,y,an
       real*8 q,h1,h2,t,r1,r2,ra
@@ -54,7 +54,7 @@ c     end   initialize for preventing compiler warning
         write(*,*)' TSVD Too large matrix. ',n,m
         return
       endif
-      allocate(v(0:nmax),aam(m),bbm(n),lsep(0:nmax))
+      allocate(v(0:2*max(n,m)),aam(m),bbm(n),lsep(0:n))
       v(1:n)=1.d0
       x=1.d0
       do 10 i=1,mn
