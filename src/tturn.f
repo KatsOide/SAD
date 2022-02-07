@@ -224,14 +224,14 @@ c      isb=ilist(2,iwakepold+6)
         endif
         call compelc(l,cmp)
         lele=idtype(cmp%id)
-c        if(l > 3270)then
+c        if(l > 3410)then
 c          write(*,'(a,2i5)')'tturn ',l,lele
 c        endif
         l_track=l
         if(sol)then
           if(l .eq. lbegin)then
             call tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,l,lend,
-     $           ke,sol,kptbl,la,n,nwak,nextwake,out)
+     $           ke,sol,kptbl,la,n,nwak,nextwake,itab,izs,out)
           endif
           if(np .le. 0)then
             return
@@ -409,7 +409,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
        case (icSOL)
          call tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $        l,lend,
-     $        ke,sol,kptbl,la,n,nwak,nextwake,out)
+     $        ke,sol,kptbl,la,n,nwak,nextwake,itab,izs,out)
          if(np .le. 0)then
            return
          endif

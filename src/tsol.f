@@ -501,7 +501,7 @@ c          call tmultr(trans1,trans2,6)
 
       subroutine tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     k,kstop,ke,insol,kptbl,la,n,
-     $     nwak,nextwake,out)
+     $     nwak,nextwake,itab,izs,out)
       use kyparam
       use tfstk
       use ffs
@@ -523,7 +523,7 @@ c          call tmultr(trans1,trans2,6)
       integer*4 ,parameter ::la1=15
       integer*4 ,intent(in):: k,n
       integer*4 ,intent(out):: la,kstop,ke,nwak,nextwake
-      integer*4 , intent(inout)::kptbl(np0,6),np
+      integer*4 , intent(inout)::kptbl(np0,6),np,itab(np),izs(np)
       real*8 ,intent(inout)::x(np),px(np),y(np),py(np),z(np),
      $     g(np),dv(np),sx(np),sy(np),sz(np)
       logical*4 , intent(inout) :: insol
@@ -533,7 +533,6 @@ c          call tmultr(trans1,trans2,6)
      $     bz1,dx,dy,rot,rtaper,ph
       real*8 ,allocatable,dimension(:)::bzph
       integer*4 i,l,lt,kdx,kdy,krot,kb,lwl,lwt,irtc,kbz
-      integer*4 ,allocatable,dimension(:)::itab,izs
       integer*8 iwpl,iwpt
       logical*4 seg,autophi,krad
       logical*1,save::dofr(0:1)=[.false.,.false.]
@@ -550,7 +549,7 @@ c          call tmultr(trans1,trans2,6)
       enddo
       write(*,*)' ???-TRACK-?Missing end of solenoid ',
      $     pname(idelc(k))(1:lpnamec(k))
-      allocate(bzph(np),itab(np),izs(np))
+      allocate(bzph(np))
       ke=nlat
  20   bzs=tfbzs(k,kbz)
       if(.not. insol)then

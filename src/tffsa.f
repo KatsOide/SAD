@@ -126,6 +126,7 @@ c
           jitter=.true.
           lwake=.false.
           twake=.false.
+          wakeopt=.false.
           bipol=.true.
           cell=.false.
           gauss=.false.
@@ -1159,7 +1160,7 @@ c        dpm2=rlist(ktlookup('DPM'))
         nfam1=merge(1-nfam,-nfam,
      $       nfam .gt. nfr .and. kfam(-nfam) .eq. 0)
       endif
-      wake=(twake .or. lwake) .and. trpt
+      wake=(twake .or. lwake) .and. trpt .and. wakeopt
       kwakep=0
       kwakeelm=0
       nwakep=0

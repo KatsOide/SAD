@@ -300,7 +300,7 @@ c$$${"ABSW    ","RELW    ","absweit"},
 c$$${"JITTER  ","QUIET   ","jitter"},
 c$$${"TRGAUSS ","TRUNI   ","trgauss"},
 c$$${"BARYCOD ","        ","smearp"},
-c$$${"        ","        ","dummyf1"},
+c$$${"WAKEOPT ","        ","wakeopt"},
 c$$${"        ","        ","dummyf2"}
 c$$$};
 c$$$
@@ -325,10 +325,11 @@ c$$$susp;
      $       k64,gauss,fseed,bipol,
      $       pspac,orbitcal,calopt,dapert,
      $       ideal,fourie,trsize,simulate,
-     $       absweit,jitter,trgauss,smearp
+     $       absweit,jitter,trgauss,smearp,
+     $       wakeopt
       end type
 
-      integer*4 ,parameter :: nflag=52
+      integer*4 ,parameter :: nflag=53
       type (flagset), target, save :: fff
       character*8, save :: fname(1:nflag)=(/
      $  'TRPT    ','CELL    ','RFSW    ','RAD     ',
@@ -343,7 +344,8 @@ c$$$susp;
      $  'K64     ','GAUSS   ','FIXSEED ','BIPOL   ',
      $  'PSPAC   ','ORBITCAL','CALOPT  ','DAPERT  ',
      $  'IDEAL   ','FOURIER ','TRACKSIZ','SIMULATE',
-     $  'ABSW    ','JITTER  ','TRGAUSS ','BARYCOD '/),
+     $  'ABSW    ','JITTER  ','TRGAUSS ','BARYCOD ',
+     $  'WAKEOPT '/),
      $     sino(1:nflag)=(/
      $  'RING    ','INS     ','        ','        ',
      $  'DAMPONLY','        ','        ','CALC4D  ',
@@ -357,7 +359,8 @@ c$$$susp;
      $  'LEGACY  ','UNIFORM ','MOVESEED','UNIPOL  ',
      $  '        ','        ','ORBONLY ','        ',
      $  'REAL    ','        ','        ','OPERATE ',
-     $  'RELW    ','QUIET   ','TRUNI   ','        '/)
+     $  'RELW    ','QUIET   ','TRUNI   ','        ',
+     $  '        '/)
 
       integer*8, pointer :: ifibzl,ifmult,iftwissp,
      $     iftwis,ifpos,ifgeo,ifsize,ifgamm,ifcomp,ifcoup,
@@ -574,7 +577,7 @@ c$$$susp;
      $       k64,gauss,fseed,bipol,
      $       pspac,orbitcal,calopt,dapert,
      $       ideal,fourie,trsize,simulate,
-     $       absweit,jitter,trgauss,smearp
+     $       absweit,jitter,trgauss,smearp,wakeopt
         
         contains
         subroutine ffs_init_flag
@@ -607,6 +610,7 @@ c$$$susp;
         lwake=>fff%lwake
         twake=>fff%twake
         smearp=>fff%smearp
+        wakeopt=>fff%wakeopt
         radpol=>fff%radpol
         calc6d=>fff%calc6d
         keepexp=>fff%keepexp
