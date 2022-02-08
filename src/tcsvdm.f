@@ -50,7 +50,7 @@ c
         write(*,*)' TCSVDM Too large matrix. ',n,m
         return
       endif
-      allocate (v(0:nmax),lsep(nmax))
+      allocate (v(0:2*max(n,m)),lsep(0:n))
       n1=min(ndimb,n)
       do 1 i=1,n
         v(i)=1.d0

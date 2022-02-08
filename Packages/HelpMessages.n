@@ -1945,12 +1945,17 @@ Accessible in the MAIN level.",
 
      {"LWAKE",
       "LWAKE turns on optics calculation with Longitudinal WakeFunction",
-      "WakeFunction TrackParticles InitialOrbits TWAKE",
+      "WakeFunction TrackParticles InitialOrbits TWAKE WAKEOPT",
       {}},
 
      {"TWAKE",
       "TWAKE turns on optics calculation with Transverse WakeFunction",
-      "WakeFunction TrackParticles InitialOrbits LWAKE",
+      "WakeFunction TrackParticles InitialOrbits LWAKE WAKEOPT",
+      {}},
+
+     {"WAKEOPT",
+      "WAKEOPT enables an optics calculation with LWAKE or TWAKE under TRPT. The default is OFF.",
+      "WakeFunction CALCULATE(CAL) LWAKE TWAKE TRPT",
       {}},
 
      {"FLUC",
