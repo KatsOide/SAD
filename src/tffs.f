@@ -2637,7 +2637,7 @@ c         enddo
       use macphys
 
       real*8, parameter :: pst=8.d0*sqrt(3.d0)/15.d0,
-     $     sflc=.75d0*(elradi/finest)**2
+     $     sflc=.75d0*(elradi/finest)**2,cfpd=5.d0*sqrt(3.d0)/8.d0
       real*8, parameter:: gmin=-0.9999d0,cave=8.d0/15.d0/sqrt(3.d0)
       real*8, parameter:: cuu=11.d0/27.d0,cl=1.d0+gspin
 
@@ -3001,82 +3001,6 @@ c     $
 c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
           deallocate(rm(i)%cmat,rmi(i)%cmat,rm(i)%ind,rmi(i)%ind,rm(i)%ias,rmi(i)%ias)
         enddo
-        return
-        end subroutine
-
-        subroutine sprot(sx,sy,sz,pxm,pym,bx0,by0,bz0,bsi,a,h,
-     $     gbrhoi,anph)
-        use tmacro
-        use ffs_flag, only:radpol
-        use mathfun,only:pxy2dpz,sqrt1,xsincos
-        implicit none
-        real*8 pxm,pym,bsi,pzm,bx0,by0,bz0,sx,sy,sz,
-     $       bx,by,bz,bp,blx,bly,blz,btx,bty,btz,ct,h,
-     $       gx,gy,gz,g,a,gbrhoi,dsx,dsy,dsz,
-     $       sux,suy,suz,
-     $       bt,st,dst,dr,sl1,st1,
-     $       sw,anph,cosu,sinu,dcosu,xsinu
-        pzm=1.d0+pxy2dpz(pxm,pym)
-        bx=bx0*a
-        by=by0*a
-        bz=bz0*a+bsi
-        bp=bx*pxm+by*pym+bz*pzm
-        blx=bp*pxm
-        bly=bp*pym
-        blz=bp*pzm
-        btx=bx-blx
-        bty=by-bly
-        btz=bz-blz
-        ct=1.d0+h*gspin
-        gx=ct*btx+cl*blx
-        gy=ct*bty+cl*bly
-        gz=ct*btz+cl*blz
-c        write(*,'(a,1p10g12.4)')'sprot ',pxm,pym,bz0,bz,bsi,blz
-        if(anph > 0.d0 .and. radpol)then
-c          bt=abs(dcmplx(btx,abs(dcmplx(bty,btz))))
-          bt=norm2([btx,bty,btz])
-          if(bt /= 0.d0)then
-            st=(sx*btx+sy*bty+sz*btz)/bt
-            dst=(st-pst)*sflc*anph*(bt*gbrhoi)**2
-            if(st /= 1.d0)then
-              dr=dst/(1.d0-st**2)/bt
-              dsx=dr*sx
-              dsy=dr*sy
-              dsz=dr*sz
-              gx=gx+dsy*btz-dsz*bty
-              gy=gy+dsz*btx-dsx*btz
-              gz=gz+dsx*bty-dsy*btx
-            else
-              st1=st-dst
-              sl1=sqrt(1-st1**2)
-              sx=sl1*pxm+st1*btx/bt
-              sy=sl1*pym+st1*bty/bt
-              sz=sl1*pzm+st1*btz/bt
-            endif
-          endif
-        endif
-c        g=abs(dcmplx(gx,abs(dcmplx(gy,gz))))
-        g=norm2([gx,gy,gz])
-c        write(*,'(a,1p9g16.8)')'sprot-0 ',g,sx,sy,sz
-        if(g /= 0.d0)then
-c          tanuh=tan(g*.5d0)
-c          sinu=2.d0*tanuh/(1.d0+tanuh**2)
-c          dcosu=tanuh*sinu
-c          cosu=1.d0-dcosu
-          call xsincos(g,sinu,xsinu,cosu,dcosu)
-          sw=-(sx*gx+sy*gy+sz*gz)*dcosu/g**2
-          sinu=sinu/g
-          sux=sy*gz-sz*gy
-          suy=sz*gx-sx*gz
-          suz=sx*gy-sy*gx
-          sx=cosu*sx+sinu*sux+sw*gx
-          sy=cosu*sy+sinu*suy+sw*gy
-          sz=cosu*sz+sinu*suz+sw*gz
-        endif
-        sx= sx*cphi0+sz*sphi0
-        sz=(sz-sx*sphi0)/cphi0
-c        write(*,'(a,1p9g16.8)')'sprot ',g,sx,sy,sz,sinu,cosu,sw
-c        write(*,'(1p10g12.4)')anph,radpol
         return
         end subroutine
 

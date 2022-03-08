@@ -6,7 +6,7 @@
       use tfstk
       use ffs_flag
       use tmacro
-      use ffs_pointer, only:idelc,idtypec,latt
+      use ffs_pointer, only:idelc,idtypec
       use tracklim
       implicit none
       integer, parameter :: nkptbl = 6
@@ -16,7 +16,7 @@
       integer*4 ,intent(in):: kturn
       real*8 ,intent(in):: ax,ay,dx,dy,xl,yl,xh,yh,pxj,pyj,dpj,theta
       real*8 xh1,xl1,yh1,yl1,ax1,ay1,xa,ya,cost,sint,
-     $     x1,px1,y1,py1,z1,g1,dv1,phi(2),sx1,sy1,sz1
+     $     x1,px1,y1,py1,z1,g1,dv1,phi(2),sx1,sy1,sz1,s
       integer*4 i,j,k,kptmp(nkptbl)
       logical eli, dodrop
 
@@ -25,22 +25,31 @@
       call limitnan(y(1:np),xlimit)
       call limitnan(py(1:np),plimit)
       call limitnan(z(1:np),zlimit)
+
+      if(calpol)then
+        do i=1,np
+          s=norm2((/sx(i),sy(i),sz(i)/))
+          sx(i)=sx(i)/s
+          sy(i)=sy(i)/s
+          sz(i)=sz(i)/s
+        enddo
+      endif
 c     Shortcut case: pxj != 0.0 || pyj != 0.0
-      if(pxj .ne. 0.d0 .or. pyj .ne. 0.d0)then
+      if(pxj /= 0.d0 .or. pyj /= 0.d0)then
         xa=min(abs(xh),abs(xl))
         ya=min(abs(yh),abs(yl))
-        if(xa .ne. 0.d0)then
+        if(xa /= 0.d0)then
           ax1 = 1.d0 / xa
         else
           ax1 = 0.d0
         endif
-        if(ya .ne. 0.d0)then
+        if(ya /= 0.d0)then
           ay1 = 1.d0 / ya
         else
           ay1 = 0.d0
         endif
         do i=1,np
-          if(((ax1*x(i))**2 + (ay1*y(i))**2) .gt. 1.d0)then
+          if(((ax1*x(i))**2 + (ay1*y(i))**2) > 1.d0)then
             call tran_array(phi,2)
             phi(1) = pi2 * phi(1)
             phi(2) = pi2 * phi(2)
@@ -72,12 +81,12 @@ c     This conditional is designed to drop NaN particle.
 c     In IEEE754 standard, any comparision operation
 c     with NaN operand is defined as ``False''.
 c
-      eli = (ax .ne. 0.d0) .and. (ay .ne. 0.d0)
-      if(eli .and. ((xh .eq. xl) .or. (yh .eq. yl)))then
-        xl1 = -1.d100
-        xh1 =  1.d100
-        yl1 = -1.d100
-        yh1 =  1.d100
+      eli = (ax /= 0.d0) .and. (ay /= 0.d0)
+      if(eli .and. ((xh == xl) .or. (yh == yl)))then
+        xl1 = -txmax
+        xh1 =  txmax
+        yl1 = -txmax
+        yh1 =  txmax
       else
         xl1 = xl
         xh1 = xh
@@ -89,14 +98,14 @@ c     $     xl,xh,yl,yh,xl1,xh1,yl1,yh1
 
       ax1 = 0.d0
       ay1 = 0.d0
-      if(ax .ne. 0.d0)then
+      if(ax /= 0.d0)then
         ax1 = 1.d0 / ax
       endif
-      if(ay .ne. 0.d0)then
+      if(ay /= 0.d0)then
         ay1 = 1.d0 / ay
       endif
 
-      if(theta .ne. 0) then
+      if(theta /= 0) then
         cost = cos(theta)
         sint = sin(theta)
       else
@@ -107,16 +116,16 @@ c     $     xl,xh,yl,yh,xl1,xh1,yl1,yh1
 c     Marking drop particles
       dodrop = .false.
       if(eli)then
-        if(theta .ne. 0.d0)then
+        if(theta /= 0.d0)then
 c     Case: eli && theta != 0.0
           do i=1,np
             xa = cost * (x(i) - dx) - sint * (y(i) - dy)
             ya = sint * (x(i) - dx) + cost * (y(i) - dy)
             if(.not. (
-     $           ((ax1 * xa)**2 + (ay1 * ya)**2 .le. 1.d0) .and.
-     $           (      xl1 .lt. xa .and. xa .lt. xh1
-     $           .and.  yl1 .lt. ya .and. ya .lt. yh1) .and.
-     $           abs(z(i)) .le. zlost))then
+     $           ((ax1 * xa)**2 + (ay1 * ya)**2 <= 1.d0) .and.
+     $           (      xl1 < xa .and. xa < xh1
+     $           .and.  yl1 < ya .and. ya < yh1) .and.
+     $           abs(z(i)) <= zlost))then
               dodrop = .true.
               kptbl(i,4) = l_track
               kptbl(i,5) = kturn
@@ -128,10 +137,10 @@ c     Case: eli && !(theta != 0.0)
             xa = (x(i) - dx)
             ya = (y(i) - dy)
             if(.not. (
-     $           ((ax1 * xa)**2 + (ay1 * ya)**2 .le. 1.d0) .and.
-     $           (      xl1 .lt. xa .and. xa .lt. xh1
-     $           .and.  yl1 .lt. ya .and. ya .lt. yh1) .and.
-     $           abs(z(i)) .le. zlost))then
+     $           ((ax1 * xa)**2 + (ay1 * ya)**2 <= 1.d0) .and.
+     $           (      xl1 < xa .and. xa < xh1
+     $           .and.  yl1 < ya .and. ya < yh1) .and.
+     $           abs(z(i)) <= zlost))then
 c              write(*,'(a,i5,1p8g14.7)')'tapert ',i,
 c     $             xa,ya,ax1,ay1,xl1,xh1,yl1,yh1
               dodrop = .true.
@@ -141,15 +150,15 @@ c     $             xa,ya,ax1,ay1,xl1,xh1,yl1,yh1
           enddo
         endif
       else
-        if(theta .ne. 0.d0)then
+        if(theta /= 0.d0)then
 c     Case: !eli && (theta != 0.0)
           do i=1,np
             xa = cost * (x(i) - dx) - sint * (y(i) - dy)
             ya = sint * (x(i) - dx) + cost * (y(i) - dy)
             if(.not. (
-     $           (      xl1 .lt. xa .and. xa .lt. xh1
-     $           .and.  yl1 .lt. ya .and. ya .lt. yh1) .and.
-     $           abs(z(i)) .le. zlost))then
+     $           (      xl1 < xa .and. xa < xh1
+     $           .and.  yl1 < ya .and. ya < yh1) .and.
+     $           abs(z(i)) <= zlost))then
               dodrop = .true.
               kptbl(i,4) = l_track
               kptbl(i,5) = kturn
@@ -161,9 +170,9 @@ c     Case: !eli && !(theta != 0.0)
             xa = (x(i) - dx)
             ya = (y(i) - dy)
             if(.not. (
-     $           (      xl1 .lt. xa .and. xa .lt. xh1
-     $           .and.  yl1 .lt. ya .and. ya .lt. yh1) .and.
-     $           abs(z(i)) .le. zlost))then
+     $           (      xl1 < xa .and. xa < xh1
+     $           .and.  yl1 < ya .and. ya < yh1) .and.
+     $           abs(z(i)) <= zlost))then
 c              write(*,'(a,i5,1p8g14.7)')'tapert ',i,
 c     $             xa,ya,ax1,ay1,xl1,xh1,yl1,yh1
               dodrop = .true.
@@ -181,21 +190,21 @@ c     Shortcut case: Lossless
 
 c     Reporting drop particles
       if( (.not. dapert)
-     $     .and. (.not. trpt .or. idtypec(l_track) .eq. icAprt)
-     $     .and. (outfl .ne. 0))then
+     $     .and. (.not. trpt .or. idtypec(l_track) == icAprt)
+     $     .and. (outfl /= 0))then
         call tapert_report_dropped(outfl,kturn,l_track,
-     $       latt,np,x,px,y,py,z,g,dv,sx,sy,sz,kptbl)
+     $       np,x,px,y,py,z,g,sx,sy,sz,kptbl)
       endif
 
 c     Sweaping drop particles
       i=1
-      do while(i .le. np)
-        if(kptbl(i,4) .ne. 0)then
+      do while(i <= np)
+        if(kptbl(i,4) /= 0)then
 c     Search alive particle from tail: (i, np]
-          do while(i .lt. np .and. (kptbl(np,4) .ne. 0))
+          do while(i < np .and. (kptbl(np,4) /= 0))
             np=np-1
           enddo
-          if(kptbl(np,4) .eq. 0)then
+          if(kptbl(np,4) == 0)then
 c     Swap drop particlen slot[i] with tail alive particle slot[np]
             j=kptbl(np,2)
             k=kptbl(i, 2)
@@ -297,25 +306,23 @@ c     Helper functions for Aperture Handling in Tracking Modules
 
 c     Report new drop marked particles in alive area [1, np]
       subroutine tapert_report_dropped(outfd,kturn,lbegin,
-     $     latt,np,x,px,y,py,z,g,dv,sx,sy,sz,kptbl)
+     $     np,x,px,y,py,z,g,sx,sy,sz,kptbl)
       use tfstk
       use tmacro
       use ffs_pointer, only:idvalc,idtypec,idelc
       implicit none
-      integer*4 outfd,kturn,lbegin
-      integer*8 latt(nlat)
-      integer*4 np
-      real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
-      real*8 sx(np0),sy(np0),sz(np0)
-      integer*4 kptbl(np0,6)
+      integer*4 ,intent(in):: outfd,kturn,lbegin
+      integer*4 ,intent(in):: np
+      real*8 ,intent(in):: x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),sx(np0),sy(np0),sz(np0)
+      integer*4 ,intent(in)::  kptbl(np0,6)
       integer*4 i,l,t
       character*2 ord
 
       do i=1,np
          l = kptbl(i,4)
          t = kptbl(i,5)
-         if((l .ge. lbegin) .and. (l .gt. 0))then
-           if(l .le. nlat)then
+         if((l >= lbegin) .and. (l > 0))then
+           if(l <= nlat)then
              write(outfd,'(1x,''P. '',i5,'' lost in '',i5,a,'' turn'',
      $'' at '',i5,''('',a,''), amplitudes:'',3(1x,g13.7))')
      $            kptbl(i,2), t, ord(t),l,
@@ -348,13 +355,13 @@ c     This subroutine need exclusive access to given arguments
 
 c     Scan new drop marked particles from alive area [1, np]
       i = 1
-      do while(i .le. np)
-         if(kptbl(i,4) .ne. 0)then
+      do while(i <= np)
+         if(kptbl(i,4) /= 0)then
 c           Search alive particle from tail: (i, np]
-            do while((i .lt. np) .and. (kptbl(np,4) .ne. 0))
+            do while((i < np) .and. (kptbl(np,4) /= 0))
                np = np - 1
             enddo
-            if(kptbl(np,4) .eq. 0)then
+            if(kptbl(np,4) == 0)then
 c              Swap dropped particlen slot[i] with tail alive particle slot[np]
                j = kptbl(np,2)
                k = kptbl(i, 2)
@@ -425,13 +432,13 @@ c     This subroutine need exclusive access to given arguments
 c     Scan dead particles from dead area (np, m = np0]
       i = np + 1
       m = np0
-      do while(i .le. m)
-         if(kptbl(i,4) .ne. 0)then
+      do while(i <= m)
+         if(kptbl(i,4) /= 0)then
 c           Search injected particle from tail: (i, m]
-            do while((i .lt. m) .and. (kptbl(m,4) .ne. 0))
+            do while((i < m) .and. (kptbl(m,4) /= 0))
                m = m - 1
             enddo
-            if(kptbl(m,4) .eq. 0)then
+            if(kptbl(m,4) == 0)then
 c              Swap dead particlen slot[i] with tail injected particle slot[m]
                j = kptbl(m,2)
                k = kptbl(i,2)

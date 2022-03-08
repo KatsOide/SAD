@@ -266,11 +266,7 @@ c     $       beamp(1),beamp(6),beamp(21)
       logical*4 ,intent(out):: stab
       rx=trans(:,1:6)
       if(.not. rfsw)then
-        rx(6,1)=0.d0
-        rx(6,2)=0.d0
-        rx(6,3)=0.d0
-        rx(6,4)=0.d0
-        rx(6,5)=0.d0
+        rx(6,1:5)=0.d0
         rx(6,6)=1.d0
       endif
       emxe=rgetgl1('EMITXE')

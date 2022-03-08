@@ -232,7 +232,8 @@ c              endif
           y=y+dy
         endif
       endif
-      if(rad .and. calpol)then
+      if(rad .and. calpol .and.
+     $     (chi1 /= 0.d0 .or. chi2 /=0.d0 .or. chi3 /= 0.d0))then
         call trot33(rr,ent)
 c        write(*,'(a,1p9g13.5)')'tsolrot ',rr
         do i=1,np
@@ -443,7 +444,8 @@ c          call tmultr(trans1,trans2,6)
         call tmultr5(trans,trans1,irad)
         if(irad .gt. 6)then
           call tmulbs(beam,trans1,.true.)
-          if(calpol)then
+          if(calpol .and.
+     $         (chi1 /= 0.d0 .or. chi2 /=0.d0 .or. chi3 /= 0.d0))then
             call trot33(rr,ent)
             srot=matmul(rr,srot)
           endif

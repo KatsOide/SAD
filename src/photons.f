@@ -374,7 +374,7 @@ c      write(*,*)'with ',itp,ilp
         use tmacro
         use photontable, only:tphrec
         use mathfun, only:pxy2dpz,p2h,asinz
-        use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0,sprot
+        use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0
         implicit none
         integer*4 ,parameter :: npmax=10000
         integer*4 , intent(in)::k
@@ -383,7 +383,7 @@ c      write(*,*)'with ',itp,ilp
         real*8 , intent(in)::px00,py0,zr00,bsi,al
         real*8 dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
      $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,sx,sy,sz,
-     $       ppa,an,dph,r1,r2,px0,xr,yr,rho
+     $       ppa,an,dph,r1,r2,px0,xr,yr,rho,de
         real*8 dpr(npmax),rph(npmax)
         dpz0=pxy2dpz(px00,py0)
         px0= cphi0*px00+sphi0*(1.d0+dpz0)
@@ -422,8 +422,8 @@ c              call tphotonconv(xr,px,yr,py,dg,
 c     $             dpr(i),p,h1,-rph(i)*al,k)
             enddo
           endif
-          dg=-dph*uc
-          dg=dg/(1.d0-2.d0*dg)
+          de=dph*uc
+          dg=-de/(1.d0+2.d0*de)
           g=max(gmin,g+dg)
           ddpx=-r1*dpx*dg
           ddpy=-r1*dpy*dg
@@ -439,16 +439,12 @@ c     $             dpr(i),p,h1,-rph(i)*al,k)
           if(calpol)then
             pxm=px0+dpx*.5d0
             pym=py0+dpy*.5d0
-            call sprot(sx,sy,sz,pxm,pym,
-     $           ppx,ppy,ppz,bsi,merge(theta/ppa*pr,0.d0,ppa /= 0.d0),
-     $           h1,p2*h2/al1,an)
+            call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi,h1,p,de*uc)
           endif
         elseif(calpol)then
           pxm=px0+dpx*.5d0
           pym=py0+dpy*.5d0
-          call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi,
-     $         merge(theta/ppa*pr,0.d0,ppa /= 0.d0),h1,
-     $         p*h1/al1,-1.d0)
+          call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi,h1,p,0.d0)
         endif
         return
         end subroutine
@@ -458,7 +454,7 @@ c     $             dpr(i),p,h1,-rph(i)*al,k)
         use tmacro
         use photontable, only:tphrec
         use mathfun, only:pxy2dpz,p2h,asinz
-        use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0,sprot
+        use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0
         implicit none
         integer*4 ,parameter :: npmax=10000
         integer*4 , intent(in)::np
@@ -468,7 +464,7 @@ c     $             dpr(i),p,h1,-rph(i)*al,k)
         real*8 , intent(in)::al
         integer*4 i,k
         real*8 dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
-     $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,
+     $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,de,
      $       ppa,an,dph,r1,r2,px0,xr,yr,rho
         real*8 dpr(npmax),rph(npmax)
         do k=1,np
@@ -508,8 +504,8 @@ c                call tphotonconv(xr,pxn(k),yr,pyn(k),dg,
 c     $               dpr(i),p,h1,-rph(i)*al,k)
               enddo
             endif
-            dg=-dph*uc
-            dg=dg/(1.d0-2.d0*dg)
+            de=dph*uc
+            dg=-de/(1.d0+2.d0*de)
             gn(k)=max(gmin,gn(k)+dg)
             ddpx=-r1*dpx*dg
             ddpy=-r1*dpy*dg
@@ -525,17 +521,12 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
             if(calpol)then
               pxm=px0    +dpx*.5d0
               pym=pyr0(k)+dpy*.5d0
-              call sprot(sxn(k),syn(k),szn(k),pxm,pym,
-     $             ppx,ppy,ppz,bsi(k),
-     $             merge(theta/ppa*pr,0.d0,ppa /= 0.d0),h1,
-     $             p2*h2/al1,an)
+              call sprot(sxn(k),syn(k),szn(k),pxm,pym,ppx,ppy,ppz,bsi(k),h1,p,uc*de)
             endif
           elseif(calpol)then
             pxm=px0    +dpx*.5d0
             pym=pyr0(k)+dpy*.5d0
-            call sprot(sxn(k),syn(k),szn(k),pxm,pym,ppx,ppy,ppz,
-     $           bsi(k),merge(theta/ppa*pr,0.d0,ppa /= 0.d0),
-     $           h1,p*h1/al1,-1.d0)
+            call sprot(sxn(k),syn(k),szn(k),pxm,pym,ppx,ppy,ppz,bsi(k),h1,p,0.d0)
           endif
         enddo
         return
@@ -546,11 +537,11 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
         use ffs_flag
         use tmacro
         use mathfun, only:pxy2dpz,p2h,asinz
-        use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0,sprot
+        use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0
         implicit none
         real*8 , intent(inout)::x,px,y,py,z,g,dv
         real*8 , intent(in)::px00,py0,zr00,bsi0,al
-        real*8 dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,
+        real*8 dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,de,
      $       px0,pxm,pym,al1,uc,ddpx,ddpy,h2,h1,sx,sy,sz,ppa,p2
         dpz0=pxy2dpz(px00,py0)
         px0= cphi0*px00+sphi0*(1.d0+dpz0)
@@ -569,8 +560,8 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
         al1=al-z+zr00
         anp=anrad*h1*theta
         uc=cuc*h1**3/p0*theta/al1
-        dg=-cave*anp*uc
-        dg=dg/(1.d0-2.d0*dg)
+        de=cave*anp*uc
+        dg=-de/(1.d0+2.d0*de)
         g=max(gmin,g+dg)
         ddpx=-.5d0*dpx*dg
         ddpy=-.5d0*dpy*dg
@@ -586,9 +577,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
         if(calpol)then
           pxm=px0+dpx*.5d0
           pym=py0+dpy*.5d0
-          call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi0,
-     $         merge(theta/ppa*pr,0.d0,ppa /= 0.d0),
-     $         h2,p2*h2/al1,anp)
+          call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi0,h1,p,uc*de)
         endif
         return
         end subroutine
@@ -604,7 +593,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
      $       xn(np),pxn(np),yn(np),pyn(np),zn(np),gn(np),dvn(np),
      $       sxn(np),syn(np),szn(np)
         real*8 , intent(in)::al
-        real*8 dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,
+        real*8 dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,de,
      $       px0,pxm,pym,al1,uc,ddpx,ddpy,h2,h1,ppa,p2
         integer*4 i
         do i=1,np
@@ -625,8 +614,8 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
           al1=al-zn(i)+zr0(i)
           anp=anrad*h1*theta
           uc=cuc*h1**3/p0*theta/al1
-          dg=-cave*anp*uc
-          dg=dg/(1.d0-2.d0*dg)
+          de=cave*anp*uc
+          dg=-de/(1.d0+2.d0*de)
           gn(i)=max(gmin,gn(i)+dg)
           ddpx=-.5d0*dpx*dg
           ddpy=-.5d0*dpy*dg
@@ -642,9 +631,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
           if(calpol)then
             pxm=px0    +dpx*.5d0
             pym=pyr0(i)+dpy*.5d0
-            call sprot(sxn(i),syn(i),szn(i),pxm,pym,ppx,ppy,ppz,
-     $           bsi(i),merge(theta/ppa*pr,0.d0,ppa /= 0.d0)
-     $           ,h2,p2*h2/al1,anp)
+            call sprot(sxn(i),syn(i),szn(i),pxm,pym,ppx,ppy,ppz,bsi(i),h1,p,uc*de)
           endif
         enddo
         return
@@ -678,6 +665,76 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
         return
         end subroutine
 
+        subroutine sprot(sx,sy,sz,pxm,pym,bx0,by0,bz0,bsi,h,p,ucde)
+        use tmacro
+        use ffs_flag, only:radpol
+        use mathfun,only:pxy2dpz,sqrt1,xsincos
+        use tspin
+        implicit none
+        real*8 ,intent(in):: pxm,pym,bsi,bx0,by0,bz0,h,p,ucde
+        real*8 ,intent(inout):: sx,sy,sz
+        real*8 bx,by,bz,bp,blx,bly,blz,btx,bty,btz,ct,pzm,
+     $       gx,gy,gz,g,sux,suy,suz,bt,st,dst,
+     $       sw,cosu,sinu,dcosu,xsinu
+        pzm=1.d0+pxy2dpz(pxm,pym)
+        bx=bx0/pzm
+        by=by0/pzm
+        bz=bz0/pzm+bsi
+        bp=bx*pxm+by*pym+bz*pzm
+        blx=bp*pxm
+        bly=bp*pym
+        blz=bp*pzm
+        btx=bx-blx
+        bty=by-bly
+        btz=bz-blz
+        ct=1.d0+h*gspin
+        gx=ct*btx+cl*blx
+        gy=ct*bty+cl*bly
+        gz=ct*btz+cl*blz
+        if(ucde > 0.d0 .and. radpol)then
+          bt=norm2([btx,bty,btz])
+          if(bt /= 0.d0)then
+            st=(sx*btx+sy*bty+sz*btz)/bt
+            dst=(pst-st)*cfpd*(p*p0/h**2)**2*ucde/bt
+            sx=sx+dst*btx
+            sy=sy+dst*bty
+            sz=sz+dst*btz
+c$$$            if(st /= 1.d0)then
+c$$$              dr=dst/(1.d0-st**2)/bt
+c$$$              dsx=dr*sx
+c$$$              dsy=dr*sy
+c$$$              dsz=dr*sz
+c$$$              gx=gx+dsy*btz-dsz*bty
+c$$$              gy=gy+dsz*btx-dsx*btz
+c$$$              gz=gz+dsx*bty-dsy*btx
+c$$$            else
+c$$$              st1=st-dst
+c$$$              sl1=sqrt(1-st1**2)
+c$$$              sx=sl1*pxm+st1*btx/bt
+c$$$              sy=sl1*pym+st1*bty/bt
+c$$$              sz=sl1*pzm+st1*btz/bt
+c$$$            endif
+          endif
+        endif
+        g=norm2([gx,gy,gz])
+        if(g /= 0.d0)then
+          call xsincos(g,sinu,xsinu,cosu,dcosu)
+          sw=-(sx*gx+sy*gy+sz*gz)*dcosu/g**2
+          sinu=sinu/g
+          sux=sy*gz-sz*gy
+          suy=sz*gx-sx*gz
+          suz=sx*gy-sy*gx
+          sx=cosu*sx+sinu*sux+sw*gx
+          sy=cosu*sy+sinu*suy+sw*gy
+          sz=cosu*sz+sinu*suz+sw*gz
+        endif
+        sx= sx*cphi0+sz*sphi0
+        sz=(sz-sx*sphi0)/cphi0
+c        write(*,'(a,1p9g16.8)')'sprot ',g,sx,sy,sz,sinu,cosu,sw
+c        write(*,'(1p10g12.4)')anph,radpol
+        return
+        end subroutine
+
         subroutine tradke(trans,cod,beam,srot,al,phir0,bzh)
         use tmacro
         use temw,only:codr0,bzhr0,bsir0,calint,tinv6,gintd,transr,
@@ -694,7 +751,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
      $       c1,dpx,dpy,ddpx,ddpy,pxr0,ct,pz00,das,bt,
      $       pr,px,py,pz,pz0,xpx,xpy,xpz,xpa,theta,th,
      $       p,h1,al1,anp,uc,dg,g,pr1,pxi,pyi,
-     $       p2,h2,de,cp,sp,b,pxm,pym,gi,dh1r,
+     $       p2,h2,dee,cp,sp,b,pxm,pym,gi,dh1r,
      $       pxh,pyh,pzh,xpzb,btx,bty,btz,dct,sinu,cosu,dcosu,xsinu,
      $       gx,gy,gz,blx,bly,blz,
      $       sx(3),sy(3),sz(3),sux(3),suy(3),suz(3),sw(3),
@@ -819,20 +876,20 @@ c     enddo
             tr1(5,5)=tr1(5,5)+1.d0
             tr1(6,6)=tr1(6,6)+1.d0
             call tmulbs(beam,tr1,calint)
-            de=anp*uc**2*cuu
+            dee=anp*uc**2*cuu
             pxm=pxi+px
             pym=pyi+py
             b=bzh*.5d0
             dbeam=0.d0
             dbeam(3)=(beam(3)+b*(2.d0*beam(5)+b*beam(6))
-     $           +(pxm**2+pxi**2+px**2)/6.d0)*de
+     $           +(pxm**2+pxi**2+px**2)/6.d0)*dee
             dbeam(8) =(beam(8)-b*(beam(2)-beam(10)+b*beam(4))
-     $           +(pxm*pym+pxi*pyi+px*py)/6.d0)*de
+     $           +(pxm*pym+pxi*pyi+px*py)/6.d0)*dee
             dbeam(10)=(beam(10)+b*(-2.d0*beam(7)+b*beam(1))
-     $           +(pym**2+pyi**2+py**2)/6.d0)*de
-            dbeam(17)=pxm*de*.5d0
-            dbeam(19)=pym*de*.5d0
-            dbeam(21)=de
+     $           +(pym**2+pyi**2+py**2)/6.d0)*dee
+            dbeam(17)=pxm*dee*.5d0
+            dbeam(19)=pym*dee*.5d0
+            dbeam(21)=dee
             beam(1:21)=beam(1:21)+dbeam
             if(calint)then
               beam(22:42)=beam(22:42)+dbeam

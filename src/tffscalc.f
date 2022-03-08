@@ -3,6 +3,7 @@
      $     r,rp,rstab,nstab,residual1,
      $     zcal,wcal,parallel,lout,error)
       use tfstk
+      use maccode
       use ffs, only:ndim,nlat,flv,maxcond,ffs_bound,nvevx,nelvx,
      $     tsetintm
       use ffs_flag
@@ -235,12 +236,12 @@ c     $             aint(twiss(nlat,1,mfitnx)/pi2)-
 c     $             twiss(nlat,1,mfitny)/pi2+
 c     $             aint(twiss(nlat,1,mfitny)/pi2)
 c              write(*,*)'tffscalc ',anudiffi,anudiff0
-              optstat(ii)%stabx=optstat(ii)%stabx .and. (fam .or.
+              optstat(ii)%stabx=fam .or. optstat(ii)%stabx .and. (
      $             (.not. intres .or. anuxi .eq. anux0) .and.
      $             (.not. halfres .or. anuxih .eq. anux0h) .and.
      $             (.not. sumres .or. anusumi .eq. anusum0) .and.
      $             (.not. diffres .or. anudiffi .eq. anudiff0))
-              optstat(ii)%staby=optstat(ii)%staby .and. (fam .or.
+              optstat(ii)%staby=fam .or. optstat(ii)%staby .and. (
      $             (.not. intres .or. anuyi .eq. anuy0) .and.
      $             (.not. halfres .or. anuyih .eq. anuy0h) .and.
      $             (.not. sumres .or. anusumi .eq. anusum0) .and.
@@ -308,8 +309,8 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
         zcal=.false.
         do i=1,nvar
           kt=idtypec(nelvx(nvevx(i)%ivarele)%klp)
-          if(kt /= 6 .and. kt /= 8 .and. kt /= 10
-     $         .and. kt /= 12)then
+          if(kt /= icSEXT .and. kt /= icOCTU .and. kt /= icDECA
+     $         .and. kt /= icDODECA)then
             zcal=.true.
             exit
           endif
