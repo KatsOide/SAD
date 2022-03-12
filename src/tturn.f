@@ -51,7 +51,7 @@
      $       p0/h0*c,dvfs,.true.)
       endif
       call tffsbound1(lb,le,fbound)
-      normal=fbound%lb .lt. fbound%le .or.
+      normal=fbound%lb < fbound%le .or.
      $     fbound%lb == fbound%le .and. fbound%fb .le. fbound%fe
       if(.not. normal)then
         return
@@ -237,7 +237,7 @@ c     endif
             if(np .le. 0)then
               return
             endif
-            sol=l .lt. ke
+            sol=l < ke
             go to 1020
           endif
           if(l == nextwake)then
@@ -743,7 +743,7 @@ c     call tfmemcheckprint('tturn',1,.false.,irtc)
       if(tparacheck(icMULT,cmp))then
         call tpara(cmp)
       endif
-      if(cmp%ivalue(2,p_NM_MULT) .lt. 0)then
+      if(cmp%ivalue(2,p_NM_MULT) < 0)then
         return
       endif
       autophi=cmp%value(ky_APHI_MULT) /= 0.d0

@@ -27,28 +27,28 @@
      $     g1=>tz%tz1%g1,g2=>tz%tz1%g2,cxs1=>tz%tz1%cxs1,
      $     cxs2=>tz%tz1%cxs2,aw1=>tz%tz1%aw1,aw2=>tz%tz1%aw2,
      $     wr1=>tz%tz1%wr1,wr2=>tz%tz1%wr2,dxs=>tz%tz1%dxs)
-      if(ak*al .lt. 0.d0)then
+      if(ak*al < 0.d0)then
         write(*,*)'tsolqu-implementation error ',al,ak,bz0
         stop
-      elseif(ak .eq. 0.d0)then
+      elseif(ak == 0.d0)then
         call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,
      $       al,bz0,ak0x,ak0y,.false.)
         return
       endif
       bz=bz0
-      eps=merge(epsdef,epsdef*eps0,eps0 .eq. 0.d0)
+      eps=merge(epsdef,epsdef*eps0,eps0 == 0.d0)
       ndiv=1+int(abs(al*hypot(ak,bz)/eps))
 c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
       aln0=al/ndiv
       dx0=ak0x/ak
       dy0=ak0y/ak
       akk=ak/al
-      if(bz .eq. 0.d0)then
+      if(bz == 0.d0)then
         do concurrent (i=1:np)
           call tzsetparam0(tz%tz0,gp(i),aln0,akk)
-          if(ibsi .eq. 1)then
+          if(ibsi == 1)then
             bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)
-          elseif(ibsi .ge. 0)then
+          elseif(ibsi >= 0)then
             bsi(i)=0.d0
           endif
           do n=1,ndiv
@@ -56,7 +56,7 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
             pyi=py(i)
             ap=pxi**2+pyi**2
             dpz=sqrt1(-ap)
-            r=-dpz/(1.d0+dpz)*merge(aln0*.5d0,aln0,n .eq. 1)
+            r=-dpz/(1.d0+dpz)*merge(aln0*.5d0,aln0,n == 1)
             x(i)=x(i)+pxi*r
             y(i)=y(i)+pyi*r
             xi=x(i)+dx0
@@ -82,16 +82,16 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
           x(i)=x(i)+px(i)*r
           y(i)=y(i)+py(i)*r
           z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
-          if(ibsi .eq. 2)then
+          if(ibsi == 2)then
             bsi(i)=-akk*(x(i)+dx0)*(y(i)+dy0)
           endif
         enddo
       else
         do concurrent (i=1:np)
           call tzsetparams(tz,gp(i),aln0,akk,bz)
-          if(ibsi .eq. 1)then
+          if(ibsi == 1)then
             bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)+bzp*al
-          elseif(ibsi .ge. 0)then
+          elseif(ibsi >= 0)then
             bsi(i)=bzp*al
           endif
           px(i)=px(i)+bzp*y(i)*.5d0
@@ -99,7 +99,7 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
           do n=1,ndiv
             ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
-            r=-dpz/(1.d0+dpz)*merge(aln0*.5d0,aln0,n .eq. 1)
+            r=-dpz/(1.d0+dpz)*merge(aln0*.5d0,aln0,n == 1)
             call xsincos(r*bzp,a24,a12,a22,a14)
             pxi=px(i)
             x(i) =x(i)+(a24*pxi-a14*py(i))/bzp
@@ -140,7 +140,7 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
           px(i)=      a22*pxi+a24*py(i)-bzp*y(i)*.5d0
           py(i)=     -a24*pxi+a22*py(i)+bzp*x(i)*.5d0
           z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
-          if(ibsi .eq. 2)then
+          if(ibsi == 2)then
             bsi(i)=-akk*(x(i)+dx0)*(y(i)+dy0)+bzp*al
           endif
         enddo
@@ -169,22 +169,22 @@ c      type (tzparams)  tzs(np),tz
      $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,
      $     dx0,dy0,xi,yi,a12,a14,a22,a24,pxi,pyi,
      $     awu,dwu,dz1,dz2
-      if(ak*al .lt. 0.d0)then
+      if(ak*al < 0.d0)then
         write(*,*)'tsolqu-implementation error ',al,ak,bz
         stop
-      elseif(ak .eq. 0.d0)then
+      elseif(ak == 0.d0)then
         call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,
      $       al,bz,ak0x,ak0y,.false.)
         return
       endif
-      eps=merge(epsdef,epsdef*eps0,eps0 .eq. 0.d0)
+      eps=merge(epsdef,epsdef*eps0,eps0 == 0.d0)
       ndiv=1+int(abs(al*hypot(ak,bz)/eps))
 c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
       aln0=al/ndiv
       dx0=ak0x/ak
       dy0=ak0y/ak
       akk=ak/al
-      if(bz .eq. 0.d0)then
+      if(bz == 0.d0)then
         if(ini)then
           do concurrent (i=1:np)
             call tzsetparam0(tzs(i)%tz0,gp(i),aln0,akk)
@@ -195,9 +195,9 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
      $         w1=>tzs(i)%tz0%w1,s1=>tzs(i)%tz0%s1,dc1=>tzs(i)%tz0%dc1,
      $         xs1=>tzs(i)%tz0%xs1,sh2=>tzs(i)%tz0%sh2,
      $         dch2=>tzs(i)%tz0%dch2,xsh2=>tzs(i)%tz0%xsh2)
-          if(ibsi .eq. 1)then
+          if(ibsi == 1)then
             bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)
-          elseif(ibsi .ge. 0)then
+          elseif(ibsi >= 0)then
             bsi(i)=0.d0
           endif
           do n=1,ndiv
@@ -205,7 +205,7 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
             pyi=py(i)
             ap=pxi**2+pyi**2
             dpz=sqrt1(-ap)
-            r=-dpz/(1.d0+dpz)*merge(aln0*.5d0,aln0,n .eq. 1)
+            r=-dpz/(1.d0+dpz)*merge(aln0*.5d0,aln0,n == 1)
             x(i)=x(i)+pxi*r
             y(i)=y(i)+pyi*r
             xi=x(i)+dx0
@@ -231,7 +231,7 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
           x(i)=x(i)+px(i)*r
           y(i)=y(i)+py(i)*r
           z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
-          if(ibsi .eq. 2)then
+          if(ibsi == 2)then
             bsi(i)=-akk*(x(i)+dx0)*(y(i)+dy0)
           endif
           end associate
@@ -254,9 +254,9 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
      $         ca1=>tzs(i)%tz1%ca1,dxs=>tzs(i)%tz1%dxs,
      $         g1=>tzs(i)%tz1%g1,g2=>tzs(i)%tz1%g2,
      $         aw1=>tzs(i)%tz1%aw1,aw2=>tzs(i)%tz1%aw2)
-          if(ibsi .eq. 1)then
+          if(ibsi == 1)then
             bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)+bzp*al
-          elseif(ibsi .ge. 0)then
+          elseif(ibsi >= 0)then
             bsi(i)=bzp*al
           endif
           px(i)=px(i)+bzp*y(i)*.5d0
@@ -264,7 +264,7 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
           do n=1,ndiv
             ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
-            r=-dpz/(1.d0+dpz)*merge(aln0*.5d0,aln0,n .eq. 1)
+            r=-dpz/(1.d0+dpz)*merge(aln0*.5d0,aln0,n == 1)
             call xsincos(r*bzp,a24,a12,a22,a14)
             pxi=px(i)
             x(i) =x(i)+(a24*pxi-a14*py(i))/bzp
@@ -305,7 +305,7 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
           px(i)=      a22*pxi+a24*py(i)-bzp*y(i)*.5d0
           py(i)=     -a24*pxi+a22*py(i)+bzp*x(i)*.5d0
           z(i)=z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
-          if(ibsi .eq. 2)then
+          if(ibsi == 2)then
             bsi(i)=-akk*(x(i)+dx0)*(y(i)+dy0)+bzp*al
           endif
           end associate
@@ -348,17 +348,17 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
      $       g1=>tz%tz1%g1,g2=>tz%tz1%g2,cxs1=>tz%tz1%cxs1,
      $       cxs2=>tz%tz1%cxs2,aw1=>tz%tz1%aw1,aw2=>tz%tz1%aw2,
      $       wr1=>tz%tz1%wr1,wr2=>tz%tz1%wr2,dxs=>tz%tz1%dxs)
-      if(ak*al .lt. 0.d0)then
+      if(ak*al < 0.d0)then
         write(*,*)'tsolqur-implementation error ',al,ak,bz0
         stop
-      elseif(ak .eq. 0.d0)then
+      elseif(ak == 0.d0)then
         call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,
      $       al,bz0,ak0x,ak0y,.false.)
         alr=al
         return
       endif
       bz=bz0
-      eps=merge(epsdef,epsdef*eps0,eps0 .eq. 0.d0)
+      eps=merge(epsdef,epsdef*eps0,eps0 == 0.d0)
       aka=hypot(ak,bz)
       ndiv=1+int(abs(al)*aka/eps)
       ndiv=min(ndivmax,
@@ -367,14 +367,14 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
       dx0=ak0x/ak
       dy0=ak0y/ak
       akk=ak/al
-      if(bz .eq. 0.d0)then
+      if(bz == 0.d0)then
         alr=aln*0.5d0
         do n=1,ndiv
 c!$OMP PARALLEL
 c!$OMP DO
           do i=1,np
             call tzsetparam0(tz%tz0,gp(i),aln,akk)
-            bsi(i)=merge(akk*(x(i)+dx0)*(y(i)+dy0),0.d0,n .eq. 1)
+            bsi(i)=merge(akk*(x(i)+dx0)*(y(i)+dy0),0.d0,n == 1)
             ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
             r=-dpz/(1.d0+dpz)*alr
@@ -399,7 +399,7 @@ c!$OMP DO
      $           +u1*(u2+b)+xi*b*dc1
      $           +v1*(v2+d)+yi*d*dch2)
      $           -dv(i)*aln
-            if(n .eq. ndiv)then
+            if(n == ndiv)then
               bsi(i)=-akk*(x(i)+dx0)*(y(i)+dy0)
             endif
           enddo
@@ -428,7 +428,7 @@ c!$OMP END PARALLEL
           do i=1,np
             call tzsetparams(tz,gp(i),aln,akk,bz)
             bsi(i)=merge(akk*(x(i)+dx0)*(y(i)+dy0)+bzp*alr,
-     $           bzp*alr,n .eq. 1)
+     $           bzp*alr,n == 1)
             ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
             r=-dpz/(1.d0+dpz)*alr
@@ -465,7 +465,7 @@ c!$OMP END PARALLEL
      $           bzp*(-((awu*dwu*dxs**2)/akkp) +
      $           ca1*pxi*pyi*wss)
      $           +dz1+dz2-aln*dv(i)
-            if(n .eq. ndiv)then
+            if(n == ndiv)then
               bsi(i)=-akk*(x(i)+dx0)*(y(i)+dy0)+bzp*aln*.5d0
             endif
           enddo

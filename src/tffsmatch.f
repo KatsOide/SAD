@@ -53,7 +53,7 @@ c
 c     
 c     begin initialize for preventing compiler warning
       associate (nvar=>flv%nvar)
-      if(inumderiv .eq. 0)then
+      if(inumderiv == 0)then
         inumderiv   =ktfsymbolz('FFS$NumericalDerivative',23)-4
         intffs      =ktfsymbolz('FFS$Interrupt',13)-4
         iexponent   =ktfsymbolz('ExponentOfResidual',18)-4
@@ -126,7 +126,7 @@ c     end   initialize for preventing compiler warning
      $         r,rp,rstab,nstab,residual,
      $         zcal,wcal,parallel,lout,error)
           if(error)then
-            if(irtc .eq. 20001)then
+            if(irtc == 20001)then
               exit do9000
             else
               fitflg=.false.
@@ -267,7 +267,7 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                   if(cell)then
                     call twmov(1,twisss,1,0,.false.)
                   endif
-                  if(nvara .eq. nvar)then
+                  if(nvara == nvar)then
                     a=fact/f1
                     nvevx(1:nvar)%valvar=nvevx(1:nvar)%valvar*a
      $                   +bestval(1:nvar)*(1.d0-a)
@@ -294,14 +294,14 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
      $               idtypec(nelvx(i)%klp),
      $               nvevx(kc)%ivvar,bestval(kc),v00,absweit)
                 if(.not. nderiv)then
-                  nderiv=idtypec(nelvx(i)%klp) .eq. icSOL
+                  nderiv=idtypec(nelvx(i)%klp) == icSOL
                 endif
               enddo
               nderiv=nderiv .or.
      $             cell .and. nstab .gt. 0
      $             .and. dble(nvar*nfam*nlat) .lt. aloadmax
               npa=min(nvar,nparallel)
-              chgini=(nstab .eq. 0) .or. nderiv
+              chgini=(nstab == 0) .or. nderiv
               if(nderiv)then
                 call tffssetupqu(ifqu,ifquw,nqumax,nqcol,nvar,lfno)
                 ipr=-1
@@ -320,7 +320,7 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                   ip=1
                   istep=1
                 endif
-                if(ipr .eq. 0)then
+                if(ipr == 0)then
                   iuta1=itmmapp(nut*(2*nfam+1)*ntwissfun)
                   call c_f_pointer(c_loc(rlist(iuta1)),utwiss,
      $                 [ntwissfun,2*nfam+1,nut])
@@ -516,10 +516,10 @@ c     enddo
       do i=1,nqcol
         if(j .gt. nqcola1)then
           ddf(i)=0.d0
-        elseif(iqcol(i) .eq. iqcola1(j) .and.
-     $       lfp(1,i) .eq. lfpa1(1,j) .and.
-     $       lfp(2,i) .eq. lfpa1(2,j) .and.
-     $       kdp(i) .eq. kdpa1(j))then
+        elseif(iqcol(i) == iqcola1(j) .and.
+     $       lfp(1,i) == lfpa1(1,j) .and.
+     $       lfp(2,i) == lfpa1(2,j) .and.
+     $       kdp(i) == kdpa1(j))then
           ddf(i)=df(i)-df1(j)
           j=j+1
         else
@@ -529,12 +529,12 @@ c     enddo
               exit
             elseif(iqcol(i) .gt. iqcol(j1))then
               j=j1+1
-            elseif(iqcol(i) .eq. iqcola1(j1) .and.
-     $       lfp(1,i) .eq. lfpa1(1,j1) .and.
-     $       lfp(2,i) .eq. lfpa1(2,j1) .and.
-     $       kdp(i) .eq. kdpa1(j1))then
+            elseif(iqcol(i) == iqcola1(j1) .and.
+     $       lfp(1,i) == lfpa1(1,j1) .and.
+     $       lfp(2,i) == lfpa1(2,j1) .and.
+     $       kdp(i) == kdpa1(j1))then
               ddf(i)=df(i)-df1(j1)
-              if(j .eq. j1)then
+              if(j == j1)then
                 j=j+1
               endif
               exit
@@ -555,7 +555,7 @@ c     enddo
       integer*4 ist,i,j,waitpid,waitpid_nohang,iwait,lw
       integer*8 ,intent(in):: kash
       character*(*) ,intent(in):: tag
-      if(ipr .eq. 0)then
+      if(ipr == 0)then
         if(kash .ne. 0)then
           call tfreeshared(kash,-1)
         endif
@@ -573,7 +573,7 @@ c     enddo
               ipr=waitpid(-1,ist)
             else
               ipr=waitpid_nohang(-1,ist)
-              if(ipr .eq. 0)then
+              if(ipr == 0)then
                 call tpause(nwait)
                 if(iwait >= 0)then
                   iwait=iwait+1
@@ -592,7 +592,7 @@ c     enddo
               endif
             endif
             do j=1,npa-1
-              if(npr(j) .eq. ipr)then
+              if(npr(j) == ipr)then
                 iwait=0
                 npr(j)=0
                 exit dowait
@@ -693,7 +693,7 @@ c        write(*,*)'tffssetlimit ',ii,nvar
       ltyp=idtype(ld)
       vl=val
       vl0=val0
-      if(ivv .eq. nelvx(i)%ival)then
+      if(ivv == nelvx(i)%ival)then
         vl1=nelvx(i)%vlim(1)
         vl2=nelvx(i)%vlim(2)
         if(vl .lt. vl1)then
@@ -714,8 +714,8 @@ c        write(*,*)'tffssetlimit ',ii,nvar
         vl1=-1.d100
         vl2=1.d100
       endif
-      if(ltyp .eq. icMARK)then
-        if(ivv .eq. mfitbx .or.ivv .eq. mfitby)then
+      if(ltyp == icMARK)then
+        if(ivv == mfitbx .or.ivv == mfitby)then
           if(vl .le. 1.d-9)then
             vl=0.d0
             limited=.true.
@@ -728,12 +728,12 @@ c        write(*,*)'tffssetlimit ',ii,nvar
       endif
       if(ktfrealq(kx))then
         dlim=.true.
-        if(kx%k .eq. 0)then
+        if(kx%k == 0)then
           vl=vl0
           go to 2009
         endif
       elseif(tfreallistq(kx,klr))then
-        if(klr%nl .eq. 2)then
+        if(klr%nl == 2)then
           dlim=.true.
           vl1=max(vl1,klr%rbody(1))
           vl2=min(vl2,klr%rbody(2))
@@ -772,7 +772,7 @@ c          write(*,*)'tffsvlimit ',vl,vl1,vl2
       real*8 ,intent(in):: x
       character*(MAXPNAME) vn,tfkwrd
       integer*8, save :: ifvvarn,ifvkey
-      if(ifvr%k .eq. 0)then
+      if(ifvr%k == 0)then
         ifvr=dtfcopy1(kxsymbolz('`VariableRange',14))
         ifvw=dtfcopy1(kxsymbolz('`VariableWeight',15))
         ifvvarn=ktsalocb(0,'        ',MAXPNAME+16)
@@ -783,16 +783,16 @@ c          write(*,*)'tffsvlimit ',vl,vl1,vl2
       isp=isp+1
       isp1=isp
       level=itfuplevel()
-      if(id .eq. 1)then
+      if(id == 1)then
 c        dtastk(isp1)=ifvr
         dtastk(isp1)=tfsyeval(ifvr,irtc)
-      elseif(id .eq. 2)then
+      elseif(id == 2)then
 c        dtastk(isp1)=ifvw
         dtastk(isp1)=tfsyeval(ifvw,irtc)
       endif
-      if(irtc .eq. 0)then
+      if(irtc == 0)then
         if(.not. ktfsymbolqdef(ktastk(isp1),symd) .or.
-     $       symd%sym%override .eq. 0 .or. symd%downval .eq. 0)then
+     $       symd%sym%override == 0 .or. symd%downval == 0)then
           isp=isp1-1
           kx%k=ktfoper+mtfnull
           irtc=-1
@@ -823,10 +823,10 @@ c        call tfdebugprint(kx,':',1)
         if(ierrorprint .ne. 0)then
           call tfaddmessage(' ',2,6)
         endif
-        if(id .eq. 1)then
+        if(id == 1)then
           call termes(6,'Error in VariableRange '//
      $         pname(ld)//' '//vn,' ')
-        elseif(id .eq. 2)then
+        elseif(id == 2)then
           call termes(6,'Error in VariableWeight '//
      $         pname(ld)//' '//vn,' ')
         endif
@@ -910,14 +910,14 @@ c        call tfdebugprint(kx,'varfun:',1)
           kk=iele1(kc)
           kk1=iele1(k)
           iec=kele2(k)
-          nk=merge(0,ilist(1,iec),iec .eq. 0)
+          nk=merge(0,ilist(1,iec),iec == 0)
           if(kk .gt. 0 .and. free(kk) .or. iec .ne. 0)then
             posk=pos(k)
             wk=1.d0
-            if(k .eq. fbound%lb)then
+            if(k == fbound%lb)then
               wk=1.d0-fbound%fb
             endif
-            if(k .eq. fbound%le)then
+            if(k == fbound%le)then
               wk=fbound%fe
             endif
             ltyp=idtypec(k)
@@ -928,7 +928,7 @@ c        call tfdebugprint(kx,'varfun:',1)
               else
                 ik1=0
                 do ik=1,nk
-                  if(nvevx(ii)%ivvar .eq. ilist(2,iec+ik))then
+                  if(nvevx(ii)%ivvar == ilist(2,iec+ik))then
                     ik1=1
                     exit
                   endif
@@ -936,7 +936,7 @@ c        call tfdebugprint(kx,'varfun:',1)
               endif
               do11: do ik=ik1,nk
                 if(ik .ne. 0)then
-                  if(kcm .eq. 0)then
+                  if(kcm == 0)then
                     cycle
                   else
                     ic=kcm+(ilist(1,iec+ik)-1)*nvar-1
@@ -949,15 +949,15 @@ c        call tfdebugprint(kx,'varfun:',1)
                   endif
                 else
                   iv=nvevx(ii)%ivvar
-                  if(iv .eq. nelvx(kk)%ival .and.
-     $                 nvevx(ii)%ivarele .eq. kk .and.
-     $                 (nvevx(ii)%ivcomp .eq. 0 .or.
-     $                 nvevx(ii)%ivcomp .eq. kc))then
+                  if(iv == nelvx(kk)%ival .and.
+     $                 nvevx(ii)%ivarele == kk .and.
+     $                 (nvevx(ii)%ivcomp == 0 .or.
+     $                 nvevx(ii)%ivcomp == kc))then
                     coup=couple(k)*wk
                   elseif(iv .ne. nelvx(kk)%ival .and.
-     $                   nvevx(ii)%ivarele .eq. kk1 .and.
-     $                   (nvevx(ii)%ivcomp .eq. 0 .or.
-     $                   nvevx(ii)%ivcomp .eq. k))then
+     $                   nvevx(ii)%ivarele == kk1 .and.
+     $                   (nvevx(ii)%ivcomp == 0 .or.
+     $                   nvevx(ii)%ivcomp == k))then
                     coup=wk
                   else
                     cycle
@@ -979,8 +979,8 @@ c        call tfdebugprint(kx,'varfun:',1)
                       if(kf .le. mfittry)then
                         if(k .lt. lp .or.
      $                       posk .lt. pos(lp) .or. cell)then
-                          nzcod= kf .eq. mfitdz
-     $                         .or. kf .eq. mfitddp
+                          nzcod= kf == mfitdz
+     $                         .or. kf == mfitddp
                           disp=kf .ge. mfitex .and. kf .le. mfitepy
      $                         .or. nzcod
                           if(.not. disp)then
@@ -1003,15 +1003,15 @@ c        call tfdebugprint(kx,'varfun:',1)
                             jj=flv%iqcol(kkq)
                             kkf=flv%kfit(flv%kfitp(jj))
                             if(kkf .le. mfito .and.
-     $                           kp .eq. flv%kdp(kkq))then
+     $                           kp == flv%kdp(kkq))then
                               kkqu=(ii-1)*nqcol+kkq+ifqu-1
                               if(col(1,kkq) .and.
-     $                             flv%lfp(1,kkq) .eq. lp)then
+     $                             flv%lfp(1,kkq) == lp)then
                                 rlist(kkqu)=rlist(kkqu)
      $                               +dtwiss(kkf)*coup
                                 col(1,kkq)=.false.
                               elseif(col(2,kkq) .and.
-     $                               flv%lfp(2,kkq) .eq. lp)then
+     $                               flv%lfp(2,kkq) == lp)then
                                 rlist(kkqu)=rlist(kkqu)
      $                               -dtwiss(kkf)*coup
                                 col(2,kkq)=.false.
@@ -1019,8 +1019,8 @@ c        call tfdebugprint(kx,'varfun:',1)
                             endif
                           enddo
                         endif
-                      elseif(kf .eq. mfitleng)then
-                        if(kytbl(kwL,ltyp) .eq. iv)then
+                      elseif(kf == mfitleng)then
+                        if(kytbl(kwL,ltyp) == iv)then
                           if(posk .lt. pos(lp) .and. posk .ge. 0.d0)then
                             rlist(kqu)=rlist(kqu)+s
                           elseif(posk .ge. pos(lp) .and.
@@ -1062,7 +1062,7 @@ c        call tfdebugprint(kx,'varfun:',1)
       implicit none
       real*8 ,intent(in):: f1,f2,g1,g2,g0,dg
       real*8 a,b
-      if(f2 .eq. 0.d0)then
+      if(f2 == 0.d0)then
         tffsfmin=-.5d0*f1*dg/((g1-g0)/f1-dg)
       else
         a=((g1-g0)/f1**2-(g2-g0)/f2**2)/(f1-f2)+dg/f1/f2
@@ -1174,75 +1174,75 @@ c
       real*8 gw,vmin
       logical*4 ,intent(in):: absweit
       gw=1.d0
-      if(iv .eq. kytbl(kwK1,ltyp))then
-      elseif(iv .eq. kytbl(kwL,ltyp))then
+      if(iv == kytbl(kwK1,ltyp))then
+      elseif(iv == kytbl(kwL,ltyp))then
         gw=1.d0/avebeta**2
-      elseif(iv .eq. kytbl(kwANGL,ltyp) .or.
-     $       iv .eq. kytbl(kwK0,ltyp) .or.
-     $       iv .eq. kytbl(kwSK0,ltyp))then
+      elseif(iv == kytbl(kwANGL,ltyp) .or.
+     $       iv == kytbl(kwK0,ltyp) .or.
+     $       iv == kytbl(kwSK0,ltyp))then
         gw=1.d0/avebeta
-      elseif(iv .eq. kytbl(kwK2,ltyp))then
+      elseif(iv == kytbl(kwK2,ltyp))then
         gw=max(1.d-3,dpmax)*max(1.d-2,etamax)
-      elseif(iv .eq. kytbl(kwK3,ltyp))then
+      elseif(iv == kytbl(kwK3,ltyp))then
         gw=(max(1.d-3,dpmax)*max(1.d-2,etamax))**2
-      elseif(iv .eq. kytbl(kwK4,ltyp))then
+      elseif(iv == kytbl(kwK4,ltyp))then
         gw=(max(1.d-3,dpmax)*max(1.d-2,etamax))**3
-      elseif(iv .eq. kytbl(kwK4,ltyp))then
+      elseif(iv == kytbl(kwK4,ltyp))then
         gw=(max(1.d-3,dpmax)*max(1.d-2,etamax))**4
-      elseif(ltyp .eq. icMULT)then
+      elseif(ltyp == icMULT)then
         if(iv .ge. ky_K1_MULT)then
           gw=(max(1.d-3,dpmax)*max(1.d-2,etamax))
      $         **((iv-ky_K1_MULT)/2+1)
         endif
-      elseif(iv .eq. kytbl(kwVOLT,ltyp))then
+      elseif(iv == kytbl(kwVOLT,ltyp))then
         gw=100.d0/max(1.d0,abs(vk))
-      elseif(iv .eq. kytbl(kwFREQ,ltyp))then
+      elseif(iv == kytbl(kwFREQ,ltyp))then
         gw=100.d0/max(1.d0,abs(vk))
-      elseif(iv .eq. kytbl(kwDX,ltyp) .or.
-     $       iv .eq. kytbl(kwDY,ltyp))then
+      elseif(iv == kytbl(kwDX,ltyp) .or.
+     $       iv == kytbl(kwDY,ltyp))then
         if(kytbl(kwK1,ltyp) .ne. 0)then
           gw=0.1d0/avebeta
         endif
-      elseif(iv .eq. kytbl(kwBZ,ltyp))then
+      elseif(iv == kytbl(kwBZ,ltyp))then
         gw=1.d0/brho
-      elseif(ltyp .eq. icMARK)then
-        if(iv .eq. ky_AX_MARK .or.
-     $       iv .eq. ky_AY_MARK .or.
-     $       iv .eq. ky_R1_MARK .or.
-     $       iv .eq. ky_R4_MARK)then
+      elseif(ltyp == icMARK)then
+        if(iv == ky_AX_MARK .or.
+     $       iv == ky_AY_MARK .or.
+     $       iv == ky_R1_MARK .or.
+     $       iv == ky_R4_MARK)then
           gw=1.d0/avebeta
-        elseif(iv .eq. ky_BX_MARK .or.
-     $         iv .eq. ky_BY_MARK)then
+        elseif(iv == ky_BX_MARK .or.
+     $         iv == ky_BY_MARK)then
           gw=1.d0/avebeta**2
-        elseif(iv .eq. ky_EX_MARK .or.
-     $         iv .eq. ky_EPX_MARK)then
+        elseif(iv == ky_EX_MARK .or.
+     $         iv == ky_EPX_MARK)then
           gw=max(1.d-3,dpmax)*sqrt(avebeta/
      $         max(emminv,abs(emx)+abs(emy)))
      $         /avebeta**2
-        elseif(iv .eq. ky_EPX_MARK .or.
-     $         iv .eq. ky_EPX_MARK)then
+        elseif(iv == ky_EPX_MARK .or.
+     $         iv == ky_EPX_MARK)then
           gw=max(1.d-3,dpmax)*sqrt(avebeta/
      $         max(emminv,abs(emx)+abs(emy)))
      $         /avebeta
-        elseif(iv .eq. ky_R2_MARK)then
+        elseif(iv == ky_R2_MARK)then
           gw=1.d0/avebeta**2
         endif
       endif
       if(.not. absweit)then
         vmin=1.d-6
-        if(iv .eq. kytbl(kwK1,ltyp))then
+        if(iv == kytbl(kwK1,ltyp))then
           vmin=1.d-5
-        elseif(iv .eq. kytbl(kwK2,ltyp))then
+        elseif(iv == kytbl(kwK2,ltyp))then
           vmin=1.d-3
-        elseif(iv .eq. kytbl(kwK3,ltyp))then
+        elseif(iv == kytbl(kwK3,ltyp))then
           vmin=1.d-1
-        elseif(iv .eq. kytbl(kwK4,ltyp))then
+        elseif(iv == kytbl(kwK4,ltyp))then
           vmin=1.d1
-        elseif(iv .eq. kytbl(kwK5,ltyp))then
+        elseif(iv == kytbl(kwK5,ltyp))then
           vmin=1.d3
-        elseif(iv .eq. kytbl(kwK6,ltyp))then
+        elseif(iv == kytbl(kwK6,ltyp))then
           vmin=1.d5
-        elseif(ltyp .eq. icMULT)then
+        elseif(ltyp == icMULT)then
           if(iv .ge. ky_K1_MULT)then
             vmin=10.d0**(((iv-ky_K1_MULT)/2)*2-5)
           endif
@@ -1250,7 +1250,7 @@ c
         gw=sqrt(max(vmin,abs(val0))/gw)
       endif
       call tffsvarfun(2,i,iv,gw,kx,irtc)
-      if(irtc .eq. 0 .and. ktfrealq(kx))then
+      if(irtc == 0 .and. ktfrealq(kx))then
         gw=rfromd(kx)
       endif
       tweigh=gw
@@ -1297,7 +1297,7 @@ c
         s=sum(qu(i,:)*wlimit*dval)
         if(df(i) .ne. 0.d0)then
           dg=merge(dg-df(i)*s,dg-abs(df(i))**wexponent/df(i)*s,
-     $         wexponent .eq. 2.d0)
+     $         wexponent == 2.d0)
         endif
         if(.not. fit(i))then
           if((s-df(i))*df(i) .lt. 0.d0)then
@@ -1363,11 +1363,11 @@ c
       real*8 v
       type (sad_descriptor) ,save::ktfcoupm
       data ktfcoupm%k /0/
-      if(kele2(nlat) .eq. 0)then
+      if(kele2(nlat) == 0)then
         kcm=0
         return
       endif
-      if(ktfcoupm%k .eq. 0)then
+      if(ktfcoupm%k == 0)then
         ktfcoupm=dtfcopy1(kxsymbolz('CouplingMatrix',14))
       endif
       levele=levele+1

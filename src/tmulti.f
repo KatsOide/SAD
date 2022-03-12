@@ -37,7 +37,7 @@ c      type (tzparams) tzs(np),tzs1(np)
      $     akr1,ak1,al1,p,ea,pxf,pyf,sv,wm,alx
       complex*16 akr(0:nmult),akrm(0:nmult),cx,cx1,ak01,b0
       logical*4 spac1,nzleng
-      if(phia .ne. 0.d0)then
+      if(phia /= 0.d0)then
         call tmulta(
      $       np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al,ak,phia,
@@ -48,18 +48,18 @@ c      type (tzparams) tzs(np),tzs1(np)
       endif
 c      write(*,'(a,1p10g12.4)')'tmulti ',al,ak(1),chi1,chi2,alg,phig
       b0=0.d0
-      nzleng=al .ne. 0.d0
+      nzleng=al /= 0.d0
       spac1=.false.
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     alg,bz,dx,dy,dz,
      $     -chi1,-chi2,theta2,bxs,bys,bzs,.true.)
 c      write(*,'(a,1p10g12.4)')'tmulti-1 ',x(1),px(1),y(1),py(1),z(1),g(1)
       akr(0)=(akr0(0)+dcmplx(bys*al,bxs*al))*rtaper
-      if(nmmax .eq. 0 .and. .not. spac)then
+      if(nmmax == 0 .and. .not. spac)then
         call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al,bzs,dble(akr(0)),imag(akr(0)),krad)
       else
-c     Zero-clear akr(1) for case: nmmax .eq. 0
+c     Zero-clear akr(1) for case: nmmax == 0
         akr(1)=0.d0
         akr(1:nmmax)=akr0(1:nmmax)*rtaper
 c     Im[ark(1)] should be 0, because akr(1) := ak(1)*cr1*cr1,
@@ -67,10 +67,10 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
         akr1=dble(akr(1))
         akr(1)=akr1
         ndiv=ndiv0
-        epsr=merge(1.d0,eps0,eps0 .eq. 0.d0)
+        epsr=merge(1.d0,eps0,eps0 == 0.d0)
         if(nzleng)then
           if(spac)then
-            spac1 = radius .ne. 0.d0
+            spac1 = radius /= 0.d0
             ndiv=max(ndiv,nint(abs(al)/(alstep*epsr)),
      $           nint(abs(bzs*al)/1.5d0/epsr))
           endif
@@ -85,7 +85,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
           endif
           ndiv=min(ndivmax,ndiv)
           if(fringe)then
-            if(mfring .ne. 2)then
+            if(mfring /= 2)then
               do n=0,nmmax
                 if(dofr(n))then
                   call ttfrins(np,x,px,y,py,z,g,n*2+2,akr(n),
@@ -94,11 +94,11 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
               enddo
             endif
           endif
-          if(mfring .eq. 1 .or. mfring .eq. 3)then
-            if(akr(0) .ne. (0.d0,0.d0) .and. fb1 .ne. 0.d0)then
+          if(mfring == 1 .or. mfring == 3)then
+            if(akr(0) /= (0.d0,0.d0) .and. fb1 /= 0.d0)then
               call tblfri(np,x,px,y,py,z,g,al,akr(0),fb1)
             endif
-            if(f1in .ne. 0.d0 .or. f2in .ne. 0.d0)then
+            if(f1in /= 0.d0 .or. f2in /= 0.d0)then
               do concurrent (i=1:np)
                 p=(1.d0+g(i))
                 a=f1in/p
@@ -128,7 +128,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
             if(krad)then
               call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $             al1,ak1,bzs,dble(ak01),imag(ak01),ibsi,eps0)
-              if(m .eq. 1 .and. calpol)then
+              if(m == 1 .and. calpol)then
                 do concurrent (i=1:np)
                   cx1=dcmplx(x(i),y(i))
                   cx=0.d0
@@ -140,7 +140,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
               endif
               call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,al1,0.d0)
               pcvt%fr0=pcvt%fr0+al1/al
-            elseif(m .eq. 1)then
+            elseif(m == 1)then
               if(.not. allocated(tzs1))then
                 allocate(tzs1(np))
               endif
@@ -153,10 +153,10 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
               endif
               call tsolqum(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $             al1,ak1,bzs,dble(ak01),imag(ak01),-1,eps0,
-     $             tzs,m .eq. 2)
+     $             tzs,m == 2)
             endif
             ibsi=0
-            wm=merge(wi*.5d0,wi,m .eq. ndiv)
+            wm=merge(wi*.5d0,wi,m == ndiv)
             al1=al*wm
             ak1=akr1*wm
             ak01=akr(0)*wm
@@ -201,8 +201,8 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
      $            al1,ak1,bzs,dble(ak01),imag(ak01),-1,eps0,
      $           tzs1,.false.)
           endif
-          if(mfring .eq. 2 .or. mfring .eq. 3)then
-            if(f1out .ne. 0.d0 .or. f2out .ne. 0.d0)then
+          if(mfring == 2 .or. mfring == 3)then
+            if(f1out /= 0.d0 .or. f2out /= 0.d0)then
               do concurrent (i=1:np)
                 p=(1.d0+g(i))
                 a=-f1out/p
@@ -218,11 +218,11 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
                 py(i)=pyf
               enddo
             endif
-            if(fb2 .ne. 0.d0 .and. akr(0) .ne. (0.d0,0.d0))then
+            if(fb2 /= 0.d0 .and. akr(0) /= (0.d0,0.d0))then
               call tblfri(np,x,px,y,py,z,g,al,-akr(0),fb2)
             endif
           endif
-          if(fringe .and. mfring .ne. 1)then
+          if(fringe .and. mfring /= 1)then
             do n=nmmax,0,-1
               if(dofr(n))then
                 call ttfrins(np,x,px,y,py,z,g,n*2+2,-akr(n),
@@ -310,7 +310,7 @@ c      use ffs_pointer, only:inext,iprev
      $     he,vcorr,v20a,v02a,v1a,v11a,av,dpx,dpy,pe,ah
       real*8 ws(ndivmax+1)
       complex*16 akr(0:nmult),akrm(0:nmult),cx,cx1,ak01,b0
-      if(phia .ne. 0.d0)then
+      if(phia /= 0.d0)then
         call tmulta(
      $       np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al,ak,phia,
@@ -321,18 +321,18 @@ c      use ffs_pointer, only:inext,iprev
       endif
       dphis=0.d0
       b0=0.d0
-      nzleng=al .ne. 0.d0
+      nzleng=al /= 0.d0
       spac1=.false.
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     alg,bz,dx,dy,dz,
      $     -chi1,-chi2,theta2,bxs,bys,bzs,.true.)
       akr(0)=(akr0(0)+dcmplx(bys*al,bxs*al))*rtaper
-      if(nmmax .eq. 0 .and. vc .eq. 0.d0 .and. .not. spac)then
+      if(nmmax == 0 .and. vc == 0.d0 .and. .not. spac)then
         call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al,bzs,dble(akr(0)),imag(akr(0)),krad)
         go to 1000
       endif
-c     Zero-clear akr(1) for case: nmmax .eq. 0
+c     Zero-clear akr(1) for case: nmmax == 0
       akr(1)=0.d0
       akr(1:nmmax)=akr0(1:nmmax)*rtaper
 c     Im[ark(1)] should be 0, because akr(1) := ak(1)*cr1*cr1,
@@ -340,10 +340,10 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
       akr1=dble(akr(1))
       akr(1)=akr1
       ndiv=ndiv0
-      epsr=merge(1.d0,eps0,eps0 .eq. 0.d0)
+      epsr=merge(1.d0,eps0,eps0 == 0.d0)
       if(nzleng)then
         if(spac)then
-          spac1 = radius .ne. 0.d0
+          spac1 = radius /= 0.d0
           ndiv=max(ndiv,nint(abs(al)/(alstep*epsr)),
      $         nint(abs(bzs*al)/1.5d0/epsr))
         endif
@@ -358,7 +358,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
         endif
         ndiv=min(ndivmax,ndiv)
       endif
-      wi=merge(0.d0,1.d0/w,w .eq. 0.d0)
+      wi=merge(0.d0,1.d0/w,w == 0.d0)
       v=vc*abs(charge)/amass
       he=h0+vnominal
       pe=h2p(he)
@@ -401,7 +401,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
       ak01=akr(0)*ws(1)*.5d0
       if(nzleng)then
         if(fringe)then
-          if(mfring .ne. 2)then
+          if(mfring /= 2)then
             call tcavfrin(np,x,px,y,py,z,g,dv,al,v,w,p0,h0,
      $           dphis,dvfs,offset)
             do n=0,nmmax
@@ -412,11 +412,11 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
             enddo
           endif
         endif
-        if(mfring .eq. 1 .or. mfring .eq. 3)then
-          if(akr(0) .ne. (0.d0,0.d0) .and. fb1 .ne. 0.d0)then
+        if(mfring == 1 .or. mfring == 3)then
+          if(akr(0) /= (0.d0,0.d0) .and. fb1 /= 0.d0)then
             call tblfri(np,x,px,y,py,z,g,al,akr(0),fb1)
           endif
-          if(f1in .ne. 0.d0 .or. f2in .ne. 0.d0)then
+          if(f1in /= 0.d0 .or. f2in /= 0.d0)then
             do concurrent (i=1:np)
               p=(1.d0+g(i))
               a=f1in/p
@@ -442,7 +442,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
           call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         al1,ak1,bzs,dble(ak01),imag(ak01),ibsi,eps0)
           if(krad)then
-            if(m .eq. 1 .and. calpol)then
+            if(m == 1 .and. calpol)then
               do concurrent (i=1:np)
                 cx1=dcmplx(x(i),y(i))
                 cx=0.d0
@@ -488,7 +488,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
             py(i)=py(i)+imag(cx)
           enddo
         endif
-        if(vnominal .ne. 0.d0)then
+        if(vnominal /= 0.d0)then
           sv=sv+vnominal*ws(m)
           h2=h0+sv
           p2=h2p(h2)
@@ -529,8 +529,8 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
       if(nzleng)then
         call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al1,ak1,bzs,dble(ak01),imag(ak01),2,eps0)
-        if(mfring .eq. 2 .or. mfring .eq. 3)then
-          if(f1out .ne. 0.d0 .or. f2out .ne. 0.d0)then
+        if(mfring == 2 .or. mfring == 3)then
+          if(f1out /= 0.d0 .or. f2out /= 0.d0)then
             do concurrent (i=1:np)
               p=(1.d0+g(i))
               a=-f1out/p
@@ -546,11 +546,11 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
               py(i)=pyf
             enddo
           endif
-          if(fb2 .ne. 0.d0 .and. akr(0) .ne. (0.d0,0.d0))then
+          if(fb2 /= 0.d0 .and. akr(0) /= (0.d0,0.d0))then
             call tblfri(np,x,px,y,py,z,g,al,-akr(0),fb2)
           endif
         endif
-        if(fringe .and. mfring .ne. 1)then
+        if(fringe .and. mfring /= 1)then
           do n=nmmax,0,-1
             if(dofr(n))then
               call ttfrins(np,x,px,y,py,z,g,n*2+2,-akr(n),
@@ -585,7 +585,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     alg-al,bz,dx,dy,dz,
      $     -chi1,-chi2,theta2,bxs,bys,bzs,.false.)
-      if(vnominal .ne. 0.d0)then
+      if(vnominal /= 0.d0)then
         h2=h0+vnominal
         p2=h2p(h2)
         dp2p2=vnominal*(h2+h0)/(p2+p0)/p2
@@ -613,7 +613,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
       real*8 ,intent(in):: al,fb1
       real*8 dxfrx,dyfrx,dyfrax,
      $     dxfry,dyfry,dxfray,p,rhob
-      if(dble(ck0) .ne. 0.d0)then
+      if(dble(ck0) /= 0.d0)then
         rhob=al/dble(ck0)
         dxfrx=fb1**2/rhob/24.d0
         dyfrx=fb1/rhob**2/6.d0
@@ -623,7 +623,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
         dyfrx=0.d0
         dyfrax=0.d0
       endif
-      if(imag(ck0) .ne. 0.d0)then
+      if(imag(ck0) /= 0.d0)then
         rhob=al/imag(ck0)
         dyfry=fb1**2/rhob/24.d0
         dxfry=fb1/rhob**2/6.d0

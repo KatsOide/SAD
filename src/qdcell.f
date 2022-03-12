@@ -1,16 +1,16 @@
-      subroutine qdcell(dtwiss,kk,ll,idp,iv,
-     $     ctrans,iclast,nfam,nut,disp,nzcod)
+      subroutine qdcell(dtwiss,kk,ll,idp,iv,ctrans,iclast,nfam,nut,disp,nzcod)
       use tfstk
       use ffs
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 nfam,nut,kk,ll,idp,iv,k,l
-      integer*4 iclast(-nfam:nfam)
-      real*8 dtwiss(mfittry),ctrans(27,-nfam:nfam),
-     $     dpsix,dpsiy,cosmux,cosmuy,sinmux,sinmuy,
+      integer*4 ,intent(in):: nfam,nut,kk,ll,idp,iv
+      integer*4 k,l
+      integer*4 ,intent(inout):: iclast(-nfam:nfam)
+      real*8 ,intent(out):: dtwiss(mfittry)
+      real*8 ,intent(inout):: ctrans(27,-nfam:nfam)
+      real*8 dpsix,dpsiy,cosmux,cosmuy,sinmux,sinmuy,
      $     bxr,byr,trx,try,
-c     $     akx,aky,
      $     x11,x12,x21,x22,y11,y12,y21,y22,
      $     dx11,dx12,dx21,dx22,dy11,dy12,dy21,dy22,
      $     detr,r11,r12,r21,r22,c1,ddetr,ddetr0,
@@ -43,7 +43,7 @@ c     $     akx,aky,
      $     dts13,dts23,dts33,dts43,dts14,dts24,dts34,dts44,
      $     tds13,tds23,tds33,tds43,tds14,tds24,tds34,tds44,
      $     ex,epx,ey,epy,pex,pepx,pey,pepy,dex,depx,dey,depy,
-     $     thx,thy,dcosx,dcosy
+     $     thx,thy,dcosx,dcosy,gmx,gmx1,brx,gmy,gmy1,bry
 c      logical*4 cell0,disp,nzcod,htrx,htry,normal
       logical*4 cell0,disp,nzcod,normal,xstab,ystab
 c-deb
@@ -650,11 +650,15 @@ c..........going back to 4*4 world
      $     -dtwiss(mfitbx)
       dtwiss(mfitgmy)=2.d0*dtwiss(mfitay)*utwiss(mfitay,idp,l)
      $     -dtwiss(mfitby)
-c      write(*,'(a,2(1p8g15.7/))')'qdcell-e ',
-c     $     dtwiss(mfitex),dtwiss(mfitepx),
-c     $     dtwiss(mfitey),dtwiss(mfitepy),
-c     $     dtwiss(mfitpex),dtwiss(mfitpepx),
-c     $     dtwiss(mfitpey),dtwiss(mfitpepy),
-c     $     dea,depa,deb,depb,dex,depx,dey,depy
+      gmx=(1.d0+utwiss(mfitax,idp,l)**2)/utwiss(mfitbx,idp,l)
+      gmx1=(1.d0+twiss(ll,-1,mfitax)**2)/twiss(ll,-1,mfitbx)
+      brx=twiss(ll,-1,mfitbx)/utwiss(mfitbx,idp,l)
+      dtwiss(mfitbmagx)=.5d0*dtwiss(mfitbx)*(gmx1-gmx*brx)
+     $     +dtwiss(mfitax)*(utwiss(mfitax,idp,l)*brx-twiss(ll,-1,mfitax))
+      gmy=(1.d0+utwiss(mfitay,idp,l)**2)/utwiss(mfitby,idp,l)
+      gmy1=(1.d0+twiss(ll,-1,mfitay)**2)/twiss(ll,-1,mfitby)
+      bry=twiss(ll,-1,mfitby)/utwiss(mfitby,idp,l)
+      dtwiss(mfitbmagy)=.5d0*dtwiss(mfitby)*(gmy1-gmy*bry)
+     $     +dtwiss(mfitay)*(utwiss(mfitay,idp,l)*bry-twiss(ll,-1,mfitay))
       return
       end

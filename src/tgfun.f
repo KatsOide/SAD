@@ -23,9 +23,14 @@
           tgfun=optstat(idp)%tracey
         case (mfitleng)
           tgfun=pos(kp)
+        case (mfitbmagx,mfitbmagy,mfitbmagz)
+          tgfun=tgetbmagu(kp,idp,kf)
         case default
-          tgfun=merge(geo(kf-mfitgx+1,4,kp),
-     $         tfchi(geo(:,:,kp),kf-mfitchi1+1),kf .le. mfitgz)
+          if(kf <= mfitgz)then
+            tgfun=geo(kf-mfitgx+1,4,kp)
+          else
+            tgfun=tfchi(geo(:,:,kp),kf-mfitchi1+1)
+          endif
         end select
       endif
       return
@@ -264,6 +269,30 @@ c        write(*,*)'tphysdisp ',kf
         pe(4)=cc*utwiss1(mfitepx)
      $       -r3*utwiss1(mfitey)+r1*utwiss1(mfitepy)
       endif
+      return
+      end
+
+      real*8 function tgetbmagu(i,idp,kt) result(v)
+      use ffs_pointer, only:twiss,utwiss,itwissp
+      use tffitcode
+      implicit none
+      integer*4 ,intent(in):: i,idp,kt
+      integer*4 l
+      l=itwissp(i)
+      select case (kt)
+      case (mfitbmagx)
+        v=.5d0*(utwiss(mfitbx,idp,l)/twiss(i,-1,mfitbx)+twiss(i,-1,mfitbx)/utwiss(mfitbx,idp,l)
+     $       +(utwiss(mfitax,idp,l)*twiss(i,-1,mfitbx)-twiss(i,-1,mfitax)*utwiss(mfitbx,idp,l))**2
+     $       /utwiss(mfitbx,idp,l)/twiss(i,-1,mfitbx))
+      case (mfitbmagy)
+        v=.5d0*(utwiss(mfitby,idp,l)/twiss(i,-1,mfitby)+twiss(i,-1,mfitby)/utwiss(mfitby,idp,l)
+     $       +(utwiss(mfitay,idp,l)*twiss(i,-1,mfitby)-twiss(i,-1,mfitay)*utwiss(mfitby,idp,l))**2
+     $       /utwiss(mfitby,idp,l)/twiss(i,-1,mfitby))
+      case (mfitbmagz)
+        v=.5d0*(utwiss(mfitbz,idp,l)/twiss(i,-1,mfitbz)+twiss(i,-1,mfitbz)/utwiss(mfitbz,idp,l)
+     $       +(utwiss(mfitaz,idp,l)*twiss(i,-1,mfitbz)-twiss(i,-1,mfitaz)*utwiss(mfitbz,idp,l))**2
+     $       /utwiss(mfitbz,idp,l)/twiss(i,-1,mfitbz))
+      end select
       return
       end
 
