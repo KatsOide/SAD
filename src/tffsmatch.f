@@ -7,6 +7,7 @@
       use ffs_flag
       use ffs_fit
       use tffitcode
+      use dfun
       use tfshare
       use iso_c_binding
       use mackw
@@ -62,7 +63,7 @@ c     begin initialize for preventing compiler warning
       endif
       allocate(dval(flv%nvar),df0(maxcond),df1(maxcond),df2(maxcond),
      $     ddf1(maxcond),ddf2(maxcond),residuala1(-ndimmax:ndimmax))
-      nderiv0=rlist(inumderiv) .ne. 0.d0
+      nderiv0=rlist(inumderiv) /= 0.d0
       nvara=0
       aitm1=0
       aitm2=0
@@ -75,7 +76,7 @@ c     begin initialize for preventing compiler warning
       outt=.true.
       dlim=.false.
 c     end   initialize for preventing compiler warning
-      parallel=nparallel .gt. 1 .and. .not. inicond
+      parallel=nparallel > 1 .and. .not. inicond
       if(itfgetrecl() .lt. 120)then
         ch=char(10)
       else
@@ -138,8 +139,8 @@ c     end   initialize for preventing compiler warning
               exit do200
             endif
           endif
-          convgo=r .le. rl
-          fitflg=fitflg .and. nqcol .gt. 0
+          convgo=r <= rl
+          fitflg=fitflg .and. nqcol > 0
           if(calexp)then
             sexp='  CALEXP'
           else
@@ -224,17 +225,17 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                 badcnv=1.d0-fuzz(log10(crate),badc1,badc2)
                 amedcv=1.d0-fuzz(log10(crate),amedc1,amedc2)
                 if(newton)then
-                  chgmod=max(smallf,badcnv,min(alate,amedcv)) .gt. .5d0
+                  chgmod=max(smallf,badcnv,min(alate,amedcv)) > .5d0
                 else
-                  if(iter .gt. flv%itmax*10)then
+                  if(iter > flv%itmax*10)then
                     fitflg=.false.
                     chgmod=.true.
-                  elseif(aimprv .gt. .5d0)then
+                  elseif(aimprv > .5d0)then
                     chgmod=.true.
                   elseif(max(smallf,badcnv,min(alate,amedcv))
-     $                   .gt. .5d0)then
+     $                   > .5d0)then
                     chgmod=.true.
-                    if(nretry .gt. 0)then
+                    if(nretry > 0)then
                       nretry=nretry-1
                     else
                       chgini=.true.
@@ -285,7 +286,7 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
               nderiv=nderiv0
               do kc=1,nvar
                 i=nvevx(kc)%ivarele
-                if(nelvx(i)%ival .gt. 0)then
+                if(nelvx(i)%ival > 0)then
                   v00=rlist(latt(nelvx(i)%klp)+nelvx(i)%ival)
                 else
                   v00=0.d0
@@ -297,23 +298,24 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                   nderiv=idtypec(nelvx(i)%klp) == icSOL
                 endif
               enddo
+c              write(*,'(a,2l2,2i5)')'tffsmatch ',nderiv,cell,nstab,nvar*nfam*nlat
               nderiv=nderiv .or.
-     $             cell .and. nstab .gt. 0
-     $             .and. dble(nvar*nfam*nlat) .lt. aloadmax
+     $             cell .and. nstab > 0
+c     $             .and. dble(nvar*nfam*nlat) .lt. aloadmax
               npa=min(nvar,nparallel)
               chgini=(nstab == 0) .or. nderiv
               if(nderiv)then
                 call tffssetupqu(ifqu,ifquw,nqumax,nqcol,nvar,lfno)
                 ipr=-1
-                if(npa .gt. 1)then
+                if(npa > 1)then
                   istep=npa
                   ip=0
-                  do while(ipr .ne. 0 .and. ip .lt. npa-1)
+                  do while(ipr /= 0 .and. ip .lt. npa-1)
                     ip=ip+1
                     ipr=itffork()
                     npr(ip)=ipr
                   enddo
-                  if(ipr .gt. 0)then
+                  if(ipr > 0)then
                     ip=ip+1
                   endif
                 else
@@ -363,7 +365,7 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                 call tffsqu(nqcol,nqcol1,nvar,nqumax,ifquw,ifqu,
      $               free,nlat,nele,nfam,nfam1,nut,
      $               nparallel,cell,lfno,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   irtc=20003
                   exit do9000
                 endif
@@ -373,17 +375,17 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
      $                 *wiq(1:nqcol1)/wvar(kc)
 c     enddo
                 enddo
-                if(nqcol .gt. nqcol1)then
+                if(nqcol > nqcol1)then
                   ipr=-1
-                  if(npa .gt. 1)then
+                  if(npa > 1)then
                     istep=npa
                     ip=0
-                    do while(ipr .ne. 0 .and. ip .lt. npa-1)
+                    do while(ipr /= 0 .and. ip .lt. npa-1)
                       ip=ip+1
                       ipr=itffork()
                       npr(ip)=ipr
                     enddo
-                    if(ipr .gt. 0)then
+                    if(ipr > 0)then
                       ip=ip+1
                     else
                       call tsetintm(-1.d0)
@@ -394,7 +396,7 @@ c     enddo
                   endif
                   do kc=ip,nvar,istep
                     i=nvevx(kc)%ivarele
-                    if(nqcol .gt. nqcol1)then
+                    if(nqcol > nqcol1)then
                       nvevx(kc)%valvar=nvevx(kc)%valvar+eps1/wvar(kc)
                       if(cell)then
                         call twmov(1,twisss,1,0,.false.)
@@ -405,7 +407,7 @@ c     enddo
                         call tfgeo(latt,geomet .or. .not. fitflg)
                       endif
                       over=.false.
-                      if(ibegin .ne. 1)then
+                      if(ibegin /= 1)then
                         twiss(ibegin,0,1:ntwissfun)=
      $                       utwiss(1:ntwissfun,0,itwissp(ibegin))
                       else
@@ -417,7 +419,7 @@ c     enddo
                       nqcol=nqcol1
                       call tffsfitfun(nqcol,df1,flv%iqcol,flv%kdp,
      $                     maxcond,error)
-                      if(error .or. nqcol .ne. nqcol00)then
+                      if(error .or. nqcol /= nqcol00)then
                         irtc=20003
                       endif
                       nvevx(kc)%valvar=nvevx(kc)%valvar-eps1/wvar(kc)
@@ -432,7 +434,7 @@ c     enddo
      $                 'tffsmatch-EVDeriv',irtc)
                 endif
               endif
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 exit do9000
               endif
               df0(1:nqcol)=df(1:nqcol)
@@ -447,10 +449,10 @@ c     enddo
               call tfsolv(qu,quw,
      $             df,dval,wlimit,nqcol,nvar,flv%iqcol,
      $             flv%kfitp,flv%mfitp,dg,wexponent,tstol/fact)
-              if(wexponent .ne. 2.d0)then
+              if(wexponent /= 2.d0)then
                 dg=dg*(rp0/wsum)**(1.d0-wexponent/2.d0)
               endif
-              if(dg .gt. 0.d0)then
+              if(dg > 0.d0)then
                 newton=.false.
                 df0(1:nqcol)=df(1:nqcol)
                 wlimit(1:nvar)=1.d0
@@ -472,7 +474,7 @@ c     enddo
      $             limited1,dlim)
               if(limited1)then
                 nvevx(ii)%valvar=min(vl2,max(vl1,bestval(ii)))
-                if(dv .ne. 0.d0)then
+                if(dv /= 0.d0)then
                   wlimit(ii)=wlimit(ii)*
      $                 min(abs((vl-nvevx(ii)%valvar)/dv),.3d0)
                   limited=.true.
@@ -483,7 +485,7 @@ c     enddo
                 endif
               endif
             enddo
-            if(limited .and. nvara .gt. 0)then
+            if(limited .and. nvara > 0)then
               df(1:nqcol)=df0(1:nqcol)
               go to 1082
             endif
@@ -494,7 +496,7 @@ c     enddo
           call tffssetlimit(nvar,dlim)
         endif
       enddo do9000
-      if(nqumax .gt. 0)then
+      if(nqumax > 0)then
         call tfree(ifquw)
         call tmunmapp(ifqu)
       endif
@@ -514,7 +516,7 @@ c     enddo
       real*8 ,intent(in):: df(nqcol),df1(nqcola1)
       j=1
       do i=1,nqcol
-        if(j .gt. nqcola1)then
+        if(j > nqcola1)then
           ddf(i)=0.d0
         elseif(iqcol(i) == iqcola1(j) .and.
      $       lfp(1,i) == lfpa1(1,j) .and.
@@ -527,7 +529,7 @@ c     enddo
             if(iqcol(i) .lt. iqcola1(j1))then
               ddf(i)=0.d0
               exit
-            elseif(iqcol(i) .gt. iqcol(j1))then
+            elseif(iqcol(i) > iqcol(j1))then
               j=j1+1
             elseif(iqcol(i) == iqcola1(j1) .and.
      $       lfp(1,i) == lfpa1(1,j1) .and.
@@ -556,12 +558,12 @@ c     enddo
       integer*8 ,intent(in):: kash
       character*(*) ,intent(in):: tag
       if(ipr == 0)then
-        if(kash .ne. 0)then
+        if(kash /= 0)then
           call tfreeshared(kash,-1)
         endif
         call tfresetsharedmap()
         call exit_without_hooks(0)
-      elseif(ipr .gt. 0)then
+      elseif(ipr > 0)then
         iwait=-1
         if(nwait /= 0)then
           lw=600*(1000000/nwait)
@@ -579,7 +581,7 @@ c     enddo
                   iwait=iwait+1
                   if(iwait > lw)then
                     do j=1,npa-1
-                      if(npr(j) .ne. 0)then
+                      if(npr(j) /= 0)then
                         call tkill(npr(j))
                         write(*,*)'???-'//tag//' timeout :',j
                       endif
@@ -598,11 +600,11 @@ c     enddo
                 exit dowait
               endif
             enddo
-            if(ipr .ne. -1)then
+            if(ipr /= -1)then
               write(*,*)'???-'//tag//' Unexpected process:',ipr
             endif
           enddo dowait
-          if(ist .ne. 0)then
+          if(ist /= 0)then
             irtc=20003
           endif
         enddo 
@@ -620,17 +622,17 @@ c     enddo
       integer*4 nqu
       integer*4 , parameter :: minnqu=512
       nqu=max(minnqu,nqcol*nvar)
-      if(nqu .gt. nqumax)then
-        if(nqumax .gt. 0)then
+      if(nqu > nqumax)then
+        if(nqumax > 0)then
           call tfree(ifquw)
           call tmunmapp(ifqu)
         endif
         ifqu=itmmapp(nqu)
-        if(ifqu .le. 0)then
+        if(ifqu <= 0)then
           go to 9000
         endif
         ifquw=ktaloc(nqu)
-        if(ifquw .le. 0)then
+        if(ifquw <= 0)then
           call tmunmapp(ifqu)
           go to 9000
         endif
@@ -638,7 +640,7 @@ c     enddo
       endif
       return
  9000 call termes(lfno,'?Too many conditions*variables.',' ')
-      if(nqumax .gt. 0)then
+      if(nqumax > 0)then
         ifqu=itmmapp(nqumax)
         ifquw=ktaloc(nqumax)
       endif
@@ -699,7 +701,7 @@ c        write(*,*)'tffssetlimit ',ii,nvar
         if(vl .lt. vl1)then
           vl=vl1
           limited=.true.
-        elseif(vl .gt. vl2)then
+        elseif(vl > vl2)then
           vl=vl2
           limited=.true.
         endif
@@ -716,14 +718,14 @@ c        write(*,*)'tffssetlimit ',ii,nvar
       endif
       if(ltyp == icMARK)then
         if(ivv == mfitbx .or.ivv == mfitby)then
-          if(vl .le. 1.d-9)then
+          if(vl <= 1.d-9)then
             vl=0.d0
             limited=.true.
           endif
         endif
       endif
       call tffsvarfun(1,ld,ivv,val,kx,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
       if(ktfrealq(kx))then
@@ -742,7 +744,7 @@ c          write(*,*)'tffsvlimit ',vl,vl1,vl2
             vl=vl1
             go to 2009
           endif
-          if(vl .gt. vl2)then
+          if(vl > vl2)then
             vl=vl2
             go to 2009
           endif
@@ -817,10 +819,10 @@ c        write(*,'(a,1x,a,1x,a,i5)')'vlimit:',svarn%str(1:svarn%nch),
 c     $       vn(1:skey%nch),irtc
 c        call tfdebugprint(kx,':',1)
       endif
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         kx%k=ktfoper+mtfnull
         level=itfdownlevel()
-        if(ierrorprint .ne. 0)then
+        if(ierrorprint /= 0)then
           call tfaddmessage(' ',2,6)
         endif
         if(id == 1)then
@@ -838,226 +840,6 @@ c        call tfdebugprint(kx,'varfun:',1)
       return
       end
 
-      subroutine tffsqu(nqcol,nqcol1,nvar,nqumax,ifquw,ifqu,
-     $     free,nlat,nele,nfam,nfam1,nut,
-     $     nparallel,cell,lfno,irtc)
-      use tfstk
-      use ffs, only:flv,ffs_bound,nvevx,nelvx,tsetintm
-      use ffs_pointer
-      use tffitcode
-      use tfshare
-      use mackw
-      implicit none
-      type (ffs_bound) fbound
-      integer*8 ,intent(inout):: ifquw,ifqu
-      integer*8 itmmapp,kcm,kkqu,kqu,ic,iec
-      integer*4 ,intent(in):: nqcol,nqcol1,nvar,nlat,nele,
-     $     lfno,nut,nfam,nfam1,nparallel
-      integer*4 ,intent(out):: irtc,nqumax
-      integer*4 npp
-      logical*4 ,intent(in):: free(nele),cell
-      logical*4 , allocatable,dimension(:,:)::col
-      integer*4 nqu,k,kk,i,kq,j,kf,lp,kp,iv,kkf,kkq,kkk,
-     $     ii,ltyp,jj,kc,ik1,iclast(-nfam:nfam),ik,nk,kk1,
-     $     ip,ipr,istep,npr(nparallel)
-      real*8 s,dtwiss(mfittry),coup,posk,wk,ctrans(4,7,-nfam:nfam)
-      logical*4 disp,nzcod
-      integer*4 , parameter :: minnqu=512
-      call tffscoupmatrix(kcm,lfno)
-      irtc=0
-      allocate(col(2,nqcol))
-      nqu=max(minnqu,nqcol*nvar)
-      do9000: do kkk=1,1
-        if(nqu .gt. nqumax)then
-          if(nqumax .gt. 0)then
-            call tfree(ifquw)
-            call tmunmapp(ifqu)
-          endif
-          ifqu=itmmapp(nqu)
-          if(ifqu .le. 0)then
-            exit
-          endif
-          ifquw=ktaloc(nqu)
-          if(ifquw .le. 0)then
-            call tmunmapp(ifqu)
-            exit
-          endif
-          nqumax=nqu
-        endif
-        call tffsbound(fbound)
-        rlist(ifqu:ifqu+nqu-1)=0.d0
-        npp=min(nvar,nparallel)
-        ipr=-1
-        if(npp .gt. 1)then
-          istep=npp
-          ip=0
-          do while(ipr .ne. 0 .and. ip .lt. npp-1)
-            ip=ip+1
-            ipr=itffork()
-            npr(ip)=ipr
-          enddo
-          if(ipr .ne. 0)then
-            ip=ip+1
-          else
-            call tsetintm(-1.d0)
-          endif
-        else
-          ip=1
-          istep=1
-        endif  
-        do k=1,nlat-1
-          kc=icomp(k)
-          kk=iele1(kc)
-          kk1=iele1(k)
-          iec=kele2(k)
-          nk=merge(0,ilist(1,iec),iec == 0)
-          if(kk .gt. 0 .and. free(kk) .or. iec .ne. 0)then
-            posk=pos(k)
-            wk=1.d0
-            if(k == fbound%lb)then
-              wk=1.d0-fbound%fb
-            endif
-            if(k == fbound%le)then
-              wk=fbound%fe
-            endif
-            ltyp=idtypec(k)
-            do ii=ip,nvar,istep
-              if(kk .le. 0 .or.
-     $             (.not. free(kk) .and. .not. free(kk1)))then
-                ik1=1
-              else
-                ik1=0
-                do ik=1,nk
-                  if(nvevx(ii)%ivvar == ilist(2,iec+ik))then
-                    ik1=1
-                    exit
-                  endif
-                enddo
-              endif
-              do11: do ik=ik1,nk
-                if(ik .ne. 0)then
-                  if(kcm == 0)then
-                    cycle
-                  else
-                    ic=kcm+(ilist(1,iec+ik)-1)*nvar-1
-                    coup=rlist(ic+ii)*wk
-                    if(coup .ne. 0.d0)then
-                      iv=ilist(2,iec+ik)
-                    else
-                      cycle
-                    endif
-                  endif
-                else
-                  iv=nvevx(ii)%ivvar
-                  if(iv == nelvx(kk)%ival .and.
-     $                 nvevx(ii)%ivarele == kk .and.
-     $                 (nvevx(ii)%ivcomp == 0 .or.
-     $                 nvevx(ii)%ivcomp == kc))then
-                    coup=couple(k)*wk
-                  elseif(iv .ne. nelvx(kk)%ival .and.
-     $                   nvevx(ii)%ivarele == kk1 .and.
-     $                   (nvevx(ii)%ivcomp == 0 .or.
-     $                   nvevx(ii)%ivcomp == k))then
-                    coup=wk
-                  else
-                    cycle
-                  endif
-                endif
-                iclast(nfam1:nfam)=0
-                do concurrent (kq=1:nqcol1)
-                  col(1,kq)=.true.
-                  col(2,kq)=flv%lfp(2,kq) .gt. 0
-                enddo
-                do kq=1,nqcol1
-                  kqu=(ii-1)*nqcol+kq+ifqu-1
-                  s=coup
-                  do i=1,2
-                    if(col(i,kq))then
-                      j=flv%iqcol(kq)
-                      kf=flv%kfit(flv%kfitp(j))
-                      lp=flv%lfp(i,kq)
-                      if(kf .le. mfittry)then
-                        if(k .lt. lp .or.
-     $                       posk .lt. pos(lp) .or. cell)then
-                          nzcod= kf == mfitdz
-     $                         .or. kf == mfitddp
-                          disp=kf .ge. mfitex .and. kf .le. mfitepy
-     $                         .or. nzcod
-                          if(.not. disp)then
-                            do kkq=kq+1,nqcol1
-                              jj=flv%iqcol(kkq)
-                              kkf=flv%kfit(flv%kfitp(jj))
-                              disp=kkf .ge. mfitex
-     $                             .and. kkf .le. mfitepy
-                              if(disp)then
-                                exit
-                              endif
-                            enddo
-                          endif
-                          kp=flv%kdp(kq)
-                          call qdcell(dtwiss,
-     $                         k,lp,kp,iv,ctrans,iclast,
-     $                         nfam,nut,disp,nzcod)
-                          rlist(kqu)=rlist(kqu)+s*dtwiss(kf)
-                          do kkq=kq+1,nqcol1
-                            jj=flv%iqcol(kkq)
-                            kkf=flv%kfit(flv%kfitp(jj))
-                            if(kkf .le. mfito .and.
-     $                           kp == flv%kdp(kkq))then
-                              kkqu=(ii-1)*nqcol+kkq+ifqu-1
-                              if(col(1,kkq) .and.
-     $                             flv%lfp(1,kkq) == lp)then
-                                rlist(kkqu)=rlist(kkqu)
-     $                               +dtwiss(kkf)*coup
-                                col(1,kkq)=.false.
-                              elseif(col(2,kkq) .and.
-     $                               flv%lfp(2,kkq) == lp)then
-                                rlist(kkqu)=rlist(kkqu)
-     $                               -dtwiss(kkf)*coup
-                                col(2,kkq)=.false.
-                              endif
-                            endif
-                          enddo
-                        endif
-                      elseif(kf == mfitleng)then
-                        if(kytbl(kwL,ltyp) == iv)then
-                          if(posk .lt. pos(lp) .and. posk .ge. 0.d0)then
-                            rlist(kqu)=rlist(kqu)+s
-                          elseif(posk .ge. pos(lp) .and.
-     $                           posk .lt. 0.d0)then
-                            rlist(kqu)=rlist(kqu)-s
-                          endif
-                        endif
-                      else
-                        call tdgeo(s,rlist(kqu),
-     $                       kf,lp,k,ltyp,iv,nut,nfam)
-                      endif
-                    endif
-                    s=-s
-                  enddo
-                enddo
-              enddo do11
-            enddo
-          endif
-        enddo
-        call tffswait(ipr,npp,npr,i00,0,'tffsqu',irtc)
-        if(kcm .ne. 0)then
-          call tfree(kcm)
-        endif
-        return
-      enddo do9000
-      call termes(lfno,'?Too many conditions*variables.',' ')
-      if(nqumax .gt. 0)then
-        ifqu=itmmapp(nqumax)
-        ifquw=ktaloc(nqumax)
-      endif
-      irtc=20002
-      if(kcm .ne. 0)then
-        call tfree(kcm)
-      endif
-      return
-      end
-
       real*8 pure function tffsfmin(f1,f2,g1,g2,g0,dg)
       implicit none
       real*8 ,intent(in):: f1,f2,g1,g2,g0,dg
@@ -1069,7 +851,7 @@ c        call tfdebugprint(kx,'varfun:',1)
         b=(-f2*(g1-g0)/f1**2+f1*(g2-g0)/f2**2)-dg*(f1+f2)/f1/f2
         tffsfmin=merge(-dg/(sqrt(max(0.d0,b**2-3.d0*a*dg))+b),
      $       (sqrt(max(0.d0,b**2-3.d0*a*dg))-b)/3.d0/a,
-     $       b .gt. 0.d0)
+     $       b > 0.d0)
       endif
       tffsfmin=min(.577d0*f1,max(f1/16.d0,tffsfmin))
       return
@@ -1142,7 +924,7 @@ c
       enddo
       r=0.d0
       do i=1,nqcol
-        if(df(i) .ne. 0.d0)then
+        if(df(i) /= 0.d0)then
           dfwi=abs(df(i))**wexponent
           r=r+dfwi
           dfw(i)=dfwi/df(i)
@@ -1154,7 +936,7 @@ c
         grad(i)=dot_product(quw(:,i),dfw)
       enddo
       sg=sum(grad**2)
-      if(sg .ne. 0.d0)then
+      if(sg /= 0.d0)then
         grad=grad*r/sg
       endif
       return
@@ -1200,7 +982,7 @@ c
         gw=100.d0/max(1.d0,abs(vk))
       elseif(iv == kytbl(kwDX,ltyp) .or.
      $       iv == kytbl(kwDY,ltyp))then
-        if(kytbl(kwK1,ltyp) .ne. 0)then
+        if(kytbl(kwK1,ltyp) /= 0)then
           gw=0.1d0/avebeta
         endif
       elseif(iv == kytbl(kwBZ,ltyp))then
@@ -1274,7 +1056,7 @@ c
       allocate(b(nqcol),fit(nqcol))
       allneg=.true.
       do i=1,nqcol
-        fit(i)=mfitp(kfitp(iqcol(i))) .gt. 0
+        fit(i)=mfitp(kfitp(iqcol(i))) > 0
         allneg=allneg .and. .not. fit(i)
       enddo
       if(allneg)then
@@ -1295,7 +1077,7 @@ c
       dg=0.d0
       do i=1,nqcol
         s=sum(qu(i,:)*wlimit*dval)
-        if(df(i) .ne. 0.d0)then
+        if(df(i) /= 0.d0)then
           dg=merge(dg-df(i)*s,dg-abs(df(i))**wexponent/df(i)*s,
      $         wexponent == 2.d0)
         endif
@@ -1308,7 +1090,7 @@ c
       enddo
       if(again)then
         nagain=nagain+1
-        if(nagain .le. nqcol)then
+        if(nagain <= nqcol)then
           go to 1
         endif
       endif
@@ -1324,7 +1106,7 @@ c
       implicit none
       integer*4 ,intent(in):: n
       integer*4 irtc
-      if(nparallel .gt. 1)then
+      if(nparallel > 1)then
         irtc=1
         itmmapp=ktfallocshared(n)
       else
@@ -1339,7 +1121,7 @@ c
       use tmacro
       implicit none
       integer*8 ,intent(in):: i
-      if(nparallel .gt. 1)then
+      if(nparallel > 1)then
         call tfreeshared(i)
       else
         call tfree(i)
@@ -1373,22 +1155,22 @@ c
       levele=levele+1
       km=tfsyeval(ktfcoupm,irtc)
       call tfconnect(km,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         go to 9010
       endif
 c      call tfdebugprint(km,'coupmatrix',1)
       if(.not. tflistq(km,klm))then
         go to 9000
       endif
-      if(ktfnonrealq(klm%dbody(1),v) .or. v .le. 0.d0)then
+      if(ktfnonrealq(klm%dbody(1),v) .or. v <= 0.d0)then
         go to 9100
       endif
       kcm=ktfmaloc(klm%dbody(2),n,m,.false.,.true.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         go to 9010
       endif
       return
- 9010 if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
+ 9010 if(irtc > 0 .and. ierrorprint /= 0)then
         call tfreseterror
       endif
  9000 call termes(lfno,

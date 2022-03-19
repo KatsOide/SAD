@@ -272,7 +272,7 @@ c        write(*,*)'tphysdisp ',kf
       return
       end
 
-      real*8 function tgetbmagu(i,idp,kt) result(v)
+      real*8 pure function tgetbmagu(i,idp,kt) result(v)
       use ffs_pointer, only:twiss,utwiss,itwissp
       use tffitcode
       implicit none
@@ -292,6 +292,35 @@ c        write(*,*)'tphysdisp ',kf
         v=.5d0*(utwiss(mfitbz,idp,l)/twiss(i,-1,mfitbz)+twiss(i,-1,mfitbz)/utwiss(mfitbz,idp,l)
      $       +(utwiss(mfitaz,idp,l)*twiss(i,-1,mfitbz)-twiss(i,-1,mfitaz)*utwiss(mfitbz,idp,l))**2
      $       /utwiss(mfitbz,idp,l)/twiss(i,-1,mfitbz))
+      case default
+        v=0.d0
+      end select
+      return
+      end
+
+      real*8 pure function tgetbmagu2(i,i1,idp,kt) result(v)
+      use ffs_pointer, only:utwiss,itwissp
+      use tffitcode
+      implicit none
+      integer*4 ,intent(in):: i,i1,idp,kt
+      integer*4 l,l1
+      l=itwissp(i)
+      l1=itwissp(i1)
+      select case (kt)
+      case (mfitbmagx)
+        v=.5d0*(utwiss(mfitbx,idp,l)/utwiss(mfitbx,idp,l1)+utwiss(mfitbx,idp,l1)/utwiss(mfitbx,idp,l)
+     $       +(utwiss(mfitax,idp,l)*utwiss(mfitbx,idp,l1)-utwiss(mfitax,idp,l1)*utwiss(mfitbx,idp,l))**2
+     $       /utwiss(mfitbx,idp,l)/utwiss(mfitbx,idp,l1))
+      case (mfitbmagy)
+        v=.5d0*(utwiss(mfitby,idp,l)/utwiss(mfitby,idp,l1)+utwiss(mfitby,idp,l1)/utwiss(mfitby,idp,l)
+     $       +(utwiss(mfitay,idp,l)*utwiss(mfitby,idp,l1)-utwiss(mfitay,idp,l1)*utwiss(mfitby,idp,l))**2
+     $       /utwiss(mfitby,idp,l)/utwiss(mfitby,idp,l1))
+      case (mfitbmagz)
+        v=.5d0*(utwiss(mfitbz,idp,l)/utwiss(mfitbz,idp,l1)+utwiss(mfitbz,idp,l1)/utwiss(mfitbz,idp,l)
+     $       +(utwiss(mfitaz,idp,l)*utwiss(mfitbz,idp,l1)-utwiss(mfitaz,idp,l1)*utwiss(mfitbz,idp,l))**2
+     $       /utwiss(mfitbz,idp,l)/utwiss(mfitbz,idp,l1))
+      case default
+        v=0.d0
       end select
       return
       end

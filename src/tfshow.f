@@ -1,5 +1,4 @@
-      subroutine tfshow(stab,df,mfpnta,mfpnta1,
-     $     kx,irtc,ret,lfno)
+      subroutine tfshow(stab,df,mfpnta,mfpnta1,kx,irtc,ret,lfno)
       use tfstk
       use ffs
       use ffs_pointer
@@ -307,8 +306,8 @@ c          name(ln+1:namel)='/'//name1
           klist(kax4+i)=ktflist+kaxi
         endif
         if(kpa .ne. kpb)then
-          if(k .eq. mfitbx .or. k .eq. mfitby
-     $         .or. k .eq. mfitbz)then
+          select case(k)
+          case (mfitbx,mfitby,mfitbz,mfitgmx,mfitgmy,mfitgmz)
             do m=1,mm
               j=jshow(m)
               buf0((m-1)*lf+1:m*lf)=
@@ -321,7 +320,19 @@ c          name(ln+1:namel)='/'//name1
      $               tgfun(k,kpb,j)/tgfun(k,kpa,j)
               enddo
             endif
-          else
+          case (mfitbmagx,mfitbmagy,mfitbmagz)
+            do m=1,mm
+              j=jshow(m)
+              buf0((m-1)*lf+1:m*lf)=
+     1             autofg(tgetbmagu2(kpa,kpb,j,k),form)
+            enddo
+            buf0(mm*lf+1:)=' '
+            if(ret)then
+              do j=mf,nfam
+                rlist(kaxi4+j-mf+1)=tgetbmagu2(kpa,kpb,j,k)
+              enddo
+            endif
+          case default
             do m=1,mm
               j=jshow(m)
               buf0((m-1)*lf+1:m*lf)=
@@ -334,7 +345,7 @@ c          name(ln+1:namel)='/'//name1
      $               tgfun(k,kpb,j)-tgfun(k,kpa,j)
               enddo
             endif
-          endif
+          end select
         elseif(k .le. mfittry .and. k .gt. 0)then
           do 1010 m=1,mm
             j=jshow(m)

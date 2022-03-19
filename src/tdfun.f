@@ -1,3 +1,5 @@
+c Obsolete 3/16/2022
+
       subroutine tdfun(iqcol,lfp,nqcola,nqcola1,kdp,df1,error)
       use tfstk
       use ffs
@@ -396,11 +398,9 @@ c      call tfmemcheckprint('FitFunction-end',.true.,irtc)
           else
             tdfun1=0.d0
           endif
-          return
         else
           tdfun1=log(vf/v)
         endif
-        return
 
       case (mfitax,mfitay,mfitaz)
         if(maxfit)then
@@ -412,11 +412,9 @@ c      call tfmemcheckprint('FitFunction-end',.true.,irtc)
           else
             tdfun1=0.d0
           endif
-          return
         else
           tdfun1=atan(vf)-atan(v)
         endif
-        return
 
       case (mfitex,mfitey)
         if(maxfit)then
@@ -426,7 +424,6 @@ c      call tfmemcheckprint('FitFunction-end',.true.,irtc)
           else
             tdfun1=max(-vfa-v,0.d0)
           endif
-          return
         else
           tdfun1=merge(-vf,vf,kdp .lt. 0)-v
         endif
@@ -440,7 +437,6 @@ c      call tfmemcheckprint('FitFunction-end',.true.,irtc)
           else
             tdfun1=max(-vfa-v,0.d0)
           endif
-          return
         else
           tdfun1=vf-v
         endif
@@ -450,7 +446,6 @@ c      call tfmemcheckprint('FitFunction-end',.true.,irtc)
         do while(tdfun1 .gt. pi)
           tdfun1=tdfun1-pi2
         enddo
-        return
         
       case (mfitnx,mfitny,mfitnz)
 c     vf1=pi2*(anint(vf/pi2)+sign(.5d0*sin(.5d0*vf)**2,sin(vf)))
@@ -463,8 +458,10 @@ c     v1=pi2*(anint(v/pi2)+sign(.5d0*sin(.5d0*v)**2,sin(v)))
         if(ttrans)then
           tdfun1=tdfun1-anint(tdfun1/pi2)*pi2
         endif
-        return
 
+c      case (mfitbmagx,mfitbmagy,mfitbmagz)
+c        tdfun1=sqrt(vf-1.d0)-sqrt(v-1.d0)
+c
       case default
         if(maxfit)then
           vfa=abs(vf)
@@ -473,12 +470,10 @@ c     v1=pi2*(anint(v/pi2)+sign(.5d0*sin(.5d0*v)**2,sin(v)))
           else
             tdfun1=max(-vfa-v,0.d0)
           endif
-          return
         else
           tdfun1=vf-v
         endif
 c        write(*,*)'tdfun1 ',kf,maxfit,vf,v,tdfun1
-        return
       end select
       return
 

@@ -86,7 +86,7 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      qtent.o     qtwiss.o     tapert.o \
      tbdecoup.o  tbende.o     tbendi.o   tbfrie.o \
      tceigen.o    tcftr.o    tcod.o \
-     tcorr.o     tdet.o      tdfun.o      tdgeo.o    tdlat.o \
+     tcorr.o     tdet.o      tdgeo.o    tdlat.o \
      teigen.o    temap.o     temat.o      temitf.o \
      temits.o    terror.o    tfaprt.o     tfattr.o   tfcalc.o     tfchgv.o \
      tfchro.o    tfcoup.o    tfdapert.o   tfdisp.o   tfemit.o \
