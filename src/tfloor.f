@@ -664,6 +664,23 @@ c        dc=merge(-s**2/(1.d0+c),c-1.d0,c > 0.d0)
       return
       end function
 
+      real*8 pure function outer(a,b)
+      implicit none
+      real*8 ,intent(in):: a(3),b(3)
+      dimension outer(3)
+      outer(1)=a(2)*b(3)-a(3)*b(2)
+      outer(2)=a(3)*b(1)-a(1)*b(3)
+      outer(3)=a(1)*b(2)-a(2)*b(1)
+      return
+      end function
+
+      real*8 pure function outer2(a,b)
+      implicit none
+      real*8 ,intent(in):: a(2),b(2)
+      outer2=a(1)*b(2)-a(2)*b(1)
+      return
+      end function
+
       end module
 
       subroutine tfmod(isp1,kx,mode,irtc)

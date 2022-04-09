@@ -1,18 +1,26 @@
+      module tfcc
+      real*8 ,private::xmin,xmax,ymin,ymax
+      integer*4 ,private::isp0
+
+      contains
+
       subroutine tfcanvasclip(isp1,kx,irtc)
       use tfstk
+      use mathfun, only:outer2
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_rlist), pointer :: klr
-      integer*8 ka,ka1,ka2,kal,kadash,kaxi
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
-      integer*4 i,j,na,np,isp0,n,
+      integer*8 ka,ka1,ka2,kal,kadash,kaxi
+      integer*4 i,j,na,np,n,
      $     itfmessage,narg,ispa,ndash,k,isp2,isp3,ignore
-      real*8 xmin,xmax,ymin,ymax,x0,x1,y0,y1,xa,ya,xb,yb,
-     $     ux,uy,t(4),tc,dx,dy,dmax,dash,s,s1,v,xm,ym,eps,t1,
-     $     x,y,ds
-      logical*4 in0,in1
-      parameter (eps=1.d-6)
+      real*8 x0,x1,y0,y1,xa,ya,xb,yb,
+     $     ux,uy,t(4),dmax,dash,s,s1,v,xm,ym,x,y,ds,
+     $     z(2),z0(2),z1(2),dz(2)
+      real*8 ,parameter::eps=1.d-6
+      logical*4 pin,in0,in1
+      pin(x,y)=x >=xmin .and. x <= xmax .and. y >= ymin .and. y <= ymax
       narg=isp-isp1
       if(narg /= 2 .and. narg /= 3)then
         irtc=itfmessage(9,'General::narg','"2 or 3"')
@@ -22,18 +30,18 @@
       kadash=0
       xm=0.d0
       ym=0.d0
-      if(narg .eq. 3)then
+      if(narg == 3)then
         ka=ktfaddr(ktastk(isp))
         if(tfreallistq(ktastk(isp)))then
           ndash=ilist(2,ka-1)
-          if(ndash .gt. 1)then
+          if(ndash > 1)then
             kadash=ktfaddr(klist(ka+1))
           endif
         elseif(ktfrealq(ktastk(isp)))then
           v=rtastk(isp)
-          if(v .gt. 0.d0)then
+          if(v > 0.d0)then
             xm=v
-          elseif(v .lt. 0.d0)then
+          elseif(v < 0.d0)then
             ym=-v
           endif
         endif
@@ -63,10 +71,10 @@ c        write(*,*)'canvasclip-4'
      $       '"List of Reals for #2[[1]] and #2[[2]]"')
         return
       endif
-      xmin=rlist(ka1+1)
-      ymin=rlist(ka1+2)
-      xmax=rlist(ka2+1)
-      ymax=rlist(ka2+2)
+      xmin=anint(rlist(ka1+1))
+      ymin=anint(rlist(ka1+2))
+      xmax=anint(rlist(ka2+1))
+      ymax=anint(rlist(ka2+2))
       isp0=isp
       ka=ktfaddr(ktastk(isp1+1))
       if(.not. tflistq(ktastk(isp1+1)))then
@@ -89,225 +97,120 @@ c        write(*,*)'canvasclip-4'
         go to 9100
       endif
       isp0=isp
-      x0=rlist(ka1+1)
-      y0=rlist(ka2+1)
-      in0=x0 .ge. xmin .and. x0 .le. xmax .and.
-     $     y0 .ge. ymin .and. y0 .le. ymax
-      if(in0)then
-        isp=isp+2
-        rtastk(isp-1)=anint(x0)
-        rtastk(isp  )=anint(y0)
-      endif
+      x0=anint(rlist(ka1+1))
+      y0=anint(rlist(ka2+1))
+      in0=pin(x0,y0)
+      call tfccput(x0,y0)
       do n=2,np
-        x1=rlist(ka1+n)
-        y1=rlist(ka2+n)
-        in1=x1 .ge. xmin .and. x1 .le. xmax .and.
-     $       y1 .ge. ymin .and. y1 .le. ymax
-        if(in1)then
-          if(in0)then
-            if(x0 /= x1 .or. y0 /= y1)then
-              isp=isp+2
-              rtastk(isp-1)=anint(x1)
-              rtastk(isp  )=anint(y1)
-              x0=x1
-              y0=y1
-            endif
-          else
-            ux=x1-x0
-            uy=y1-y0
-            t(1)=-1.d0
-            if(ux .gt. 0.d0)then
-              t(1)=(xmin-x0)/ux
-            elseif(ux /= 0.d0)then
-              t(1)=(xmax-x0)/ux
-            endif
-            t(2)=-1.d0
-            if(uy .gt. 0.d0)then
-              t(2)=(ymin-y0)/uy
-            elseif(uy /= 0.d0)then
-              t(2)=(ymax-y0)/uy
-            endif
-            if(t(1) .gt. 0.d0 .and. t(1) .le. 1.d0)then
-              if(t(2) .gt. 0.d0 .and. t(2) .le. 1.d0)then
-                tc=max(t(1),t(2))
-              else
-                tc=t(1)
-              endif
-            else
-              tc=t(2)
-            endif
-            isp=isp+4
-            rtastk(isp-3)=anint(x0+tc*ux)
-            rtastk(isp-2)=anint(y0+tc*uy)
-            rtastk(isp-1)=anint(x1)
-            rtastk(isp  )=anint(y1)
-            x0=x1
-            y0=y1
-          endif
-        else
-          if(in0)then
-            ux=x1-x0
-            uy=y1-y0
-            t(1)=-1.d0
-            if(ux .gt. 0.d0)then
-              t(1)=(xmax-x0)/ux
-            elseif(ux /= 0.d0)then
-              t(1)=(xmin-x0)/ux
-            endif
-            t(2)=-1.d0
-            if(uy .gt. 0.d0)then
-              t(2)=(ymax-y0)/uy
-            elseif(uy /= 0.d0)then
-              t(2)=(ymin-y0)/uy
-            endif
-            if(t(1) .ge. 0.d0 .and. t(1) .lt. 1.d0)then
-              if(t(2) .ge. 0.d0 .and. t(2) .lt. 1.d0)then
-                tc=min(t(1),t(2))
-              else
-                tc=t(1)
-              endif
-            else
-              tc=t(2)
-            endif
-            isp=isp+2
-            rtastk(isp-1)=anint(x0+tc*ux)
-            rtastk(isp  )=anint(y0+tc*uy)
-            x0=x1
-            y0=y1
-          else
-            ux=x1-x0
-            uy=y1-y0
-            t(1)=-1
-            t(2)=-1
-            if(ux /= 0.d0)then
-              t1=(xmin-x0)/ux
-              ya=y0+t1*uy
-              if(ya .ge. ymin .and. ya .le. ymax)then
-                t(1)=t1
-              endif
-              t1=(xmax-x0)/ux
-              ya=y0+t1*uy
-              if(ya .ge. ymin .and. ya .le. ymax)then
-                t(2)=t1
-              endif
-            endif
-            t(3)=-1
-            t(4)=-1
-            if(uy /= 0.d0)then
-              t1=(ymin-y0)/uy
-              xa=x0+t1*ux
-              if(xa .ge. xmin .and. xa .le. xmax)then
-                t(3)=t1
-              endif
-              t1=(ymax-y0)/uy
-              xa=x0+t1*ux
-              if(xa .ge. xmin .and. xa .le. xmax)then
-                t(4)=t1
-              endif
-            endif
-            do i=1,3
-              if(t(i) .gt. 0.d0 .and. t(i) .le. 1.d0)then
-                xa=x0+t(i)*ux
-                ya=y0+t(i)*uy
-                do j=i+1,4
-                  if(t(j) .gt. 0.d0 .and. t(j) .le. 1.d0 .and.
-     $                 abs(t(i)-t(j)) .gt. 1.d-3)then
-                    xb=x0+t(j)*ux
-                    yb=y0+t(j)*uy
-                    isp=isp+4
-                    rtastk(isp-3:isp)=anint(
-     $                   merge([xa,ya,xb,yb],[xb,yb,xa,ya],
-     $                   t(i) .lt. t(j)))
+        x1=anint(rlist(ka1+n))
+        y1=anint(rlist(ka2+n))
+        in1=pin(x1,y1)
+        ux=x1-x0
+        uy=y1-y0
+        t(1:2)=merge([-1.d0,-1.d0],([xmin,xmax]-x0)/ux,ux == 0.d0)
+        t(3:4)=merge([-1.d0,-1.d0],([ymin,ymax]-y0)/uy,uy == 0.d0)
+        do i=1,4
+          if(t(i) >= 0.d0 .and. t(i) <= 1.d0)then
+            xa=anint(x0+t(i)*ux)
+            ya=anint(y0+t(i)*uy)
+            if(pin(xa,ya))then
+              do j=i+1,4
+                if(t(j) >= 0.d0 .and. t(j) <= 1.d0)then
+                  xb=anint(x0+t(j)*ux)
+                  yb=anint(y0+t(j)*uy)
+                  if(pin(xb,yb))then
+                    if(t(i) < t(j))then
+                      call tfccput(xa,ya)
+                      call tfccput(xb,yb)
+                    else
+                      call tfccput(xb,yb)
+                      call tfccput(xa,ya)
+                    endif
                     go to 1
                   endif
-                enddo
+                endif
+              enddo
+              if(.not. in0)then
+                call tfccput(x0,y0)
+                call tfccputa(x0,y0,x1,y1)
               endif
-            enddo
- 1          x0=x1
-            y0=y1
-          endif
-        endif
-        in0=in1
-      enddo
-      na=isp-isp0
-      if(na .eq. 2)then
-        isp=isp+2
-        rtastk(isp-1)=rtastk(isp-3)+xm
-        rtastk(isp  )=rtastk(isp-2)+ym
-        na=4
-      elseif(na .gt. 4)then
-        ignore=0
-        ispa=isp0+3
-        x0=rtastk(isp0+1)
-        y0=rtastk(isp0+2)
-        x1=rtastk(isp0+3)
-        y1=rtastk(isp0+4)
-        do i=isp0+5,isp-1,2
-          x=rtastk(i)
-          y=rtastk(i+1)
-          ds=1.d0
-          if(ignore .lt. 4)then
-            if((x-x1)*(x1-x0)+(y-y1)*(y1-y0) .ge. 0.d0)then
-              ds=((x-x0)*(y1-y0)-(y-y0)*(x1-x0))**2/
-     $             ((x-x0)**2+(y-y0)**2+1.d-4)
+              isp=isp+2
+              rtastk(isp-1:isp)=[xa,ya]
+              exit
             endif
           endif
-          if(ds .lt. 0.16d0)then
-            rtastk(ispa)=x
-            rtastk(ispa+1)=y
+        enddo
+        if(in1)then
+          call tfccput(x1,y1)
+        elseif(.not. in0)then
+          call tfccput(x0,y0)
+          call tfccputa(x0,y0,x1,y1)
+        endif
+ 1      x0=x1
+        y0=y1
+        in0=in1
+      enddo
+      call tfccput(x0,y0)
+      na=isp-isp0
+      if(na == 2)then
+        isp=isp+2
+        rtastk(isp-1:isp)=rtastk(isp-3:isp-2)+[xm,ym]
+        na=4
+      elseif(na > 4)then
+        ignore=0
+        ispa=isp0+3
+        z0=rtastk(isp0+1:isp0+2)
+        z1=rtastk(isp0+3:isp0+4)
+        do i=isp0+5,isp-1,2
+          z=rtastk(i:i+1)
+          ds=1.d0
+          if(ignore < 4)then
+            if(dot_product(z-z1,z1-z0) >= 0)then
+              ds=outer2(z-z0,z1-z0)**2/(1.d-4+dot_product(z-z0,z-z0))
+            endif
+          endif
+          if(ds < 0.16d0)then
+            rtastk(ispa:ispa+1)=z
             ignore=ignore+1
           else
-            rtastk(ispa)=x1
-            rtastk(ispa+1)=y1
-            x0=x1
-            y0=y1
+            rtastk(ispa:ispa+1)=z1
+            z0=z1
             ispa=ispa+2
             ignore=0
           endif
-          x1=x
-          y1=y
+          z1=z
         enddo
-        rtastk(ispa)=x1
-        rtastk(ispa+1)=y1
+        rtastk(ispa:ispa+1)=z1
         isp=ispa+1
 c        write(*,*)na,isp-isp0
         na=isp-isp0
       endif
       if(kadash /= 0)then
         isp2=isp
-        if(na .gt. 1)then
+        if(na > 1)then
           isp3=isp
           dash=0.d0
           k=1
           dmax=max(abs(rlist(kadash+1)),eps)
-          x0=rtastk(isp0+1)
-          y0=rtastk(isp0+2)
+          z0=rtastk(isp0+1:isp0+2)
           isp=isp+2
-          rtastk(isp-1)=x0
-          rtastk(isp)=y0
+          rtastk(isp-1:isp)=z0
           do i=isp0+3,isp2-1,2
-            x1=rtastk(i)
-            y1=rtastk(i+1)
- 11         dx=x1-x0
-            dy=y1-y0
-            s=hypot(dx,dy)
-c            s=sqrt(dx**2+dy**2)
-            if(s .gt. 0.d0)then
+            z1=rtastk(i:i+1)
+ 11         dz=z1-z0
+            s=hypot(dz(1),dz(2))
+            if(s > 0.d0)then
               s1=s+dash
-              if(dash .ge. 0.d0)then
-                if(s1 .le. dmax)then
+              if(dash >= 0.d0)then
+                if(s1 <= dmax)then
                   isp=isp+2
-                  rtastk(isp-1)=anint(x1)
-                  rtastk(isp)=anint(y1)
+                  rtastk(isp-1:isp)=z1
                   dash=s1
-                  x0=x1
-                  y0=y1
+                  z0=z1
                 else
-                  x0=x0+dx*(dmax-dash)/s
-                  y0=y0+dy*(dmax-dash)/s
+                  z0=z0+dz*(dmax-dash)/s
                   isp=isp+2
-                  rtastk(isp-1)=anint(x0)
-                  rtastk(isp  )=anint(y0)
+                  rtastk(isp-1:isp)=anint(z0)
                   kaxi=ktavaloc(-1,isp-isp3)
                   klist(kaxi+1:kaxi+isp-isp3)=ktastk(isp3+1:isp)
                   isp3=isp3+1
@@ -318,35 +221,30 @@ c            s=sqrt(dx**2+dy**2)
                   go to 11
                 endif
               else
-                if(s1 .gt. 0.d0)then
-                  x0=x0-dx*dash/s
-                  y0=y0-dy*dash/s
+                if(s1 > 0.d0)then
+                  z0=z0-dz*dash/s
                   isp=isp+2
-                  rtastk(isp-1)=anint(x0)
-                  rtastk(isp  )=anint(y0)
+                  rtastk(isp-1:isp)=anint(z0)
                   dash=0.d0
                   k=mod(k,ndash)+1
                   dmax=max(abs(rlist(kadash+k)),eps)
                   go to 11
-                elseif(s1 .eq. 0.d0)then
+                elseif(s1 == 0.d0)then
                   isp=isp+2
-                  rtastk(isp-1)=anint(x1)
-                  rtastk(isp  )=anint(y1)
+                  rtastk(isp-1:isp)=anint(z1)
                   dash=0.d0
                   k=mod(k,ndash)+1
                   dmax=max(abs(rlist(kadash+k)),eps)
-                  x0=x1
-                  y0=y1
+                  z0=z1
                 else
                   dash=s1
-                  x0=x1
-                  y0=y1
+                  z0=z1
                 endif
               endif
             endif
           enddo
-          if(dash .gt. 0.d0)then
-            if(isp .gt. isp3)then
+          if(dash > 0.d0)then
+            if(isp > isp3)then
               kaxi=ktavaloc(-1,isp-isp3)
               klist(kaxi+1:kaxi+isp-isp3)=ktastk(isp3+1:isp)
               isp3=isp3+1
@@ -355,13 +253,13 @@ c            s=sqrt(dx**2+dy**2)
           endif
           isp=isp3
         endif
-        if(isp .gt. isp2)then
+        if(isp > isp2)then
           kx=kxmakelist(isp2)
         else
           kx=dxnulll
         endif
       else
-        if(na .le. 1)then
+        if(na <= 1)then
           kx=dxnulll
         else
           kx=kxavaloc(-1,na,klr)
@@ -376,7 +274,51 @@ c            s=sqrt(dx**2+dy**2)
 c      write(*,*)'canvasclip-4'
       isp=isp0
       return
-      end
+      end subroutine
+
+      subroutine tfccput(x,y)
+      use tfstk
+      implicit none
+      real*8 ,intent(in):: x,y
+      real*8 xl,yl
+      xl=max(xmin,min(xmax,x))
+      yl=max(ymin,min(ymax,y))
+      if(isp > isp0 .and. rtastk(isp-1) == xl .and. rtastk(isp) == yl)then
+        return
+      endif
+      isp=isp+2
+      rtastk(isp-1:isp)=[xl,yl]
+      return
+      end subroutine
+
+      subroutine tfccputa(x0,y0,x1,y1)
+      use tfstk
+      implicit none
+      real*8 ,intent(in):: x0,y0,x1,y1
+      real*8 xm(2),ym(2)
+      integer*4 i
+      xm=merge([xmin,xmax],[xmax,xmin],x0<=x1)
+      ym=merge([ymin,ymax],[ymax,ymin],y0<=y1)
+      do i=1,2
+        if((y0-ym(i))*(y1-ym(i)) <= 0.d0)then
+          if(x0 <= xmin)then
+            call tfccput(xmin,ym(i))
+          elseif(x0 >= xmax)then
+            call tfccput(xmax,ym(i))
+          endif
+        endif
+        if((x0-xm(i))*(x1-xm(i)) <= 0.d0)then
+          if(y0 <= ymin)then
+            call tfccput(xm(i),ymin)
+          elseif(y0 >= ymax)then
+            call tfccput(xm(i),ymax)
+          endif
+        endif
+      enddo
+      return
+      end subroutine
+
+      end module
 
       subroutine tfcanvas3dcliptriangle(isp1,kx,irtc)
       use tfstk
@@ -417,7 +359,7 @@ c      write(*,*)'canvasclip-4'
           go to 9000
         endif
         kai=ilist(2,ka+i)
-        if(m .lt. 0)then
+        if(m < 0)then
           m=ilist(2,kai-1)
         elseif(m /= ilist(2,kai-1))then
           go to 9000
@@ -431,7 +373,7 @@ c      write(*,*)'canvasclip-4'
      $     rlist(iav(2)+1:iav(2)+m3),
      $     rlist(iav(3)+1:iav(3)+m3))
       nt=(isp-isp0)/9
-      if(nt .le. 0)then
+      if(nt <= 0)then
         kx=dxnulll
       else
         xs=rlist(kavs+1)
@@ -478,15 +420,15 @@ c      write(*,*)'canvasclip-4'
         rtastk(isp+9)=z(3,i)
         isp=isp+9
         if(
-     $       x(1,i) .gt. 1.d0 .or. x(1,i) .lt. -1.d0
-     $       .or. x(2,i) .gt. 1.d0 .or. x(2,i) .lt. -1.d0
-     $       .or. x(3,i) .gt. 1.d0 .or. x(3,i) .lt. -1.d0
-     $       .or. y(1,i) .gt. 1.d0 .or. y(1,i) .lt. -1.d0
-     $       .or. y(2,i) .gt. 1.d0 .or. y(2,i) .lt. -1.d0
-     $       .or. y(3,i) .gt. 1.d0 .or. y(3,i) .lt. -1.d0
-     $       .or. z(1,i) .gt. 1.d0 .or. z(1,i) .lt. -1.d0
-     $       .or. z(2,i) .gt. 1.d0 .or. z(2,i) .lt. -1.d0
-     $       .or. z(3,i) .gt. 1.d0 .or. z(3,i) .lt. -1.d0)then
+     $       x(1,i) > 1.d0 .or. x(1,i) < -1.d0
+     $       .or. x(2,i) > 1.d0 .or. x(2,i) < -1.d0
+     $       .or. x(3,i) > 1.d0 .or. x(3,i) < -1.d0
+     $       .or. y(1,i) > 1.d0 .or. y(1,i) < -1.d0
+     $       .or. y(2,i) > 1.d0 .or. y(2,i) < -1.d0
+     $       .or. y(3,i) > 1.d0 .or. y(3,i) < -1.d0
+     $       .or. z(1,i) > 1.d0 .or. z(1,i) < -1.d0
+     $       .or. z(2,i) > 1.d0 .or. z(2,i) < -1.d0
+     $       .or. z(3,i) > 1.d0 .or. z(3,i) < -1.d0)then
           isp1=isp
           call tfcliptriangle2(isp1,1,.true.)
           call tfcliptriangle2(isp1,1,.true.)
@@ -502,7 +444,7 @@ c      write(*,*)'canvasclip-4'
       integer*4 isp1,idir,i,j
       real*8 x1,x2,x3,y1,y2,y3,z1,z2,z3,r1,r2,r3,x,y,z
       logical*4 chg
-      if(isp1 .ge. isp)then
+      if(isp1 >= isp)then
         return
       endif
       do i=isp1+1,isp,9
@@ -515,9 +457,9 @@ c      write(*,*)'canvasclip-4'
         z1=rtastk(i+6)
         z2=rtastk(i+7)
         z3=rtastk(i+8)
-        if(x1 .gt. 1.d0)then
-          if(x2 .gt. 1.d0)then
-            if(x3 .gt. 1.d0)then
+        if(x1 > 1.d0)then
+          if(x2 > 1.d0)then
+            if(x3 > 1.d0)then
               do j=i+10,isp
                 rtastk(j-9)=rtastk(j)
               enddo
@@ -538,7 +480,7 @@ c      write(*,*)'canvasclip-4'
               rtastk(i+7)=r2*(z2-z3)+z3
             endif
           else
-            if(x3 .gt. 1.d0)then
+            if(x3 > 1.d0)then
               r1=(1.d0-x2)/(x1-x2)
               r3=(1.d0-x2)/(x3-x2)
               rtastk(i)=1.d0
@@ -566,7 +508,7 @@ c      write(*,*)'canvasclip-4'
             endif
           endif
         else
-          if(x2 .gt. 1.d0)then
+          if(x2 > 1.d0)then
             rtastk(i)=x2
             rtastk(i+1)=x3
             rtastk(i+2)=x1
@@ -577,7 +519,7 @@ c      write(*,*)'canvasclip-4'
             rtastk(i+7)=z3
             rtastk(i+8)=z1
             go to 1
-          elseif(x3 .gt. 1.d0)then
+          elseif(x3 > 1.d0)then
             rtastk(i)=x3
             rtastk(i+1)=x1
             rtastk(i+2)=x2
@@ -591,13 +533,13 @@ c      write(*,*)'canvasclip-4'
           endif
         endif
       enddo
- 100  if(isp1 .lt. isp)then
+ 100  if(isp1 < isp)then
         do i=isp1+1,isp,9
           rtastk(i)=-rtastk(i)
           rtastk(i+1)=-rtastk(i+1)
           rtastk(i+2)=-rtastk(i+2)
         enddo
-        if(idir .gt. 0)then
+        if(idir > 0)then
           call tfcliptriangle2(isp1,-1,.true.)
         else
           do i=isp1+1,isp,9
@@ -633,7 +575,7 @@ c      write(*,*)'canvasclip-4'
         go to 9000
       endif
       nt=ilist(2,kat-1)
-      if(nt .le. 0)then
+      if(nt <= 0)then
         kx=kxnulll
         irtc=0
         return
@@ -649,7 +591,7 @@ c      write(*,*)'canvasclip-4'
         go to 9100
       endif
       nc=ilist(2,kac-1)
-      if(nc .le. 0)then
+      if(nc <= 0)then
         go to 9100
       endif
       isp0=isp
@@ -746,7 +688,7 @@ c      write(*,*)'canvasclip-4'
             vy=slight(2,1,j)-cy
             vz=slight(3,1,j)-cz
             u=(vx*anx+vy*any+vz*anz)/sqrt(vx**2+vy**2+vz**2)**3*u0(j)
-            if(u .gt. 0.d0)then
+            if(u > 0.d0)then
               rgb(1,i)=rgb(1,i)+slight(1,2,j)*u
               rgb(2,i)=rgb(2,i)+slight(2,2,j)*u
               rgb(3,i)=rgb(3,i)+slight(3,2,j)*u
@@ -926,7 +868,7 @@ c      parameter (a=sqrt(0.75d0))
       sym="1O"
       if(ktfstringq(ktastk(isp1+4)))then
         ks=ktfaddr(ktastk(isp1+4))
-        if(ilist(1,ks) .eq. 2)then
+        if(ilist(1,ks) == 2)then
           call tmovb(ilist(1,ks+1),sym,2)
         endif
       endif
@@ -947,8 +889,8 @@ c      parameter (a=sqrt(0.75d0))
       ymin=rlist(kad1+2)
       xmax=rlist(kad2+1)
       ymax=rlist(kad2+2)
-      if(x .lt. xmin .or. x .gt. xmax .or.
-     $     y .lt. ymin .or. y .gt. ymax)then
+      if(x < xmin .or. x > xmax .or.
+     $     y < ymin .or. y > ymax)then
         kx%k=ktfoper+mtfnull
         call tfreestringbuf(strb)
         return
@@ -973,7 +915,7 @@ c      parameter (a=sqrt(0.75d0))
       call loc_string(ktfaddr(ktastk(isp1+1)),str)
       call putstringbufb(strb,str%str,str%nch,full)
       np=0
-      if(sym .eq. "1O")then
+      if(sym == "1O")then
         call putstringbufb(strb,' create oval ',13,full)
         call tfconvround(strb,x-s)
         call tfconvround(strb,y-s)
@@ -984,35 +926,35 @@ c      parameter (a=sqrt(0.75d0))
         call putstringbufb(strb,str%str,str%nch,full)
         call putstringbufb1(strb,'}')
       else
-        if(sym(2:2) .eq. "O")then
+        if(sym(2:2) == "O")then
           call putstringbufb(strb,' create polygon ',16,full)
           s1=s*sqrt(m_pi/a/1.5d0)
           sa=s1*a
           sh=s1*.5d0
-          if(sym(1:1) .eq. "6")then
+          if(sym(1:1) == "6")then
             ar(1:6)=(/x-s1,y,x+sh,y-sa,x+sh,y+sa/)
-          elseif(sym(1:1) .eq. "7")then
+          elseif(sym(1:1) == "7")then
             ar(1:6)=(/x+s1,y,x-sh,y-sa,x-sh,y+sa/)
-          elseif(sym(1:1) .eq. "8")then
+          elseif(sym(1:1) == "8")then
             ar(1:6)=(/x,y+s1,x-sa,y-sh,x+sa,y-sh/)
-          elseif(sym(1:1) .eq. "9")then
+          elseif(sym(1:1) == "9")then
             ar(1:6)=(/x,y-s1,x-sa,y+sh,x+sa,y+sh/)
           endif
           np=6
-        elseif(sym .eq. "BX")then
+        elseif(sym == "BX")then
           s1=s*sqrt(m_pi_4)
           ar(1:8)=(/x+s1,y-s1,x+s1,y+s1,x-s1,y+s1,x-s1,y-s1/)
           np=8
-        elseif(sym .eq. "RH")then
+        elseif(sym == "RH")then
           s1=s*sqrt(m_pi_2)
           ar(1:8)=(/x+s1,y,x,y+s1,x-s1,y,x,y-s1/)
           np=8
-        elseif(sym .eq. "PL")then
+        elseif(sym == "PL")then
           ar(1:24)=(/x+s,y-1,x+s,y+1,x+1,y+1,x+1,y+s,
      $         x-1,y+s,x-1,y+1,x-s,y+1,x-s,y-1,x-1,y-1,
      $         x-1,y-s,x+1,y-s,x+1,y-1/)
           np=24
-        elseif(sym .eq. "TI")then
+        elseif(sym == "TI")then
           ar(1:24)=(/x+s+1,y+s-1,x+s-1,y+s+1,
      $         x,y+1,x-s+1,y+s+1,x-s-1,y+s-1,x-1,y,
      $         x-s-1,y-s+1,x-s+1,y-s-1,x,y-1,x+s-1,y-s-1,
@@ -1056,7 +998,7 @@ c      parameter (a=sqrt(0.75d0))
 c      parameter (a=sqrt(0.75d0))
       parameter (a=.866025403784439d0,wmin=7.d0)
       character*2 sym
-      if(ioutline%k .eq. 0)then
+      if(ioutline%k == 0)then
         ioutline=kxsalocb(0,'-outline',8)
         ifill=kxsalocb(0,'-fill',5)
         itag=kxsalocb(0,'-tags',5)
@@ -1071,7 +1013,7 @@ c      parameter (a=sqrt(0.75d0))
       sym="1O"
       if(ktfstringq(ktastk(isp1+4)))then
         ks=ktfaddr(ktastk(isp1+4))
-        if(ilist(1,ks) .eq. 2)then
+        if(ilist(1,ks) == 2)then
           call tmovb(ilist(1,ks+1),sym,2)
         endif
       elseif(ktfsymbolq(ktastk(isp1+4)))then
@@ -1094,7 +1036,7 @@ c      parameter (a=sqrt(0.75d0))
       endif
       ka=ktfaddr(ktastk(isp1+3))
       if(klist(ka) /= ktfoper+mtflist .or.
-     $     ilist(2,ka-1) .lt. 2 .or. ilist(2,ka-1) .gt. 4)then
+     $     ilist(2,ka-1) < 2 .or. ilist(2,ka-1) > 4)then
         go to 9000
       endif
       if(ktfreallistq(ka))then
@@ -1160,7 +1102,7 @@ c      endif
       endif
       ol=.true.
       isp0=isp
-      if(sym .eq. "BA" .and. s .lt. wmin)then
+      if(sym == "BA" .and. s < wmin)then
         ka2=ktrsaloc(-1,anint(max(1.d0,s/wmin*2)))
         ol=.false.
       endif
@@ -1168,15 +1110,15 @@ c      endif
       do i=1,m
         x=rlist(kavx+i)
         y=rlist(kavy+i)
-        if(x .lt. xmin .or. x .gt. xmax)then
+        if(x < xmin .or. x > xmax)then
           cycle
         elseif(sym /= "BA")then
-          if(y .lt. ymin .or. y .gt. ymax)then
+          if(y < ymin .or. y > ymax)then
             cycle
           endif
         else
-          if(max(y,yoff) .lt. ymin .or.
-     $         min(y,yoff) .gt. ymax)then
+          if(max(y,yoff) < ymin .or.
+     $         min(y,yoff) > ymax)then
             cycle
           endif
         endif
@@ -1184,52 +1126,52 @@ c      endif
         rtastk(isp)=rtastk(isp1+1)
         rtastk(isp)=rtastk(isp1+1)
         isp=isp+1
-        if(sym .eq. "1O")then
+        if(sym == "1O")then
           rtastk(isp)=rtastk(isp1+10)
           rtastk(isp+1:isp+4)=(/x-s,y-s,x+s,y+s/)
           isp=isp+5
-        elseif(sym(2:2) .eq. "O")then
+        elseif(sym(2:2) == "O")then
           s1=s*sqrt(m_pi/a/1.5d0)
           sa=s1*a
           sh=s1*.5d0
           rtastk(isp)=rtastk(isp1+11)
-          if(sym(1:1) .eq. "6")then
+          if(sym(1:1) == "6")then
             rtastk(isp+1:isp+6)=(/x-s1,y,x+sh,y-sa,x+sh,y+sa/)
-          elseif(sym(1:1) .eq. "7")then
+          elseif(sym(1:1) == "7")then
             rtastk(isp+1:isp+6)=(/x+s1,y,x-sh,y-sa,x-sh,y+sa/)
-          elseif(sym(1:1) .eq. "8")then
+          elseif(sym(1:1) == "8")then
             rtastk(isp+1:isp+6)=(/x,y+s1,x-sa,y-sh,x+sa,y-sh/)
-          elseif(sym(1:1) .eq. "9")then
+          elseif(sym(1:1) == "9")then
             rtastk(isp+1:isp+6)=(/x,y-s1,x-sa,y+sh,x+sa,y+sh/)
           endif
           isp=isp+7
-        elseif(sym .eq. "BX")then
+        elseif(sym == "BX")then
           s1=s*sqrt(m_pi_4)
           rtastk(isp)=rtastk(isp1+11)
           rtastk(isp+1:isp+8)=
      $         (/x+s1,y-s1,x+s1,y+s1,x-s1,y+s1,x-s1,y-s1/)
           isp=isp+9
-        elseif(sym .eq. "RH")then
+        elseif(sym == "RH")then
           s1=s*sqrt(m_pi_2)
           rtastk(isp)=rtastk(isp1+11)
           rtastk(isp+1:isp+8)=
      $         (/x+s1,y,x,y+s1,x-s1,y,x,y-s1/)
           isp=isp+9
-        elseif(sym .eq. "PL")then
+        elseif(sym == "PL")then
           s1=s*1.2d0
           rtastk(isp)=rtastk(isp1+11)
           rtastk(isp+1:isp+24)=(/x+s1,y-1,x+s1,y+1,x+1,y+1,x+1,y+s1,
      $         x-1,y+s1,x-1,y+1,x-s1,y+1,x-s1,y-1,x-1,y-1,
      $         x-1,y-s1,x+1,y-s1,x+1,y-1/)
           isp=isp+25
-        elseif(sym .eq. "TI")then
+        elseif(sym == "TI")then
           rtastk(isp)=rtastk(isp1+11)
           rtastk(isp+1:isp+24)=(/x+s+1,y+s-1,x+s-1,y+s+1,
      $         x,y+1,x-s+1,y+s+1,x-s-1,y+s-1,x-1,y,
      $         x-s-1,y-s+1,x-s+1,y-s-1,x,y-1,x+s-1,y-s-1,
      $         x+s+1,y-s+1,x+1,y/)
           isp=isp+25
-        elseif(sym .eq. "BA")then
+        elseif(sym == "BA")then
           if(ol)then
             rtastk(isp)=rtastk(isp1+12)
             rtastk(isp+1)=x-s/wmin

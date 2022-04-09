@@ -286,7 +286,7 @@ tfbeam.o: tfbeam.f tffs.o tfstk.o toplvl.o
 tfbeamline.o: tfbeamline.f initb1.o tfeeval.o tffs.o tffuns.o tfstk.o toplvl.o
 tfbessel.o: tfbessel.f gamma.o tfloor.o tfstk.o
 tfcalc.o: tfcalc.f tffs.o tfstk.o
-tfcanvasclip.o: tfcanvasclip.f tfstk.o tfstrbuf.o
+tfcanvasclip.o: tfcanvasclip.f tfloor.o tfstk.o tfstrbuf.o
 tfchgv.o: tfchgv.f tffs.o tfstk.o toplvl.o
 tfchro.o: tfchro.f initb1.o tffs.o tfstk.o
 tfconvstr.o: tfconvstr.f tfeeval.o tfstk.o tfstrbuf.o

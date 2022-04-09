@@ -106,8 +106,6 @@
         x2= cp0*x2+sp0*gv(2,3)
         z3=-sp0*x3+cp0*gv(3,3)
         x3= cp0*x3+sp0*gv(3,3)
-c        write(*,'(a,1p12g10.2)')'tsetphgv ',gx0,gy0,gz0,
-c     $       x1,x2,x3,y1,y2,y3,z1,z2,z3
       endif
       chi=merge(0.d0,2.d0*atan2(x3,-y3),x3 .eq. 0.d0)
       return
@@ -216,8 +214,6 @@ c      cod=[xi,pxir,yi,pyir,0.d0,0.d0]
       dpgx=dp*(pzi*z1+pxir*x1+pyir*y1)
       dpgy=dp*(pzi*z2+pxir*x2+pyir*y2)
       dpgz=dp*(pzi*z3+pxir*x3+pyir*y3)
-c      write(*,'(a,2i5,1p5g12.4)')'phconv ',k,l,
-c     $     pxia,pxir*x2,pyir*y2,pzi*z2,dpgy/dp
       xi3a=cos(chi)*xi3+sin(chi)*xi1
       xi1=-sin(chi)*xi3+cos(chi)*xi1
       xi3=xi3a
@@ -226,7 +222,6 @@ c     $     pxia,pxir*x2,pyir*y2,pzi*z2,dpgy/dp
         kphtable(itp)=ktaloc(10*lt)
         ilp=1
       endif
-c      write(*,*)'phconv ',itp,ilp
       kp=kphtable(itp)+(ilp-1)*10
       ilist(1,kp)=k
       ilist(2,kp)=l
@@ -278,7 +273,6 @@ c      write(*,*)'phconv ',itp,ilp
         dlist(kphlist)=dxnulll
       else
         nph=(itp-1)*lt+max(ilp-1,0)
-c        write(*,*)'phlist ',itp,nph
         kax=ktadaloc(-1,nph,klx)
         klx%attr=ior(klx%attr,lconstlist)
         itp=1
@@ -365,6 +359,7 @@ c      write(*,*)'with ',itp,ilp
       end module
 
       module kradlib
+      real*8 ,parameter :: dphipol=1.d-2
       real*8 , allocatable :: pxr0(:),pyr0(:),zr0(:),bsi(:)
 
       contains
@@ -730,15 +725,13 @@ c$$$            endif
         endif
         sx= sx*cphi0+sz*sphi0
         sz=(sz-sx*sphi0)/cphi0
-c        write(*,'(a,1p9g16.8)')'sprot ',g,sx,sy,sz,sinu,cosu,sw
-c        write(*,'(1p10g12.4)')anph,radpol
         return
         end subroutine
 
         subroutine tradke(trans,cod,beam,srot,al,phir0,bzh)
         use tmacro
         use temw,only:codr0,bzhr0,bsir0,calint,tinv6,gintd,transr,
-     $       tmulbs
+     $       tmulbs,dsg
         use ffs_flag,only:radcod,calpol
         use mathfun, only:pxy2dpz,p2h,asinz,xsincos
         use tspin, only:cave,cl,cuu,gmin,sflc
@@ -754,7 +747,7 @@ c        write(*,'(1p10g12.4)')anph,radpol
      $       p2,h2,dee,cp,sp,b,pxm,pym,gi,dh1r,
      $       pxh,pyh,pzh,xpzb,btx,bty,btz,dct,sinu,cosu,dcosu,xsinu,
      $       gx,gy,gz,blx,bly,blz,
-     $       sx(3),sy(3),sz(3),sux(3),suy(3),suz(3),sw(3),
+     $       sx(9),sy(9),sz(9),sux(9),suy(9),suz(9),sw(9),
      $       dpxh(6),dpyh(6),dpzh(6),bp,dbp(6),dpxr0(6),dpz0(6),
      $       dxpx(6),dxpy(6),dxpz(6),dxpzb(6),dblx(6),dbly(6),dblz(6),
      $       dbtx(6),dbty(6),dbtz(6),dgx(6),dgy(6),dgz(6),dpz00(6)
@@ -778,9 +771,7 @@ c     codr0 has canonical momenta!
         xpy=(pz*pxr0-px*pz0)
         xpz=(px*pyi-py*pxr0)
         xpa=norm2([xpx,xpy,xpz])/pr**2
-c        xpa=abs(dcmplx(xpx,abs(dcmplx(xpy,xpz))))/pr**2
         theta=asinz(xpa)
-c        write(*,'(a,1p10g12.4)')'tradke ',pxi,pyi,px,py,theta,bzhr0,bzh
         p=p0*pr
         h1=p2h(p)
         al1=al-cod(5)+codr0(5)
@@ -808,9 +799,7 @@ c        write(*,'(a,1p10g12.4)')'tradke ',pxi,pyi,px,py,theta,bzhr0,bzh
           h2=h1
         endif
         if(irad > 6)then
-          transi=tinv6(transr)
-c          call tinv6(transr,transi)
-          transi=matmul(trans(:,1:6),transi)
+          transi=matmul(trans(:,1:6),tinv6(transr))
 c          call tmultr(transi,trans(:,1:6),6)
           tr2=transi
           if(bzh /= 0.d0)then
@@ -827,6 +816,7 @@ c          call tmultr(transi,trans(:,1:6),6)
           dpz0(6)=dpz0(6)+pr/pz0
           dxpx=tr2(4,:)*pz0+py*dpz0-ddpz*pyi-pz*dpyi
           dxpy=ddpz*pxr0+pz*dpxr0-tr2(2,:)*pz0-px*dpz0
+c          write(*,'(a,1p11g11.3)')'<     ',dxpy(1),dxpy(6),tr2(2,1)
           dxpz=tr2(2,:)*pyi+px*dpyi-tr2(4,:)*pxr0-py*dpxr0
           dh1r=p*p0/h1**2
           if(xpa /= 0.d0)then
@@ -900,32 +890,32 @@ c     enddo
             dxpzb=dxpz
             dxpzb(6)=dxpzb(6)+2.d0*(bsir0+bzh*2.d0*al)*pr
             pxh=(pxr0+px)/pr*.5d0
-            pyh=(pyi+py)/pr*.5d0
+            pyh=(pyi +py)/pr*.5d0
             dpxh=(tr2(2,:)+dpxr0)/pr*.5d0
             dpxh(6)=dpxh(6)-pxh/pr
             dpyh=(tr2(4,:)+dpyi)/pr*.5d0
             dpyh(6)=dpyh(6)-pyh/pr
             pzh=1.d0+pxy2dpz(pxh,pyh)
             dpzh=-(pxh*dpxh+pyh*dpyh)/pzh
-            bp=(xpx*pxh+xpy*pyh+xpzb*pzh)/pr
+            bp =(xpx*pxh+xpy*pyh+xpzb*pzh)/pr**2
             dbp=(dxpx*pxh+xpx*dpxh+dxpy*pyh
-     $           +xpy*dpyh+dxpzb*pzh+xpzb*dpzh)/pr
-            dbp(6)=dbp(6)-bp/pr
+     $           +xpy*dpyh+dxpzb*pzh+xpzb*dpzh)/pr**2
+            dbp(6)=dbp(6)-2.d0*bp/pr
             blx=bp*pxh
             bly=bp*pyh
             blz=bp*pzh
-            btx=xpx/pr-blx
-            bty=xpy/pr-bly
-            btz=xpzb/pr-blz
+            btx=xpx/pr**2-blx
+            bty=xpy/pr**2-bly
+            btz=xpzb/pr**2-blz
             dblx=dbp*pxh+bp*dpxh
             dbly=dbp*pyh+bp*dpyh
             dblz=dbp*pzh+bp*dpzh
-            dbtx=dxpx/pr-dblx
-            dbtx(6)=dbtx(6)-xpx/pr**2
-            dbty=dxpy/pr-dbly
-            dbty(6)=dbty(6)-xpy/pr**2
+            dbtx=dxpx/pr**2-dblx
+            dbtx(6)=dbtx(6)-2.d0*xpx/pr**3
+            dbty=dxpy/pr**2-dbly
+            dbty(6)=dbty(6)-2.d0*xpy/pr**3
             dbtz=dxpzb/pr-dblz
-            dbtz(6)=dbtz(6)-xpzb/pr**2
+            dbtz(6)=dbtz(6)-2.d0*xpzb/pr**3
             ct=h1*gspin
             dct=ct*dh1r
             ct=ct+1.d0
@@ -938,6 +928,19 @@ c     enddo
             dgy(6)=dgy(6)+dct*bty
             dgz=ct*dbtz+cl*dblz
             dgz(6)=dgz(6)+dct*btz
+c          dxpy=ddpz*pxr0+pz*dpxr0-tr2(2,:)*pz0-px*dpz0
+c            if(abs(theta) < 1e-4)then
+c              write(*,'(a,1p11g11.3)')'tradke ',al,theta,ct,dct,ct*dbty(6),dct*bty,srot(2,4),srot(2,9)
+c              write(*,'(a,1p11g11.3)')'$dxpy       ',dxpy
+c              write(*,'(a,1p11g11.3)')'$tr2(2      ',tr2(2,:)
+c            endif
+c            dsr2=dgy(1)*transr(1,:)+dgy(2)*transr(2,:)
+c     $           +dgy(3)*transr(3,:)+dgy(4)*transr(4,:)
+c     $           +dgy(5)*transr(5,:)+dgy(6)*transr(6,:)
+c            if(abs(theta) < 1e-4)then
+c              write(*,'(a,1p11g11.3)')'$dsr2      ',dgy(1),transr(1,6),dgy(1)*transr(1,6),dgy(6),dgy(6)*transr(6,6),dsr2(6)
+c              write(*,'(a,1p11g11.3)')'$dgy       ',dgy
+c            endif
             srot(1,4:9)=srot(1,4:9)
      $           +dgx(1)*transr(1,:)+dgx(2)*transr(2,:)
      $           +dgx(3)*transr(3,:)+dgx(4)*transr(4,:)
@@ -950,10 +953,9 @@ c     enddo
      $           +dgz(1)*transr(1,:)+dgz(2)*transr(2,:)
      $           +dgz(3)*transr(3,:)+dgz(4)*transr(4,:)
      $           +dgz(5)*transr(5,:)+dgz(6)*transr(6,:)
+            call tadddsg(dsg,srot,dgx,dgy,dgx,dbeam)
             g=norm2([gx,gy,gz])
-c            write(*,'(1p3g16.8)')srot(:,1:3)
             if(g /= 0.d0)then
-c              bt=abs(dcmplx(btx,abs(dcmplx(bty,btz))))
               bt=norm2([btx,bty,btz])
               call xsincos(g,sinu,xsinu,cosu,dcosu)
 c              th=tan(.5d0*g)
@@ -963,29 +965,64 @@ cc              sinu=sin(g)
 cc              dcosu=2.d0*sin(g*.5d0)**2
 c              cosu=1.d0-dcosu
               sinu=sinu/g
-              sx=srot(1,1:3)
-              sy=srot(2,1:3)
-              sz=srot(3,1:3)
+              sx=srot(1,:)
+              sy=srot(2,:)
+              sz=srot(3,:)
               sw=(sx*gx+sy*gy+sz*gz)/g
               gintd=gintd+sw(1:3)*sflc*anp*(bt*h1*p/al1)**2
               sw=-sw*dcosu/g
               sux=sy*gz-sz*gy
               suy=sz*gx-sx*gz
               suz=sx*gy-sy*gx
-              srot(1,1:3)=cosu*sx+sinu*sux+sw*gx
-              srot(2,1:3)=cosu*sy+sinu*suy+sw*gy
-              srot(3,1:3)=cosu*sz+sinu*suz+sw*gz
+              srot(1,:)=cosu*sx+sinu*sux+sw*gx
+              srot(2,:)=cosu*sy+sinu*suy+sw*gy
+              srot(3,:)=cosu*sz+sinu*suz+sw*gz
             endif
             srot(1,:)=  cp*srot(1,:)+sp*srot(3,:)
             srot(3,:)=(-sp*srot(1,:)+srot(3,:))/cp
-c            write(*,'(a,1p10g16.8)')'tradke ',g,gx,gy,gz,sinu,cosu,sw
-c            write(*,'(1p3g16.8)')srot(:,1:3)
           endif
         endif
         codr0(1:6)=cod(1:6)
         transr=trans(:,1:6)
         bzhr0=bzh
         bsir0=0.d0
+        return
+        end subroutine
+
+        subroutine tadddsg(dsg,srot,dgx0,dgy0,dgz0,dbeam)
+        implicit none
+        real*8 ,intent(inout):: dsg(6)
+        real*8 ,intent(in):: dgx0(6),dgy0(6),dgz0(6),dbeam(21),srot(3,9)
+        real*8 dg0(3,6),sri(3,3),dgx(6),dgy(6),dgz(6)
+        sri=transpose(srot(:,1:3))
+        dg0(1,:)=dgx0
+        dg0(2,:)=dgy0
+        dg0(3,:)=dgz0
+        dg0=matmul(sri,dg0)
+        dgx=dg0(1,:)
+        dgy=dg0(2,:)
+        dgz=dg0(3,:)
+        dsg(1)=dsg(1)
+     $       +dgx(2)*(dgx(2)*dbeam(3 )+2.d0*dgx(4)*dbeam(8)+2.d0*dgx(6)*dbeam(17))
+     $       +dgx(4)*(dgx(4)*dbeam(10)+2.d0*dgx(6)*dbeam(19))+dgx(6)*dgx(6)*dbeam(21)
+        dsg(2)=dsg(2)
+     $       +dgx(2)*(dgy(2)*dbeam(3 )+dgy(4)*dbeam(8 )+dgy(6)*dbeam(17))
+     $       +dgx(4)*(dgy(2)*dbeam(8 )+dgy(4)*dbeam(10)+dgy(6)*dbeam(19))
+     $       +dgx(6)*(dgy(2)*dbeam(17)+dgy(4)*dbeam(19)+dgy(6)*dbeam(21))
+        dsg(3)=dsg(3)
+     $       +dgy(2)*(dgy(2)*dbeam(3 )+2.d0*dgy(4)*dbeam(8)+2.d0*dgy(6)*dbeam(17))
+     $       +dgy(4)*(dgy(4)*dbeam(10)+2.d0*dgy(6)*dbeam(19))+dgy(6)*dgy(6)*dbeam(21)
+        dsg(4)=dsg(4)
+     $       +dgx(2)*(dgz(2)*dbeam(3 )+dgz(4)*dbeam(8 )+dgz(6)*dbeam(17))
+     $       +dgx(4)*(dgz(2)*dbeam(8 )+dgz(4)*dbeam(10)+dgz(6)*dbeam(19))
+     $       +dgx(6)*(dgz(2)*dbeam(17)+dgz(4)*dbeam(19)+dgz(6)*dbeam(21))
+        dsg(5)=dsg(5)
+     $       +dgy(2)*(dgz(2)*dbeam(3 )+dgz(4)*dbeam(8 )+dgz(6)*dbeam(17))
+     $       +dgy(4)*(dgz(2)*dbeam(8 )+dgz(4)*dbeam(10)+dgz(6)*dbeam(19))
+     $       +dgy(6)*(dgz(2)*dbeam(17)+dgz(4)*dbeam(19)+dgz(6)*dbeam(21))
+        dsg(6)=dsg(6)
+     $       +dgz(2)*(dgz(2)*dbeam(3 )+2.d0*dgz(4)*dbeam(8)+2.d0*dgz(6)*dbeam(17))
+     $       +dgz(4)*(dgz(4)*dbeam(10)+2.d0*dgz(6)*dbeam(19))+dgz(6)*dgz(6)*dbeam(21)
         return
         end subroutine
 

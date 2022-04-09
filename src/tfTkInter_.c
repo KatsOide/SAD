@@ -1253,13 +1253,13 @@ extern DECLARE_SAD_FUNC8(tftclarg1_);
 extern DECLARE_SAD_FUNC8(tfuniconv_);
 
 /* tfcanvasclip.f */
-#define CanvasClip		tfcanvasclip_
+#define CanvasClip		__tfcc_MOD_tfcanvasclip
 #define CanvasSymbol		tfcanvassymbol_
 #define CanvasSymbolDirect	tfcanvassymboldirect_
 #define Canvas3DClipTriangle	tfcanvas3dcliptriangle_
 #define Canvas3DLightTriangle	tfcanvas3dlighttriangle_
 #define Canvas3DProjection	tfcanvas3dprojection_
-extern DECLARE_SAD_FUNC8(tfcanvasclip_);
+extern DECLARE_SAD_FUNC8(__tfcc_MOD_tfcanvasclip);
 extern DECLARE_SAD_FUNC8(tfcanvassymbol_);
 extern DECLARE_SAD_FUNC8(tfcanvassymboldirect_);
 extern DECLARE_SAD_FUNC8(tfcanvas3dcliptriangle_);

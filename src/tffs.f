@@ -460,7 +460,7 @@ c$$$susp;
         rt3=r3*sqrdet1
         rt4=(r4+alambda)*sqrdet1
         detr2=rt1*rt4-rt2*rt3
-        do while(detr2 .lt. 1.d0)
+        do while(detr2 < 1.d0)
           a=1.d0/sqrt(detr2)
           rt1=rt1*a
           rt2=rt2*a
@@ -721,7 +721,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         use ffs
         use iso_c_binding
         implicit none
-        if(ifsize .eq. 0)then
+        if(ifsize == 0)then
           ifsize=ktaloc(21*nlat)
           call c_f_pointer(c_loc(rlist(ifsize)),beamsize,[21,nlat])
           modesize=0
@@ -1041,7 +1041,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         complex*16 cr1,cr,ck
         cmp%update=.true.
         ltyp=idtype(cmp%id)
-        if(kytbl(kwNPARAM,ltyp) .eq. 0)then
+        if(kytbl(kwNPARAM,ltyp) == 0)then
           return
         endif
         select case (ltyp)
@@ -1167,7 +1167,7 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
           cmp%value(p_FB2_MULT)=fb2
           if(al /= 0.d0)then
             sk1=cmp%value(ky_SK1_MULT)
-            if(sk1 .eq. 0.d0)then
+            if(sk1 == 0.d0)then
               akk=cmp%value(ky_K1_MULT)/al
             else
               akk=hypot(cmp%value(ky_K1_MULT),sk1)/al
@@ -1180,7 +1180,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
           endif
           harm=cmp%value(ky_HARM_MULT)
           w=merge(pi2*cmp%value(ky_FREQ_MULT)/c,
-     $         omega0*harm/c,harm .eq. 0.d0)
+     $         omega0*harm/c,harm == 0.d0)
           vnominal=merge(cmp%value(ky_VOLT_MULT)/amass*abs(charge)
      $         *sin(-cmp%value(ky_PHI_MULT)*sign(1.d0,charge)),
      $         0.d0,trpt)
@@ -1201,8 +1201,8 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
               exit
             endif
           enddo
-          cmp%ivalue(2,p_NM_MULT)=merge(nmmax,max(nmmax,0),al .eq. 0.d0
-     $         .and. cmp%value(ky_VOLT_MULT) .eq. 0.d0)
+          cmp%ivalue(2,p_NM_MULT)=merge(nmmax,max(nmmax,0),al == 0.d0
+     $         .and. cmp%value(ky_VOLT_MULT) == 0.d0)
           cr=cr1
           do n=0,nmmax
             ck=dcmplx(cmp%value(ky_K0_MULT+n*2),
@@ -1212,7 +1212,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
             cr=cr*cr1
           enddo
           eps=eps00m*merge(1.d0,cmp%value(ky_EPS_MULT),
-     $         cmp%value(ky_EPS_MULT) .eq. 0.d0)
+     $         cmp%value(ky_EPS_MULT) == 0.d0)
           ndiv=1
           if(al /= 0.d0)then
             do n=2,nmmax
@@ -1242,7 +1242,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
           cmp%ivalue(1,p_FRMD_CAVI)=int(frmd)
           harm=cmp%value(ky_HARM_CAVI)
           w=merge(pi2*cmp%value(ky_FREQ_CAVI)/c,omega0*harm/c,
-     $         harm .eq. 0.d0)
+     $         harm == 0.d0)
           vnominal=merge(cmp%value(ky_VOLT_CAVI)/amass*abs(charge)
      $         *sin(-cmp%value(ky_PHI_CAVI)*sign(1.d0,charge)),
      $         0.d0,trpt)
@@ -1434,7 +1434,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
         return
       endif
       ic=int(c)
-      if(ic .lt. 0 .or. ic > icMXEL)then
+      if(ic < 0 .or. ic > icMXEL)then
         kx=dxnullo
         irtc=itfmessage(9,'General::wrongval',
      $       '"Typecode out of range"')
@@ -1461,7 +1461,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
         key=tfkwrd(ic,i)
         if(all .or. key /= '-')then
           isp=isp+1
-          if(key .eq. '-')then
+          if(key == '-')then
             dtastk(isp)=ksdumm
           else
             dtastk(isp)=kxsalocb(-1,key,len_trim(key))
@@ -1502,7 +1502,7 @@ c     begin initialize for preventing compiler warning
       call compelc(kl,cmp)
       plus=.false.
       lk=lenw(keyword)
-      if(lk > 4 .and. keyword(lk-3:lk) .eq. '$SUM')then
+      if(lk > 4 .and. keyword(lk-3:lk) == '$SUM')then
         plus=.true.
         lk=lk-4
       endif
@@ -1511,12 +1511,12 @@ c     begin initialize for preventing compiler warning
       do l=1,kytbl(kwMAX,it)-1
         j=kyindex(l,it)
         if(j > 0)then
-          if(pname(kytbl(j,0))(2:) .eq. key(1:lk))then
+          if(pname(kytbl(j,0))(2:) == key(1:lk))then
             go to 1
           endif
           j=kyindex1(l,it)
           if(j > 0)then
-            if(pname(kytbl(j,0))(2:) .eq. key(1:lk))then
+            if(pname(kytbl(j,0))(2:) == key(1:lk))then
               go to 1
             endif
           endif
@@ -1536,7 +1536,7 @@ c     begin initialize for preventing compiler warning
         tfkeyv=dlist(ia)
       else
         ia=elatt%comp(kl)+l
-        if(l .eq. nelvx(-i)%ival)then
+        if(l == nelvx(-i)%ival)then
           if(tfreallistq(dlist(ia),klr))then
             tfkeyv=kxavaloc(-1,klr%nl,kld)
             kld%rbody(1:klr%nl)=klr%rbody(1:klr%nl)
@@ -1565,7 +1565,7 @@ c     begin initialize for preventing compiler warning
       integer*4 ,intent(in):: iv,i
       integer*4 j
       do j=1,flv%ntouch
-        if(nvevx(j)%itouchele .eq. i .and. nvevx(j)%itouchv .eq. iv)then
+        if(nvevx(j)%itouchele == i .and. nvevx(j)%itouchv == iv)then
           return
         endif
       enddo
@@ -1584,10 +1584,10 @@ c     begin initialize for preventing compiler warning
       type (sad_rlist), pointer,intent(out) :: kl
       integer*4 ,intent(in)::i
       integer*4 l,isp1
-      if(nelvx(i)%dcomp%k .eq. 0)then
+      if(nelvx(i)%dcomp%k == 0)then
         isp1=isp
         do l=1,nlat-1
-          if(iele1(l) .eq. i)then
+          if(iele1(l) == i)then
             isp=isp+1
             rtastk(isp)=dble(l)
           endif
@@ -1620,14 +1620,14 @@ c     begin initialize for preventing compiler warning
         irtc=0
         seg=.false.
         kl=kytbl(kwL,ltyp)
-        if(kl .eq. 0)then
+        if(kl == 0)then
           al=0.d0
           return
         else
           al=cmp%value(kl)
         endif
         kprof=kytbl(kwPROF,ltyp)
-        if(kprof .eq. 0 .or. tfnonlistq(cmp%dvalue(kprof),lprof))then
+        if(kprof == 0 .or. tfnonlistq(cmp%dvalue(kprof),lprof))then
           return
         endif
         if(.not. cmp%updateseg)then
@@ -1669,7 +1669,7 @@ c     begin initialize for preventing compiler warning
           lls=0
           levele=levele+1
           do i=1,lprof%nl
-            if(tfnonlistq(lprof%dbody(i),lpi) .or. lpi%nl .lt. 2)then
+            if(tfnonlistq(lprof%dbody(i),lpi) .or. lpi%nl < 2)then
               go to 9100
             endif
             if(tflistq(lpi%dbody(1),lpi1))then
@@ -1679,7 +1679,7 @@ c     begin initialize for preventing compiler warning
               if(.not. ktfstringq(lpi1%dbody(1),stri1))then
                 go to 9100
               endif
-              if(lpi1%nl .eq. 1)then
+              if(lpi1%nl == 1)then
                 stri2=>stri1
               elseif(.not. ktfstringq(lpi1%dbody(2),stri2))then
                 go to 9100
@@ -1692,7 +1692,7 @@ c     begin initialize for preventing compiler warning
             if(tfnonreallistq(lpi%dbody(2),lvl))then
               go to 9100
             endif
-            if(nseg .eq. 0)then
+            if(nseg == 0)then
               nseg=lvl%nl
             elseif(lvl%nl /= nseg)then
               irtc=itfmessage(99,"FFS::unequalkeyleng",'""')
@@ -1714,11 +1714,11 @@ c     begin initialize for preventing compiler warning
             endif
             defk(itastk(1,isp),itastk(2,isp))=.true.
             dtastk2(isp)=lpi%dbody(2)
-            if(stri1%str(1:stri1%nch) .eq. 'L')then
+            if(stri1%str(1:stri1%nch) == 'L')then
               lls=isp
             endif
           enddo
-          if(lls .eq. 0)then
+          if(lls == 0)then
             irtc=itfmessage(99,"FFS::noLseg",'""')
             go to 9000
           endif
@@ -1735,7 +1735,7 @@ c     begin initialize for preventing compiler warning
           lk1%dbody(2)=dtfcopy(dtastk2(lls))
           i1=1
           do i=isp0+1,isp
-            if(i /= lls .and. itastk(1,i) .eq. itastk(2,i))then
+            if(i /= lls .and. itastk(1,i) == itastk(2,i))then
               i1=i1+1
               call tflocald(lsegp%dbody(i1))
               lsegp%dbody(i1)=kxadaloc(0,2,lk1)
@@ -1785,8 +1785,8 @@ c     begin initialize for preventing compiler warning
             call tflocald(cmpd%dvalue(k))
           endif
           cmpd%dvalue(k)=dtfcopy1(cmps%dvalue(k))
-          if(idtype(cmpd%id) .eq. icMULT .and.
-     $         k .eq. ky_PROF_MULT)then
+          if(idtype(cmpd%id) == icMULT .and.
+     $         k == ky_PROF_MULT)then
             cmpd%updateseg=.false.
           endif
         endif
@@ -1807,8 +1807,8 @@ c     begin initialize for preventing compiler warning
         call compelc(id,cmpd)
         call compelc(is,cmps)
         call tfvcopycmp(cmps,cmpd,k,coeff)
-        if(idtype(cmpd%id) .eq. icMULT .and.
-     $       k .eq. ky_PROF_MULT)then
+        if(idtype(cmpd%id) == icMULT .and.
+     $       k == ky_PROF_MULT)then
           cmpd%updateseg=.false.
         endif
         cmpd%update=cmpd%nparam .le. 0
@@ -1908,6 +1908,8 @@ c     Inverse matrix of r: NormalCoordinate (physical -> normal)
      $     0.d0, 0.d0, 0.d0, 0.d0, 1.d0, 0.d0,
      $     0.d0, 0.d0, 0.d0, 0.d0, 0.d0, 1.d0/),
      $     (/6, 6/))
+
+      real*8 , public::dsg(6)
 
       type iaemit
       sequence
@@ -2309,7 +2311,7 @@ c      crz=sqrt(uz12**2+uz22**2)
       r3=twiss1(mfitr3)
       r4=twiss1(mfitr4)
       detr=twiss1(mfitdetr)
-      normal=detr .lt. 1.d0
+      normal=detr < 1.d0
       if(normal)then
         amu=sqrt(1.d0-detr)
         ex =twiss1(mfitex)
@@ -2496,10 +2498,10 @@ c      real*8 , pointer:: trans1(:,:)
 c      real*8 ,target::transs(6,6)
       real*8 s(6,6)
       logical*4 ,intent(in):: beamr
-      if(irad .lt. 12)then
+      if(irad < 12)then
         return
       endif
-c      if(size(trans,2) .eq. 6)then
+c      if(size(trans,2) == 6)then
 c        trans1=>trans
 c      else
 c        transs=trans(1:6,1:6)+trans(1:6,7:12)
@@ -2624,7 +2626,7 @@ c         enddo
       irad=12
       call tmulbs(beam,tinv6(ris),.false.)
       irad=ir
-      if(is .eq. 1)then
+      if(is == 1)then
         ri=ris
         r=tinv6(ri)
       endif
@@ -2685,7 +2687,7 @@ c         enddo
               i2=im-1
               found=.false.
               exit
-            elseif(rm%ind(k,ia) .lt. ind(k))then
+            elseif(rm%ind(k,ia) < ind(k))then
               i1=im+1
               found=.false.
               exit
@@ -2696,10 +2698,10 @@ c         enddo
           endif
         enddo
         ia=rm%nind+1
-        if(i1 .eq. im+1)then
+        if(i1 == im+1)then
           im=im+1
         endif
-        if(im .lt. ia)then
+        if(im < ia)then
           rm%ias(im+1:ia)=rm%ias(im:rm%nind)
         endif
         rm%ias(im)=ia
@@ -2857,12 +2859,12 @@ c         enddo
         return
         end
 
-        subroutine spdepol(gxr,gxi,gyr,gyi,gzr,gzi,e1,e2,em,
-     $     dx,amx,ams,rmd)
+        subroutine spdepol(gxr,gxi,gyr,gyi,gzr,gzi,e1,e2,em,dx,amx,ams,rmd)
         implicit none
         type (scmat) rm(mord),rmi(mord)
         real*8 , intent(in)::gxr(3),gxi(3),gyr(3),gyi(3),gzr(3),gzi(3),
      $       dx(3),amx(3),ams,e1(3),e2(3),em(3)
+        real*8 , intent(out) :: rmd(3,3,3)
         integer*4 i,ia1,ia2,ia3,ia4,ia5,ia6,
      $       ia20,ia21,ia40,ia41,ia42,
 c     $       ia60,ia61,
@@ -2870,11 +2872,8 @@ c     $       ia60,ia61,
      $       ib40,ib41,ic40,ic41,ib60,ib61,ic60,ic61,id60,id61,
      $       ie61,ie62,if61,if62
         complex*16 gx,gy,gz,gxc,gyc,gzc
-        complex*16 ,parameter :: cI=(0.d0,1.d0),c0=(0.d0,0.d0),
-     $       c1=(1.d0,0.d0)
-        real*8 , intent(out) :: rmd(3,3,3)
+        complex*16 ,parameter :: cI=(0.d0,1.d0),c0=(0.d0,0.d0),c1=(1.d0,0.d0)
         real*8 de12,se12
-c     $       ,sesq,e1e2
         do i=1,mord
           call spinitrm(rm(i),i,i,mlen(i))
           call spinitrm(rmi(i),i,i+mord,mleni(i))
@@ -2911,7 +2910,8 @@ c     $       ,sesq,e1e2
 
         call spcopyrm(rm(1),rmi(1))
         call spintrm(rmi(1),dx(1),dx(2),dx(3),amx(1),amx(2),amx(3),ams)
-        do k=2,mord
+c        do k=2,mord
+        do k=2,2
           call spcalcres(rm,rmi,k,dx,amx,ams)
         enddo
 
@@ -2950,8 +2950,10 @@ c          ia61=iaind(rmi(6),indn(i,1,5,0,0,0))
 c          sesq=(e1(i)**2+e2(i)**2)*.25d0
 c          e1e2=e1(i)*e2(i)*.25d0
           rmd(:,:,1)=rmd(:,:,1)
-     $         +se12*dble(rmi(2)%cmat(:,:,ia21))
-     $         +2.d0*de12*dble(rmi(2)%cmat(:,:,ia20))
+     $         +e1(i)*dble(rmi(2)%cmat(:,:,ia21)+0.d0*2.d0*rmi(2)%cmat(:,:,ia20))
+     $         +e2(i)*imag(rmi(2)%cmat(:,:,ia21)+0.d0*2.d0*rmi(2)%cmat(:,:,ia20))
+c     $         +se12*dble(rmi(2)%cmat(:,:,ia21))
+c     $         +2.d0*de12*dble(rmi(2)%cmat(:,:,ia20))
 
           rmd(:,:,2)=rmd(:,:,2)
      $     +2.d0*(
@@ -3004,18 +3006,9 @@ c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
         return
         end subroutine
 
-        real*8 function outer(a,b)
-        implicit none
-        real*8 ,intent(in):: a(3),b(3)
-        dimension outer(3)
-        outer(1)=a(2)*b(3)-a(3)*b(2)
-        outer(2)=a(3)*b(1)-a(1)*b(3)
-        outer(3)=a(1)*b(2)-a(2)*b(1)
-        return
-        end function
-
         subroutine spnorm(srot,sps,smu,sdamp)
         use temw, only:gintd
+        use mathfun, only:outer
         use macmath, only:m_2pi
         implicit none
         real*8 , intent(inout) :: srot(3,9)
@@ -3036,11 +3029,11 @@ c        s=abs(dcmplx(srot(1,2),abs(dcmplx(srot(2,2),srot(3,2)))))
         sps(2,1)=srot(3,1)-srot(1,3)
         sps(3,1)=srot(1,2)-srot(2,1)
         s=abs(dcmplx(sps(1,1),abs(dcmplx(sps(2,1),sps(3,1)))))
-        if(s .lt. smin)then
+        if(s < smin)then
           a=srot(:,1:3)
           call teigen(a,w,eig,3,3)
           do i=1,3
-            if(eig(2,i) .eq. 0.d0)then
+            if(eig(2,i) == 0.d0)then
               sps(:,1)=a(:,i)
               s=abs(dcmplx(sps(1,1),abs(dcmplx(sps(2,1),sps(3,1)))))
               exit
@@ -3115,48 +3108,47 @@ c        write(*,*)'spnorm ',sdamp,gintd
         real*8 , intent(in)::srot(3,9),demit(21),sps(3,3),
      $       params(nparams),sdamp
         real*8 , intent(out)::equpol(3),rm1(3,3)
-        real*8 drot(3,6),emit1(3),emitd(3),damp(3),
+        real*8 drot(3,6),emit1(3),damp(3),
      $       d1,d2,d3,d4,d5,d6,e1,e2,e3,e4,e5,e6,
      $       c1,c2,c3,c4,c5,c6,smu,
      $       dex1,dex2,dey1,dey2,dez1,dez2,
      $       rm(3,3),epol(3,3),b(3),rmd(3,3,3)
         integer*4 i
         smu=params(ipnup)*m_2pi
-        drot=matmul(srot(:,4:9),r)
-        c1=dot_product(drot(:,1),sps(:,1))
-        c2=dot_product(drot(:,2),sps(:,1))
-        c3=dot_product(drot(:,3),sps(:,1))
-        c4=dot_product(drot(:,4),sps(:,1))
-        c5=dot_product(drot(:,5),sps(:,1))
-        c6=dot_product(drot(:,6),sps(:,1))
-        d1=dot_product(drot(:,1),sps(:,2))
-        d2=dot_product(drot(:,2),sps(:,2))
-        d3=dot_product(drot(:,3),sps(:,2))
-        d4=dot_product(drot(:,4),sps(:,2))
-        d5=dot_product(drot(:,5),sps(:,2))
-        d6=dot_product(drot(:,6),sps(:,2))
-        e1=dot_product(drot(:,1),sps(:,3))
-        e2=dot_product(drot(:,2),sps(:,3))
-        e3=dot_product(drot(:,3),sps(:,3))
-        e4=dot_product(drot(:,4),sps(:,3))
-        e5=dot_product(drot(:,5),sps(:,3))
-        e6=dot_product(drot(:,6),sps(:,3))
+        drot=matmul(transpose(sps),matmul(srot(:,4:9),r))
+        c1=drot(1,1)
+        c2=drot(1,2)
+        c3=drot(1,3)
+        c4=drot(1,4)
+        c5=drot(1,5)
+        c6=drot(1,6)
+        d1=drot(2,1)
+        d2=drot(2,2)
+        d3=drot(2,3)
+        d4=drot(2,4)
+        d5=drot(2,5)
+        d6=drot(2,6)
+        e1=drot(3,1)
+        e2=drot(3,2)
+        e3=drot(3,3)
+        e4=drot(3,4)
+        e5=drot(3,5)
+        e6=drot(3,6)
         call serot(demit(1), demit(2), demit(3), c1,c2,d1,d2,e1,e2,dex1,dex2)
         call serot(demit(6), demit(9), demit(10),c3,c4,d3,d4,e3,e4,dey1,dey2)
         call serot(demit(15),demit(20),demit(21),c5,c6,d5,d6,e5,e6,dez1,dez2)
         emit1=params(ipemx:ipemz)
         damp=abs(params(ipdampx:ipdampz))
-        emitd=2.d0*emit1*damp/3.d0
+c        write(*,'(a,1p10g12.4)')'sremit ',params(ipnx:ipnz),params(ipnup)
         call spdepol(
      $       (/c1,c3,c5/),(/c2,c4,c6/),
      $       (/d1,d3,d5/),(/d2,d4,d6/),
      $       (/e1,e3,e5/),(/e2,e4,e6/),
-     $       (/dex1,dey1,dez1/)/3.d0,(/dex2,dey2,dez2/)/3.d0,
-c     $       emitd,emitd,
+     $       (/dex1,dey1,dez1/),(/dex2,dey2,dez2/),
      $       emit1,damp,
      $       params(ipnx:ipnz)*m_2pi,smu,rmd)
         rm1=0.d0
-        do i=1,3
+        do i=1,1
           rm1=rm1+rmd(:,:,i)
           rm=rm1
           rm(1,1)=rm(1,1)-sdamp
@@ -3353,7 +3345,7 @@ c      ilist(2,iwakepold+6)=int(ifsize)
           if(i .ge. l)then
             exit LOOP_K
           endif
-          if(idelc(i) .eq. idelc(l))then
+          if(idelc(i) == idelc(l))then
             ilist(l,ifele1)=ilist(i,ifele1)
             cycle LOOP_L
           endif
@@ -3362,7 +3354,7 @@ c      ilist(2,iwakepold+6)=int(ifsize)
         ilist(nele,ifmult)=l
         ilist(l,ifele1)=nele
       enddo LOOP_L
-c      if(elatt%elmv%k .eq. 0)then
+c      if(elatt%elmv%k == 0)then
 c        call tffs_init_elmv
 c      endif
       return
@@ -3377,7 +3369,7 @@ c      endif
       integer*4 , intent(in)::nv
       integer*4 nve0
       integer*8 ifnvev1
-      if(nv .lt. nve)then
+      if(nv < nve)then
         return
       endif
       nve0=nve
@@ -3460,14 +3452,14 @@ c      call tfree(ifibzl)
       endif
       call tftclupdate(7)
       outfl1=outfl
-      if(narg .eq. 2)then
+      if(narg == 2)then
         if(ktfnonrealq(ktastk(isp)))then
           irtc=itfmessage(9,'General::wrongtype',
      $         '"File number for #2"')
           return
         endif
         outfl=int(rtastk(isp))
-        if(outfl .eq. -1)then
+        if(outfl == -1)then
           outfl=icslfno()
         endif
       else
@@ -3490,7 +3482,7 @@ c      call tfree(ifibzl)
         savep=sav
         call trbassign(lfni)
         outfl=outfl1
-        if(irtc .eq. 0 .and. iffserr /= 0)then
+        if(irtc == 0 .and. iffserr /= 0)then
           irtc=itfmessagestr(9,'FFS::error',strfromis(int(iffserr)))
         endif
       endif
@@ -3517,7 +3509,7 @@ c      call tfree(ifibzl)
       type (sad_descriptor) kx
       integer*4 isp1,irtc,infl0,itfmessage,lfn,ierrfl,ierr,lfnb0,lfni0
       ierr=0
-      if(isp .eq. isp1+2)then
+      if(isp == isp1+2)then
         ierr=int(rtastk(isp))
       elseif(isp /= isp1+1)then
         irtc=itfmessage(9,'General::narg','"1 or 2"')
