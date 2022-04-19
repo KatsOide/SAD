@@ -491,12 +491,6 @@ c      write(*,*)'with ',itp,ilp
             ia=iaind(rmc,rma%ind(:,i)+rmb%ind(:,j))
             rmc%cmat(:,:,ia)=rmc%cmat(:,:,ia)
      $           +matmul(rma%cmat(:,:,i),rmb%cmat(:,:,j))
-            if(ia == 145)then
-              write(*,'(a,16i5)')'spdotrmi ',i,rma%ind(:,i)
-              write(*,'(1p9g12.4)')rma%cmat(:,:,i)
-              write(*,'(a,16i5)')'spdotrmj ',j,rmb%ind(:,j)
-              write(*,'(1p9g12.4)')rmb%cmat(:,:,j)
-            endif
           enddo
         enddo
         return
@@ -556,18 +550,6 @@ c          cb=(1.d0-cei)/a
           ind(7:lind)=0
           ia=iaind(rm,ind)
           rm%cmat(:,:,ia)=rm%cmat(:,:,ia)+cm
-c          if(ia == 226)then
-          if(i == 145)then
-            write(*,'(a,14i5,1p10g12.4)')'spintrmia ',ia,rm%ind(:,i)
-            write(*,'(a,1p10g12.4)')': ',dble(rm%cmat(:,:,i))
-            write(*,'(a,1p10g12.4)')': ',imag(rm%cmat(:,:,i))
-          endif
-          if(ia == 22 .and. i == 12)then
-            write(*,'(a,14i5,1p10g12.4)')'spintrmi  ',i,rm%ind(:,i)
-            write(*,'(a,1p10g12.4)')': ',dble(rm%cmat(:,:,i))
-            write(*,'(a,1p10g12.4)')': ',imag(rm%cmat(:,:,i))
-            write(*,'(a,1p6g20.12)')': ',cb,(1.d0-cei)/a,cerfc(cb)
-          endif
         enddo
         return
         end subroutine
@@ -657,11 +639,6 @@ c     $       ia60,ia61,
           rm(1)%cmat(:,:,ia5)=conjg(rm(1)%cmat(:,:,ia2))
           ia6=iaind(rm(1),indn(i,1,0,1,1,1))
           rm(1)%cmat(:,:,ia6)=conjg(rm(1)%cmat(:,:,ia1))
-          if(ia6 == 12)then
-            write(*,'(a,2i5)')'spdepol12 ',i,ia1
-            write(*,'(1p9g12.4)')imag(rm(1)%cmat(:,:,ia6))
-            write(*,'(1p9g12.4)')imag(rm(1)%cmat(:,:,ia1))
-          endif
         enddo
 
         call spcopyrm(rm(1),rmi(1))
@@ -675,7 +652,6 @@ c        do k=2,mord
         do i=1,3
           ia20=iaind(rmi(2),indn(i,0,2,0,0,0))
           ia21=iaind(rmi(2),indn(i,1,1,0,0,0))
-          write(*,*)'spdepol ',i,ia20,ia21
 
           ia40=iaind(rmi(4),indn(i,0,4,0,0,0))
           ia41=iaind(rmi(4),indn(i,1,3,0,0,0))
@@ -712,9 +688,6 @@ c     $         +e1(i)*dble(rmi(2)%cmat(:,:,ia21)+2.d0*rmi(2)%cmat(:,:,ia20))
 c     $         +e2(i)*imag(rmi(2)%cmat(:,:,ia21)+2.d0*rmi(2)%cmat(:,:,ia20))
      $         +se12*dble(rmi(2)%cmat(:,:,ia21))
      $         +2.d0*de12*dble(rmi(2)%cmat(:,:,ia20))
-          write(*,'(a,1p10g12.4)')'spdepol21 ',dble(rmi(2)%cmat(:,:,ia21))
-          write(*,'(a,1p10g12.4)')'spdepol20 ',dble(rmi(2)%cmat(:,:,ia20))
-          write(*,'(a,1p10g12.4)')': ',se12,de12
 
           rmd(:,:,2)=rmd(:,:,2)
      $     +2.d0*(
@@ -760,7 +733,6 @@ c     $
         enddo
 
         do i=1,mord
-c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
           deallocate(rm(i)%cmat,rmi(i)%cmat,rm(i)%ind,rmi(i)%ind,rm(i)%ias,rmi(i)%ias)
         enddo
         return
@@ -836,7 +808,6 @@ c        s=abs(dcmplx(sps(1,2),abs(dcmplx(sps(2,2),sps(3,2)))))
         sm=dot_product(spsa1,sps(:,3))
         smu=atan(-sm,cm)
         sdamp=dot_product(sps(:,1),gintd)
-c        write(*,*)'spnorm ',sdamp,gintd
         return
         end subroutine
 
@@ -900,8 +871,6 @@ c        write(*,*)'spnorm ',sdamp,gintd
         emit1=params(ipemx:ipemz)
         damp=abs(params(ipdampx:ipdampz))
         ssprd=dot_product(drot(1,:),sqrt([emit1(1),emit1(1),emit1(2),emit1(2),emit1(3),emit1(3)]))
-c        write(*,'(a,1p10g12.4)')'spdepol ',
-c     $       (/dex1,dey1,dez1/),(/dex2,dey2,dez2/),emit1
         call spdepol(
      $       (/c1,c3,c5/),(/c2,c4,c6/),
      $       (/d1,d3,d5/),(/d2,d4,d6/),
@@ -917,10 +886,7 @@ c        do i=1,3
           rm=rm1
           rm(1,1)=rm(1,1)-sdamp
           b=(/-sdamp*pst,0.d0,0.d0/)
-          write(*,'(a,1p10g12.4)')'srequpol ',rm
-          write(*,'(a,1p10g12.4)')': ',b,sdamp
           call tsolva(rm,b,epol(:,i),3,3,3,min(1.d-8,sdamp/100.d0))
-          write(*,'(a,1p10g12.4)')': ',epol(:,i)
         enddo
         rm1(1,1)=rm1(1,1)-sdamp
         equpol=epol(1,:)
@@ -1402,7 +1368,6 @@ c          call tmultr(transi,trans(:,1:6),6)
           dpz0(6)=dpz0(6)+pr/pz0
           dxpx=tr2(4,:)*pz0+py*dpz0-ddpz*pyi-pz*dpyi
           dxpy=ddpz*pxr0+pz*dpxr0-tr2(2,:)*pz0-px*dpz0
-c          write(*,'(a,1p11g11.3)')'<     ',dxpy(1),dxpy(6),tr2(2,1)
           dxpz=tr2(2,:)*pyi+px*dpyi-tr2(4,:)*pxr0-py*dpxr0
           dh1r=p*p0/h1**2
           if(xpa /= 0.d0)then
