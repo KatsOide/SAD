@@ -664,6 +664,18 @@ c        dc=merge(-s**2/(1.d0+c),c-1.d0,c > 0.d0)
       return
       end function
 
+      complex*16 pure elemental function cexp1(z) result(f)
+      use macmath
+      implicit none
+      complex*16 ,intent(in):: z
+      if(abs(z) < 2.d-4)then
+        f=z*(1.d0+.5d0*z*(1.d0+z/3.d0*(1.d0+z/4.d0*(1.d0+z/5.d0))))
+      else
+        f=exp(z)-1.d0
+      endif
+      return
+      end function
+
       real*8 pure function outer(a,b)
       implicit none
       real*8 ,intent(in):: a(3),b(3)

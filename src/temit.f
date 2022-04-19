@@ -85,7 +85,7 @@ c      enddo
       use ffs_pointer
       use tmacro
       use tffitcode
-      use tspin, only:spnorm,sremit,srotinit
+      use tspin, only:spnorm,srequpol,srotinit
       use eigen
       use macmath
       implicit none
@@ -186,7 +186,7 @@ c          write(*,*)'temit-inical ',calint,intra,econv,postcal,plot
         if(pri)then
           call temitprint(lfno,intpri,
      $         rx,trans(:,7:12),cod,rd,beamn,beamp,emitn,emitp,
-     $         srot,srot1,spm,sps,ceig,cd,params,calem)
+     $         srot,srot1,sps,ceig,cd,params,calem)
           intpri=.false.
         endif
         if(calcodr .and. .not. stab .and. intra)then
@@ -245,7 +245,7 @@ c     $       beamp(1),beamp(6),beamp(21)
       use ffs_pointer
       use tmacro
       use tffitcode
-      use tspin, only:spnorm,sremit
+      use tspin, only:spnorm,srequpol
       use eigen
       use macmath
       use mathfun
@@ -489,7 +489,7 @@ c     enddo
         call spnorm(srot,sps,spinmu,sdamp)
         params(ipnup)=spinmu/m_2pi
 c        call spequ(srot,sps,emitn,sdamp,equpol)
-        call sremit(srot,sps,params,beamn,sdamp,spm,equpol)
+        call srequpol(srot,sps,params,beamn,sdamp,spm,equpol)
         params(iptaup)=1.d0/sdamp/params(iprevf)
         params(ipequpol)=equpol(1)
         params(ipequpol2:ipequpol6)=equpol
@@ -943,7 +943,7 @@ c     $         sqrt(emitn(15)*emitn(21)-emitn(20)**2)
       end
 
       subroutine temitprint(lfno,intpri,
-     $     rx,rxd,cod,rd,beamn,beamp,emitn,emitp,srot,srot1,spm,sps,
+     $     rx,rxd,cod,rd,beamn,beamp,emitn,emitp,srot,srot1,sps,
      $     ceig,cd,params,calem)
       use tfstk
       use temw
@@ -956,7 +956,7 @@ c     $         sqrt(emitn(15)*emitn(21)-emitn(20)**2)
       integer*4 ,intent(in):: lfno
       logical*4 ,intent(in):: intpri,calem
       real*8 ,intent(in):: cod(6),rx(6,6),rxd(6,6),params(nparams),
-     $     srot(3,9),srot1(3,3),spm(3,3),rd(6,6),sps(3,3),
+     $     srot(3,9),srot1(3,3),rd(6,6),sps(3,3),
      $     beamn(21),beamp(21),emitn(21),emitp(21)
       complex*16 ,intent(in):: ceig(6),cd(6)
       integer*4 i,j

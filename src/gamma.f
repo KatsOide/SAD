@@ -188,7 +188,7 @@ c$$$     $      c8=-4.93961492826482964d-7,
       real*8 ,parameter,private :: epsx=0.3d0
       integer*4 ,parameter,private :: itmaxg=67
       real*8 ,parameter,private :: zimth=1.4d0,
-     $     chgth=8.d0,veryl=1.d250,arth=0.8d0,vlim=1.d30,
+     $     chgth=12.d0,veryl=1.d250,arth=0.8d0,vlim=1.d30,
      $     slimpl=1.d-4,slims=4.5d0,lgzlim=1.4d0,plith=4.d0,
      $     plrth=4.d0,pllzth=1.5d0*m_pi,simth=4.d0
       integer*4 ,parameter,private ::kg2max=20
@@ -3602,6 +3602,7 @@ c        u=gammai(s+1.d0)*x**s
         endif
         return
       elseif(abs(x) > chgth+max(abs(a),abs(c-a)))then
+c an asymptotic expansion for large |x|...
 c        write(*,'(a,1p10g12.4)')'chg1-th ',a,c,x
         do
           if(imag(x) == 0.d0)then
@@ -3620,7 +3621,7 @@ c        write(*,'(a,1p10g12.4)')'chg1-th ',a,c,x
             endif
           else
             lx=log(-x)
-            if(dble(x) >= 0.d0 .and. imag(x) > 0.d0)then
+            if(dble(x) >=0.d0 .and. imag(x) >= 0.d0)then
               lx=lx+(0.d0,m_2pi)
             endif
             xa=exp(-a*lx)
@@ -3642,7 +3643,7 @@ c        write(*,'(a,1p10g12.4)')'chg1-th ',a,c,x
             endif
           else
             lx=log(x)
-            if(dble(x) < 0.d0 .and. imag(x) > 0.d0)then
+            if(dble(x) <= 0.d0 .and. imag(x) >= 0.d0)then
               lx=lx-(0.d0,m_2pi)
             endif
             xac=exp(ac*lx)
@@ -3663,7 +3664,6 @@ c        write(*,'(a,1p10g12.4)')'chg1-th ',a,c,x
           else
             f1=f1+cpochh(a,c-a)*xac*exp(x)*chgpq(ach,cch,1.d0/x,.false.)
           endif
-c          write(*,'(a,1p10g12.4)')'chg1-pq ',a,c,x,f1
           return
         enddo
       endif
@@ -3739,6 +3739,7 @@ c        write(*,'(a,1p10g12.4)')'chg1-nt ',a,c,x,f1
         endif
         return
       elseif(abs(x) > chgth)then
+c asymptotic expansion for large |x|...
         do
           if(x >= 0.d0)then
             if(a == anint(a))then
