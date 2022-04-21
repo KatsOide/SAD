@@ -20,7 +20,7 @@
         real*8 dz,w,zk,dzk,pa,pb,h1,fw,dwx,dwy,dwz,p0,h0,fwp,
      $       cost,sint,xi,pxi,pmin,zmin,zw0l,zw0t
         parameter (pmin=1.d-10,zmin=-1.d30)
-        call twxiwp(nwp)
+        call twxiwp(nwak)
         if(lwake)then
           lwl=lwl0
         else
