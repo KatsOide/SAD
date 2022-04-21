@@ -1335,11 +1335,59 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
       end module
 
       module ffs_wake
-      integer*8 kwakep,kwakeelm
-      integer*4 nwakep
+      integer*8 kwakep,kwakeelm,iwpl,iwpt
+      integer*4 nwakep,lwl0,lwt0
       logical*4 wake
+      integer*4 nwp
       integer*8 , pointer :: kwaketbl(:,:)
       integer*4 , pointer :: iwakeelm(:)
+      integer*4 ,allocatable,dimension(:)::itab,izs
+      real*8 ,pointer :: wakel(:,:),waket(:,:)
+
+      contains
+      subroutine twxiwp(nwak)
+      use tfstk
+      use iso_c_binding
+      implicit none
+      integer*4 ,intent(in):: nwak
+      iwpl=abs(kwaketbl(1,nwak))
+      lwl0=merge((ilist(1,iwpl-1)-2)/2,0,iwpl /= 0)
+      iwpt=abs(kwaketbl(2,nwak))
+      lwt0=merge((ilist(1,iwpt-1)-2)/2,0,iwpt /= 0)
+      if(lwl0 > 0)then
+        call c_f_pointer(c_loc(rlist(iwpl)),wakel,[2,lwl0])
+      endif
+      if(lwt0 > 0)then
+        call c_f_pointer(c_loc(rlist(iwpt)),waket,[2,lwt0])
+      endif
+      return
+      end subroutine
+
+      subroutine twxalloc(np)
+      implicit none
+      integer*4 ,intent(in):: np
+      if(.not. allocated(itab))then
+        nwp=np
+        allocate(itab(nwp),izs(nwp))
+      elseif(np > nwp)then
+        deallocate(itab,izs)
+        nwp=np
+        allocate(itab(nwp),izs(nwp))
+      endif
+      itab(np)=np
+      itab(1)=1
+      return
+      end subroutine
+
+      subroutine twxdealloc
+      implicit none
+      if(allocated(itab))then
+        deallocate(itab,izs)
+      endif
+      nwp=0
+      return
+      end subroutine 
+
       end module
 
       module tflinepcom

@@ -534,19 +534,22 @@ c      write(*,*)'with ',itp,ilp
         type (scmat) , intent(inout) :: rm
         real*8 , intent(in) :: dx,dy,dz,amx,amy,amz,ams,ssprd
         real*8 a
-        complex*16 cm(3,3),cei,cphi,cb
+        complex*16 cm(3,3),cm0(3,3),cei,cphi,cb
         integer*4 i,ia,ind(lind)
         do i=1,rm%nind
           ind=rm%ind(:,i)
           cphi=dcmplx(-ind(7)*dx-ind(8)*dy-ind(9)*dz,
      $         ind(10)*amx+ind(11)*amy+ind(12)*amz+ind(lind)*ams)
-          cei=exp(-cphi)
-          a=m_sqrt2*ssprd
-c          cb=(1.d0-cei)/a
-          cb=-cexp1(-cphi)/a
-          cm=-rm%cmat(:,:,i)*m_2pi*m_sqrtpi
-     $         *exp(cb**2-cphi)*cerfc(cb)/a
-          rm%cmat(:,:,i)=-cm
+          cm0=-rm%cmat(:,:,i)/cexp1(cphi)
+          a=m_sqrt2*ind(lind)*ssprd
+          if(a == 0.d0)then
+            cm=cm0
+          else
+            cb=-cexp1(-cphi)/a
+            cm=-rm%cmat(:,:,i)*m_2pi*m_sqrtpi*exp(cb**2-cphi)*cerfc(cb)/a
+c            write(*,'(a,14i5,1p2g12.4)')'spintrm ',i,ind,m_2pi*m_sqrtpi*exp(cb**2-cphi)*cerfc(cb)/a
+          endif
+          rm%cmat(:,:,i)=cm0
           ind(7:lind)=0
           ia=iaind(rm,ind)
           rm%cmat(:,:,ia)=rm%cmat(:,:,ia)+cm
@@ -684,8 +687,6 @@ c always de12 > 0
           sesq=(e1(i)**2+e2(i)**2)*.25d0
           e1e2=e1(i)*e2(i)*.25d0
           rmd(:,:,1)=rmd(:,:,1)
-c     $         +e1(i)*dble(rmi(2)%cmat(:,:,ia21)+2.d0*rmi(2)%cmat(:,:,ia20))
-c     $         +e2(i)*imag(rmi(2)%cmat(:,:,ia21)+2.d0*rmi(2)%cmat(:,:,ia20))
      $         +se12*dble(rmi(2)%cmat(:,:,ia21))
      $         +2.d0*de12*dble(rmi(2)%cmat(:,:,ia20))
 
@@ -868,6 +869,10 @@ c        s=abs(dcmplx(sps(1,2),abs(dcmplx(sps(2,2),sps(3,2)))))
         call serot(demit(1), demit(2), demit(3), c1,c2,d1,d2,e1,e2,dex1,dex2)
         call serot(demit(6), demit(9), demit(10),c3,c4,d3,d4,e3,e4,dey1,dey2)
         call serot(demit(15),demit(20),demit(21),c5,c6,d5,d6,e5,e6,dez1,dez2)
+c        write(*,'(1p6g12.4)')
+c     $       (/c1,c3,c5/),(/c2,c4,c6/),
+c     $       (/d1,d3,d5/),(/d2,d4,d6/),
+c     $       (/e1,e3,e5/),(/e2,e4,e6/)
         emit1=params(ipemx:ipemz)
         damp=abs(params(ipdampx:ipdampz))
         ssprd=dot_product(drot(1,:),sqrt([emit1(1),emit1(1),emit1(2),emit1(2),emit1(3),emit1(3)]))

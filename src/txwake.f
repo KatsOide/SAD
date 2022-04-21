@@ -5,21 +5,22 @@
         contains
         subroutine txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       dx,dy,theta,nb,
-     $       fw,lwl0,wakel,lwt0,waket,p0,h0,itab,izs,init)
+     $       fw,nwak,p0,h0,init)
         use tfstk, only: ktfenanq
         use ffs_flag,only:calpol,twake,lwake
+        use ffs_wake
         implicit none
-        integer*4 ,intent(in):: np,nb,lwl0,lwt0
+        integer*4 ,intent(in):: np,nb,nwak
         real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),
      $       dv(np),sx(np),sy(np),sz(np)
-        real*8 ,intent(in):: wakel(2,lwl0),waket(2,lwt0),dx,dy,theta
-        integer*4 ,intent(inout)::  itab(np),izs(np)
+        real*8 ,intent(in):: dx,dy,theta
         logical*4 ,intent(in):: init
-        integer*4 ns,lwl,lwt,i,n,k,l,m,l1
+        integer*4 ns,i,n,k,l,m,l1,lwl,lwt
         real*8 ,dimension(:), allocatable:: xs,ys,zs,wx,wy,wz,ws
         real*8 dz,w,zk,dzk,pa,pb,h1,fw,dwx,dwy,dwz,p0,h0,fwp,
      $       cost,sint,xi,pxi,pmin,zmin,zw0l,zw0t
         parameter (pmin=1.d-10,zmin=-1.d30)
+        call twxiwp(nwp)
         if(lwake)then
           lwl=lwl0
         else
@@ -34,6 +35,9 @@
           return
         endif
         include 'inc/TENT.inc'
+        if(init)then
+          call twxalloc(np)
+        endif
         if(init .or.
      $       abs(z(itab(np))-z(itab(1))-dzwr) >= dzlim*dzwr)then
           do i=1,np

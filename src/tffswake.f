@@ -11,10 +11,10 @@
       type (ffs_bound) ibound,ibound1
       integer*8 iwbufxy,iwbufxyl,iwl,iwt,iwsl,iwst
       integer*4 itp1,i,j,ii,iutp,iwp,iutp1,np,npf,idx,idy,
-     $     nlw,ntw
+     $     nlw,ntw,lwl,lwt
       real*8 rgetgl1,utwiss1(ntwissfun,-nfam:nfam),sigz,
      $     wbuf(nfam1:nfam),wzl(nfam1:nfam),wzt(nfam1:nfam),dx,dy
-      real*8 , pointer::wakel(:,:),waket(:,:),wbufxy(:,:),wbufxyl(:,:)
+      real*8 , pointer::wbufxy(:,:),wbufxyl(:,:)
       logical*4 ,intent(in):: beg
       sigz=rgetgl1('SIGZ')
       ibound1%fb=0.d0
