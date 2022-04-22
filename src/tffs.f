@@ -1350,15 +1350,17 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
       use iso_c_binding
       implicit none
       integer*4 ,intent(in):: nwak
-      iwpl=abs(kwaketbl(1,nwak))
-      lwl0=merge((ilist(1,iwpl-1)-2)/2,0,iwpl /= 0)
-      iwpt=abs(kwaketbl(2,nwak))
-      lwt0=merge((ilist(1,iwpt-1)-2)/2,0,iwpt /= 0)
-      if(lwl0 > 0)then
-        call c_f_pointer(c_loc(rlist(iwpl)),wakel,[2,lwl0])
-      endif
-      if(lwt0 > 0)then
-        call c_f_pointer(c_loc(rlist(iwpt)),waket,[2,lwt0])
+      if(nwak > 0)then
+        iwpl=abs(kwaketbl(1,nwak))
+        lwl0=merge((ilist(1,iwpl-1)-2)/2,0,iwpl /= 0)
+        iwpt=abs(kwaketbl(2,nwak))
+        lwt0=merge((ilist(1,iwpt-1)-2)/2,0,iwpt /= 0)
+        if(lwl0 > 0)then
+          call c_f_pointer(c_loc(rlist(iwpl)),wakel,[2,lwl0])
+        endif
+        if(lwt0 > 0)then
+          call c_f_pointer(c_loc(rlist(iwpt)),waket,[2,lwt0])
+        endif
       endif
       return
       end subroutine

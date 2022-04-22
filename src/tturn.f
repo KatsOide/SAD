@@ -186,6 +186,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       iwplc=0
       iwptc=0
       sspac1=0.d0
+      nwak=0
       if(wake)then
         dzwr=0.d0
         do i=1,nwakep
