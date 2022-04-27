@@ -534,20 +534,28 @@ c      write(*,*)'with ',itp,ilp
         type (scmat) , intent(inout) :: rm
         real*8 , intent(in) :: dx,dy,dz,amx,amy,amz,ams,ssprd
         real*8 a
-        complex*16 cm(3,3),cm0(3,3),cei,cphi,cb
+        complex*16 cm(3,3),cm0(3,3),cphi,cb
         integer*4 i,ia,ind(lind)
         do i=1,rm%nind
           ind=rm%ind(:,i)
           cphi=dcmplx(-ind(7)*dx-ind(8)*dy-ind(9)*dz,
      $         ind(10)*amx+ind(11)*amy+ind(12)*amz+ind(lind)*ams)
           cm0=-rm%cmat(:,:,i)/cexp1(cphi)
-          a=m_sqrt2*ind(lind)*ssprd
+          a=m_sqrt2*abs(ind(lind))*ssprd
           if(a == 0.d0)then
             cm=cm0
           else
             cb=-cexp1(-cphi)/a
             cm=-rm%cmat(:,:,i)*m_2pi*m_sqrtpi*exp(cb**2-cphi)*cerfc(cb)/a
-c            write(*,'(a,14i5,1p2g12.4)')'spintrm ',i,ind,m_2pi*m_sqrtpi*exp(cb**2-cphi)*cerfc(cb)/a
+c            if(ind(1) == 0 .and. ind(2) == 2 .or.
+c     $           ind(1) == 2 .and. ind(2) == 0)then
+c              write(*,'(a,8i5,1p4g12.4)')'spintrm ',i,ia,ind(1:2),ind(10:lind),
+c     $             cb,exp(cb**2-cphi)*cerfc(cb)/a
+c              write(*,'(1p9g12.4)')dble(cm0)
+c              write(*,'(1p9g12.4)')imag(cm0)
+c              write(*,'(1p9g12.4)')dble(cm)
+c              write(*,'(1p9g12.4)')imag(cm)
+c            endif
           endif
           rm%cmat(:,:,i)=cm0
           ind(7:lind)=0
@@ -610,6 +618,7 @@ c     $       ia60,ia61,
         complex*16 gx,gy,gz,gxc,gyc,gzc
         complex*16 ,parameter :: cI=(0.d0,1.d0),c0=(0.d0,0.d0),c1=(1.d0,0.d0)
         real*8 de12,se12,sesq,e1e2
+        real*8 ,parameter ::fudge=1.d0;
         do i=1,mord
           call spinitrm(rm(i),i,i,mlen(i))
           call spinitrm(rmi(i),i,i+mord,mleni(i))
@@ -632,7 +641,7 @@ c     $       ia60,ia61,
      $         c0,c0,-c1,
      $         c0,c1, c0/),(/3,3/))
           ia3=iaind(rm(1),indn(i,0,1,1,-1,1))
-          rm(1)%cmat(:,:,ia3)=RESHAPE(0.25d0*gyc*(/
+          rm(1)%cmat(:,:,ia3)=RESHAPE(0.25d0*gy*(/
      $         c0,cI,c1,
      $         -cI,c0,c0,
      $         -c1,c0,c0/),(/3,3/))
@@ -653,7 +662,7 @@ c        do k=2,mord
 
         rmd=0.d0
         do i=1,3
-          ia20=iaind(rmi(2),indn(i,0,2,0,0,0))
+          ia20=iaind(rmi(2),indn(i,2,0,0,0,0))
           ia21=iaind(rmi(2),indn(i,1,1,0,0,0))
 
           ia40=iaind(rmi(4),indn(i,0,4,0,0,0))
@@ -681,56 +690,58 @@ c          ia61=iaind(rmi(6),indn(i,1,5,0,0,0))
           if61=iaind(rmi(6),ind2(i,i2,1,3,1,1))
           if62=iaind(rmi(6),ind2(i,i2,2,2,1,1))
 
-          se12=(e1(i)+e2(i))*.5d0
-          de12=(e1(i)-e2(i))*.5d0
+          se12=(e1(i)+e2(i))*.5d0*fudge
+          de12=(e1(i)-e2(i))*.5d0*fudge
+c se12 = <f1f2>/2
+c de12 = <f1^2>/2 = <f2^2>/2
 c always de12 > 0
           sesq=(e1(i)**2+e2(i)**2)*.25d0
           e1e2=e1(i)*e2(i)*.25d0
           rmd(:,:,1)=rmd(:,:,1)
      $         +se12*dble(rmi(2)%cmat(:,:,ia21))
      $         +2.d0*de12*dble(rmi(2)%cmat(:,:,ia20))
-
-          rmd(:,:,2)=rmd(:,:,2)
-     $     +2.d0*(
-     $         em(i)*(
-     $         se12*dble(rmi(4)%cmat(:,:,ia42))
-     $         +2.d0*de12*dble(rmi(4)%cmat(:,:,ia41)))
-     $        +em(i1)*(
-     $         se12*dble(rmi(4)%cmat(:,:,ib41))
-     $         +2.d0*de12*dble(rmi(4)%cmat(:,:,ib40)))
-     $        +em(i2)*(
-     $         se12*dble(rmi(4)%cmat(:,:,ic41))
-     $         +2.d0*de12*dble(rmi(4)%cmat(:,:,ic40))))
-c     $     +de12*(6.d0*de12*dble(rmi(4)%cmat(:,:,ia40))
-c     $           +(6.d0*se12+4.d0*em(i))
-c     $              *dble(rmi(4)%cmat(:,:,ia41)))
-c     $     +(2.d0*(em(i)*se12+e1e2)+3.d0*sesq)
-c     $        *dble(rmi(4)%cmat(:,:,ia42))
- 
-          rmd(:,:,3)=rmd(:,:,3)
-     $     +8.d0*(
-     $         em(i )**2*(se12*dble(rmi(6)%cmat(:,:,ia63))
-     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,ia62)))
-     $        +em(i1)**2*(se12*dble(rmi(6)%cmat(:,:,ib61))
-     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,ib60)))
-     $        +em(i2)**2*(se12*dble(rmi(6)%cmat(:,:,ic61))
-     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,ic60))))
-     $     +4.d0*(
-     $         em(i1)*em(i2)*(se12*dble(rmi(6)%cmat(:,:,id61))
-     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,id60)))
-     $        +em(i )*em(i1)*(se12*dble(rmi(6)%cmat(:,:,ie62))
-     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,ie61)))
-     $        +em(i )*em(i2)*(se12*dble(rmi(6)%cmat(:,:,if62))
-     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,if61))))
-c     $     +de12*(3.d0*de12*(
-c     $       10.d0*de12*dble(rmi(6)%cmat(:,:,ia60))
-c     $       +(4.d0*em(i)+10.d0*se12)*dble(rmi(6)%cmat(:,:,ia61)))
-c     $       +(em(i)*(16.d0*em(i)+12.d0*se12)+30.d0*sesq+36.d0*e1e2)
-c     $           *dble(rmi(6)%cmat(:,:,ia62)))
-c     $     +(em(i)*(8.d0*em(i)*se12+6.d0*sesq+4.d0*e1e2)
-c     $       +3.d0*se12*(5.d0*sesq-2.d0*e1e2))
-c     $      *dble(rmi(6)%cmat(:,:,ia63))
-c     $
+c$$$
+c$$$          rmd(:,:,2)=rmd(:,:,2)
+c$$$     $     +2.d0*(
+c$$$     $         em(i)*(
+c$$$     $         se12*dble(rmi(4)%cmat(:,:,ia42))
+c$$$     $         +2.d0*de12*dble(rmi(4)%cmat(:,:,ia41)))
+c$$$     $        +em(i1)*(
+c$$$     $         se12*dble(rmi(4)%cmat(:,:,ib41))
+c$$$     $         +2.d0*de12*dble(rmi(4)%cmat(:,:,ib40)))
+c$$$     $        +em(i2)*(
+c$$$     $         se12*dble(rmi(4)%cmat(:,:,ic41))
+c$$$     $         +2.d0*de12*dble(rmi(4)%cmat(:,:,ic40))))
+c$$$c     $     +de12*(6.d0*de12*dble(rmi(4)%cmat(:,:,ia40))
+c$$$c     $           +(6.d0*se12+4.d0*em(i))
+c$$$c     $              *dble(rmi(4)%cmat(:,:,ia41)))
+c$$$c     $     +(2.d0*(em(i)*se12+e1e2)+3.d0*sesq)
+c$$$c     $        *dble(rmi(4)%cmat(:,:,ia42))
+c$$$ 
+c$$$          rmd(:,:,3)=rmd(:,:,3)
+c$$$     $     +8.d0*(
+c$$$     $         em(i )**2*(se12*dble(rmi(6)%cmat(:,:,ia63))
+c$$$     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,ia62)))
+c$$$     $        +em(i1)**2*(se12*dble(rmi(6)%cmat(:,:,ib61))
+c$$$     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,ib60)))
+c$$$     $        +em(i2)**2*(se12*dble(rmi(6)%cmat(:,:,ic61))
+c$$$     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,ic60))))
+c$$$     $     +4.d0*(
+c$$$     $         em(i1)*em(i2)*(se12*dble(rmi(6)%cmat(:,:,id61))
+c$$$     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,id60)))
+c$$$     $        +em(i )*em(i1)*(se12*dble(rmi(6)%cmat(:,:,ie62))
+c$$$     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,ie61)))
+c$$$     $        +em(i )*em(i2)*(se12*dble(rmi(6)%cmat(:,:,if62))
+c$$$     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,if61))))
+c$$$c     $     +de12*(3.d0*de12*(
+c$$$c     $       10.d0*de12*dble(rmi(6)%cmat(:,:,ia60))
+c$$$c     $       +(4.d0*em(i)+10.d0*se12)*dble(rmi(6)%cmat(:,:,ia61)))
+c$$$c     $       +(em(i)*(16.d0*em(i)+12.d0*se12)+30.d0*sesq+36.d0*e1e2)
+c$$$c     $           *dble(rmi(6)%cmat(:,:,ia62)))
+c$$$c     $     +(em(i)*(8.d0*em(i)*se12+6.d0*sesq+4.d0*e1e2)
+c$$$c     $       +3.d0*se12*(5.d0*sesq-2.d0*e1e2))
+c$$$c     $      *dble(rmi(6)%cmat(:,:,ia63))
+c$$$c     $
         enddo
 
         do i=1,mord
@@ -832,9 +843,60 @@ c        s=abs(dcmplx(sps(1,2),abs(dcmplx(sps(2,2),sps(3,2)))))
         return
         end
 
+        subroutine srequpol2(srot,sps,params,demit,sdamp,rm1,equpol)
+        use temw,only:ipdampx,nparams,ipdampz,ipemx,ipemz,ipnup,
+     $       ipnx,ipnz,r
+        use macmath
+        use mathfun , only:cexp1
+        implicit none
+        real*8 , intent(in)::srot(3,9),demit(21),sps(3,3),
+     $       params(nparams),sdamp
+        real*8 , intent(out)::equpol(3),rm1(3,3)
+        real*8 drot(3,6),emit1(3),amu(3),damp(3),ssprd,
+     $       d1,d2,d3,d4,d5,d6,e1,e2,e3,e4,e5,e6,
+     $       c1,c2,c3,c4,c5,c6,smu,
+     $       dex1,dex2,dey1,dey2,dez1,dez2,
+     $       rm(3,3),epol(3,3),b(3),rmd
+        integer*4 i
+        smu=params(ipnup)*m_2pi
+        drot=matmul(transpose(sps),matmul(srot(:,4:9),r))
+        c1=drot(1,1)
+        c2=drot(1,2)
+        c3=drot(1,3)
+        c4=drot(1,4)
+        c5=drot(1,5)
+        c6=drot(1,6)
+        d1=drot(2,1)
+        d2=drot(2,2)
+        d3=drot(2,3)
+        d4=drot(2,4)
+        d5=drot(2,5)
+        d6=drot(2,6)
+        e1=drot(3,1)
+        e2=drot(3,2)
+        e3=drot(3,3)
+        e4=drot(3,4)
+        e5=drot(3,5)
+        e6=drot(3,6)
+        call serot(demit(1), demit(2), demit(3), c1,c2,d1,d2,e1,e2,dex1,dex2)
+        call serot(demit(6), demit(9), demit(10),c3,c4,d3,d4,e3,e4,dey1,dey2)
+        call serot(demit(15),demit(20),demit(21),c5,c6,d5,d6,e5,e6,dez1,dez2)
+        emit1=params(ipemx:ipemz)
+        damp=abs(params(ipdampx:ipdampz))
+        amu=params(ipnx:ipnz)*m_2pi
+        ssprd=sqrt(dot_product(drot(1,:)**2,[emit1(1),emit1(1),emit1(2),emit1(2),emit1(3),emit1(3)]))
+        write(*,'(a,1p10g12.4)')'spdepol2 ',damp,amu,smu
+        rmd=.5d0*(
+     $        (c3**2+c4**2+c5**2+c6**2)*(dex1+dex2)/abs(cexp1(dcmplx(-damp(1),smu+amu(1))))**2
+     $       +(d3**2+d4**2+d5**2+d6**2)*(dey1+dey2)/abs(cexp1(dcmplx(-damp(2),smu+amu(2))))**2
+     $       +(e3**2+e4**2+e5**2+e6**2)*(dez1+dez2)/abs(cexp1(dcmplx(-damp(3),smu+amu(3))))**2)
+        equpol=[pst*sdamp/(rmd+sdamp),0.d0,0.d0]
+        return
+        end subroutine
+
         subroutine srequpol(srot,sps,params,demit,sdamp,rm1,equpol)
         use temw,only:ipdampx,nparams,ipdampz,ipemx,ipemz,ipnup,
-     $       ipnx,ipnz,r,dsg
+     $       ipnx,ipnz,r
         use macmath
         implicit none
         real*8 , intent(in)::srot(3,9),demit(21),sps(3,3),
@@ -875,7 +937,7 @@ c     $       (/d1,d3,d5/),(/d2,d4,d6/),
 c     $       (/e1,e3,e5/),(/e2,e4,e6/)
         emit1=params(ipemx:ipemz)
         damp=abs(params(ipdampx:ipdampz))
-        ssprd=dot_product(drot(1,:),sqrt([emit1(1),emit1(1),emit1(2),emit1(2),emit1(3),emit1(3)]))
+        ssprd=sqrt(dot_product(drot(1,:)**2,[emit1(1),emit1(1),emit1(2),emit1(2),emit1(3),emit1(3)]))
         call spdepol(
      $       (/c1,c3,c5/),(/c2,c4,c6/),
      $       (/d1,d3,d5/),(/d2,d4,d6/),
@@ -893,8 +955,10 @@ c        do i=1,3
           b=(/-sdamp*pst,0.d0,0.d0/)
           call tsolva(rm,b,epol(:,i),3,3,3,min(1.d-8,sdamp/100.d0))
         enddo
-        rm1(1,1)=rm1(1,1)-sdamp
-        equpol=epol(1,:)
+c        rm1(1,1)=rm1(1,1)-sdamp
+c        equpol=epol(1,:)
+        equpol=[pst*sdamp/(sdamp-rm1(1,1)),0.d0,0.d0]
+c        equpol=[pst*sdamp/(sdamp-rmd),0.d0,0.d0]
 c        write(*,'(a,1p10g12.4)')'epol ',epol
 c        write(*,'(a,1p10g12.4)')'rm1  ',rm1
 c        write(*,'(a,1p10g12.4)')'pols ',matmul(rm1,epol)

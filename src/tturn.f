@@ -187,7 +187,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       iwptc=0
       sspac1=0.d0
       nwak=0
-      if(wake)then
+      if(twake .or. lwake)then
         dzwr=0.d0
         do i=1,nwakep
           if(iwakeelm(i) .ge. lbegin)then
@@ -431,7 +431,7 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
             if(autophi)then
               ph=ph+gettwiss(mfitdz,l)*cmp%value(p_W_CAVI)
             endif
-            if(twake .or. lwake)then
+            if(l == nextwake)then
               call tcav(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      1             cmp%value(p_W_CAVI),cmp%value(ky_PHI_CAVI),ph,
      $             cmp%value(p_VNOMINAL_CAVI),nwak,

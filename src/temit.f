@@ -85,7 +85,7 @@ c      enddo
       use ffs_pointer
       use tmacro
       use tffitcode
-      use tspin, only:spnorm,srequpol,srotinit
+      use tspin, only:spnorm,srotinit
       use eigen
       use macmath
       implicit none
