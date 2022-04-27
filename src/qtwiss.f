@@ -112,6 +112,11 @@ c     end   initialize for preventing compiler warning
         detr=r1*r4-r2*r3
         sqrdet=sqrt(1.d0-detr)
         normal=twiss(ipa,mfitdetr) < 1.d0
+        if(normal)then
+          twiss(ipa,mfitdetr)=r1*r4-r2*r3
+        else
+          twiss(ipa,mfitdetr)=1.d0+xyth-r1*r4+r2*r3
+        endif
       endif
       dvfs=0.d0
       call tesetdv(cod(6))
