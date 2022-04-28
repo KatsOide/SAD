@@ -3,6 +3,7 @@
      $     r,rp,rstab,nstab,residual1,
      $     zcal,wcal,parallel,lout,error)
       use tfstk
+      use maccode
       use ffs, only:ndim,nlat,flv,maxcond,ffs_bound,nvevx,nelvx,
      $     tsetintm
       use ffs_flag
@@ -10,6 +11,7 @@
       use ffs_fit
       use ffs_wake
       use tffitcode
+      use dfun
       use tfshare
       use tfcsi,only:lfno
       use eeval
@@ -19,9 +21,7 @@
 c      include 'DEBUG.inc'
       type (sad_descriptor) kx
       type (ffs_bound) fbound,ibound
-      integer*4 ,intent(in):: nqcola,nqcola1,
-     $     kdp(maxcond),iqcol(maxcond),lfp(2,maxcond)
-      integer*4 ,intent(out):: ibegin
+      integer*4 ,intent(out):: ibegin,iqcol(maxcond),lfp(2,maxcond),nqcola1,nqcola,kdp(maxcond)
       integer*4 i1,i2,i3,i,ii,j,iter,kt,iq,l,maxf,
      $     ie,ie1,iv,nstab,lout,irtc
       real*8 ,intent(out):: df(maxcond),r,rp,residual1(-ndimmax:ndimmax)
@@ -45,7 +45,7 @@ c     begin initialize for preventing compiler warning
       anudiff0=0.d0
       iutm=0
 c     end   initialize for preventing compiler warning
-      if(iprolog .eq. 0)then
+      if(iprolog == 0)then
         iprolog=ktfsymbolz('OpticsProlog',12)
         iepilog=ktfsymbolz('OpticsEpilog',12)
         imr=    ktfsymbolz('MatchingResidual',16)-4
@@ -126,7 +126,7 @@ c     $         aint(twiss(nlat,0,mfitny)/pi2)
             irtc=0
             iutm=ktfallocshared((2*nfam+1)*4)
 c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
-            if(irtc .eq. 0)then
+            if(irtc == 0)then
               ipr=itffork()
             else
               ipr=-1
@@ -150,10 +150,10 @@ c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
           fam=.false.
  1        do ii=ifb,ife,idir
             if(fam)then
-              if(kfam(ii) .eq. 0)then
+              if(kfam(ii) == 0)then
                 cycle
               elseif(ipr .gt. 0 .and. jfam(ii) .ge. 0 .or.
-     $               ipr .eq. 0 .and. jfam(ii) .lt. 0)then
+     $               ipr == 0 .and. jfam(ii) .lt. 0)then
                 cycle
               endif
               i3=i2
@@ -203,7 +203,7 @@ c                    enddo
                     twiss(1,1,mfitdx:mfitdpy)=
      $                   utwiss(mfitdx:mfitdpy,i2,1)
 c     $                   +(dp(ii)-dp(i2))*physd
-c                    if(ii .eq. nfr)then
+c                    if(ii == nfr)then
 c                      write(*,'(a,1p10g12.4)')'tffscalc ',
 c     $                     twiss(1,1,mfitdx:mfitdpy),
 c     $                     utwiss(mfitex:mfitepy,i2,1),dp(ii),dp(i2)
@@ -235,19 +235,19 @@ c     $             aint(twiss(nlat,1,mfitnx)/pi2)-
 c     $             twiss(nlat,1,mfitny)/pi2+
 c     $             aint(twiss(nlat,1,mfitny)/pi2)
 c              write(*,*)'tffscalc ',anudiffi,anudiff0
-              optstat(ii)%stabx=optstat(ii)%stabx .and. (fam .or.
-     $             (.not. intres .or. anuxi .eq. anux0) .and.
-     $             (.not. halfres .or. anuxih .eq. anux0h) .and.
-     $             (.not. sumres .or. anusumi .eq. anusum0) .and.
-     $             (.not. diffres .or. anudiffi .eq. anudiff0))
-              optstat(ii)%staby=optstat(ii)%staby .and. (fam .or.
-     $             (.not. intres .or. anuyi .eq. anuy0) .and.
-     $             (.not. halfres .or. anuyih .eq. anuy0h) .and.
-     $             (.not. sumres .or. anusumi .eq. anusum0) .and.
-     $             (.not. diffres .or. anudiffi .eq. anudiff0))
+              optstat(ii)%stabx=fam .or. optstat(ii)%stabx .and. (
+     $             (.not. intres .or. anuxi == anux0) .and.
+     $             (.not. halfres .or. anuxih == anux0h) .and.
+     $             (.not. sumres .or. anusumi == anusum0) .and.
+     $             (.not. diffres .or. anudiffi == anudiff0))
+              optstat(ii)%staby=fam .or. optstat(ii)%staby .and. (
+     $             (.not. intres .or. anuyi == anuy0) .and.
+     $             (.not. halfres .or. anuyih == anuy0h) .and.
+     $             (.not. sumres .or. anusumi == anusum0) .and.
+     $             (.not. diffres .or. anudiffi == anudiff0))
             endif
           enddo
-          if(ipr .eq. -1 .and. .not. fam .and. idir .eq. 1)then
+          if(ipr == -1 .and. .not. fam .and. idir == 1)then
             idir=-1
             ifb=-1
             ife=-nfr
@@ -279,7 +279,7 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
                 optstat(i)%tracey=rlist(jb+4)
               endif
             enddo
-          elseif(ipr .eq. 0)then
+          elseif(ipr == 0)then
             do i=nfam1,nfam
               if(i .gt. 0 .and. i .le. nfr .or.
      $             kfam(i) /= 0 .and. jfam(i) .ge. 0)then
@@ -308,8 +308,8 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
         zcal=.false.
         do i=1,nvar
           kt=idtypec(nelvx(nvevx(i)%ivarele)%klp)
-          if(kt /= 6 .and. kt /= 8 .and. kt /= 10
-     $         .and. kt /= 12)then
+          if(kt /= icSEXT .and. kt /= icOCTU .and. kt /= icDECA
+     $         .and. kt /= icDODECA)then
             zcal=.true.
             exit
           endif
@@ -326,15 +326,15 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
               ie1=iele1(i)
               do j=1,nvar
                 iv=nvevx(j)%ivvar
-                if(iv .eq. nelvx(ie)%ival .and. nvevx(j)%ivarele .eq. ie
-     $               .and. (nvevx(j)%ivcomp .eq. 0 .or.
-     $               nvevx(j)%ivcomp .eq. ii))then
+                if(iv == nelvx(ie)%ival .and. nvevx(j)%ivarele == ie
+     $               .and. (nvevx(j)%ivcomp == 0 .or.
+     $               nvevx(j)%ivcomp == ii))then
                   ibegin=i
                   go to 1023
                 elseif(iv /= nelvx(ie)%ival .and.
-     $                 nvevx(j)%ivarele .eq. ie1
-     $                 .and. (nvevx(j)%ivcomp .eq. 0 .or.
-     $                 nvevx(j)%ivcomp .eq. i))then
+     $                 nvevx(j)%ivarele == ie1
+     $                 .and. (nvevx(j)%ivcomp == 0 .or.
+     $                 nvevx(j)%ivcomp == i))then
                   ibegin=i
                   go to 1023
                 endif
@@ -394,7 +394,7 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
       rp=r
       nstab=0
       if(cell)then
-        if(rstab .eq. 0.d0)then
+        if(rstab == 0.d0)then
           rstab=10.d0
           do while(rstab .lt. r)
             rstab=rstab*10.d0
@@ -481,7 +481,7 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       type (sad_rlist), pointer , save::klid
       integer*8 , save:: ifvloc,ifvfun
       real*8 , parameter :: almin=1.d0
-      if(kfv%k .eq. 0)then
+      if(kfv%k == 0)then
         kfv=kxadaloc(0,4,klv)
         klv%head=dtfcopy(kxsymbolz('`FitWeight',10))
         ifvloc=ktsalocb(0,'                ',MAXPNAME+8)
@@ -540,6 +540,8 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
             wfit(i)=0.01d0*sqrt(
      $           max(twiss(maxf,0,mfitnx),twiss(maxf,0,mfitny))
      $           /em/max(almin,pos(maxf)-pos(1)))
+          case (mfitbmagx,mfitbmagy,mfitbmagz)
+            wfit(i)=3.d0
           case (mfitgx,mfitgy,mfitgz)
             wfit(i)=0.01d0*sqrt(
      $           max(twiss(maxf,0,mfitnx),twiss(maxf,0,mfitny))
@@ -622,8 +624,8 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
         fbound%fb=0.d0
       endif
       le1=le
-      if(le .eq. nlat)then
-        if(idtypec(nlat-1) .eq. icMARK)then
+      if(le == nlat)then
+        if(idtypec(nlat-1) == icMARK)then
           le1=le1-1
         else
           fbound%le=le1
@@ -691,7 +693,7 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
             xp=offset+lm
             if(xp .ge. 1.d0 .and. xp .le. xe)then
               lx=int(xp)
-              if(idtypec(lx) .eq. icMARK)then
+              if(idtypec(lx) == icMARK)then
                 nm=nm+1
                 if(nm .lt. nmmax)then
                   lm=lx
@@ -736,8 +738,8 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
         endif
       endif
       if(end)then
-        if(idtypec(nlat-1) .eq. icMARK)then
-          le1=merge(fbound%le,fbound%le+1,fbound%fe .eq. 0.d0)
+        if(idtypec(nlat-1) == icMARK)then
+          le1=merge(fbound%le,fbound%le+1,fbound%fe == 0.d0)
           twiss(nlat-1,jdp,:)=twiss(le1,jdp,:)
           twiss(nlat,jdp,:)=twiss(le1,jdp,:)
           jp=itwissp(nlat-1)

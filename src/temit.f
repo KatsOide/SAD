@@ -85,7 +85,7 @@ c      enddo
       use ffs_pointer
       use tmacro
       use tffitcode
-      use tspin, only:spnorm,sremit,srotinit
+      use tspin, only:spnorm,srotinit
       use eigen
       use macmath
       implicit none
@@ -180,13 +180,13 @@ c          write(*,*)'temit-inical ',calint,intra,econv,postcal,plot
           irad=12
           call tecalc(trans,cod,beam,beamn,beamp,
      $         emitn,emitp,btr,srot,srot1,
-     $         rx,rd,sps,spm,params,ceig,dc,cd,stab,calem)
+     $         rx,rd,sps,spm,params,ceig,dc,cd,stab,calem,lfno)
           inical=.false.
         endif
         if(pri)then
           call temitprint(lfno,intpri,
      $         rx,trans(:,7:12),cod,rd,beamn,beamp,emitn,emitp,
-     $         srot,srot1,spm,sps,ceig,cd,params,calem)
+     $         srot,srot1,sps,ceig,cd,params,calem)
           intpri=.false.
         endif
         if(calcodr .and. .not. stab .and. intra)then
@@ -238,39 +238,36 @@ c     $       beamp(1),beamp(6),beamp(21)
 
       subroutine tecalc(trans,cod,beam,beamn,beamp,
      $     emitn,emitp,btr,srot,srot1,
-     $     rx,rd,sps,spm,params,ceig,dc,cd,stab,calem)
+     $     rx,rd,sps,spm,params,ceig,dc,cd,stab,calem,lfno)
       use tfstk
       use temw
       use ffs_flag
       use ffs_pointer
       use tmacro
       use tffitcode
-      use tspin, only:spnorm,sremit
+      use tspin, only:spnorm,srequpol
       use eigen
       use macmath
       use mathfun
       implicit none
       real*8 ,parameter:: conv=1.d-12
-      integer*4 lfno,i,j,k,k1,k2,k3,m,l,n
-      real*8 ,intent(inout):: beam(42),srot1(3,3),srot(3,9)
+      integer*4 ,intent(in):: lfno
+      real*8 ,intent(inout):: beam(42),srot(3,9)
       real*8 ,intent(in):: trans(6,12),cod(6)
-      real*8 ,intent(out):: dc,sps(3,3),spm(3,3)
-      real*8 sdamp,sqr2,bb,bbv(21),sr,rgetgl1,
-     $     tune,ab(6),emxe,emye,emze,rirx(6,6)
+      real*8 ,intent(out):: dc,sps(3,3),spm(3,3),srot1(3,3)
       complex*16 ,intent(out):: cd(6)
-      complex*16 dceig(6),cc(6),ceig(6)
       real*8 ,intent(out):: btr(21,21),emitn(21),emitp(21),beamn(21),
      1     beamp(21),params(nparams),rx(6,6),rd(6,6)
+      integer*4 i,j,k,k1,k2,k3,m,l,n
+      real*8 sdamp,sqr2,bb,bbv(21),sr,rgetgl1,
+     $     tune,ab(6),emxe,emye,emze,rirx(6,6)
       real*8 tw(ntwissfun),rdb(6,12)
+      complex*16 dceig(6),cc(6),ceig(6)
       logical*4 ,intent(in):: calem
       logical*4 ,intent(out):: stab
       rx=trans(:,1:6)
       if(.not. rfsw)then
-        rx(6,1)=0.d0
-        rx(6,2)=0.d0
-        rx(6,3)=0.d0
-        rx(6,4)=0.d0
-        rx(6,5)=0.d0
+        rx(6,1:5)=0.d0
         rx(6,6)=1.d0
       endif
       emxe=rgetgl1('EMITXE')
@@ -488,10 +485,11 @@ c     enddo
       params(ipsigz)=sigz
       params(ipnnup)=h0*gspin
       if(calpol)then
-        call spnorm(srot,sps,spinmu,sdamp)
         srot1=srot(:,1:3)
+        call spnorm(srot,sps,spinmu,sdamp)
         params(ipnup)=spinmu/m_2pi
-        call sremit(srot,sps,params,beamn,sdamp,spm,equpol)
+c        call spequ(srot,sps,emitn,sdamp,equpol)
+        call srequpol(srot,sps,params,beamn,sdamp,spm,equpol)
         params(iptaup)=1.d0/sdamp/params(iprevf)
         params(ipequpol)=equpol(1)
         params(ipequpol2:ipequpol6)=equpol
@@ -504,6 +502,71 @@ c     enddo
         call rsetgl1('SIGE',sige)
         call rsetgl1('SIGZ',sigz)
       endif
+      return
+      end
+
+      subroutine spequ(srot,sps,em,sdamp,equpol)
+      use tspin,only:pst
+      use temw,only:dsg,r
+      implicit none
+      real*8 ,intent(in):: srot(3,9),sps(3,3),em(21),sdamp
+      real*8 ,intent(out):: equpol(3)
+      real*8 dg(6),dgx(6),dgy(6),dgz(6),serot(3,6),gt,spt(3,3),dsm(3,3)
+      spt=transpose(sps)
+      serot=matmul(spt,matmul(srot(:,4:9),r))
+      dgx=serot(1,:)
+      dgy=serot(2,:)
+      dgz=serot(3,:)
+      dsm(1,1)=dsg(1)
+      dsm(2,1)=dsg(2)
+      dsm(3,1)=dsg(4)
+      dsm(1,2)=dsg(2)
+      dsm(2,2)=dsg(3)
+      dsm(3,2)=dsg(5)
+      dsm(1,3)=dsg(4)
+      dsm(2,3)=dsg(5)
+      dsm(3,3)=dsg(6)
+      dsm=matmul(matmul(spt,dsm),sps)
+      dg(1)=dsm(1,1)
+     $     +dgx(1)**2*em(1 )+dgx(2)**2*em(3)
+     $     +dgx(3)**2*em(6 )+dgx(4)**2*em(10)
+     $     +dgx(5)**2*em(15)+dgx(6)**2*em(21)
+     $     +2.d0*(
+     $     dgx(1)*(dgx(2)*em(2 )+dgx(3)*em(4 )+dgx(4)*em(7 )+dgx(5)*em(11)+dgx(6)*em(16))+
+     $     dgx(2)*(dgx(3)*em(5 )+dgx(4)*em(8 )+dgx(5)*em(12)+dgx(6)*em(17))+
+     $     dgx(3)*(dgx(4)*em(9 )+dgx(5)*em(13)+dgx(6)*em(18))+
+     $     dgx(4)*(dgx(5)*em(14)+dgx(6)*em(19))+
+     $     dgx(5)* dgx(6)*em(20))
+      dg(3)=dsm(2,2)
+     $     +dgy(1)**2*em(1 )+dgy(2)**2*em(3)
+     $     +dgy(3)**2*em(6 )+dgy(4)**2*em(10)
+     $     +dgy(5)**2*em(15)+dgy(6)**2*em(21)
+     $     +2.d0*(
+     $     dgy(1)*(dgy(2)*em(2 )+dgy(3)*em(4 )+dgy(4)*em(7 )+dgy(5)*em(11)+dgy(6)*em(16))+
+     $     dgy(2)*(dgy(3)*em(5 )+dgy(4)*em(8 )+dgy(5)*em(12)+dgy(6)*em(17))+
+     $     dgy(3)*(dgy(4)*em(9 )+dgy(5)*em(13)+dgy(6)*em(18))+
+     $     dgy(4)*(dgy(5)*em(14)+dgy(6)*em(19))+
+     $     dgy(5)* dgy(6)*em(20))
+      dg(6)=dsm(3,3)
+     $     +dgz(1)**2*em(1 )+dgz(2)**2*em(3)
+     $     +dgz(3)**2*em(6 )+dgz(4)**2*em(10)
+     $     +dgz(5)**2*em(15)+dgz(6)**2*em(21)
+     $     +2.d0*(
+     $     dgz(1)*(dgz(2)*em(2 )+dgz(3)*em(4 )+dgz(4)*em(7 )+dgz(5)*em(11)+dgz(6)*em(16))+
+     $     dgz(2)*(dgz(3)*em(5 )+dgz(4)*em(8 )+dgz(5)*em(12)+dgz(6)*em(17))+
+     $     dgz(3)*(dgz(4)*em(9 )+dgz(5)*em(13)+dgz(6)*em(18))+
+     $     dgz(4)*(dgz(5)*em(14)+dgz(6)*em(19))+
+     $     dgz(5)* dgz(6)*em(20))
+c      dg(5)=dsm(2,3)
+c     $     +dgz(1)*dgy(1)*em(1 )+dgz(2)*dgy(2)*em(3)
+c     $     +dgz(3)*dgy(3)*em(6 )+dgz(4)*dgy(4)*em(10)
+c     $     +dgz(5)*dgy(5)*em(15)+dgz(6)*dgy(6)*em(21)
+c      gt=sqrt(dg(3)*dg(6)-dg(5)**2)
+      gt=dg(3)+dg(6)
+      equpol=pst/(.5d0*gt/sdamp+1.d0)
+      write(*,'(a,1p10g12.4)')'spequ ',gt,dg(1),dg(3),dg(6),dgy(4),dgz(4),sdamp,equpol(1)
+c      write(*,'(1p10g12.4)')em(1),em(3),em(6),em(10),em(15),em(21)
+c      write(*,'(1p10g12.4)')spt
       return
       end
 
@@ -880,7 +943,7 @@ c     $         sqrt(emitn(15)*emitn(21)-emitn(20)**2)
       end
 
       subroutine temitprint(lfno,intpri,
-     $     rx,rxd,cod,rd,beamn,beamp,emitn,emitp,srot,srot1,spm,sps,
+     $     rx,rxd,cod,rd,beamn,beamp,emitn,emitp,srot,srot1,sps,
      $     ceig,cd,params,calem)
       use tfstk
       use temw
@@ -893,11 +956,11 @@ c     $         sqrt(emitn(15)*emitn(21)-emitn(20)**2)
       integer*4 ,intent(in):: lfno
       logical*4 ,intent(in):: intpri,calem
       real*8 ,intent(in):: cod(6),rx(6,6),rxd(6,6),params(nparams),
-     $     srot(3,9),srot1(3,3),spm(3,3),rd(6,6),sps(3,3),
+     $     srot(3,9),srot1(3,3),rd(6,6),sps(3,3),
      $     beamn(21),beamp(21),emitn(21),emitp(21)
       complex*16 ,intent(in):: ceig(6),cd(6)
       integer*4 i,j
-      real*8 rxrxi(6,6),so,btilt,xxs,yys,sig1,sig2,sigx,sigy
+      real*8 rxrxi(6,6),so,btilt,xxs,yys,sig1,sig2,sigx,sigy,srotn(3,6)
       character*11 autofg,vout(nparams)
       character*13 at
       character*9 vout9(nparams)
@@ -1132,12 +1195,19 @@ c     kiku ------------------>
             write(lfno,'(a,1p6g15.7)')'        gx',srot(1,4:9)
             write(lfno,'(a,1p6g15.7)')'        gy',srot(2,4:9)
             write(lfno,'(a,1p6g15.7)')'        gz',srot(3,4:9)
-            write(lfno,*)'\n'//'   Spin depolarization matrix:'
-            write(lfno,*)'                s1             s2'//
-     $           '             s3'
-            write(lfno,'(a,1p6g15.7)')'        s1',spm(1,:)
-            write(lfno,'(a,1p6g15.7)')'        s2',spm(2,:)
-            write(lfno,'(a,1p6g15.7)')'        s3',spm(3,:)
+            srotn=matmul(srot(:,4:9),r)
+            write(lfno,*)'\n                 X              Px'//
+     $           '             Y              Py'//
+     $           '             Z              Pz'
+            write(lfno,'(a,1p6g15.7)')'        gx',srotn(1,:)
+            write(lfno,'(a,1p6g15.7)')'        gy',srotn(2,:)
+            write(lfno,'(a,1p6g15.7)')'        gz',srotn(3,:)
+c            write(lfno,*)'\n'//'   Spin depolarization matrix:'
+c            write(lfno,*)'                s1             s2'//
+c     $           '             s3'
+c            write(lfno,'(a,1p6g15.7)')'        s1',spm(1,:)
+c            write(lfno,'(a,1p6g15.7)')'        s2',spm(2,:)
+c            write(lfno,'(a,1p6g15.7)')'        s3',spm(3,:)
           endif
           vout(1)=autofg(spinmu/m_2pi,'11.8')
           vout(2)=autofg(equpol(1)*100.d0,'11.8')

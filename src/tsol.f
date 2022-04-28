@@ -232,7 +232,8 @@ c              endif
           y=y+dy
         endif
       endif
-      if(rad .and. calpol)then
+      if(rad .and. calpol .and.
+     $     (chi1 /= 0.d0 .or. chi2 /=0.d0 .or. chi3 /= 0.d0))then
         call trot33(rr,ent)
 c        write(*,'(a,1p9g13.5)')'tsolrot ',rr
         do i=1,np
@@ -443,7 +444,8 @@ c          call tmultr(trans1,trans2,6)
         call tmultr5(trans,trans1,irad)
         if(irad .gt. 6)then
           call tmulbs(beam,trans1,.true.)
-          if(calpol)then
+          if(calpol .and.
+     $         (chi1 /= 0.d0 .or. chi2 /=0.d0 .or. chi3 /= 0.d0))then
             call trot33(rr,ent)
             srot=matmul(rr,srot)
           endif
@@ -501,7 +503,7 @@ c          call tmultr(trans1,trans2,6)
 
       subroutine tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     k,kstop,ke,insol,kptbl,la,n,
-     $     nwak,nextwake,itab,izs,out)
+     $     nwak,nextwake,out)
       use kyparam
       use tfstk
       use ffs
@@ -523,17 +525,15 @@ c          call tmultr(trans1,trans2,6)
       integer*4 ,parameter ::la1=15
       integer*4 ,intent(in):: k,n
       integer*4 ,intent(out):: la,kstop,ke,nwak,nextwake
-      integer*4 , intent(inout)::kptbl(np0,6),np,itab(np),izs(np)
+      integer*4 , intent(inout)::kptbl(np0,6),np
       real*8 ,intent(inout)::x(np),px(np),y(np),py(np),z(np),
      $     g(np),dv(np),sx(np),sy(np),sz(np)
       logical*4 , intent(inout) :: insol
       logical*4 ,intent(out):: out
-      real*8 ,pointer,dimension(:,:)::wakel,waket
       real*8 tfbzs,fw,bzs,al,theta,phi,phix,phiy,
      $     bz1,dx,dy,rot,rtaper,ph
       real*8 ,allocatable,dimension(:)::bzph
-      integer*4 i,l,lt,kdx,kdy,krot,kb,lwl,lwt,irtc,kbz
-      integer*8 iwpl,iwpt
+      integer*4 i,l,lt,kdx,kdy,krot,kb,irtc,kbz
       logical*4 seg,autophi,krad
       logical*1,save::dofr(0:1)=[.false.,.false.]
       real*8 ,save::dummy(256)=0.d0
@@ -613,10 +613,6 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           return
         endif
         if(l == nextwake)then
-          iwpl=abs(kwaketbl(1,nwak))
-          lwl=merge((ilist(1,iwpl-1)-2)/2,0,iwpl /= 0)
-          iwpt=abs(kwaketbl(2,nwak))
-          lwt=merge((ilist(1,iwpt-1)-2)/2,0,iwpt /= 0)
           fw=(abs(charge)*e*pbunch*anbunch/amass)/np0*.5d0
           kdx=kytbl(kwDX,lt)
           dx=merge(cmp%value(kdx),0.d0,kdx /= 0)
@@ -624,12 +620,9 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           dy=merge(cmp%value(kdy),0.d0,kdy /= 0)
           krot=kytbl(kwROT,lt)
           rot=merge(cmp%value(krot),0.d0,krot /= 0)
-          call c_f_pointer(c_loc(rlist(iwpl)),wakel,[2,lwl])
-          call c_f_pointer(c_loc(rlist(iwpt)),waket,[2,lwt])
           call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         dx,dy,rot,int(anbunch),
-     $         fw,lwl,wakel,lwt,waket,
-     $         p0,h0,itab,izs,.true.)
+     $         fw,nwak,p0,h0,.true.)
         endif
         select case (lt)
         case (icDRFT)
@@ -788,12 +781,9 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
         end select
 
         if(l == nextwake .and. l /= ke)then
-          call c_f_pointer(c_loc(rlist(iwpl)),wakel,[2,lwl])
-          call c_f_pointer(c_loc(rlist(iwpt)),waket,[2,lwt])
           call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         dx,dy,rot,int(anbunch),
-     $         fw,lwl,wakel,lwt,waket,
-     $         p0,h0,itab,izs,.false.)
+     $         fw,nwak,p0,h0,.false.)
           nwak=nwak+1
           nextwake=merge(0,iwakeelm(nwak),nwak .gt. nwakep)
         endif

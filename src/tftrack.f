@@ -444,7 +444,7 @@ c      return
       if(calpol)then
         do i=1,np
           k=iptbl(i,1)
-          rlist(kaj(8)+i)=zx(k,8)
+          rlist(kaj(8)+i)=zx(k,8)/norm2(zx(k,7:9))
           rlist(kaj(7)+i)=atan(zx(k,9),zx(k,7))
         enddo
       endif
@@ -474,7 +474,7 @@ c      return
       integer(4), intent(out)   :: npa
       integer(4), intent(in)    :: npc, mc, nlat, tbegin, mcf
       integer(4) :: i, p, iptmp(nkptbl)
-      real(8) :: x1, px1, y1, py1, z1, g1, st, sv(2), phis
+      real(8) :: x1, px1, y1, py1, z1, g1, st, sv(2)
 c     zx(npc,mc): Initial particle distribution
 c            npc: Number of particles
 c             mc: Number of rows
@@ -583,9 +583,8 @@ c              - Swap particle coordinates
         if(calpol)then
           do i=1,npa
             st=1.d0+sqrt1(-zx(i,8)**2)
-            phis=zx(i,7)
-            zx(i,7)=st*cos(phis)
-            zx(i,9)=st*sin(phis)
+            zx(i,9)=st*sin(zx(i,7))
+            zx(i,7)=st*cos(zx(i,7))
           enddo
         endif
       endif

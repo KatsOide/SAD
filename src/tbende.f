@@ -535,7 +535,7 @@ c      trans(5,6)=zfpzf*(1.d0-pr/pzf*    r33*dpzidp)
       use ffs_flag
       use tmacro
       use multa, only:nmult
-      use kradlib, only:tradke
+      use kradlib, only:tradke,dphipol
       use temw,only:tsetr0
       use mathfun, only:xsincos
       implicit none
@@ -634,6 +634,9 @@ c      write(*,'(a,1p10g12.4)')'tbende-2 ',cod(1:5)
         ndiv=max(ndiv,int(nrad*emidiv*emidib),
      1       int(abs(phib*h0*anrad)/epsrad/1.d6*emidiv*emidib))
       endif
+      if(calpol)then
+        ndiv=max(ndiv,int(max(abs(phic),1.d-6)*h0*gspin/dphipol))
+      endif
       call tinitr(trans1)
       tanp1=tan(psi1*phi0+apsi1)
       tanp2=tan(psi2*phi0+apsi2)
@@ -730,7 +733,7 @@ c      write(*,'(a,1p10g12.4)')'tbende-6 ',cod
 c      write(*,'(a,1p10g12.4)')'tbende-8 ',cod
       call tchge(trans,cod,beam,srot,
      $     dx,dy,theta,dtheta,dchi2,alg-al0,phig-phi0,.false.)
-c      write(*,'(a,1p10g12.4)')'tbende-9 ',cod
+c      write(*,'(a,1p10g12.4)')'tbende-9 ',srot(2,9)
       return
       end
 

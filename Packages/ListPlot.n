@@ -209,7 +209,8 @@ PR$Auto[{x_,y_List},g_]:={x,PR$Auto[y,g]};
 
 PlotInterpolate[fin_,{y_,xmin_,xmax_},min0_,maxdiv_,maxb_]:=Module[
   {f,fs,s,dl,dl0,dl1,la,cos,a,yw,ar,dx,xl,yl,x0,x1,x2,cosm,cosm1=-1,la0=0,
-    costh=1-maxb^2/2,min=min0,fh=Extract[Hold[fin],{1},Head],ny,ys,ymin,ymax,ya},
+    costh=1-maxb^2/2,min=min0,fh=Extract[Hold[fin],{1},Head],ny,ys,ymin,ymax,ya,
+    dxmin=Abs[(xmax-xmin)/maxdiv]},
   If[Head[fh]===SplineData,
     min=Max[min,Length[fh[[1,1]]]]];
   fs = With[{y = #}, {#, Check[fin, 0]}]&;
@@ -235,7 +236,7 @@ PlotInterpolate[fin_,{y_,xmin_,xmax_},min0_,maxdiv_,maxb_]:=Module[
       x1=(Drop[xl,-2]+2*x0)/3;
       x2=(Drop[xl,2]+2*x0)/3;
       a=MapThread[
-        If[#<costh,
+        If[#<costh && Abs[#3-#2]>dxmin,
           Null[#2,#3],
           Null[]]&,
         {cos,x1,x2}];

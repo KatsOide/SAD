@@ -41,11 +41,16 @@ With[{mineps=1e-12},
     Transpose[LinearSolve[((r2*#)&/@m)*r1,DiagonalMatrix[r1],Tolerance->e]]*r2];
 
   SingularValues[a_,opt___]:=Module[
-    {{e,inv}={Tolerance,Inverse}
+    {{e,inv,sort}={Tolerance,Inverse,Sort}
       /.({opt}/.Threshold->Tolerance)/.
-      {Tolerance->1e-8,Inverse->True}},
-    SingularValues1[a,e,inv]];
-  
+      {Tolerance->1e-8,Inverse->True,Sort->True},u,w,v},
+    If[sort,
+      {u,w,v}=SingularValues1[a,e,inv];
+      {w,u,v}=Thread[If[inv,
+        Sort[Thread[{w,u,v}]],
+        Reverse[Sort[Thread[{w,u,v}]]]]];
+      {u,w,v},
+      SingularValues1[a,e,inv]]];
   ];
 
 Protect[LinearSolve,LinearSolveComplex1,LinearSolveComplex2,

@@ -106,8 +106,6 @@
         x2= cp0*x2+sp0*gv(2,3)
         z3=-sp0*x3+cp0*gv(3,3)
         x3= cp0*x3+sp0*gv(3,3)
-c        write(*,'(a,1p12g10.2)')'tsetphgv ',gx0,gy0,gz0,
-c     $       x1,x2,x3,y1,y2,y3,z1,z2,z3
       endif
       chi=merge(0.d0,2.d0*atan2(x3,-y3),x3 .eq. 0.d0)
       return
@@ -216,8 +214,6 @@ c      cod=[xi,pxir,yi,pyir,0.d0,0.d0]
       dpgx=dp*(pzi*z1+pxir*x1+pyir*y1)
       dpgy=dp*(pzi*z2+pxir*x2+pyir*y2)
       dpgz=dp*(pzi*z3+pxir*x3+pyir*y3)
-c      write(*,'(a,2i5,1p5g12.4)')'phconv ',k,l,
-c     $     pxia,pxir*x2,pyir*y2,pzi*z2,dpgy/dp
       xi3a=cos(chi)*xi3+sin(chi)*xi1
       xi1=-sin(chi)*xi3+cos(chi)*xi1
       xi3=xi3a
@@ -226,7 +222,6 @@ c     $     pxia,pxir*x2,pyir*y2,pzi*z2,dpgy/dp
         kphtable(itp)=ktaloc(10*lt)
         ilp=1
       endif
-c      write(*,*)'phconv ',itp,ilp
       kp=kphtable(itp)+(ilp-1)*10
       ilist(1,kp)=k
       ilist(2,kp)=l
@@ -278,7 +273,6 @@ c      write(*,*)'phconv ',itp,ilp
         dlist(kphlist)=dxnulll
       else
         nph=(itp-1)*lt+max(ilp-1,0)
-c        write(*,*)'phlist ',itp,nph
         kax=ktadaloc(-1,nph,klx)
         klx%attr=ior(klx%attr,lconstlist)
         itp=1
@@ -364,7 +358,629 @@ c      write(*,*)'with ',itp,ilp
       
       end module
 
+
+      module tspin
+      use macphys
+
+      real*8, parameter :: pst=8.d0*sqrt(3.d0)/15.d0,
+     $     sflc=.75d0*(elradi/finest)**2,cfpd=5.d0*sqrt(3.d0)/8.d0
+      real*8, parameter:: gmin=-0.9999d0,cave=8.d0/15.d0/sqrt(3.d0)
+      real*8, parameter:: cuu=11.d0/27.d0,cl=1.d0+gspin
+
+      integer*4 ,parameter :: mord=6,lind=13
+      integer*4 , parameter ::
+     $     mlen(mord) =(/18,105, 392,1134, 2772, 6006/),
+     $     mleni(mord)=(/24,234,1456,6825,26208,86632/)
+
+      real*8 cphi0,sphi0
+
+      type scmat
+        complex*16 , pointer :: cmat(:,:,:)
+        integer*4 , pointer :: ind(:,:)
+        integer*4 , pointer :: ias(:)
+        integer*4 nind,iord,id,maxi
+      end type
+
+      contains
+        subroutine spinitrm(rm,nord,id,l)
+        implicit none
+        type (scmat) , intent(inout):: rm
+        integer*4 , intent(in)::nord,id,l
+        allocate(rm%cmat(3,3,l),rm%ind(lind,l),rm%ias(l))
+        rm%nind=0
+        rm%iord=nord
+        rm%id=id
+        rm%maxi=l
+        return
+        end
+
+        integer*4 function iaind(rm,ind) result(ia)
+        type (scmat) , intent(inout):: rm
+        integer*4 , intent(in):: ind(lind)
+        integer*4 i1,i2,im,k
+        logical*4 found
+        i1=1
+        i2=rm%nind
+        im=0
+        do while(i2 .ge. i1)
+          im=(i1+i2)/2
+          ia=rm%ias(im)
+          found=.true.
+          do k=1,lind
+            if(rm%ind(k,ia) > ind(k))then
+              i2=im-1
+              found=.false.
+              exit
+            elseif(rm%ind(k,ia) < ind(k))then
+              i1=im+1
+              found=.false.
+              exit
+            endif
+          enddo
+          if(found)then
+            return
+          endif
+        enddo
+        ia=rm%nind+1
+        if(i1 == im+1)then
+          im=im+1
+        endif
+        if(im < ia)then
+          rm%ias(im+1:ia)=rm%ias(im:rm%nind)
+        endif
+        rm%ias(im)=ia
+        rm%nind=ia
+        if(rm%nind > rm%maxi)then
+          write(*,*)'Insufficient matrix table ',rm%id,rm%nind,
+     $         rm%iord,ind
+          stop
+        endif
+        rm%ind(:,ia)=ind
+        rm%cmat(:,:,ia)=(0.d0,0.d0)
+        return
+        end function
+
+        integer*4 function indn(i,i1,i2,idx,imx,is)
+        implicit none
+        dimension indn(lind)
+        integer*4 , intent(in)::i,i1,i2,idx,imx,is
+        indn=0
+        indn(i*2-1:i*2)=(/i1,i2/)
+        indn(i+6)=idx
+        indn(i+9)=imx
+        indn(lind)=is
+        return
+        end function
+
+        integer*4 function ind2(i,j,i1,i2,j1,j2)
+        implicit none
+        dimension ind2(lind)
+        integer*4 , intent(in)::i,j,i1,i2,j1,j2
+        ind2=0
+        ind2(i*2-1:i*2)=(/i1,i2/)
+        ind2(j*2-1:j*2)=(/j1,j2/)
+        return
+        end function
+
+        integer*4 function ind3(i,i1,i2)
+        implicit none
+        dimension ind3(lind)
+        integer*4 , intent(in)::i,i1,i2
+        ind3(1:6)=1
+        ind3(i*2-1:i*2)=(/i1,i2/)
+        ind3(7:13)=0
+        return
+        end function
+
+        subroutine spsetrm(am,ind,rm)
+        implicit none
+        type (scmat) , intent(inout)::rm
+        integer*4 , intent(in) :: ind(lind)
+        complex*16 , intent(in) ::am(3,3)
+        rm%cmat(:,:,iaind(rm,ind))=am
+        return
+        end subroutine
+
+        subroutine spdotrm(rma,rmb,rmc)
+        implicit none
+        type (scmat) , intent(in):: rma,rmb
+        type (scmat) , intent(inout) :: rmc
+        integer*4 i,j,ia
+        do i=1,rma%nind
+          do j=1,rmb%nind
+            ia=iaind(rmc,rma%ind(:,i)+rmb%ind(:,j))
+            rmc%cmat(:,:,ia)=rmc%cmat(:,:,ia)
+     $           +matmul(rma%cmat(:,:,i),rmb%cmat(:,:,j))
+          enddo
+        enddo
+        return
+        end subroutine
+
+        subroutine spaddrm(rma,rmb,rmc)
+        implicit none
+        type (scmat) ,intent(in):: rma,rmb
+        type (scmat) ,intent(out):: rmc
+        integer*4 ind(lind),i,ic
+        do i=1,rma%nind
+          ind=rma%ind(:,i)
+          ic=iaind(rmc,ind)
+          rmc%cmat(:,:,ic)=rmc%cmat(:,:,ic)+rma%cmat(:,:,i)
+        enddo
+        do i=1,rmb%nind
+          ind=rmb%ind(:,i)
+          ic=iaind(rmc,ind)
+          rmc%cmat(:,:,ic)=rmc%cmat(:,:,ic)+rmb%cmat(:,:,i)
+        enddo
+        return
+        end subroutine
+
+        subroutine spcopyrm(rma,rmb)
+        implicit none
+        type (scmat) rma,rmb
+        integer*4 n
+        n=rma%nind
+        rmb%cmat(:,:,1:n)=rma%cmat(:,:,1:n)
+        rmb%ind(:,1:n)=rma%ind(:,1:n)
+        rmb%ias(1:n)=rma%ias(1:n)
+        rmb%nind=n
+        return
+        end subroutine
+
+        subroutine spintrm(rm,dx,dy,dz,amx,amy,amz,ams,ssprd)
+        use gammaf
+        use mathfun
+        use macmath
+        implicit none
+        type (scmat) , intent(inout) :: rm
+        real*8 , intent(in) :: dx,dy,dz,amx,amy,amz,ams,ssprd
+        real*8 a
+        complex*16 cm(3,3),cm0(3,3),cphi,cb
+        integer*4 i,ia,ind(lind)
+        do i=1,rm%nind
+          ind=rm%ind(:,i)
+          cphi=dcmplx(-ind(7)*dx-ind(8)*dy-ind(9)*dz,
+     $         ind(10)*amx+ind(11)*amy+ind(12)*amz+ind(lind)*ams)
+          cm0=-rm%cmat(:,:,i)/cexp1(cphi)
+          a=m_sqrt2*abs(ind(lind))*ssprd
+          if(a == 0.d0)then
+            cm=cm0
+          else
+            cb=-cexp1(-cphi)/a
+            cm=-rm%cmat(:,:,i)*m_2pi*m_sqrtpi*exp(cb**2-cphi)*cerfc(cb)/a
+c            if(ind(1) == 0 .and. ind(2) == 2 .or.
+c     $           ind(1) == 2 .and. ind(2) == 0)then
+c              write(*,'(a,8i5,1p4g12.4)')'spintrm ',i,ia,ind(1:2),ind(10:lind),
+c     $             cb,exp(cb**2-cphi)*cerfc(cb)/a
+c              write(*,'(1p9g12.4)')dble(cm0)
+c              write(*,'(1p9g12.4)')imag(cm0)
+c              write(*,'(1p9g12.4)')dble(cm)
+c              write(*,'(1p9g12.4)')imag(cm)
+c            endif
+          endif
+          rm%cmat(:,:,i)=cm0
+          ind(7:lind)=0
+          ia=iaind(rm,ind)
+          rm%cmat(:,:,ia)=rm%cmat(:,:,ia)+cm
+        enddo
+        return
+        end subroutine
+
+        subroutine spmulrm(rm,cv,indv,rd)
+        implicit none
+        type (scmat) , intent(in) :: rm
+        type (scmat) , intent(inout) :: rd
+        complex*16 , intent(in):: cv
+        integer*4 , intent(in):: indv(lind)
+        integer*4 i,ia
+        do i=1,rm%nind
+          ia=iaind(rd,indv+rm%ind(:,i))
+          rd%cmat(:,:,ia)=rd%cmat(:,:,ia)+cv*rm%cmat(:,:,i)
+        enddo
+        return
+        end subroutine
+
+        subroutine sprmulrm(rm,r)
+        implicit none
+        type (scmat) , intent(inout) :: rm
+        real*8 , intent(in):: r
+        rm%cmat(:,:,1:rm%nind)=r*rm%cmat(:,:,1:rm%nind)
+        return
+        end subroutine
+
+        subroutine spcalcres(rm,rmi,m,dx,amx,ams,ssprd)
+        implicit none
+        type (scmat), intent(inout):: rm(mord),rmi(mord)
+        integer*4 , intent(in)::m
+        real*8 , intent(in)::dx(3),amx(3),ams,ssprd
+        integer*4 k
+        call spdotrm(rm(1),rm(m-1),rm(m))
+        call sprmulrm(rm(m),1.d0/dble(m))
+        call spcopyrm(rm(m),rmi(m))
+        do k=1,m-1
+          call spdotrm(rm(k),rmi(m-k),rmi(m))
+        enddo
+        call spintrm(rmi(m),dx(1),dx(2),dx(3),amx(1),amx(2),amx(3),ams,ssprd)
+        return
+        end
+
+        subroutine spdepol(gxr,gxi,gyr,gyi,gzr,gzi,e1,e2,em,dx,ssprd,amx,ams,rmd)
+        implicit none
+        type (scmat) rm(mord),rmi(mord)
+        real*8 , intent(in)::gxr(3),gxi(3),gyr(3),gyi(3),gzr(3),gzi(3),
+     $       dx(3),amx(3),ams,e1(3),e2(3),em(3),ssprd
+        real*8 , intent(out) :: rmd(3,3,3)
+        integer*4 i,ia1,ia2,ia3,ia4,ia5,ia6,
+     $       ia20,ia21,ia40,ia41,ia42,
+c     $       ia60,ia61,
+     $       ia62,ia63,i1,i2,k,
+     $       ib40,ib41,ic40,ic41,ib60,ib61,ic60,ic61,id60,id61,
+     $       ie61,ie62,if61,if62
+        complex*16 gx,gy,gz,gxc,gyc,gzc
+        complex*16 ,parameter :: cI=(0.d0,1.d0),c0=(0.d0,0.d0),c1=(1.d0,0.d0)
+        real*8 de12,se12,sesq,e1e2
+        real*8 ,parameter ::fudge=1.d0;
+        do i=1,mord
+          call spinitrm(rm(i),i,i,mlen(i))
+          call spinitrm(rmi(i),i,i+mord,mleni(i))
+        enddo
+        do i=1,3
+          gx=dcmplx(gxr(i),gxi(i))
+          gxc=conjg(gx)
+          gy=dcmplx(gyr(i)+gzi(i),gzr(i)-gyi(i))
+          gyc=conjg(gy)
+          gz=dcmplx(gyr(i)-gzi(i),gzr(i)+gyi(i))
+          gzc=conjg(gz)
+          ia1=iaind(rm(1),indn(i,0,1,1,-1,-1))
+          rm(1)%cmat(:,:,ia1)=RESHAPE(0.25d0*gzc*(/
+     $         c0,-cI,c1,
+     $         cI,c0,c0,
+     $         -c1,c0,c0/),(/3,3/))
+          ia2=iaind(rm(1),indn(i,0,1,1,-1,0))
+          rm(1)%cmat(:,:,ia2)=RESHAPE(0.5d0*gxc*(/
+     $         c0,c0, c0,
+     $         c0,c0,-c1,
+     $         c0,c1, c0/),(/3,3/))
+          ia3=iaind(rm(1),indn(i,0,1,1,-1,1))
+          rm(1)%cmat(:,:,ia3)=RESHAPE(0.25d0*gy*(/
+     $         c0,cI,c1,
+     $         -cI,c0,c0,
+     $         -c1,c0,c0/),(/3,3/))
+          ia4=iaind(rm(1),indn(i,1,0,1,1,-1))
+          rm(1)%cmat(:,:,ia4)=conjg(rm(1)%cmat(:,:,ia3))
+          ia5=iaind(rm(1),indn(i,1,0,1,1,0))
+          rm(1)%cmat(:,:,ia5)=conjg(rm(1)%cmat(:,:,ia2))
+          ia6=iaind(rm(1),indn(i,1,0,1,1,1))
+          rm(1)%cmat(:,:,ia6)=conjg(rm(1)%cmat(:,:,ia1))
+        enddo
+
+        call spcopyrm(rm(1),rmi(1))
+        call spintrm(rmi(1),dx(1),dx(2),dx(3),amx(1),amx(2),amx(3),ams,ssprd)
+c        do k=2,mord
+        do k=2,2
+          call spcalcres(rm,rmi,k,dx,amx,ams,ssprd)
+        enddo
+
+        rmd=0.d0
+        do i=1,3
+          ia20=iaind(rmi(2),indn(i,2,0,0,0,0))
+          ia21=iaind(rmi(2),indn(i,1,1,0,0,0))
+
+          ia40=iaind(rmi(4),indn(i,0,4,0,0,0))
+          ia41=iaind(rmi(4),indn(i,1,3,0,0,0))
+          ia42=iaind(rmi(4),indn(i,2,2,0,0,0))
+          i1=mod(i,3)+1
+          ib40=iaind(rmi(4),ind2(i,i1,0,2,1,1))
+          ib41=iaind(rmi(4),ind2(i,i1,1,1,1,1))
+          i2=mod(i1,3)+1
+          ic40=iaind(rmi(4),ind2(i,i2,0,2,1,1))
+          ic41=iaind(rmi(4),ind2(i,i2,1,1,1,1))
+
+c          ia60=iaind(rmi(6),indn(i,0,6,0,0,0))
+c          ia61=iaind(rmi(6),indn(i,1,5,0,0,0))
+          ia62=iaind(rmi(6),indn(i,2,4,0,0,0))
+          ia63=iaind(rmi(6),indn(i,3,3,0,0,0))
+          ib60=iaind(rmi(6),ind2(i,i1,0,2,2,2))
+          ib61=iaind(rmi(6),ind2(i,i1,1,1,2,2))
+          ic60=iaind(rmi(6),ind2(i,i2,0,2,2,2))
+          ic61=iaind(rmi(6),ind2(i,i2,1,1,2,2))
+          id60=iaind(rmi(6),ind3(i,0,2))
+          id61=iaind(rmi(6),ind3(i,1,1))
+          ie61=iaind(rmi(6),ind2(i,i1,1,3,1,1))
+          ie62=iaind(rmi(6),ind2(i,i1,2,2,1,1))
+          if61=iaind(rmi(6),ind2(i,i2,1,3,1,1))
+          if62=iaind(rmi(6),ind2(i,i2,2,2,1,1))
+
+          se12=(e1(i)+e2(i))*.5d0*fudge
+          de12=(e1(i)-e2(i))*.5d0*fudge
+c se12 = <f1f2>/2
+c de12 = <f1^2>/2 = <f2^2>/2
+c always de12 > 0
+          sesq=(e1(i)**2+e2(i)**2)*.25d0
+          e1e2=e1(i)*e2(i)*.25d0
+          rmd(:,:,1)=rmd(:,:,1)
+     $         +se12*dble(rmi(2)%cmat(:,:,ia21))
+     $         +2.d0*de12*dble(rmi(2)%cmat(:,:,ia20))
+c$$$
+c$$$          rmd(:,:,2)=rmd(:,:,2)
+c$$$     $     +2.d0*(
+c$$$     $         em(i)*(
+c$$$     $         se12*dble(rmi(4)%cmat(:,:,ia42))
+c$$$     $         +2.d0*de12*dble(rmi(4)%cmat(:,:,ia41)))
+c$$$     $        +em(i1)*(
+c$$$     $         se12*dble(rmi(4)%cmat(:,:,ib41))
+c$$$     $         +2.d0*de12*dble(rmi(4)%cmat(:,:,ib40)))
+c$$$     $        +em(i2)*(
+c$$$     $         se12*dble(rmi(4)%cmat(:,:,ic41))
+c$$$     $         +2.d0*de12*dble(rmi(4)%cmat(:,:,ic40))))
+c$$$c     $     +de12*(6.d0*de12*dble(rmi(4)%cmat(:,:,ia40))
+c$$$c     $           +(6.d0*se12+4.d0*em(i))
+c$$$c     $              *dble(rmi(4)%cmat(:,:,ia41)))
+c$$$c     $     +(2.d0*(em(i)*se12+e1e2)+3.d0*sesq)
+c$$$c     $        *dble(rmi(4)%cmat(:,:,ia42))
+c$$$ 
+c$$$          rmd(:,:,3)=rmd(:,:,3)
+c$$$     $     +8.d0*(
+c$$$     $         em(i )**2*(se12*dble(rmi(6)%cmat(:,:,ia63))
+c$$$     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,ia62)))
+c$$$     $        +em(i1)**2*(se12*dble(rmi(6)%cmat(:,:,ib61))
+c$$$     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,ib60)))
+c$$$     $        +em(i2)**2*(se12*dble(rmi(6)%cmat(:,:,ic61))
+c$$$     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,ic60))))
+c$$$     $     +4.d0*(
+c$$$     $         em(i1)*em(i2)*(se12*dble(rmi(6)%cmat(:,:,id61))
+c$$$     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,id60)))
+c$$$     $        +em(i )*em(i1)*(se12*dble(rmi(6)%cmat(:,:,ie62))
+c$$$     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,ie61)))
+c$$$     $        +em(i )*em(i2)*(se12*dble(rmi(6)%cmat(:,:,if62))
+c$$$     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,if61))))
+c$$$c     $     +de12*(3.d0*de12*(
+c$$$c     $       10.d0*de12*dble(rmi(6)%cmat(:,:,ia60))
+c$$$c     $       +(4.d0*em(i)+10.d0*se12)*dble(rmi(6)%cmat(:,:,ia61)))
+c$$$c     $       +(em(i)*(16.d0*em(i)+12.d0*se12)+30.d0*sesq+36.d0*e1e2)
+c$$$c     $           *dble(rmi(6)%cmat(:,:,ia62)))
+c$$$c     $     +(em(i)*(8.d0*em(i)*se12+6.d0*sesq+4.d0*e1e2)
+c$$$c     $       +3.d0*se12*(5.d0*sesq-2.d0*e1e2))
+c$$$c     $      *dble(rmi(6)%cmat(:,:,ia63))
+c$$$c     $
+        enddo
+
+        do i=1,mord
+          deallocate(rm(i)%cmat,rmi(i)%cmat,rm(i)%ind,rmi(i)%ind,rm(i)%ias,rmi(i)%ias)
+        enddo
+        return
+        end subroutine
+
+        subroutine spnorm(srot,sps,smu,sdamp)
+        use temw, only:gintd
+        use mathfun, only:outer
+        use macmath, only:m_2pi
+        implicit none
+        real*8 , intent(inout) :: srot(3,9)
+        real*8 , intent(out) :: sps(3,3),smu,sdamp
+        real*8 s,a(3,3),w(3,3),eig(2,3),dr(3),dsps(3),
+     $       cm,sm,spsa1(3)
+        real*8 , parameter :: smin=1.d-4
+        integer*4 i
+c        s=abs(dcmplx(srot(1,2),abs(dcmplx(srot(2,2),srot(3,2)))))
+        s=norm2(srot(:,2))
+        srot(:,2)=srot(:,2)/s
+        s=srot(1,1)*srot(1,2)+srot(2,1)*srot(2,2)+srot(3,1)*srot(3,2)
+        srot(:,1)=srot(:,1)-s*srot(:,2)
+        s=abs(dcmplx(srot(1,1),abs(dcmplx(srot(2,1),srot(3,1)))))
+        srot(:,1)=srot(:,1)/s
+        srot(:,3)=outer(srot(:,1),srot(:,2))
+        sps(1,1)=srot(2,3)-srot(3,2)
+        sps(2,1)=srot(3,1)-srot(1,3)
+        sps(3,1)=srot(1,2)-srot(2,1)
+        s=abs(dcmplx(sps(1,1),abs(dcmplx(sps(2,1),sps(3,1)))))
+        if(s < smin)then
+          a=srot(:,1:3)
+          call teigen(a,w,eig,3,3)
+          do i=1,3
+            if(eig(2,i) == 0.d0)then
+              sps(:,1)=a(:,i)
+              s=abs(dcmplx(sps(1,1),abs(dcmplx(sps(2,1),sps(3,1)))))
+              exit
+            endif
+          enddo
+        endif
+        sps(:,1)=sps(:,1)/s
+        dr=sps(:,1)-srot(:,1)*sps(1,1)-srot(:,2)*sps(2,1)
+     $       -srot(:,3)*sps(3,1)
+        a=srot(:,1:3)
+        a(1,1)=a(1,1)-1.d0
+        a(2,2)=a(2,2)-1.d0
+        a(3,3)=a(3,3)-1.d0
+        call tsolvg(a,dr,dsps,3,3,3)
+        sps(:,1)=sps(:,1)+dsps
+c        s=abs(dcmplx(sps(1,1),abs(dcmplx(sps(2,1),sps(3,1)))))
+        s=norm2(sps(:,1))
+        sps(:,1)=sps(:,1)/s
+        if(abs(min(sps(1,1),sps(2,1),sps(3,1)))
+     $       > abs(max(sps(1,1),sps(2,1),sps(3,1))))then
+          sps(:,1)=-sps(:,1)
+        endif
+        dr=sps(:,1)-srot(:,1)*sps(1,1)-srot(:,2)*sps(2,1)
+     $       -srot(:,3)*sps(3,1)
+        sps(:,2)=0.d0
+        if(abs(sps(1,1)) > abs(sps(2,1)))then
+          sps(2,2)=1.d0
+          s=sps(2,1)
+        else
+          sps(1,2)=1.d0
+          s=sps(1,1)
+        endif
+        sps(:,2)=sps(:,2)-s*sps(:,1)
+c        s=abs(dcmplx(sps(1,2),abs(dcmplx(sps(2,2),sps(3,2)))))
+        s=norm2(sps(:,2))
+        sps(:,2)=sps(:,2)/s
+        sps(:,3)=outer(sps(:,1),sps(:,2))
+        spsa1=srot(:,1)*sps(1,2)+srot(:,2)*sps(2,2)+srot(:,3)*sps(3,2)
+        cm=dot_product(spsa1,sps(:,2))
+        sm=dot_product(spsa1,sps(:,3))
+        smu=atan(-sm,cm)
+        sdamp=dot_product(sps(:,1),gintd)
+        return
+        end subroutine
+
+        subroutine serot(xx,xy,yy,c1,c2,d1,d2,e1,e2,em1,em2)
+        implicit none
+        real*8 ,intent(in):: xx,xy,yy
+        real*8 ,intent(inout):: c1,c2,d1,d2,e1,e2
+        real*8 ,intent(out):: em1,em2
+        real*8 tx,c,s
+        tx=.5d0*atan(2.d0*xy,xx-yy)
+        c=cos(tx)
+        s=sin(tx)
+        em1=c**2*xx+s**2*yy+2.d0*c*s*xy
+        em2=c**2*yy+s**2*xx-2.d0*c*s*xy
+        c1=  c*c1+s*c2
+        c2=(-s*c1+  c2)/c
+        d1=  c*d1+s*d2
+        d2=(-s*d1+  d2)/c
+        e1=  c*e1+s*e2
+        e2=(-s*e1+  e2)/c
+        return
+        end
+
+        subroutine srequpol2(srot,sps,params,demit,sdamp,rm1,equpol)
+        use temw,only:ipdampx,nparams,ipdampz,ipemx,ipemz,ipnup,
+     $       ipnx,ipnz,r
+        use macmath
+        use mathfun , only:cexp1
+        implicit none
+        real*8 , intent(in)::srot(3,9),demit(21),sps(3,3),
+     $       params(nparams),sdamp
+        real*8 , intent(out)::equpol(3),rm1(3,3)
+        real*8 drot(3,6),emit1(3),amu(3),damp(3),ssprd,
+     $       d1,d2,d3,d4,d5,d6,e1,e2,e3,e4,e5,e6,
+     $       c1,c2,c3,c4,c5,c6,smu,
+     $       dex1,dex2,dey1,dey2,dez1,dez2,
+     $       rm(3,3),epol(3,3),b(3),rmd
+        integer*4 i
+        smu=params(ipnup)*m_2pi
+        drot=matmul(transpose(sps),matmul(srot(:,4:9),r))
+        c1=drot(1,1)
+        c2=drot(1,2)
+        c3=drot(1,3)
+        c4=drot(1,4)
+        c5=drot(1,5)
+        c6=drot(1,6)
+        d1=drot(2,1)
+        d2=drot(2,2)
+        d3=drot(2,3)
+        d4=drot(2,4)
+        d5=drot(2,5)
+        d6=drot(2,6)
+        e1=drot(3,1)
+        e2=drot(3,2)
+        e3=drot(3,3)
+        e4=drot(3,4)
+        e5=drot(3,5)
+        e6=drot(3,6)
+        call serot(demit(1), demit(2), demit(3), c1,c2,d1,d2,e1,e2,dex1,dex2)
+        call serot(demit(6), demit(9), demit(10),c3,c4,d3,d4,e3,e4,dey1,dey2)
+        call serot(demit(15),demit(20),demit(21),c5,c6,d5,d6,e5,e6,dez1,dez2)
+        emit1=params(ipemx:ipemz)
+        damp=abs(params(ipdampx:ipdampz))
+        amu=params(ipnx:ipnz)*m_2pi
+        ssprd=sqrt(dot_product(drot(1,:)**2,[emit1(1),emit1(1),emit1(2),emit1(2),emit1(3),emit1(3)]))
+        write(*,'(a,1p10g12.4)')'spdepol2 ',damp,amu,smu
+        rmd=.5d0*(
+     $        (c3**2+c4**2+c5**2+c6**2)*(dex1+dex2)/abs(cexp1(dcmplx(-damp(1),smu+amu(1))))**2
+     $       +(d3**2+d4**2+d5**2+d6**2)*(dey1+dey2)/abs(cexp1(dcmplx(-damp(2),smu+amu(2))))**2
+     $       +(e3**2+e4**2+e5**2+e6**2)*(dez1+dez2)/abs(cexp1(dcmplx(-damp(3),smu+amu(3))))**2)
+        equpol=[pst*sdamp/(rmd+sdamp),0.d0,0.d0]
+        return
+        end subroutine
+
+        subroutine srequpol(srot,sps,params,demit,sdamp,rm1,equpol)
+        use temw,only:ipdampx,nparams,ipdampz,ipemx,ipemz,ipnup,
+     $       ipnx,ipnz,r
+        use macmath
+        implicit none
+        real*8 , intent(in)::srot(3,9),demit(21),sps(3,3),
+     $       params(nparams),sdamp
+        real*8 , intent(out)::equpol(3),rm1(3,3)
+        real*8 drot(3,6),emit1(3),damp(3),ssprd,
+     $       d1,d2,d3,d4,d5,d6,e1,e2,e3,e4,e5,e6,
+     $       c1,c2,c3,c4,c5,c6,smu,
+     $       dex1,dex2,dey1,dey2,dez1,dez2,
+     $       rm(3,3),epol(3,3),b(3),rmd(3,3,3)
+        integer*4 i
+        smu=params(ipnup)*m_2pi
+        drot=matmul(transpose(sps),matmul(srot(:,4:9),r))
+        c1=drot(1,1)
+        c2=drot(1,2)
+        c3=drot(1,3)
+        c4=drot(1,4)
+        c5=drot(1,5)
+        c6=drot(1,6)
+        d1=drot(2,1)
+        d2=drot(2,2)
+        d3=drot(2,3)
+        d4=drot(2,4)
+        d5=drot(2,5)
+        d6=drot(2,6)
+        e1=drot(3,1)
+        e2=drot(3,2)
+        e3=drot(3,3)
+        e4=drot(3,4)
+        e5=drot(3,5)
+        e6=drot(3,6)
+        call serot(demit(1), demit(2), demit(3), c1,c2,d1,d2,e1,e2,dex1,dex2)
+        call serot(demit(6), demit(9), demit(10),c3,c4,d3,d4,e3,e4,dey1,dey2)
+        call serot(demit(15),demit(20),demit(21),c5,c6,d5,d6,e5,e6,dez1,dez2)
+c        write(*,'(1p6g12.4)')
+c     $       (/c1,c3,c5/),(/c2,c4,c6/),
+c     $       (/d1,d3,d5/),(/d2,d4,d6/),
+c     $       (/e1,e3,e5/),(/e2,e4,e6/)
+        emit1=params(ipemx:ipemz)
+        damp=abs(params(ipdampx:ipdampz))
+        ssprd=sqrt(dot_product(drot(1,:)**2,[emit1(1),emit1(1),emit1(2),emit1(2),emit1(3),emit1(3)]))
+        call spdepol(
+     $       (/c1,c3,c5/),(/c2,c4,c6/),
+     $       (/d1,d3,d5/),(/d2,d4,d6/),
+     $       (/e1,e3,e5/),(/e2,e4,e6/),
+     $       (/dex1,dey1,dez1/),(/dex2,dey2,dez2/),
+     $       emit1,damp,ssprd,
+     $       params(ipnx:ipnz)*m_2pi,smu,rmd)
+c        rm1=reshape([dsg(1),dsg(2),dsg(4),dsg(2),dsg(3),dsg(5),dsg(4),dsg(5),dsg(6)],[3,3])
+        rm1=0.d0
+        do i=1,1
+c        do i=1,3
+          rm1=rm1+rmd(:,:,i)
+          rm=rm1
+          rm(1,1)=rm(1,1)-sdamp
+          b=(/-sdamp*pst,0.d0,0.d0/)
+          call tsolva(rm,b,epol(:,i),3,3,3,min(1.d-8,sdamp/100.d0))
+        enddo
+c        rm1(1,1)=rm1(1,1)-sdamp
+c        equpol=epol(1,:)
+        equpol=[pst*sdamp/(sdamp-rm1(1,1)),0.d0,0.d0]
+c        equpol=[pst*sdamp/(sdamp-rmd),0.d0,0.d0]
+c        write(*,'(a,1p10g12.4)')'epol ',epol
+c        write(*,'(a,1p10g12.4)')'rm1  ',rm1
+c        write(*,'(a,1p10g12.4)')'pols ',matmul(rm1,epol)
+        return
+        end subroutine
+
+        subroutine srotinit(srot)
+        use temw,only:gintd
+        implicit none
+        real*8 ,intent(out):: srot(3,9)
+        srot=0.d0
+        srot(1,1)=1.d0
+        srot(2,2)=1.d0
+        srot(3,3)=1.d0
+        gintd=0.d0
+        return
+        end subroutine
+
+      end module
+
       module kradlib
+      real*8 ,parameter :: dphipol=1.d-2
       real*8 , allocatable :: pxr0(:),pyr0(:),zr0(:),bsi(:)
 
       contains
@@ -374,7 +990,7 @@ c      write(*,*)'with ',itp,ilp
         use tmacro
         use photontable, only:tphrec
         use mathfun, only:pxy2dpz,p2h,asinz
-        use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0,sprot
+        use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0
         implicit none
         integer*4 ,parameter :: npmax=10000
         integer*4 , intent(in)::k
@@ -383,7 +999,7 @@ c      write(*,*)'with ',itp,ilp
         real*8 , intent(in)::px00,py0,zr00,bsi,al
         real*8 dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
      $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,sx,sy,sz,
-     $       ppa,an,dph,r1,r2,px0,xr,yr,rho
+     $       ppa,an,dph,r1,r2,px0,xr,yr,rho,de
         real*8 dpr(npmax),rph(npmax)
         dpz0=pxy2dpz(px00,py0)
         px0= cphi0*px00+sphi0*(1.d0+dpz0)
@@ -422,8 +1038,8 @@ c              call tphotonconv(xr,px,yr,py,dg,
 c     $             dpr(i),p,h1,-rph(i)*al,k)
             enddo
           endif
-          dg=-dph*uc
-          dg=dg/(1.d0-2.d0*dg)
+          de=dph*uc
+          dg=-de/(1.d0+2.d0*de)
           g=max(gmin,g+dg)
           ddpx=-r1*dpx*dg
           ddpy=-r1*dpy*dg
@@ -439,16 +1055,12 @@ c     $             dpr(i),p,h1,-rph(i)*al,k)
           if(calpol)then
             pxm=px0+dpx*.5d0
             pym=py0+dpy*.5d0
-            call sprot(sx,sy,sz,pxm,pym,
-     $           ppx,ppy,ppz,bsi,merge(theta/ppa*pr,0.d0,ppa /= 0.d0),
-     $           h1,p2*h2/al1,an)
+            call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi,h1,p,de*uc)
           endif
         elseif(calpol)then
           pxm=px0+dpx*.5d0
           pym=py0+dpy*.5d0
-          call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi,
-     $         merge(theta/ppa*pr,0.d0,ppa /= 0.d0),h1,
-     $         p*h1/al1,-1.d0)
+          call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi,h1,p,0.d0)
         endif
         return
         end subroutine
@@ -458,7 +1070,7 @@ c     $             dpr(i),p,h1,-rph(i)*al,k)
         use tmacro
         use photontable, only:tphrec
         use mathfun, only:pxy2dpz,p2h,asinz
-        use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0,sprot
+        use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0
         implicit none
         integer*4 ,parameter :: npmax=10000
         integer*4 , intent(in)::np
@@ -468,7 +1080,7 @@ c     $             dpr(i),p,h1,-rph(i)*al,k)
         real*8 , intent(in)::al
         integer*4 i,k
         real*8 dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
-     $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,
+     $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,de,
      $       ppa,an,dph,r1,r2,px0,xr,yr,rho
         real*8 dpr(npmax),rph(npmax)
         do k=1,np
@@ -508,8 +1120,8 @@ c                call tphotonconv(xr,pxn(k),yr,pyn(k),dg,
 c     $               dpr(i),p,h1,-rph(i)*al,k)
               enddo
             endif
-            dg=-dph*uc
-            dg=dg/(1.d0-2.d0*dg)
+            de=dph*uc
+            dg=-de/(1.d0+2.d0*de)
             gn(k)=max(gmin,gn(k)+dg)
             ddpx=-r1*dpx*dg
             ddpy=-r1*dpy*dg
@@ -525,17 +1137,12 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
             if(calpol)then
               pxm=px0    +dpx*.5d0
               pym=pyr0(k)+dpy*.5d0
-              call sprot(sxn(k),syn(k),szn(k),pxm,pym,
-     $             ppx,ppy,ppz,bsi(k),
-     $             merge(theta/ppa*pr,0.d0,ppa /= 0.d0),h1,
-     $             p2*h2/al1,an)
+              call sprot(sxn(k),syn(k),szn(k),pxm,pym,ppx,ppy,ppz,bsi(k),h1,p,uc*de)
             endif
           elseif(calpol)then
             pxm=px0    +dpx*.5d0
             pym=pyr0(k)+dpy*.5d0
-            call sprot(sxn(k),syn(k),szn(k),pxm,pym,ppx,ppy,ppz,
-     $           bsi(k),merge(theta/ppa*pr,0.d0,ppa /= 0.d0),
-     $           h1,p*h1/al1,-1.d0)
+            call sprot(sxn(k),syn(k),szn(k),pxm,pym,ppx,ppy,ppz,bsi(k),h1,p,0.d0)
           endif
         enddo
         return
@@ -546,11 +1153,11 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
         use ffs_flag
         use tmacro
         use mathfun, only:pxy2dpz,p2h,asinz
-        use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0,sprot
+        use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0
         implicit none
         real*8 , intent(inout)::x,px,y,py,z,g,dv
         real*8 , intent(in)::px00,py0,zr00,bsi0,al
-        real*8 dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,
+        real*8 dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,de,
      $       px0,pxm,pym,al1,uc,ddpx,ddpy,h2,h1,sx,sy,sz,ppa,p2
         dpz0=pxy2dpz(px00,py0)
         px0= cphi0*px00+sphi0*(1.d0+dpz0)
@@ -569,8 +1176,8 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
         al1=al-z+zr00
         anp=anrad*h1*theta
         uc=cuc*h1**3/p0*theta/al1
-        dg=-cave*anp*uc
-        dg=dg/(1.d0-2.d0*dg)
+        de=cave*anp*uc
+        dg=-de/(1.d0+2.d0*de)
         g=max(gmin,g+dg)
         ddpx=-.5d0*dpx*dg
         ddpy=-.5d0*dpy*dg
@@ -586,9 +1193,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
         if(calpol)then
           pxm=px0+dpx*.5d0
           pym=py0+dpy*.5d0
-          call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi0,
-     $         merge(theta/ppa*pr,0.d0,ppa /= 0.d0),
-     $         h2,p2*h2/al1,anp)
+          call sprot(sx,sy,sz,pxm,pym,ppx,ppy,ppz,bsi0,h1,p,uc*de)
         endif
         return
         end subroutine
@@ -604,7 +1209,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
      $       xn(np),pxn(np),yn(np),pyn(np),zn(np),gn(np),dvn(np),
      $       sxn(np),syn(np),szn(np)
         real*8 , intent(in)::al
-        real*8 dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,
+        real*8 dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,dpx,dpy,de,
      $       px0,pxm,pym,al1,uc,ddpx,ddpy,h2,h1,ppa,p2
         integer*4 i
         do i=1,np
@@ -625,8 +1230,8 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
           al1=al-zn(i)+zr0(i)
           anp=anrad*h1*theta
           uc=cuc*h1**3/p0*theta/al1
-          dg=-cave*anp*uc
-          dg=dg/(1.d0-2.d0*dg)
+          de=cave*anp*uc
+          dg=-de/(1.d0+2.d0*de)
           gn(i)=max(gmin,gn(i)+dg)
           ddpx=-.5d0*dpx*dg
           ddpy=-.5d0*dpy*dg
@@ -642,9 +1247,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
           if(calpol)then
             pxm=px0    +dpx*.5d0
             pym=pyr0(i)+dpy*.5d0
-            call sprot(sxn(i),syn(i),szn(i),pxm,pym,ppx,ppy,ppz,
-     $           bsi(i),merge(theta/ppa*pr,0.d0,ppa /= 0.d0)
-     $           ,h2,p2*h2/al1,anp)
+            call sprot(sxn(i),syn(i),szn(i),pxm,pym,ppx,ppy,ppz,bsi(i),h1,p,uc*de)
           endif
         enddo
         return
@@ -678,10 +1281,78 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
         return
         end subroutine
 
+        subroutine sprot(sx,sy,sz,pxm,pym,bx0,by0,bz0,bsi,h,p,ucde)
+        use tmacro
+        use ffs_flag, only:radpol
+        use mathfun,only:pxy2dpz,sqrt1,xsincos
+        use tspin
+        implicit none
+        real*8 ,intent(in):: pxm,pym,bsi,bx0,by0,bz0,h,p,ucde
+        real*8 ,intent(inout):: sx,sy,sz
+        real*8 bx,by,bz,bp,blx,bly,blz,btx,bty,btz,ct,pzm,
+     $       gx,gy,gz,g,sux,suy,suz,bt,st,dst,
+     $       sw,cosu,sinu,dcosu,xsinu
+        pzm=1.d0+pxy2dpz(pxm,pym)
+        bx=bx0/pzm
+        by=by0/pzm
+        bz=bz0/pzm+bsi
+        bp=bx*pxm+by*pym+bz*pzm
+        blx=bp*pxm
+        bly=bp*pym
+        blz=bp*pzm
+        btx=bx-blx
+        bty=by-bly
+        btz=bz-blz
+        ct=1.d0+h*gspin
+        gx=ct*btx+cl*blx
+        gy=ct*bty+cl*bly
+        gz=ct*btz+cl*blz
+        if(ucde > 0.d0 .and. radpol)then
+          bt=norm2([btx,bty,btz])
+          if(bt /= 0.d0)then
+            st=(sx*btx+sy*bty+sz*btz)/bt
+            dst=(pst-st)*cfpd*(p*p0/h**2)**2*ucde/bt
+            sx=sx+dst*btx
+            sy=sy+dst*bty
+            sz=sz+dst*btz
+c$$$            if(st /= 1.d0)then
+c$$$              dr=dst/(1.d0-st**2)/bt
+c$$$              dsx=dr*sx
+c$$$              dsy=dr*sy
+c$$$              dsz=dr*sz
+c$$$              gx=gx+dsy*btz-dsz*bty
+c$$$              gy=gy+dsz*btx-dsx*btz
+c$$$              gz=gz+dsx*bty-dsy*btx
+c$$$            else
+c$$$              st1=st-dst
+c$$$              sl1=sqrt(1-st1**2)
+c$$$              sx=sl1*pxm+st1*btx/bt
+c$$$              sy=sl1*pym+st1*bty/bt
+c$$$              sz=sl1*pzm+st1*btz/bt
+c$$$            endif
+          endif
+        endif
+        g=norm2([gx,gy,gz])
+        if(g /= 0.d0)then
+          call xsincos(g,sinu,xsinu,cosu,dcosu)
+          sw=-(sx*gx+sy*gy+sz*gz)*dcosu/g**2
+          sinu=sinu/g
+          sux=sy*gz-sz*gy
+          suy=sz*gx-sx*gz
+          suz=sx*gy-sy*gx
+          sx=cosu*sx+sinu*sux+sw*gx
+          sy=cosu*sy+sinu*suy+sw*gy
+          sz=cosu*sz+sinu*suz+sw*gz
+        endif
+        sx= sx*cphi0+sz*sphi0
+        sz=(sz-sx*sphi0)/cphi0
+        return
+        end subroutine
+
         subroutine tradke(trans,cod,beam,srot,al,phir0,bzh)
         use tmacro
         use temw,only:codr0,bzhr0,bsir0,calint,tinv6,gintd,transr,
-     $       tmulbs
+     $       tmulbs,dsg
         use ffs_flag,only:radcod,calpol
         use mathfun, only:pxy2dpz,p2h,asinz,xsincos
         use tspin, only:cave,cl,cuu,gmin,sflc
@@ -694,10 +1365,10 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
      $       c1,dpx,dpy,ddpx,ddpy,pxr0,ct,pz00,das,bt,
      $       pr,px,py,pz,pz0,xpx,xpy,xpz,xpa,theta,th,
      $       p,h1,al1,anp,uc,dg,g,pr1,pxi,pyi,
-     $       p2,h2,de,cp,sp,b,pxm,pym,gi,dh1r,
+     $       p2,h2,dee,cp,sp,b,pxm,pym,gi,dh1r,
      $       pxh,pyh,pzh,xpzb,btx,bty,btz,dct,sinu,cosu,dcosu,xsinu,
      $       gx,gy,gz,blx,bly,blz,
-     $       sx(3),sy(3),sz(3),sux(3),suy(3),suz(3),sw(3),
+     $       sx(9),sy(9),sz(9),sux(9),suy(9),suz(9),sw(9),
      $       dpxh(6),dpyh(6),dpzh(6),bp,dbp(6),dpxr0(6),dpz0(6),
      $       dxpx(6),dxpy(6),dxpz(6),dxpzb(6),dblx(6),dbly(6),dblz(6),
      $       dbtx(6),dbty(6),dbtz(6),dgx(6),dgy(6),dgz(6),dpz00(6)
@@ -721,9 +1392,7 @@ c     codr0 has canonical momenta!
         xpy=(pz*pxr0-px*pz0)
         xpz=(px*pyi-py*pxr0)
         xpa=norm2([xpx,xpy,xpz])/pr**2
-c        xpa=abs(dcmplx(xpx,abs(dcmplx(xpy,xpz))))/pr**2
         theta=asinz(xpa)
-c        write(*,'(a,1p10g12.4)')'tradke ',pxi,pyi,px,py,theta,bzhr0,bzh
         p=p0*pr
         h1=p2h(p)
         al1=al-cod(5)+codr0(5)
@@ -751,9 +1420,7 @@ c        write(*,'(a,1p10g12.4)')'tradke ',pxi,pyi,px,py,theta,bzhr0,bzh
           h2=h1
         endif
         if(irad > 6)then
-          transi=tinv6(transr)
-c          call tinv6(transr,transi)
-          transi=matmul(trans(:,1:6),transi)
+          transi=matmul(trans(:,1:6),tinv6(transr))
 c          call tmultr(transi,trans(:,1:6),6)
           tr2=transi
           if(bzh /= 0.d0)then
@@ -819,20 +1486,20 @@ c     enddo
             tr1(5,5)=tr1(5,5)+1.d0
             tr1(6,6)=tr1(6,6)+1.d0
             call tmulbs(beam,tr1,calint)
-            de=anp*uc**2*cuu
+            dee=anp*uc**2*cuu
             pxm=pxi+px
             pym=pyi+py
             b=bzh*.5d0
             dbeam=0.d0
             dbeam(3)=(beam(3)+b*(2.d0*beam(5)+b*beam(6))
-     $           +(pxm**2+pxi**2+px**2)/6.d0)*de
+     $           +(pxm**2+pxi**2+px**2)/6.d0)*dee
             dbeam(8) =(beam(8)-b*(beam(2)-beam(10)+b*beam(4))
-     $           +(pxm*pym+pxi*pyi+px*py)/6.d0)*de
+     $           +(pxm*pym+pxi*pyi+px*py)/6.d0)*dee
             dbeam(10)=(beam(10)+b*(-2.d0*beam(7)+b*beam(1))
-     $           +(pym**2+pyi**2+py**2)/6.d0)*de
-            dbeam(17)=pxm*de*.5d0
-            dbeam(19)=pym*de*.5d0
-            dbeam(21)=de
+     $           +(pym**2+pyi**2+py**2)/6.d0)*dee
+            dbeam(17)=pxm*dee*.5d0
+            dbeam(19)=pym*dee*.5d0
+            dbeam(21)=dee
             beam(1:21)=beam(1:21)+dbeam
             if(calint)then
               beam(22:42)=beam(22:42)+dbeam
@@ -843,32 +1510,32 @@ c     enddo
             dxpzb=dxpz
             dxpzb(6)=dxpzb(6)+2.d0*(bsir0+bzh*2.d0*al)*pr
             pxh=(pxr0+px)/pr*.5d0
-            pyh=(pyi+py)/pr*.5d0
+            pyh=(pyi +py)/pr*.5d0
             dpxh=(tr2(2,:)+dpxr0)/pr*.5d0
             dpxh(6)=dpxh(6)-pxh/pr
             dpyh=(tr2(4,:)+dpyi)/pr*.5d0
             dpyh(6)=dpyh(6)-pyh/pr
             pzh=1.d0+pxy2dpz(pxh,pyh)
             dpzh=-(pxh*dpxh+pyh*dpyh)/pzh
-            bp=(xpx*pxh+xpy*pyh+xpzb*pzh)/pr
+            bp =(xpx*pxh+xpy*pyh+xpzb*pzh)/pr**2
             dbp=(dxpx*pxh+xpx*dpxh+dxpy*pyh
-     $           +xpy*dpyh+dxpzb*pzh+xpzb*dpzh)/pr
-            dbp(6)=dbp(6)-bp/pr
+     $           +xpy*dpyh+dxpzb*pzh+xpzb*dpzh)/pr**2
+            dbp(6)=dbp(6)-2.d0*bp/pr
             blx=bp*pxh
             bly=bp*pyh
             blz=bp*pzh
-            btx=xpx/pr-blx
-            bty=xpy/pr-bly
-            btz=xpzb/pr-blz
+            btx=xpx/pr**2-blx
+            bty=xpy/pr**2-bly
+            btz=xpzb/pr**2-blz
             dblx=dbp*pxh+bp*dpxh
             dbly=dbp*pyh+bp*dpyh
             dblz=dbp*pzh+bp*dpzh
-            dbtx=dxpx/pr-dblx
-            dbtx(6)=dbtx(6)-xpx/pr**2
-            dbty=dxpy/pr-dbly
-            dbty(6)=dbty(6)-xpy/pr**2
+            dbtx=dxpx/pr**2-dblx
+            dbtx(6)=dbtx(6)-2.d0*xpx/pr**3
+            dbty=dxpy/pr**2-dbly
+            dbty(6)=dbty(6)-2.d0*xpy/pr**3
             dbtz=dxpzb/pr-dblz
-            dbtz(6)=dbtz(6)-xpzb/pr**2
+            dbtz(6)=dbtz(6)-2.d0*xpzb/pr**3
             ct=h1*gspin
             dct=ct*dh1r
             ct=ct+1.d0
@@ -881,6 +1548,19 @@ c     enddo
             dgy(6)=dgy(6)+dct*bty
             dgz=ct*dbtz+cl*dblz
             dgz(6)=dgz(6)+dct*btz
+c          dxpy=ddpz*pxr0+pz*dpxr0-tr2(2,:)*pz0-px*dpz0
+c            if(abs(theta) < 1e-4)then
+c              write(*,'(a,1p11g11.3)')'tradke ',al,theta,ct,dct,ct*dbty(6),dct*bty,srot(2,4),srot(2,9)
+c              write(*,'(a,1p11g11.3)')'$dxpy       ',dxpy
+c              write(*,'(a,1p11g11.3)')'$tr2(2      ',tr2(2,:)
+c            endif
+c            dsr2=dgy(1)*transr(1,:)+dgy(2)*transr(2,:)
+c     $           +dgy(3)*transr(3,:)+dgy(4)*transr(4,:)
+c     $           +dgy(5)*transr(5,:)+dgy(6)*transr(6,:)
+c            if(abs(theta) < 1e-4)then
+c              write(*,'(a,1p11g11.3)')'$dsr2      ',dgy(1),transr(1,6),dgy(1)*transr(1,6),dgy(6),dgy(6)*transr(6,6),dsr2(6)
+c              write(*,'(a,1p11g11.3)')'$dgy       ',dgy
+c            endif
             srot(1,4:9)=srot(1,4:9)
      $           +dgx(1)*transr(1,:)+dgx(2)*transr(2,:)
      $           +dgx(3)*transr(3,:)+dgx(4)*transr(4,:)
@@ -893,10 +1573,9 @@ c     enddo
      $           +dgz(1)*transr(1,:)+dgz(2)*transr(2,:)
      $           +dgz(3)*transr(3,:)+dgz(4)*transr(4,:)
      $           +dgz(5)*transr(5,:)+dgz(6)*transr(6,:)
+            call tadddsg(dsg,srot,dgx,dgy,dgx,dbeam)
             g=norm2([gx,gy,gz])
-c            write(*,'(1p3g16.8)')srot(:,1:3)
             if(g /= 0.d0)then
-c              bt=abs(dcmplx(btx,abs(dcmplx(bty,btz))))
               bt=norm2([btx,bty,btz])
               call xsincos(g,sinu,xsinu,cosu,dcosu)
 c              th=tan(.5d0*g)
@@ -906,29 +1585,64 @@ cc              sinu=sin(g)
 cc              dcosu=2.d0*sin(g*.5d0)**2
 c              cosu=1.d0-dcosu
               sinu=sinu/g
-              sx=srot(1,1:3)
-              sy=srot(2,1:3)
-              sz=srot(3,1:3)
+              sx=srot(1,:)
+              sy=srot(2,:)
+              sz=srot(3,:)
               sw=(sx*gx+sy*gy+sz*gz)/g
               gintd=gintd+sw(1:3)*sflc*anp*(bt*h1*p/al1)**2
               sw=-sw*dcosu/g
               sux=sy*gz-sz*gy
               suy=sz*gx-sx*gz
               suz=sx*gy-sy*gx
-              srot(1,1:3)=cosu*sx+sinu*sux+sw*gx
-              srot(2,1:3)=cosu*sy+sinu*suy+sw*gy
-              srot(3,1:3)=cosu*sz+sinu*suz+sw*gz
+              srot(1,:)=cosu*sx+sinu*sux+sw*gx
+              srot(2,:)=cosu*sy+sinu*suy+sw*gy
+              srot(3,:)=cosu*sz+sinu*suz+sw*gz
             endif
             srot(1,:)=  cp*srot(1,:)+sp*srot(3,:)
             srot(3,:)=(-sp*srot(1,:)+srot(3,:))/cp
-c            write(*,'(a,1p10g16.8)')'tradke ',g,gx,gy,gz,sinu,cosu,sw
-c            write(*,'(1p3g16.8)')srot(:,1:3)
           endif
         endif
         codr0(1:6)=cod(1:6)
         transr=trans(:,1:6)
         bzhr0=bzh
         bsir0=0.d0
+        return
+        end subroutine
+
+        subroutine tadddsg(dsg,srot,dgx0,dgy0,dgz0,dbeam)
+        implicit none
+        real*8 ,intent(inout):: dsg(6)
+        real*8 ,intent(in):: dgx0(6),dgy0(6),dgz0(6),dbeam(21),srot(3,9)
+        real*8 dg0(3,6),sri(3,3),dgx(6),dgy(6),dgz(6)
+        sri=transpose(srot(:,1:3))
+        dg0(1,:)=dgx0
+        dg0(2,:)=dgy0
+        dg0(3,:)=dgz0
+        dg0=matmul(sri,dg0)
+        dgx=dg0(1,:)
+        dgy=dg0(2,:)
+        dgz=dg0(3,:)
+        dsg(1)=dsg(1)
+     $       +dgx(2)*(dgx(2)*dbeam(3 )+2.d0*dgx(4)*dbeam(8)+2.d0*dgx(6)*dbeam(17))
+     $       +dgx(4)*(dgx(4)*dbeam(10)+2.d0*dgx(6)*dbeam(19))+dgx(6)*dgx(6)*dbeam(21)
+        dsg(2)=dsg(2)
+     $       +dgx(2)*(dgy(2)*dbeam(3 )+dgy(4)*dbeam(8 )+dgy(6)*dbeam(17))
+     $       +dgx(4)*(dgy(2)*dbeam(8 )+dgy(4)*dbeam(10)+dgy(6)*dbeam(19))
+     $       +dgx(6)*(dgy(2)*dbeam(17)+dgy(4)*dbeam(19)+dgy(6)*dbeam(21))
+        dsg(3)=dsg(3)
+     $       +dgy(2)*(dgy(2)*dbeam(3 )+2.d0*dgy(4)*dbeam(8)+2.d0*dgy(6)*dbeam(17))
+     $       +dgy(4)*(dgy(4)*dbeam(10)+2.d0*dgy(6)*dbeam(19))+dgy(6)*dgy(6)*dbeam(21)
+        dsg(4)=dsg(4)
+     $       +dgx(2)*(dgz(2)*dbeam(3 )+dgz(4)*dbeam(8 )+dgz(6)*dbeam(17))
+     $       +dgx(4)*(dgz(2)*dbeam(8 )+dgz(4)*dbeam(10)+dgz(6)*dbeam(19))
+     $       +dgx(6)*(dgz(2)*dbeam(17)+dgz(4)*dbeam(19)+dgz(6)*dbeam(21))
+        dsg(5)=dsg(5)
+     $       +dgy(2)*(dgz(2)*dbeam(3 )+dgz(4)*dbeam(8 )+dgz(6)*dbeam(17))
+     $       +dgy(4)*(dgz(2)*dbeam(8 )+dgz(4)*dbeam(10)+dgz(6)*dbeam(19))
+     $       +dgy(6)*(dgz(2)*dbeam(17)+dgz(4)*dbeam(19)+dgz(6)*dbeam(21))
+        dsg(6)=dsg(6)
+     $       +dgz(2)*(dgz(2)*dbeam(3 )+2.d0*dgz(4)*dbeam(8)+2.d0*dgz(6)*dbeam(17))
+     $       +dgz(4)*(dgz(4)*dbeam(10)+2.d0*dgz(6)*dbeam(19))+dgz(6)*dgz(6)*dbeam(21)
         return
         end subroutine
 

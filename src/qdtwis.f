@@ -1,5 +1,4 @@
-      subroutine qdtwis(dtwiss,ctrans,iclast,
-     $     k0,l,idp,iv,nfam,nut,disp,dzfit)
+      subroutine qdtwis(dtwiss,ctrans,iclast,k0,l,idp,iv,nfam,nut,disp,dzfit)
       use kyparam
       use tfstk
       use ffs
@@ -9,20 +8,22 @@
       use temw, only:tmultr45
       implicit none
       type (sad_comp), pointer::cmp
-      integer*4 nfam,nut,
-     $     iclast(-nfam:nfam),k0,k,ke,l,idp,iv,
-     $     iutk,iutl,i,k1
-      real*8 dtwiss(mfittry),dcod(6),dcod2(6),dtrans(4,5),
+      integer*4 ,intent(in):: nfam,nut,k0,l,idp
+      integer*4 ,intent(inout):: iclast(-nfam:nfam)
+      real*8 ,intent(out):: dtwiss(mfittry)
+      logical*4 ,intent(in):: disp,dzfit
+      integer*4 k,ke,iv,iutk,iutl,i,k1
+      real*8 dcod(6),dcod2(6),dtrans(4,5),
      $     trans(4,5),trans1(4,5),dcod1(6),dtrans1(4,5),
      $     ctrans(4,7,-nfam:nfam),g1,dir,psi1,psi2,dt1,dt2,
      $     r,gr,detp,sqrdet,ddetp,dsqr,
      $     x11,x12,x21,x22,dx11,dx12,dx21,dx22,
      $     ax0,bx0,gx0,dax,dbx,
      $     y11,y12,y21,y22,dy11,dy12,dy21,dy22,
-     $     ay0,by0,gy0,day,dby,
+     $     ay0,by0,gy0,az0,day,dby,
      $     bxx,cosmx,sinmx,byy,cosmy,sinmy,
      $     r1,r2,r3,r4,dr1,dr2,dr3,dr4
-      logical*4 nzcod,disp,dzfit,normal
+      logical*4 nzcod,normal
       k=k0
       g1=gammab(1)
       ke=idtypec(k)
@@ -274,12 +275,10 @@ c     $       4100),ke
       dtwiss(mfitdy)=dcod1(3)
       dtwiss(mfitdpy)=dcod1(4)
       dtwiss(mfitdz)=dcod1(5)
-      dtwiss(mfitgmx)=2.d0*dtwiss(mfitax)*ax0/(1.d0+ax0**2)-
-     $     dtwiss(mfitbx)
-      dtwiss(mfitgmy)=2.d0*dtwiss(mfitay)*ay0/(1.d0+ay0**2)-
-     $     dtwiss(mfitby)
-c      dtwiss(mfitgmz)=2.d0*dtwiss(mfitaz)*az0/(1.d0+az0**2)-
-c     $     dtwiss(mfitbz)
+      az0=utwiss(mfitaz,idp,iutk)
+      dtwiss(mfitgmx)=2.d0*dtwiss(mfitax)*ax0/(1.d0+ax0**2)-dtwiss(mfitbx)
+      dtwiss(mfitgmy)=2.d0*dtwiss(mfitay)*ay0/(1.d0+ay0**2)-dtwiss(mfitby)
+      dtwiss(mfitgmz)=2.d0*dtwiss(mfitaz)*az0/(1.d0+az0**2)-dtwiss(mfitbz)
       if(l == nlat)then
         bxx=sqrt(utwiss(mfitbx,idp,iutl)/utwiss(mfitbx,idp,1))
         cosmx=cos(utwiss(mfitnx,idp,iutl))

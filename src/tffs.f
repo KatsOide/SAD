@@ -460,7 +460,7 @@ c$$$susp;
         rt3=r3*sqrdet1
         rt4=(r4+alambda)*sqrdet1
         detr2=rt1*rt4-rt2*rt3
-        do while(detr2 .lt. 1.d0)
+        do while(detr2 < 1.d0)
           a=1.d0/sqrt(detr2)
           rt1=rt1*a
           rt2=rt2*a
@@ -721,7 +721,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         use ffs
         use iso_c_binding
         implicit none
-        if(ifsize .eq. 0)then
+        if(ifsize == 0)then
           ifsize=ktaloc(21*nlat)
           call c_f_pointer(c_loc(rlist(ifsize)),beamsize,[21,nlat])
           modesize=0
@@ -1041,7 +1041,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         complex*16 cr1,cr,ck
         cmp%update=.true.
         ltyp=idtype(cmp%id)
-        if(kytbl(kwNPARAM,ltyp) .eq. 0)then
+        if(kytbl(kwNPARAM,ltyp) == 0)then
           return
         endif
         select case (ltyp)
@@ -1167,7 +1167,7 @@ c          cmp%value(p_DPHIY_BEND)=.5d0*phi*sin(dtheta)
           cmp%value(p_FB2_MULT)=fb2
           if(al /= 0.d0)then
             sk1=cmp%value(ky_SK1_MULT)
-            if(sk1 .eq. 0.d0)then
+            if(sk1 == 0.d0)then
               akk=cmp%value(ky_K1_MULT)/al
             else
               akk=hypot(cmp%value(ky_K1_MULT),sk1)/al
@@ -1180,7 +1180,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
           endif
           harm=cmp%value(ky_HARM_MULT)
           w=merge(pi2*cmp%value(ky_FREQ_MULT)/c,
-     $         omega0*harm/c,harm .eq. 0.d0)
+     $         omega0*harm/c,harm == 0.d0)
           vnominal=merge(cmp%value(ky_VOLT_MULT)/amass*abs(charge)
      $         *sin(-cmp%value(ky_PHI_MULT)*sign(1.d0,charge)),
      $         0.d0,trpt)
@@ -1201,8 +1201,8 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
               exit
             endif
           enddo
-          cmp%ivalue(2,p_NM_MULT)=merge(nmmax,max(nmmax,0),al .eq. 0.d0
-     $         .and. cmp%value(ky_VOLT_MULT) .eq. 0.d0)
+          cmp%ivalue(2,p_NM_MULT)=merge(nmmax,max(nmmax,0),al == 0.d0
+     $         .and. cmp%value(ky_VOLT_MULT) == 0.d0)
           cr=cr1
           do n=0,nmmax
             ck=dcmplx(cmp%value(ky_K0_MULT+n*2),
@@ -1212,7 +1212,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
             cr=cr*cr1
           enddo
           eps=eps00m*merge(1.d0,cmp%value(ky_EPS_MULT),
-     $         cmp%value(ky_EPS_MULT) .eq. 0.d0)
+     $         cmp%value(ky_EPS_MULT) == 0.d0)
           ndiv=1
           if(al /= 0.d0)then
             do n=2,nmmax
@@ -1242,7 +1242,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
           cmp%ivalue(1,p_FRMD_CAVI)=int(frmd)
           harm=cmp%value(ky_HARM_CAVI)
           w=merge(pi2*cmp%value(ky_FREQ_CAVI)/c,omega0*harm/c,
-     $         harm .eq. 0.d0)
+     $         harm == 0.d0)
           vnominal=merge(cmp%value(ky_VOLT_CAVI)/amass*abs(charge)
      $         *sin(-cmp%value(ky_PHI_CAVI)*sign(1.d0,charge)),
      $         0.d0,trpt)
@@ -1335,11 +1335,61 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
       end module
 
       module ffs_wake
-      integer*8 kwakep,kwakeelm
-      integer*4 nwakep
+      integer*8 kwakep,kwakeelm,iwpl,iwpt
+      integer*4 nwakep,lwl0,lwt0
       logical*4 wake
+      integer*4 nwp
       integer*8 , pointer :: kwaketbl(:,:)
       integer*4 , pointer :: iwakeelm(:)
+      integer*4 ,allocatable,dimension(:)::itab,izs
+      real*8 ,pointer :: wakel(:,:),waket(:,:)
+
+      contains
+      subroutine twxiwp(nwak)
+      use tfstk
+      use iso_c_binding
+      implicit none
+      integer*4 ,intent(in):: nwak
+      if(nwak > 0)then
+        iwpl=abs(kwaketbl(1,nwak))
+        lwl0=merge((ilist(1,iwpl-1)-2)/2,0,iwpl /= 0)
+        iwpt=abs(kwaketbl(2,nwak))
+        lwt0=merge((ilist(1,iwpt-1)-2)/2,0,iwpt /= 0)
+        if(lwl0 > 0)then
+          call c_f_pointer(c_loc(rlist(iwpl)),wakel,[2,lwl0])
+        endif
+        if(lwt0 > 0)then
+          call c_f_pointer(c_loc(rlist(iwpt)),waket,[2,lwt0])
+        endif
+      endif
+      return
+      end subroutine
+
+      subroutine twxalloc(np)
+      implicit none
+      integer*4 ,intent(in):: np
+      if(.not. allocated(itab))then
+        nwp=np
+        allocate(itab(nwp),izs(nwp))
+      elseif(np > nwp)then
+        deallocate(itab,izs)
+        nwp=np
+        allocate(itab(nwp),izs(nwp))
+      endif
+      itab(np)=np
+      itab(1)=1
+      return
+      end subroutine
+
+      subroutine twxdealloc
+      implicit none
+      if(allocated(itab))then
+        deallocate(itab,izs)
+      endif
+      nwp=0
+      return
+      end subroutine 
+
       end module
 
       module tflinepcom
@@ -1434,7 +1484,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
         return
       endif
       ic=int(c)
-      if(ic .lt. 0 .or. ic > icMXEL)then
+      if(ic < 0 .or. ic > icMXEL)then
         kx=dxnullo
         irtc=itfmessage(9,'General::wrongval',
      $       '"Typecode out of range"')
@@ -1461,7 +1511,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
         key=tfkwrd(ic,i)
         if(all .or. key /= '-')then
           isp=isp+1
-          if(key .eq. '-')then
+          if(key == '-')then
             dtastk(isp)=ksdumm
           else
             dtastk(isp)=kxsalocb(-1,key,len_trim(key))
@@ -1502,7 +1552,7 @@ c     begin initialize for preventing compiler warning
       call compelc(kl,cmp)
       plus=.false.
       lk=lenw(keyword)
-      if(lk > 4 .and. keyword(lk-3:lk) .eq. '$SUM')then
+      if(lk > 4 .and. keyword(lk-3:lk) == '$SUM')then
         plus=.true.
         lk=lk-4
       endif
@@ -1511,12 +1561,12 @@ c     begin initialize for preventing compiler warning
       do l=1,kytbl(kwMAX,it)-1
         j=kyindex(l,it)
         if(j > 0)then
-          if(pname(kytbl(j,0))(2:) .eq. key(1:lk))then
+          if(pname(kytbl(j,0))(2:) == key(1:lk))then
             go to 1
           endif
           j=kyindex1(l,it)
           if(j > 0)then
-            if(pname(kytbl(j,0))(2:) .eq. key(1:lk))then
+            if(pname(kytbl(j,0))(2:) == key(1:lk))then
               go to 1
             endif
           endif
@@ -1536,7 +1586,7 @@ c     begin initialize for preventing compiler warning
         tfkeyv=dlist(ia)
       else
         ia=elatt%comp(kl)+l
-        if(l .eq. nelvx(-i)%ival)then
+        if(l == nelvx(-i)%ival)then
           if(tfreallistq(dlist(ia),klr))then
             tfkeyv=kxavaloc(-1,klr%nl,kld)
             kld%rbody(1:klr%nl)=klr%rbody(1:klr%nl)
@@ -1565,7 +1615,7 @@ c     begin initialize for preventing compiler warning
       integer*4 ,intent(in):: iv,i
       integer*4 j
       do j=1,flv%ntouch
-        if(nvevx(j)%itouchele .eq. i .and. nvevx(j)%itouchv .eq. iv)then
+        if(nvevx(j)%itouchele == i .and. nvevx(j)%itouchv == iv)then
           return
         endif
       enddo
@@ -1584,10 +1634,10 @@ c     begin initialize for preventing compiler warning
       type (sad_rlist), pointer,intent(out) :: kl
       integer*4 ,intent(in)::i
       integer*4 l,isp1
-      if(nelvx(i)%dcomp%k .eq. 0)then
+      if(nelvx(i)%dcomp%k == 0)then
         isp1=isp
         do l=1,nlat-1
-          if(iele1(l) .eq. i)then
+          if(iele1(l) == i)then
             isp=isp+1
             rtastk(isp)=dble(l)
           endif
@@ -1620,14 +1670,14 @@ c     begin initialize for preventing compiler warning
         irtc=0
         seg=.false.
         kl=kytbl(kwL,ltyp)
-        if(kl .eq. 0)then
+        if(kl == 0)then
           al=0.d0
           return
         else
           al=cmp%value(kl)
         endif
         kprof=kytbl(kwPROF,ltyp)
-        if(kprof .eq. 0 .or. tfnonlistq(cmp%dvalue(kprof),lprof))then
+        if(kprof == 0 .or. tfnonlistq(cmp%dvalue(kprof),lprof))then
           return
         endif
         if(.not. cmp%updateseg)then
@@ -1669,7 +1719,7 @@ c     begin initialize for preventing compiler warning
           lls=0
           levele=levele+1
           do i=1,lprof%nl
-            if(tfnonlistq(lprof%dbody(i),lpi) .or. lpi%nl .lt. 2)then
+            if(tfnonlistq(lprof%dbody(i),lpi) .or. lpi%nl < 2)then
               go to 9100
             endif
             if(tflistq(lpi%dbody(1),lpi1))then
@@ -1679,7 +1729,7 @@ c     begin initialize for preventing compiler warning
               if(.not. ktfstringq(lpi1%dbody(1),stri1))then
                 go to 9100
               endif
-              if(lpi1%nl .eq. 1)then
+              if(lpi1%nl == 1)then
                 stri2=>stri1
               elseif(.not. ktfstringq(lpi1%dbody(2),stri2))then
                 go to 9100
@@ -1692,7 +1742,7 @@ c     begin initialize for preventing compiler warning
             if(tfnonreallistq(lpi%dbody(2),lvl))then
               go to 9100
             endif
-            if(nseg .eq. 0)then
+            if(nseg == 0)then
               nseg=lvl%nl
             elseif(lvl%nl /= nseg)then
               irtc=itfmessage(99,"FFS::unequalkeyleng",'""')
@@ -1714,11 +1764,11 @@ c     begin initialize for preventing compiler warning
             endif
             defk(itastk(1,isp),itastk(2,isp))=.true.
             dtastk2(isp)=lpi%dbody(2)
-            if(stri1%str(1:stri1%nch) .eq. 'L')then
+            if(stri1%str(1:stri1%nch) == 'L')then
               lls=isp
             endif
           enddo
-          if(lls .eq. 0)then
+          if(lls == 0)then
             irtc=itfmessage(99,"FFS::noLseg",'""')
             go to 9000
           endif
@@ -1735,7 +1785,7 @@ c     begin initialize for preventing compiler warning
           lk1%dbody(2)=dtfcopy(dtastk2(lls))
           i1=1
           do i=isp0+1,isp
-            if(i /= lls .and. itastk(1,i) .eq. itastk(2,i))then
+            if(i /= lls .and. itastk(1,i) == itastk(2,i))then
               i1=i1+1
               call tflocald(lsegp%dbody(i1))
               lsegp%dbody(i1)=kxadaloc(0,2,lk1)
@@ -1785,8 +1835,8 @@ c     begin initialize for preventing compiler warning
             call tflocald(cmpd%dvalue(k))
           endif
           cmpd%dvalue(k)=dtfcopy1(cmps%dvalue(k))
-          if(idtype(cmpd%id) .eq. icMULT .and.
-     $         k .eq. ky_PROF_MULT)then
+          if(idtype(cmpd%id) == icMULT .and.
+     $         k == ky_PROF_MULT)then
             cmpd%updateseg=.false.
           endif
         endif
@@ -1807,8 +1857,8 @@ c     begin initialize for preventing compiler warning
         call compelc(id,cmpd)
         call compelc(is,cmps)
         call tfvcopycmp(cmps,cmpd,k,coeff)
-        if(idtype(cmpd%id) .eq. icMULT .and.
-     $       k .eq. ky_PROF_MULT)then
+        if(idtype(cmpd%id) == icMULT .and.
+     $       k == ky_PROF_MULT)then
           cmpd%updateseg=.false.
         endif
         cmpd%update=cmpd%nparam .le. 0
@@ -1908,6 +1958,8 @@ c     Inverse matrix of r: NormalCoordinate (physical -> normal)
      $     0.d0, 0.d0, 0.d0, 0.d0, 1.d0, 0.d0,
      $     0.d0, 0.d0, 0.d0, 0.d0, 0.d0, 1.d0/),
      $     (/6, 6/))
+
+      real*8 , public::dsg(6)
 
       type iaemit
       sequence
@@ -2309,7 +2361,7 @@ c      crz=sqrt(uz12**2+uz22**2)
       r3=twiss1(mfitr3)
       r4=twiss1(mfitr4)
       detr=twiss1(mfitdetr)
-      normal=detr .lt. 1.d0
+      normal=detr < 1.d0
       if(normal)then
         amu=sqrt(1.d0-detr)
         ex =twiss1(mfitex)
@@ -2496,10 +2548,10 @@ c      real*8 , pointer:: trans1(:,:)
 c      real*8 ,target::transs(6,6)
       real*8 s(6,6)
       logical*4 ,intent(in):: beamr
-      if(irad .lt. 12)then
+      if(irad < 12)then
         return
       endif
-c      if(size(trans,2) .eq. 6)then
+c      if(size(trans,2) == 6)then
 c        trans1=>trans
 c      else
 c        transs=trans(1:6,1:6)+trans(1:6,7:12)
@@ -2624,7 +2676,7 @@ c         enddo
       irad=12
       call tmulbs(beam,tinv6(ris),.false.)
       irad=ir
-      if(is .eq. 1)then
+      if(is == 1)then
         ri=ris
         r=tinv6(ri)
       endif
@@ -2632,635 +2684,6 @@ c         enddo
       end function
 
       end module temw
-
-      module tspin
-      use macphys
-
-      real*8, parameter :: pst=8.d0*sqrt(3.d0)/15.d0,
-     $     sflc=.75d0*(elradi/finest)**2
-      real*8, parameter:: gmin=-0.9999d0,cave=8.d0/15.d0/sqrt(3.d0)
-      real*8, parameter:: cuu=11.d0/27.d0,cl=1.d0+gspin
-
-      integer*4 ,parameter :: mord=6,lind=13
-      integer*4 , parameter ::
-     $     mlen(mord) =(/18,105, 392,1134, 2772, 6006/),
-     $     mleni(mord)=(/24,234,1456,6825,26208,86632/)
-
-      real*8 cphi0,sphi0
-
-      type scmat
-        complex*16 , pointer :: cmat(:,:,:)
-        integer*4 , pointer :: ind(:,:)
-        integer*4 , pointer :: ias(:)
-        integer*4 nind,iord,id,maxi
-      end type
-
-      contains
-        subroutine spinitrm(rm,nord,id,l)
-        implicit none
-        type (scmat) , intent(inout):: rm
-        integer*4 , intent(in)::nord,id,l
-        allocate(rm%cmat(3,3,l),rm%ind(lind,l),rm%ias(l))
-        rm%nind=0
-        rm%iord=nord
-        rm%id=id
-        rm%maxi=l
-        return
-        end
-
-        integer*4 function iaind(rm,ind) result(ia)
-        type (scmat) , intent(inout):: rm
-        integer*4 , intent(in):: ind(lind)
-        integer*4 i1,i2,im,k
-        logical*4 found
-        i1=1
-        i2=rm%nind
-        im=0
-        do while(i2 .ge. i1)
-          im=(i1+i2)/2
-          ia=rm%ias(im)
-          found=.true.
-          do k=1,lind
-            if(rm%ind(k,ia) > ind(k))then
-              i2=im-1
-              found=.false.
-              exit
-            elseif(rm%ind(k,ia) .lt. ind(k))then
-              i1=im+1
-              found=.false.
-              exit
-            endif
-          enddo
-          if(found)then
-            return
-          endif
-        enddo
-        ia=rm%nind+1
-        if(i1 .eq. im+1)then
-          im=im+1
-        endif
-        if(im .lt. ia)then
-          rm%ias(im+1:ia)=rm%ias(im:rm%nind)
-        endif
-        rm%ias(im)=ia
-        rm%nind=ia
-        if(rm%nind > rm%maxi)then
-          write(*,*)'Insufficient matrix table ',rm%id,rm%nind,
-     $         rm%iord,ind
-          stop
-        endif
-        rm%ind(:,ia)=ind
-        rm%cmat(:,:,ia)=(0.d0,0.d0)
-        return
-        end function
-
-        integer*4 function indn(i,i1,i2,idx,imx,is)
-        implicit none
-        dimension indn(lind)
-        integer*4 , intent(in)::i,i1,i2,idx,imx,is
-        indn=0
-        indn(i*2-1:i*2)=(/i1,i2/)
-        indn(i+6)=idx
-        indn(i+9)=imx
-        indn(lind)=is
-        return
-        end function
-
-        integer*4 function ind2(i,j,i1,i2,j1,j2)
-        implicit none
-        dimension ind2(lind)
-        integer*4 , intent(in)::i,j,i1,i2,j1,j2
-        ind2=0
-        ind2(i*2-1:i*2)=(/i1,i2/)
-        ind2(j*2-1:j*2)=(/j1,j2/)
-        return
-        end function
-
-        integer*4 function ind3(i,i1,i2)
-        implicit none
-        dimension ind3(lind)
-        integer*4 , intent(in)::i,i1,i2
-        ind3(1:6)=1
-        ind3(i*2-1:i*2)=(/i1,i2/)
-        ind3(7:13)=0
-        return
-        end function
-
-        subroutine spsetrm(am,ind,rm)
-        implicit none
-        type (scmat) , intent(inout)::rm
-        integer*4 , intent(in) :: ind(lind)
-        complex*16 , intent(in) ::am(3,3)
-        rm%cmat(:,:,iaind(rm,ind))=am
-        return
-        end subroutine
-
-        subroutine spdotrm(rma,rmb,rmc)
-        implicit none
-        type (scmat) , intent(in):: rma,rmb
-        type (scmat) , intent(inout) :: rmc
-        integer*4 i,j,ia
-        do i=1,rma%nind
-          do j=1,rmb%nind
-            ia=iaind(rmc,rma%ind(:,i)+rmb%ind(:,j))
-            rmc%cmat(:,:,ia)=rmc%cmat(:,:,ia)
-     $           +matmul(rma%cmat(:,:,i),rmb%cmat(:,:,j))
-          enddo
-        enddo
-        return
-        end subroutine
-
-        subroutine spaddrm(rma,rmb,rmc)
-        implicit none
-        type (scmat) ,intent(in):: rma,rmb
-        type (scmat) ,intent(out):: rmc
-        integer*4 ind(lind),i,ic
-        do i=1,rma%nind
-          ind=rma%ind(:,i)
-          ic=iaind(rmc,ind)
-          rmc%cmat(:,:,ic)=rmc%cmat(:,:,ic)+rma%cmat(:,:,i)
-        enddo
-        do i=1,rmb%nind
-          ind=rmb%ind(:,i)
-          ic=iaind(rmc,ind)
-          rmc%cmat(:,:,ic)=rmc%cmat(:,:,ic)+rmb%cmat(:,:,i)
-        enddo
-        return
-        end subroutine
-
-        subroutine spcopyrm(rma,rmb)
-        implicit none
-        type (scmat) rma,rmb
-        integer*4 n
-        n=rma%nind
-        rmb%cmat(:,:,1:n)=rma%cmat(:,:,1:n)
-        rmb%ind(:,1:n)=rma%ind(:,1:n)
-        rmb%ias(1:n)=rma%ias(1:n)
-        rmb%nind=n
-        return
-        end subroutine
-
-        subroutine spintrm(rm,dx,dy,dz,amx,amy,amz,ams)
-        implicit none
-        type (scmat) , intent(inout) :: rm
-        real*8 , intent(in) :: dx,dy,dz,amx,amy,amz,ams
-        complex*16 cm(3,3)
-        integer*4 i,ia,ind(lind)
-        do i=1,rm%nind
-          ind=rm%ind(:,i)
-          cm=rm%cmat(:,:,i)/
-     $         (1.d0-exp(dcmplx(-ind(7)*dx-ind(8)*dy-ind(9)*dz,
-     $         ind(10)*amx+ind(11)*amy+ind(12)*amz+ind(lind)*ams)))
-          rm%cmat(:,:,i)=-cm
-          ind(7:lind)=0
-          ia=iaind(rm,ind)
-          rm%cmat(:,:,ia)=rm%cmat(:,:,ia)+cm
-        enddo
-        return
-        end subroutine
-
-        subroutine spmulrm(rm,cv,indv,rd)
-        implicit none
-        type (scmat) , intent(in) :: rm
-        type (scmat) , intent(inout) :: rd
-        complex*16 , intent(in):: cv
-        integer*4 , intent(in):: indv(lind)
-        integer*4 i,ia
-        do i=1,rm%nind
-          ia=iaind(rd,indv+rm%ind(:,i))
-          rd%cmat(:,:,ia)=rd%cmat(:,:,ia)+cv*rm%cmat(:,:,i)
-        enddo
-        return
-        end subroutine
-
-        subroutine sprmulrm(rm,r)
-        implicit none
-        type (scmat) , intent(inout) :: rm
-        real*8 , intent(in):: r
-        rm%cmat(:,:,1:rm%nind)=r*rm%cmat(:,:,1:rm%nind)
-        return
-        end subroutine
-
-        subroutine spcalcres(rm,rmi,m,dx,amx,ams)
-        implicit none
-        type (scmat), intent(inout):: rm(mord),rmi(mord)
-        integer*4 , intent(in)::m
-        real*8 , intent(in)::dx(3),amx(3),ams
-        integer*4 k
-        call spdotrm(rm(1),rm(m-1),rm(m))
-        call sprmulrm(rm(m),1.d0/dble(m))
-        call spcopyrm(rm(m),rmi(m))
-        do k=1,m-1
-          call spdotrm(rm(k),rmi(m-k),rmi(m))
-        enddo
-        call spintrm(rmi(m),dx(1),dx(2),dx(3),amx(1),amx(2),amx(3),ams)
-        return
-        end
-
-        subroutine spdepol(gxr,gxi,gyr,gyi,gzr,gzi,e1,e2,em,
-     $     dx,amx,ams,rmd)
-        implicit none
-        type (scmat) rm(mord),rmi(mord)
-        real*8 , intent(in)::gxr(3),gxi(3),gyr(3),gyi(3),gzr(3),gzi(3),
-     $       dx(3),amx(3),ams,e1(3),e2(3),em(3)
-        integer*4 i,ia1,ia2,ia3,ia4,ia5,ia6,
-     $       ia20,ia21,ia40,ia41,ia42,
-c     $       ia60,ia61,
-     $       ia62,ia63,i1,i2,k,
-     $       ib40,ib41,ic40,ic41,ib60,ib61,ic60,ic61,id60,id61,
-     $       ie61,ie62,if61,if62
-        complex*16 gx,gy,gz,gxc,gyc,gzc
-        complex*16 ,parameter :: cI=(0.d0,1.d0),c0=(0.d0,0.d0),
-     $       c1=(1.d0,0.d0)
-        real*8 , intent(out) :: rmd(3,3,3)
-        real*8 de12,se12
-c     $       ,sesq,e1e2
-        do i=1,mord
-          call spinitrm(rm(i),i,i,mlen(i))
-          call spinitrm(rmi(i),i,i+mord,mleni(i))
-        enddo
-        do i=1,3
-          gx=dcmplx(gxr(i),gxi(i))
-          gxc=conjg(gx)
-          gy=dcmplx(gyr(i)+gzi(i),gzr(i)-gyi(i))
-          gyc=conjg(gy)
-          gz=dcmplx(gyr(i)-gzi(i),gzr(i)+gyi(i))
-          gzc=conjg(gz)
-          ia1=iaind(rm(1),indn(i,0,1,1,-1,-1))
-          rm(1)%cmat(:,:,ia1)=RESHAPE(0.25d0*gzc*(/
-     $         c0,-cI,c1,
-     $         cI,c0,c0,
-     $         -c1,c0,c0/),(/3,3/))
-          ia2=iaind(rm(1),indn(i,0,1,1,-1,0))
-          rm(1)%cmat(:,:,ia2)=RESHAPE(0.5d0*gxc*(/
-     $         c0,c0, c0,
-     $         c0,c0,-c1,
-     $         c0,c1, c0/),(/3,3/))
-          ia3=iaind(rm(1),indn(i,0,1,1,-1,1))
-          rm(1)%cmat(:,:,ia3)=RESHAPE(0.25d0*gy*(/
-     $         c0,cI,c1,
-     $         -cI,c0,c0,
-     $         -c1,c0,c0/),(/3,3/))
-          ia4=iaind(rm(1),indn(i,1,0,1,1,-1))
-          rm(1)%cmat(:,:,ia4)=conjg(rm(1)%cmat(:,:,ia3))
-          ia5=iaind(rm(1),indn(i,1,0,1,1,0))
-          rm(1)%cmat(:,:,ia5)=conjg(rm(1)%cmat(:,:,ia2))
-          ia6=iaind(rm(1),indn(i,1,0,1,1,1))
-          rm(1)%cmat(:,:,ia6)=conjg(rm(1)%cmat(:,:,ia1))
-        enddo
-
-        call spcopyrm(rm(1),rmi(1))
-        call spintrm(rmi(1),dx(1),dx(2),dx(3),amx(1),amx(2),amx(3),ams)
-        do k=2,mord
-          call spcalcres(rm,rmi,k,dx,amx,ams)
-        enddo
-
-        rmd=0.d0
-        do i=1,3
-          ia20=iaind(rmi(2),indn(i,0,2,0,0,0))
-          ia21=iaind(rmi(2),indn(i,1,1,0,0,0))
-
-          ia40=iaind(rmi(4),indn(i,0,4,0,0,0))
-          ia41=iaind(rmi(4),indn(i,1,3,0,0,0))
-          ia42=iaind(rmi(4),indn(i,2,2,0,0,0))
-          i1=mod(i,3)+1
-          ib40=iaind(rmi(4),ind2(i,i1,0,2,1,1))
-          ib41=iaind(rmi(4),ind2(i,i1,1,1,1,1))
-          i2=mod(i1,3)+1
-          ic40=iaind(rmi(4),ind2(i,i2,0,2,1,1))
-          ic41=iaind(rmi(4),ind2(i,i2,1,1,1,1))
-
-c          ia60=iaind(rmi(6),indn(i,0,6,0,0,0))
-c          ia61=iaind(rmi(6),indn(i,1,5,0,0,0))
-          ia62=iaind(rmi(6),indn(i,2,4,0,0,0))
-          ia63=iaind(rmi(6),indn(i,3,3,0,0,0))
-          ib60=iaind(rmi(6),ind2(i,i1,0,2,2,2))
-          ib61=iaind(rmi(6),ind2(i,i1,1,1,2,2))
-          ic60=iaind(rmi(6),ind2(i,i2,0,2,2,2))
-          ic61=iaind(rmi(6),ind2(i,i2,1,1,2,2))
-          id60=iaind(rmi(6),ind3(i,0,2))
-          id61=iaind(rmi(6),ind3(i,1,1))
-          ie61=iaind(rmi(6),ind2(i,i1,1,3,1,1))
-          ie62=iaind(rmi(6),ind2(i,i1,2,2,1,1))
-          if61=iaind(rmi(6),ind2(i,i2,1,3,1,1))
-          if62=iaind(rmi(6),ind2(i,i2,2,2,1,1))
-
-          se12=(e1(i)+e2(i))*.5d0
-          de12=(e1(i)-e2(i))*.5d0
-c          sesq=(e1(i)**2+e2(i)**2)*.25d0
-c          e1e2=e1(i)*e2(i)*.25d0
-          rmd(:,:,1)=rmd(:,:,1)
-     $         +se12*dble(rmi(2)%cmat(:,:,ia21))
-     $         +2.d0*de12*dble(rmi(2)%cmat(:,:,ia20))
-
-          rmd(:,:,2)=rmd(:,:,2)
-     $     +2.d0*(
-     $         em(i)*(
-     $         se12*dble(rmi(4)%cmat(:,:,ia42))
-     $         +2.d0*de12*dble(rmi(4)%cmat(:,:,ia41)))
-     $        +em(i1)*(
-     $         se12*dble(rmi(4)%cmat(:,:,ib41))
-     $         +2.d0*de12*dble(rmi(4)%cmat(:,:,ib40)))
-     $        +em(i2)*(
-     $         se12*dble(rmi(4)%cmat(:,:,ic41))
-     $         +2.d0*de12*dble(rmi(4)%cmat(:,:,ic40))))
-c     $     +de12*(6.d0*de12*dble(rmi(4)%cmat(:,:,ia40))
-c     $           +(6.d0*se12+4.d0*em(i))
-c     $              *dble(rmi(4)%cmat(:,:,ia41)))
-c     $     +(2.d0*(em(i)*se12+e1e2)+3.d0*sesq)
-c     $        *dble(rmi(4)%cmat(:,:,ia42))
-c     $
-
-          rmd(:,:,3)=rmd(:,:,3)
-     $     +8.d0*(
-     $         em(i )**2*(se12*dble(rmi(6)%cmat(:,:,ia63))
-     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,ia62)))
-     $        +em(i1)**2*(se12*dble(rmi(6)%cmat(:,:,ib61))
-     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,ib60)))
-     $        +em(i2)**2*(se12*dble(rmi(6)%cmat(:,:,ic61))
-     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,ic60))))
-     $     +4.d0*(
-     $         em(i1)*em(i2)*(se12*dble(rmi(6)%cmat(:,:,id61))
-     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,id60)))
-     $        +em(i )*em(i1)*(se12*dble(rmi(6)%cmat(:,:,ie62))
-     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,ie61)))
-     $        +em(i )*em(i2)*(se12*dble(rmi(6)%cmat(:,:,if62))
-     $         +2.d0*de12*dble(rmi(6)%cmat(:,:,if61))))
-c     $     +de12*(3.d0*de12*(
-c     $       10.d0*de12*dble(rmi(6)%cmat(:,:,ia60))
-c     $       +(4.d0*em(i)+10.d0*se12)*dble(rmi(6)%cmat(:,:,ia61)))
-c     $       +(em(i)*(16.d0*em(i)+12.d0*se12)+30.d0*sesq+36.d0*e1e2)
-c     $           *dble(rmi(6)%cmat(:,:,ia62)))
-c     $     +(em(i)*(8.d0*em(i)*se12+6.d0*sesq+4.d0*e1e2)
-c     $       +3.d0*se12*(5.d0*sesq-2.d0*e1e2))
-c     $      *dble(rmi(6)%cmat(:,:,ia63))
-c     $
-        enddo
-
-        do i=1,mord
-c          write(*,*)'spdepol ',i,rm(i)%nind,rmi(i)%nind
-          deallocate(rm(i)%cmat,rmi(i)%cmat,rm(i)%ind,rmi(i)%ind,rm(i)%ias,rmi(i)%ias)
-        enddo
-        return
-        end subroutine
-
-        subroutine sprot(sx,sy,sz,pxm,pym,bx0,by0,bz0,bsi,a,h,
-     $     gbrhoi,anph)
-        use tmacro
-        use ffs_flag, only:radpol
-        use mathfun,only:pxy2dpz,sqrt1,xsincos
-        implicit none
-        real*8 pxm,pym,bsi,pzm,bx0,by0,bz0,sx,sy,sz,
-     $       bx,by,bz,bp,blx,bly,blz,btx,bty,btz,ct,h,
-     $       gx,gy,gz,g,a,gbrhoi,dsx,dsy,dsz,
-     $       sux,suy,suz,
-     $       bt,st,dst,dr,sl1,st1,
-     $       sw,anph,cosu,sinu,dcosu,xsinu
-        pzm=1.d0+pxy2dpz(pxm,pym)
-        bx=bx0*a
-        by=by0*a
-        bz=bz0*a+bsi
-        bp=bx*pxm+by*pym+bz*pzm
-        blx=bp*pxm
-        bly=bp*pym
-        blz=bp*pzm
-        btx=bx-blx
-        bty=by-bly
-        btz=bz-blz
-        ct=1.d0+h*gspin
-        gx=ct*btx+cl*blx
-        gy=ct*bty+cl*bly
-        gz=ct*btz+cl*blz
-c        write(*,'(a,1p10g12.4)')'sprot ',pxm,pym,bz0,bz,bsi,blz
-        if(anph > 0.d0 .and. radpol)then
-c          bt=abs(dcmplx(btx,abs(dcmplx(bty,btz))))
-          bt=norm2([btx,bty,btz])
-          if(bt /= 0.d0)then
-            st=(sx*btx+sy*bty+sz*btz)/bt
-            dst=(st-pst)*sflc*anph*(bt*gbrhoi)**2
-            if(st /= 1.d0)then
-              dr=dst/(1.d0-st**2)/bt
-              dsx=dr*sx
-              dsy=dr*sy
-              dsz=dr*sz
-              gx=gx+dsy*btz-dsz*bty
-              gy=gy+dsz*btx-dsx*btz
-              gz=gz+dsx*bty-dsy*btx
-            else
-              st1=st-dst
-              sl1=sqrt(1-st1**2)
-              sx=sl1*pxm+st1*btx/bt
-              sy=sl1*pym+st1*bty/bt
-              sz=sl1*pzm+st1*btz/bt
-            endif
-          endif
-        endif
-c        g=abs(dcmplx(gx,abs(dcmplx(gy,gz))))
-        g=norm2([gx,gy,gz])
-c        write(*,'(a,1p9g16.8)')'sprot-0 ',g,sx,sy,sz
-        if(g /= 0.d0)then
-c          tanuh=tan(g*.5d0)
-c          sinu=2.d0*tanuh/(1.d0+tanuh**2)
-c          dcosu=tanuh*sinu
-c          cosu=1.d0-dcosu
-          call xsincos(g,sinu,xsinu,cosu,dcosu)
-          sw=-(sx*gx+sy*gy+sz*gz)*dcosu/g**2
-          sinu=sinu/g
-          sux=sy*gz-sz*gy
-          suy=sz*gx-sx*gz
-          suz=sx*gy-sy*gx
-          sx=cosu*sx+sinu*sux+sw*gx
-          sy=cosu*sy+sinu*suy+sw*gy
-          sz=cosu*sz+sinu*suz+sw*gz
-        endif
-        sx= sx*cphi0+sz*sphi0
-        sz=(sz-sx*sphi0)/cphi0
-c        write(*,'(a,1p9g16.8)')'sprot ',g,sx,sy,sz,sinu,cosu,sw
-c        write(*,'(1p10g12.4)')anph,radpol
-        return
-        end subroutine
-
-        real*8 function outer(a,b)
-        implicit none
-        real*8 ,intent(in):: a(3),b(3)
-        dimension outer(3)
-        outer(1)=a(2)*b(3)-a(3)*b(2)
-        outer(2)=a(3)*b(1)-a(1)*b(3)
-        outer(3)=a(1)*b(2)-a(2)*b(1)
-        return
-        end function
-
-        subroutine spnorm(srot,sps,smu,sdamp)
-        use temw, only:gintd
-        use macmath, only:m_2pi
-        implicit none
-        real*8 , intent(inout) :: srot(3,9)
-        real*8 , intent(out) :: sps(3,3),smu,sdamp
-        real*8 s,a(3,3),w(3,3),eig(2,3),dr(3),dsps(3),
-     $       cm,sm,spsa1(3)
-        real*8 , parameter :: smin=1.d-4
-        integer*4 i
-c        s=abs(dcmplx(srot(1,2),abs(dcmplx(srot(2,2),srot(3,2)))))
-        s=norm2(srot(:,2))
-        srot(:,2)=srot(:,2)/s
-        s=srot(1,1)*srot(1,2)+srot(2,1)*srot(2,2)+srot(3,1)*srot(3,2)
-        srot(:,1)=srot(:,1)-s*srot(:,2)
-        s=abs(dcmplx(srot(1,1),abs(dcmplx(srot(2,1),srot(3,1)))))
-        srot(:,1)=srot(:,1)/s
-        srot(:,3)=outer(srot(:,1),srot(:,2))
-        sps(1,1)=srot(2,3)-srot(3,2)
-        sps(2,1)=srot(3,1)-srot(1,3)
-        sps(3,1)=srot(1,2)-srot(2,1)
-        s=abs(dcmplx(sps(1,1),abs(dcmplx(sps(2,1),sps(3,1)))))
-        if(s .lt. smin)then
-          a=srot(:,1:3)
-          call teigen(a,w,eig,3,3)
-          do i=1,3
-            if(eig(2,i) .eq. 0.d0)then
-              sps(:,1)=a(:,i)
-              s=abs(dcmplx(sps(1,1),abs(dcmplx(sps(2,1),sps(3,1)))))
-              exit
-            endif
-          enddo
-        endif
-        sps(:,1)=sps(:,1)/s
-        dr=sps(:,1)-srot(:,1)*sps(1,1)-srot(:,2)*sps(2,1)
-     $       -srot(:,3)*sps(3,1)
-        a=srot(:,1:3)
-        a(1,1)=a(1,1)-1.d0
-        a(2,2)=a(2,2)-1.d0
-        a(3,3)=a(3,3)-1.d0
-        call tsolvg(a,dr,dsps,3,3,3)
-        sps(:,1)=sps(:,1)+dsps
-c        s=abs(dcmplx(sps(1,1),abs(dcmplx(sps(2,1),sps(3,1)))))
-        s=norm2(sps(:,1))
-        sps(:,1)=sps(:,1)/s
-        if(abs(min(sps(1,1),sps(2,1),sps(3,1)))
-     $       > abs(max(sps(1,1),sps(2,1),sps(3,1))))then
-          sps(:,1)=-sps(:,1)
-        endif
-        dr=sps(:,1)-srot(:,1)*sps(1,1)-srot(:,2)*sps(2,1)
-     $       -srot(:,3)*sps(3,1)
-        sps(:,2)=0.d0
-        if(abs(sps(1,1)) > abs(sps(2,1)))then
-          sps(2,2)=1.d0
-          s=sps(2,1)
-        else
-          sps(1,2)=1.d0
-          s=sps(1,1)
-        endif
-        sps(:,2)=sps(:,2)-s*sps(:,1)
-c        s=abs(dcmplx(sps(1,2),abs(dcmplx(sps(2,2),sps(3,2)))))
-        s=norm2(sps(:,2))
-        sps(:,2)=sps(:,2)/s
-        sps(:,3)=outer(sps(:,1),sps(:,2))
-        spsa1=srot(:,1)*sps(1,2)+srot(:,2)*sps(2,2)+srot(:,3)*sps(3,2)
-        cm=dot_product(spsa1,sps(:,2))
-        sm=dot_product(spsa1,sps(:,3))
-        smu=atan(-sm,cm)
-        sdamp=dot_product(sps(:,1),gintd)
-c        write(*,*)'spnorm ',sdamp,gintd
-        return
-        end subroutine
-
-        subroutine serot(xx,xy,yy,c1,c2,d1,d2,e1,e2,em1,em2)
-        implicit none
-        real*8 ,intent(in):: xx,xy,yy
-        real*8 ,intent(inout):: c1,c2,d1,d2,e1,e2
-        real*8 ,intent(out):: em1,em2
-        real*8 tx,c,s
-        tx=.5d0*atan(2.d0*xy,xx-yy)
-        c=cos(tx)
-        s=sin(tx)
-        em1=c**2*xx+s**2*yy+2.d0*c*s*xy
-        em2=c**2*yy+s**2*xx-2.d0*c*s*xy
-        c1=  c*c1+s*c2
-        c2=(-s*c1+  c2)/c
-        d1=  c*d1+s*d2
-        d2=(-s*d1+  d2)/c
-        e1=  c*e1+s*e2
-        e2=(-s*e1+  e2)/c
-        return
-        end
-
-        subroutine sremit(srot,sps,params,demit,sdamp,rm1,equpol)
-        use temw,only:ipdampx,nparams,ipdampz,ipemx,ipemz,ipnup,
-     $       ipnx,ipnz,r
-        use macmath
-        implicit none
-        real*8 , intent(in)::srot(3,9),demit(21),sps(3,3),
-     $       params(nparams),sdamp
-        real*8 , intent(out)::equpol(3),rm1(3,3)
-        real*8 drot(3,6),emit1(3),emitd(3),damp(3),
-     $       d1,d2,d3,d4,d5,d6,e1,e2,e3,e4,e5,e6,
-     $       c1,c2,c3,c4,c5,c6,smu,
-     $       dex1,dex2,dey1,dey2,dez1,dez2,
-     $       rm(3,3),epol(3,3),b(3),rmd(3,3,3)
-        integer*4 i
-        smu=params(ipnup)*m_2pi
-        drot=matmul(srot(:,4:9),r)
-        c1=dot_product(drot(:,1),sps(:,1))
-        c2=dot_product(drot(:,2),sps(:,1))
-        c3=dot_product(drot(:,3),sps(:,1))
-        c4=dot_product(drot(:,4),sps(:,1))
-        c5=dot_product(drot(:,5),sps(:,1))
-        c6=dot_product(drot(:,6),sps(:,1))
-        d1=dot_product(drot(:,1),sps(:,2))
-        d2=dot_product(drot(:,2),sps(:,2))
-        d3=dot_product(drot(:,3),sps(:,2))
-        d4=dot_product(drot(:,4),sps(:,2))
-        d5=dot_product(drot(:,5),sps(:,2))
-        d6=dot_product(drot(:,6),sps(:,2))
-        e1=dot_product(drot(:,1),sps(:,3))
-        e2=dot_product(drot(:,2),sps(:,3))
-        e3=dot_product(drot(:,3),sps(:,3))
-        e4=dot_product(drot(:,4),sps(:,3))
-        e5=dot_product(drot(:,5),sps(:,3))
-        e6=dot_product(drot(:,6),sps(:,3))
-        call serot(demit(1), demit(2), demit(3), c1,c2,d1,d2,e1,e2,dex1,dex2)
-        call serot(demit(6), demit(9), demit(10),c3,c4,d3,d4,e3,e4,dey1,dey2)
-        call serot(demit(15),demit(20),demit(21),c5,c6,d5,d6,e5,e6,dez1,dez2)
-        emit1=params(ipemx:ipemz)
-        damp=abs(params(ipdampx:ipdampz))
-        emitd=2.d0*emit1*damp/3.d0
-        call spdepol(
-     $       (/c1,c3,c5/),(/c2,c4,c6/),
-     $       (/d1,d3,d5/),(/d2,d4,d6/),
-     $       (/e1,e3,e5/),(/e2,e4,e6/),
-     $       (/dex1,dey1,dez1/)/3.d0,(/dex2,dey2,dez2/)/3.d0,
-c     $       emitd,emitd,
-     $       emit1,damp,
-     $       params(ipnx:ipnz)*m_2pi,smu,rmd)
-        rm1=0.d0
-        do i=1,3
-          rm1=rm1+rmd(:,:,i)
-          rm=rm1
-          rm(1,1)=rm(1,1)-sdamp
-          b=(/-sdamp*pst,0.d0,0.d0/)
-          call tsolva(rm,b,epol(:,i),3,3,3,min(1.d-8,sdamp/100.d0))
-        enddo
-        rm1(1,1)=rm1(1,1)-sdamp
-        equpol=epol(1,:)
-c        write(*,'(a,1p10g12.4)')'epol ',epol
-c        write(*,'(a,1p10g12.4)')'rm1  ',rm1
-c        write(*,'(a,1p10g12.4)')'pols ',matmul(rm1,epol)
-        return
-        end subroutine
-
-        subroutine srotinit(srot)
-        use temw,only:gintd
-        implicit none
-        real*8 ,intent(out):: srot(3,9)
-        srot=0.d0
-        srot(1,1)=1.d0
-        srot(2,2)=1.d0
-        srot(3,3)=1.d0
-        gintd=0.d0
-        return
-        end subroutine
-
-      end module
-
 
       subroutine tffs
       use tfstk
@@ -3429,7 +2852,7 @@ c      ilist(2,iwakepold+6)=int(ifsize)
           if(i .ge. l)then
             exit LOOP_K
           endif
-          if(idelc(i) .eq. idelc(l))then
+          if(idelc(i) == idelc(l))then
             ilist(l,ifele1)=ilist(i,ifele1)
             cycle LOOP_L
           endif
@@ -3438,7 +2861,7 @@ c      ilist(2,iwakepold+6)=int(ifsize)
         ilist(nele,ifmult)=l
         ilist(l,ifele1)=nele
       enddo LOOP_L
-c      if(elatt%elmv%k .eq. 0)then
+c      if(elatt%elmv%k == 0)then
 c        call tffs_init_elmv
 c      endif
       return
@@ -3453,7 +2876,7 @@ c      endif
       integer*4 , intent(in)::nv
       integer*4 nve0
       integer*8 ifnvev1
-      if(nv .lt. nve)then
+      if(nv < nve)then
         return
       endif
       nve0=nve
@@ -3536,14 +2959,14 @@ c      call tfree(ifibzl)
       endif
       call tftclupdate(7)
       outfl1=outfl
-      if(narg .eq. 2)then
+      if(narg == 2)then
         if(ktfnonrealq(ktastk(isp)))then
           irtc=itfmessage(9,'General::wrongtype',
      $         '"File number for #2"')
           return
         endif
         outfl=int(rtastk(isp))
-        if(outfl .eq. -1)then
+        if(outfl == -1)then
           outfl=icslfno()
         endif
       else
@@ -3566,7 +2989,7 @@ c      call tfree(ifibzl)
         savep=sav
         call trbassign(lfni)
         outfl=outfl1
-        if(irtc .eq. 0 .and. iffserr /= 0)then
+        if(irtc == 0 .and. iffserr /= 0)then
           irtc=itfmessagestr(9,'FFS::error',strfromis(int(iffserr)))
         endif
       endif
@@ -3593,7 +3016,7 @@ c      call tfree(ifibzl)
       type (sad_descriptor) kx
       integer*4 isp1,irtc,infl0,itfmessage,lfn,ierrfl,ierr,lfnb0,lfni0
       ierr=0
-      if(isp .eq. isp1+2)then
+      if(isp == isp1+2)then
         ierr=int(rtastk(isp))
       elseif(isp /= isp1+1)then
         irtc=itfmessage(9,'General::narg','"1 or 2"')

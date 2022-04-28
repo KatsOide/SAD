@@ -19,7 +19,7 @@
       implicit none
       real*8 ,intent(in)::x
       tfloor=aint(x+1.d-15)
-      if(x .lt. 0.d0 .and. x .ne. tfloor)then
+      if(x < 0.d0 .and. x /= tfloor)then
         tfloor=tfloor-1.d0
       endif
       return
@@ -36,7 +36,7 @@
       implicit none
       real*8 ,intent(in)::x
       tceiling=-aint(-x+1.d-15)
-      if(x .gt. 0.d0 .and. x .ne. tceiling)then
+      if(x > 0.d0 .and. x /= tceiling)then
         tceiling=1.d0+tceiling
       endif
       return
@@ -66,7 +66,7 @@
       real*8 pure function tfevenq(x)
       implicit none
       real*8 ,intent(in)::x
-      tfevenq=merge(1.d0,0.d0,x*.5d0 .eq. aint(x*.5d0))
+      tfevenq=merge(1.d0,0.d0,x*.5d0 == aint(x*.5d0))
       return
       end
 
@@ -126,7 +126,7 @@
      $     -atan2(-dble(z),1.d0-imag(z)),
      $     log(((1.d0+imag(z))**2+dble(z)**2)/
      $     ((1.d0-imag(z))**2+dble(z)**2))*.5d0),
-     $     dble(z) .eq. 0.d0)
+     $     dble(z) == 0.d0)
       return
       end
 
@@ -134,10 +134,10 @@
       use macmath
       implicit none
       complex*16 ,intent(in)::z,z1
-      if(z .eq. (0.d0,0.d0))then
-        if(dble(z1) .eq. 0.d0)then
+      if(z == (0.d0,0.d0))then
+        if(dble(z1) == 0.d0)then
           tcatan2=dcmplx(merge(0.d0,sign(m_pi_2,imag(z1)),
-     $         imag(z1) .eq. 0.d0),0.d0)
+     $         imag(z1) == 0.d0),0.d0)
         else
           tcatan2=sign(m_pi_2,dble(z1))
         endif
@@ -200,10 +200,10 @@
       implicit none
       real*8 ,intent(in)::x
       real*8 x2
-      if(abs(x) .lt. xths1)then
+      if(abs(x) < xths1)then
         x2=x**2
         xs=x*x2*(1.d0/6.d0-x2*(1.d0/120.d0-x2/5040.d0))
-      elseif(abs(x) .lt. xths2)then
+      elseif(abs(x) < xths2)then
         x2=x**2
         xs=x*x2*(1.d0/6.d0-x2*(1.d0/120.d0-x2*(
      1       1.d0/5040.d0-x2*(1.d0/362880.d0-x2/39916800.d0))))
@@ -218,11 +218,11 @@
       real*8 ,intent(in)::x
       real*8 ,intent(out)::s,xs
       real*8 x2
-      if(abs(x) .lt. xths1)then
+      if(abs(x) < xths1)then
         x2=x**2
         xs=x*x2*(1.d0/6.d0-x2*(1.d0/120.d0-x2/5040.d0))
         s=x-xs
-      elseif(abs(x) .lt. xths2)then
+      elseif(abs(x) < xths2)then
         x2=x**2
         xs=x*x2*(1.d0/6.d0-x2*(1.d0/120.d0-x2*(
      1       1.d0/5040.d0-x2*(1.d0/362880.d0-x2/39916800.d0))))
@@ -239,13 +239,13 @@
       real*8 ,intent(in)::x
       real*8 ,intent(out)::s,xs,c,dc
       real*8 x2
-      if(abs(x) .lt. xthcs1)then
+      if(abs(x) < xthcs1)then
         x2=x**2
         xs=x*x2*(1.d0/6.d0-x2*(1.d0/120.d0-x2/5040.d0))
         s=x-xs
         dc=-x2*(.5d0-x2*(1.d0/24.d0-x2/720.d0))
         c=1.d0+dc
-      elseif(abs(x) .lt. xthcs2)then
+      elseif(abs(x) < xthcs2)then
         x2=x**2
         xs=x*x2*(1.d0/6.d0-x2*(1.d0/120.d0-x2*(
      1       1.d0/5040.d0-x2*(1.d0/362880.d0-x2/39916800.d0))))
@@ -257,7 +257,12 @@
         s=sin(x)
         xs=x-s
         c=cos(x)
-        dc=merge(-s**2/(1.d0+c),c-1.d0,c .gt. 0.d0)
+        if(c > 0.d0)then
+          dc=-s**2/(1.d0+c)
+        else
+          dc=c-1.d0
+        endif
+c        dc=merge(-s**2/(1.d0+c),c-1.d0,c > 0.d0)
       endif
       return
       end
@@ -266,10 +271,10 @@
       implicit none
       real*8 ,intent(in)::x
       real*8 x2
-      if(abs(x) .lt. xths1)then
+      if(abs(x) < xths1)then
         x2=x**2
         xsinh=-x*x2*(1.d0/6.d0+x2*(1.d0/120.d0+x2/5040.d0))
-      elseif(abs(x) .lt. xths2)then
+      elseif(abs(x) < xths2)then
         x2=x**2
         xsinh=-x*x2*(1.d0/6.d0+x2*(1.d0/120.d0+x2*(
      1       1.d0/5040.d0+x2*(1.d0/362880.d0+x2/39916800.d0))))
@@ -284,11 +289,11 @@
       real*8 ,intent(in)::x
       real*8 ,intent(out)::sh,xsh
       real*8 x2
-      if(abs(x) .lt. xths1)then
+      if(abs(x) < xths1)then
         x2=x**2
         xsh=-x*x2*(1.d0/6.d0+x2*(1.d0/120.d0+x2/5040.d0))
         sh=x-xsh
-      elseif(abs(x) .lt. xths2)then
+      elseif(abs(x) < xths2)then
         x2=x**2
         xsh=-x*x2*(1.d0/6.d0+x2*(1.d0/120.d0+x2*(
      1       1.d0/5040.d0+x2*(1.d0/362880.d0+x2/39916800.d0))))
@@ -305,13 +310,13 @@
       real*8 ,intent(in)::x
       real*8 ,intent(out)::sh,xsh,ch,dch
       real*8 x2
-      if(abs(x) .lt. xthcs1)then
+      if(abs(x) < xthcs1)then
         x2=x**2
         xsh=-x*x2*(1.d0/6.d0+x2*(1.d0/120.d0+x2/5040.d0))
         sh=x-xsh
         dch= x2*(.5d0+x2*(1.d0/24.d0+x2/720.d0))
         ch=1.d0+dch
-      elseif(abs(x) .lt. xthcs2)then
+      elseif(abs(x) < xthcs2)then
         x2=x**2
         xsh=-x*x2*(1.d0/6.d0+x2*(1.d0/120.d0+x2*(
      1       1.d0/5040.d0+x2*(1.d0/362880.d0+x2/39916800.d0))))
@@ -335,7 +340,7 @@
      $     x*(1.d0-x*(.5d0-x*(1.d0/3.d0
      1     -x*(.25d0-x*(.2d0-x*(1.d0/6.d0
      1     -x*(1.d0/7.d0-x*(.125d0-x/9.d0)))))))),
-     $     abs(x) .gt. 1.d-2)
+     $     abs(x) > 1.d-2)
       return
       end
 
@@ -343,7 +348,7 @@
       implicit none
       real*8 ,intent(in)::x
       real*8 x2
-      if(abs(x) .gt. .1d0)then
+      if(abs(x) > .1d0)then
         sinc=x*cos(x)-sin(x)
       else
         x2=-x**2
@@ -357,7 +362,7 @@
       implicit none
       real*8 ,intent(in)::x
       real*8 x2
-      if(abs(x) .gt. .1d0)then
+      if(abs(x) > .1d0)then
         sinhc=x*cosh(x)-sinh(x)
       else
         x2=x**2
@@ -371,7 +376,7 @@
       implicit none
       complex*16 ,intent(in)::x
       complex*16 x2
-      if(abs(x) .gt. .1d0)then
+      if(abs(x) > .1d0)then
         tcxsin=x-sin(x)
       else
         x2=x**2
@@ -391,15 +396,15 @@
       real*8 pure function tfsign(x)
       implicit none
       real*8 ,intent(in)::x
-      tfsign=merge(1.d0,merge(0.d0,-1.d0,x .eq. 0.d0),
-     $     x .gt. 0.d0)
+      tfsign=merge(1.d0,merge(0.d0,-1.d0,x == 0.d0),
+     $     x > 0.d0)
       return
       end
 
       complex*16 pure function tfcsign(cx)
       implicit none
       complex*16 ,intent(in)::cx
-      tfcsign=merge((0.d0,0.d0),cx/abs(cx),cx .eq. (0.d0,0.d0))
+      tfcsign=merge((0.d0,0.d0),cx/abs(cx),cx == (0.d0,0.d0))
       return
       end
 
@@ -438,7 +443,7 @@
       real*8, intent(in) :: p
       real*8 p2
       real*8, parameter:: pth=1.d3;
-      if(p .gt. pth)then
+      if(p > pth)then
         p2=1.d0/p**2
         p2h=p*(1.d0+p2*(0.5d0-p2*.125d0))
       else
@@ -452,7 +457,7 @@
       real*8, intent(in) :: h
       real*8 h2
       real*8, parameter:: hth=1.d3;
-      if(h .gt. hth)then
+      if(h > hth)then
         h2=-1.d0/h**2
         h2p=h*(1.d0+h2*(0.5d0-h2*.125d0))
       else
@@ -467,7 +472,7 @@
       real*8 x
       real*8, parameter:: xth=8.d-6,xmin=1.d-200
       x=px**2+py**2
-      if(x .lt. xth)then
+      if(x < xth)then
         pxy2dpz=-x*(0.5d0+x*(0.125d0+x*0.0625d0))
       else
         pxy2dpz=-x/(1.d0+sqrt(max(xmin,1.d0-x)))
@@ -479,9 +484,9 @@
       implicit none
       real*8, intent(in) :: x
       real*8, parameter:: xth=8.d-6,xth1=3.4d-3,xmin=1.d-200
-      if(abs(x) .lt. xth)then
+      if(abs(x) < xth)then
         sqrt1=x*(0.5d0+x*(-0.125d0+x*0.0625d0))
-      elseif(abs(x) .lt. xth1)then
+      elseif(abs(x) < xth1)then
         sqrt1=x*(0.5d0+x*(-0.125d0+x*(0.0625d0+
      $       x*(-.0390625d0+x*(.02734375d0-.0205078125*x)))))
       else
@@ -506,9 +511,9 @@
       complex*16 , intent(out)::cr1
       real*8 , intent(in)::al
       complex*16 a
-      if(al .eq. 0.d0)then
-        if(imag(ak) .eq. 0.d0)then
-          if(dble(ak) .lt. 0.d0)then
+      if(al == 0.d0)then
+        if(imag(ak) == 0.d0)then
+          if(dble(ak) < 0.d0)then
             theta1=m_pi_2
             cr1=(0.d0,-1.d0)
           else
@@ -521,8 +526,8 @@
         endif
       else
         a=ak*al
-        if(imag(a) .eq. 0.d0)then
-          if(dble(a) .lt. 0.d0)then
+        if(imag(a) == 0.d0)then
+          if(dble(a) < 0.d0)then
             theta1=m_pi_2
             cr1=(0.d0,-1.d0)
           else
@@ -541,7 +546,7 @@
       implicit none
       real*8 ,intent(in):: x
       real*8 x2
-      if(abs(x) .lt. 0.0032d0)then
+      if(abs(x) < 0.0032d0)then
         x2=x**2
         asinz=x+x*x2*(1.d0/6.d0+x2*3.d0/40.d0)
       else
@@ -554,7 +559,7 @@
       implicit none
       real*8 ,intent(in):: x
       real*8 x2
-      if(abs(x) .lt. xthasx)then
+      if(abs(x) < xthasx)then
         x2=x**2
         asinx=x*x2*(1.d0/6.d0+x2*(3.d0/40.d0+x2*(5.d0/112.d0
      $       +x2*(35.d0/1152.d0+x2*63.d0/2816.d0))))
@@ -567,12 +572,12 @@
       complex*16 pure elemental function zeroim(x) result(f)
       implicit none
       complex*16 ,intent(in):: x
-      if(imag(x) .eq. 0.d0)then
+      if(imag(x) == 0.d0)then
         f=dcmplx(dble(x),0.d0)
       else
         f=x
       endif
-      if(dble(f) .eq. 0.d0)then
+      if(dble(f) == 0.d0)then
         f=dcmplx(0.d0,imag(f))
       endif
       return
@@ -582,10 +587,10 @@
       implicit none
       complex*16 ,intent(in):: x
       f=conjg(x)
-      if(imag(x) .eq. 0.d0)then
+      if(imag(x) == 0.d0)then
         f=dcmplx(dble(x),0.d0)
       endif
-      if(dble(f) .eq. 0.d0)then
+      if(dble(f) == 0.d0)then
         f=dcmplx(0.d0,imag(f))
       endif
       return
@@ -607,12 +612,12 @@
       real*8 ,intent(in):: x
       if(x .ge. 0.d0)then
         f=modulo(x,2.d0)
-        if(f .gt. 1.d0)then
+        if(f > 1.d0)then
           f=f-2.d0
         endif
       else
         f=-modulo(-x,2.d0)
-        if(f .lt. -1.d0)then
+        if(f < -1.d0)then
           f=f+2.d0
         endif
       endif
@@ -659,6 +664,35 @@
       return
       end function
 
+      complex*16 pure elemental function cexp1(z) result(f)
+      use macmath
+      implicit none
+      complex*16 ,intent(in):: z
+      if(abs(z) < 2.d-4)then
+        f=z*(1.d0+.5d0*z*(1.d0+z/3.d0*(1.d0+z/4.d0*(1.d0+z/5.d0))))
+      else
+        f=exp(z)-1.d0
+      endif
+      return
+      end function
+
+      real*8 pure function outer(a,b)
+      implicit none
+      real*8 ,intent(in):: a(3),b(3)
+      dimension outer(3)
+      outer(1)=a(2)*b(3)-a(3)*b(2)
+      outer(2)=a(3)*b(1)-a(1)*b(3)
+      outer(3)=a(1)*b(2)-a(2)*b(1)
+      return
+      end function
+
+      real*8 pure function outer2(a,b)
+      implicit none
+      real*8 ,intent(in):: a(2),b(2)
+      outer2=a(1)*b(2)-a(2)*b(1)
+      return
+      end function
+
       end module
 
       subroutine tfmod(isp1,kx,mode,irtc)
@@ -671,14 +705,14 @@
       integer*4 itfmessage,mode,i
       if(isp .le. isp1+1)then
         irtc=itfmessage(9,'General::narg','"2"')
-      elseif(isp .ne. isp1+2)then
-        if(mode .eq. 0)then
+      elseif(isp /= isp1+2)then
+        if(mode == 0)then
           irtc=itfmessage(9,'General::narg','"2"')
         else
           kx=dtastk(isp1+1)
           do i=isp1+2,isp
             kx=tfmodf(kx,dtastk(i),mode,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               return
             endif
           enddo
@@ -715,7 +749,7 @@ c     end   initialize for preventing compiler warning
       if(tfcomplexnumlistqk(k1%k,kl1))then
         n1=kl1%nl
         if(tfcomplexnumlistqk(k2%k,kl2))then
-          if(n1 .ne. kl2%nl)then
+          if(n1 /= kl2%nl)then
             irtc=itfmessage(9,'General::equalleng','"#1 and #2"')
             return
           endif
@@ -754,7 +788,7 @@ c              enddo
               isp=isp+1
               dtastk(isp)=tfmodf(dtastk(isp0+i),dtastk(isp0+n1+i),
      $             mode,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 isp=isp0
                 return
               endif
@@ -769,7 +803,7 @@ c              enddo
           do i=1,n1
             isp=isp+1
             dtastk(isp)=tfmodf(dtastk(isp0+i),k2,mode,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               isp=isp0
               return
             endif
@@ -789,7 +823,7 @@ c              enddo
         do i=1,n2
           isp=isp+1
           dtastk(isp)=tfmodf(k1,dtastk(isp0+i),mode,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             isp=isp0
             return
           endif
@@ -800,7 +834,7 @@ c              enddo
         if(ktfrealq(k2,v2))then
           select case (mode)
           case (0)
-            if(k2%k .eq. 0)then
+            if(k2%k == 0)then
               irtc=itfmessage(9,'General::wrongval','"#2","nonzero"')
               return
             endif
@@ -836,7 +870,7 @@ c              enddo
         if(ktfrealq(k2,v2))then
           select case(mode)
           case (0)
-            if(v2 .eq. 0.d0)then
+            if(v2 == 0.d0)then
               irtc=itfmessage(9,'General::wrongval','"#2","nonzero"')
               return
             endif
@@ -873,7 +907,7 @@ c              enddo
       elseif(tflistq(k1%k,kl1))then
         n1=kl1%nl
         if(tflistq(k2%k,kl2))then
-          if(n1 .ne. kl2%nl)then
+          if(n1 /= kl2%nl)then
             irtc=itfmessage(9,'General::equalleng','"#1 and #2"')
             return
           endif
@@ -885,7 +919,7 @@ c              enddo
             isp=isp+1
             dtastk(isp)=tfmodf(dtastk(isp0+i),dtastk(isp0+n1+i),
      $           mode,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               isp=isp0
               return
             endif
@@ -899,7 +933,7 @@ c              enddo
           do i=1,isp2-isp0
             isp=isp+1
             dtastk(isp)=tfmodf(dtastk(isp0+i),k2,mode,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               isp=isp0
               return
             endif
@@ -935,8 +969,8 @@ c              enddo
       cpx=.false.
       ymin=dinfinity
       ymax=-ymin
-      if(isp .eq. isp1+1)then
-        if(ktastk(isp) .eq. ktfoper+mtfnull)then
+      if(isp == isp1+1)then
+        if(ktastk(isp) == ktfoper+mtfnull)then
           go to 10
         endif
       endif
@@ -945,8 +979,8 @@ c              enddo
           xmin=min(xmin,rtastk(i))
           xmax=max(xmax,rtastk(i))
         elseif(ktflistq(ktastk(i),kli))then
-          if(kli%head%k .eq. ktfoper+mtfcomplex)then
-            if(ktfnonreallistqo(kli) .or. kli%nl .ne. 2)then
+          if(kli%head%k == ktfoper+mtfcomplex)then
+            if(ktfnonreallistqo(kli) .or. kli%nl /= 2)then
               go to 9000
             endif
             call c_f_pointer(c_loc(kli),klir)
@@ -955,10 +989,10 @@ c              enddo
             xmax=max(xmax,klir%rbody(1))
             ymin=min(ymin,klir%rbody(2))
             ymax=max(ymax,klir%rbody(2))
-          elseif(kli%head%k .eq. ktfoper+mtflist)then
+          elseif(kli%head%k == ktfoper+mtflist)then
             call tfminandmaxl(ksad_loc(kli%head%k),
      $           xmin,xmax,ymin,ymax,cpx,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               kx=dxnullo
               return
             endif
@@ -969,7 +1003,7 @@ c              enddo
           go to 9000
         endif
       enddo
- 10   if(mode .eq. 0)then
+ 10   if(mode == 0)then
         if(cpx)then
           kx=kxadaloc(-1,2,klx)
           klx%dbody(1)=kxcalocv(0,xmin,ymin)
@@ -981,7 +1015,7 @@ c              enddo
           klr%rbody(2)=xmax
         endif
         klx%attr=ior(klx%attr,lconstlist)
-      elseif(mode .eq. 1)then
+      elseif(mode == 1)then
         if(cpx)then
           kx=kxcalocv(-1,xmin,ymin)
         else
@@ -1013,7 +1047,7 @@ c              enddo
       real*8 xmin,xmax,ymin,ymax
       logical*4 cpx
       n=ilist(2,ka-1)
-      if(n .ne. 0)then
+      if(n /= 0)then
         call loc_sad(ka,kl)
         if(ktfreallistq(kl))then
           xmin=min(xmin,minval(kl%rbody(1:n)))
@@ -1031,10 +1065,10 @@ c              enddo
                 xmax=max(xmax,klic%re)
                 ymin=min(ymin,klic%im)
                 ymax=max(ymax,klic%im)
-              elseif(kli%head%k .eq. ktfoper+mtflist)then
+              elseif(kli%head%k == ktfoper+mtflist)then
                 call tfminandmaxl(ksad_loc(kli%head%k),
      $               xmin,xmax,ymin,ymax,cpx,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   return
                 endif
               else
@@ -1057,7 +1091,7 @@ c              enddo
       implicit none
       type (sad_descriptor) kx,tfrestrictl
       integer*4 isp1,irtc,itfmessage
-      if(isp .ne. isp1+3)then
+      if(isp /= isp1+3)then
         irtc=itfmessage(9,'General::narg','"3"')
       elseif(ktfnonrealq(ktastk(isp-1)) .or.
      $       ktfnonrealq(ktastk(isp)))then
@@ -1084,7 +1118,7 @@ c        irtc=itfmessage(9,'General::wrongtype','"x, min, max"')
         kx=dfromr(min(x2,max(x1,v)))
       elseif(tflistq(k,kl))then
         n=kl%nl
-        if(n .eq. 0)then
+        if(n == 0)then
           kx=k
           return
         endif
@@ -1101,7 +1135,7 @@ c          enddo
           do i=1,n
             isp=isp+1
             dtastk(isp)=tfrestrictl(kl%dbody(i),x1,x2,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               return
             endif
           enddo
@@ -1123,7 +1157,7 @@ c     $       '"Real or List of Reals"')
       integer*4 level,itfmessagestr,i,l
       call gerror(string)
       do i=1,132
-        if(string(i:i) .eq. char(0))then
+        if(string(i:i) == char(0))then
           string(i:i)=' '
           l=i-1
           go to 10
@@ -1152,7 +1186,7 @@ c      use tmacro
       ir=0
       kx%k=ktfoper+mtfnull
       if(ktfrealq(k,v))then
-        if(v .lt. rmin .or. v .gt. rmax)then
+        if(v < rmin .or. v > rmax)then
           cv=cfun(dcmplx(v,0.d0))
           kx=kxcalocc(-1,cv)
         else
@@ -1169,14 +1203,14 @@ c      use tmacro
           ir=icrtc
         endif
       elseif(ktflistq(k,kl))then
-        if(kl%head%k .eq. ktfoper+mtflist)then
+        if(kl%head%k == ktfoper+mtflist)then
           m=kl%nl
           if(ktfreallistq(kl))then
             isp0=isp
-            if(rmin .ne. -dinfinity .or. rmax .ne. dinfinity)then
+            if(rmin /= -dinfinity .or. rmax /= dinfinity)then
               do i=1,m
                 isp=isp+1
-                if(kl%rbody(i) .lt. rmin .or. kl%rbody(i) .gt. rmax)then
+                if(kl%rbody(i) < rmin .or. kl%rbody(i) > rmax)then
                   cv=cfun(dcmplx(kl%rbody(i),0.d0))
                   dtastk(isp)=kxcalocc(-1,cv)
                 else
@@ -1198,7 +1232,7 @@ c      use tmacro
             do i=1,m
               isp=isp+1
               if(ktfrealq(kl%dbody(i)))then
-                if(kl%rbody(i) .lt. rmin .or. kl%rbody(i) .gt. rmax)then
+                if(kl%rbody(i) < rmin .or. kl%rbody(i) > rmax)then
                   cv=cfun(dcmplx(kl%rbody(i),0.d0))
                   dtastk(isp)=kxcalocc(-1,cv)
                 else
@@ -1214,7 +1248,7 @@ c      use tmacro
               elseif(tflistq(kl%dbody(i)))then
                 dtastk(isp)=tfeintf(fun,cfun,kl%dbody(i),
      $               cmpl,rmin,rmax,ir)
-                if(ir .ne. 0.d0)then
+                if(ir /= 0.d0)then
                   isp=isp0
                   return
                 endif
@@ -1269,12 +1303,12 @@ c      use tmacro
       elseif(tflistq(k,kl) .and. tflistq(k1,kl1))then
         m=kl%nl
         m1=kl1%nl
-        if(m .ne. m1)then
+        if(m /= m1)then
           ir=8
           return
         endif
-        if(iand(kl%attr,lnonreallist) .eq. 0 .and.
-     $       iand(kl1%attr,lnonreallist) .eq. 0)then
+        if(iand(kl%attr,lnonreallist) == 0 .and.
+     $       iand(kl1%attr,lnonreallist) == 0)then
           kx=kxavaloc(-1,m,klr)
           call descr_sad(kx,klx)
           klr%attr=ior(klr%attr,lconstlist)
@@ -1291,7 +1325,7 @@ c      use tmacro
               rtastk(isp)=fun(kl%rbody(i),kl1%rbody(i))
             elseif(tflistq(ki) .and. tflistq(k1i))then
               dtastk(isp)=tfeintf2(fun,cfun,ki,k1i,cmpl,ir)
-              if(ir .ne. 0.d0)then
+              if(ir /= 0.d0)then
                 return
               endif
             else
@@ -1348,13 +1382,13 @@ c      use tmacro
      $     'E8','E9','EA','EB','EC','ED','EE','EF',
      $     'F0','F1','F2','F3','F4','F5','F6','F7',
      $     'F8','F9','FA','FB','FC','FD','FE','FF']
-      if(isp .eq. isp1+1)then
+      if(isp == isp1+1)then
         if(.not. tflistq(ktastk(isp)))then
           go to 9000
         endif
         ka=iand(ktamask,ktastk(isp))
         n=ilist(2,ka-1)
-        if(iand(ilist(2,ka-3),lnonreallist) .eq. 0)then
+        if(iand(ilist(2,ka-3),lnonreallist) == 0)then
           go to 9000
         endif
         isp0=isp
@@ -1365,7 +1399,7 @@ c      use tmacro
           isp2=isp
           call tfgetllstkall(kl)
           call tfrgbcolor(isp2,kxi,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             isp=isp0
             return
           endif
@@ -1374,16 +1408,16 @@ c      use tmacro
         enddo
         kx=kxmakelist(isp0)
         isp=isp0
-      elseif(isp .ne. isp1+3)then
+      elseif(isp /= isp1+3)then
         go to 9000
       else
-        if(iand(ktrmask,ktastk(isp1+1)) .eq. ktfnr)then
+        if(iand(ktrmask,ktastk(isp1+1)) == ktfnr)then
           go to 9000
         endif
-        if(iand(ktrmask,ktastk(isp1+2)) .eq. ktfnr)then
+        if(iand(ktrmask,ktastk(isp1+2)) == ktfnr)then
           go to 9000
         endif
-        if(iand(ktrmask,ktastk(isp)) .eq. ktfnr)then
+        if(iand(ktrmask,ktastk(isp)) == ktfnr)then
           go to 9000
         endif
         ir=min(255,max(0,nint(256.d0*rtastk(isp1+1))))

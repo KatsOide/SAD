@@ -70,7 +70,7 @@
         cod=twiss(fbound%lb,idp,mfitdx:mfitddp)
         call qcod(idp,fbound,trans,cod,codfnd,optstat%over)
         if(optstat%over)then
-          if(lfno .gt. 0)then
+          if(lfno > 0)then
             if(.not. codfnd)then
               write(lfno,*)
      $             '*****qcod---> Overflow & closed orbit not found'
@@ -85,7 +85,7 @@
           if(orbitcal)then
             twiss(fbound%lb,idp,mfitdx:mfitddp)=cod
           endif
-        elseif(lfno .gt. 0)then
+        elseif(lfno > 0)then
           write(lfno,*)'*****qcod---> Closed orbit not found'
           pri=.true.
         endif
@@ -209,7 +209,7 @@ c     print *,tmd41,tmd42
         optstat%stabx=.true.
         optstat%staby=.true.
         cosmux=.5d0*optstat%tracex
-        if(cosmux .gt. 1.d0)then
+        if(cosmux > 1.d0)then
           cosmux=1.d0/cosmux
           if(intres)then
             optstat%stabx=.false.
@@ -218,7 +218,7 @@ c     print *,tmd41,tmd42
           endif
         else
         endif
-        if(cosmux .lt. -1.d0)then
+        if(cosmux < -1.d0)then
           cosmux=1.d0/cosmux
           if(halfres)then
             optstat%stabx=.false.
@@ -227,7 +227,7 @@ c     print *,tmd41,tmd42
           endif
         endif
         cosmuy=.5d0*optstat%tracey
-        if(cosmuy .gt. 1.d0)then
+        if(cosmuy > 1.d0)then
           cosmuy=1.d0/cosmuy
           if(intres)then
             optstat%staby=.false.
@@ -236,7 +236,7 @@ c     print *,tmd41,tmd42
           endif
         else
         endif
-        if(cosmuy .lt. -1.d0)then
+        if(cosmuy < -1.d0)then
           cosmuy=1.d0/cosmuy
           if(halfres)then
             optstat%staby=.false.
@@ -271,7 +271,7 @@ c     (Note) Disperdion is defined in 2*2 world
         b13=s31*tm15+s32*tm25+s33*tm35
         b23=s41*tm15+s42*tm25+s44*tm45
         if(chgini .or. optstat%stabx)then
-          if( dcosmux.ne.0.d0 ) then
+          if( dcosmux/=0.d0 ) then
             twiss(fbound%lb,idp,mfitex) =
      $           0.5d0*(a13+a12*a23-a22*a13)/dcosmux
             twiss(fbound%lb,idp,mfitepx) =
@@ -279,7 +279,7 @@ c     (Note) Disperdion is defined in 2*2 world
           endif
         endif
         if(chgini .or. optstat%staby)then
-          if( dcosmuy.ne.0.d0 ) then
+          if( dcosmuy/=0.d0 ) then
             twiss(fbound%lb,idp,mfitey) =
      $           0.5d0*(b13+b12*b23-b22*b13)/dcosmuy
             twiss(fbound%lb,idp,mfitepy)=
@@ -288,7 +288,7 @@ c     (Note) Disperdion is defined in 2*2 world
         endif
       endif
  1    continue
-      if(fbound%fb .gt. 0.d0)then
+      if(fbound%fb > 0.d0)then
         call qtwissfrac1(ftwiss,trans,cod,idp,fbound%lb,fbound%fb,1.d0,
      $       .false.,.true.,optstat%over)
         if(.not. optstat%over)then
@@ -299,7 +299,7 @@ c     (Note) Disperdion is defined in 2*2 world
       endif
       ie1=fbound%le
       if(optstat%over)then
-        if(lfno .gt. 0)then
+        if(lfno > 0)then
           write(lfno,'(a,2i8,1pg15.7)')'***qtwiss---> Overflow (fb) ',fbound%lb,fbound%le,fbound%fb
           pri=.true.
         endif
@@ -307,11 +307,11 @@ c     (Note) Disperdion is defined in 2*2 world
         optstat%staby=.false.
         return
       endif
-      if(fbound%fe .gt. 0.d0)then
+      if(fbound%fe > 0.d0)then
         call qtwissfrac1(ftwiss,trans,cod,idp,fbound%le,0.d0,fbound%fe,
      $       .false.,.true.,optstat%over)
         if(optstat%over)then
-          if(lfno .gt. 0)then
+          if(lfno > 0)then
             write(lfno,'(a,2i8,1pg15.7)')'***qtwiss---> Overflow (fe) ',fbound%lb,fbound%le,fbound%fe
             pri=.true.
           endif
@@ -327,8 +327,8 @@ c     (Note) Disperdion is defined in 2*2 world
         nm=0
         if(idtypec(l) .eq. icMARK)then
           xp=tffselmoffset(l)
-          if(xp .ne. dble(l))then
-            if(xp .ge. xb .and. xp .lt. xe)then
+          if(xp /= dble(l))then
+            if(xp >= xb .and. xp < xe)then
               lx=int(xp)
               fr=xp-lx
  8101         if(fr .eq. 0.d0)then
@@ -374,29 +374,29 @@ c     (Note) Disperdion is defined in 2*2 world
       optstat%tracex=x11+x22
       optstat%tracey=y11+y22
       if(cell)then
-        if(optstat%tracex .gt. 2.d0)then
-          if(intres)then
+        if(optstat%tracex > 2.d0)then
+          if(intres .and. .not. fam)then
             optstat%stabx=.false.
           else
             optstat%tracex=4.d0/optstat%tracex
           endif
         endif
-        if(optstat%tracex .lt. -2.d0)then
-          if(halfres)then
+        if(optstat%tracex < -2.d0)then
+          if(halfres .and. .not. fam)then
             optstat%stabx=.false.
           else
             optstat%tracex=4.d0/optstat%tracex
           endif
         endif
-        if(optstat%tracey .gt. 2.d0)then
-          if(intres)then
+        if(optstat%tracey > 2.d0)then
+          if(intres .and. .not. fam)then
             optstat%staby=.false.
           else
             optstat%tracey=4.d0/optstat%tracey
           endif
         endif
-        if(optstat%tracey .lt. -2.d0)then
-          if(halfres)then
+        if(optstat%tracey < -2.d0)then
+          if(halfres .and. .not. fam)then
             optstat%staby=.false.
           else
             optstat%tracey=4.d0/optstat%tracey

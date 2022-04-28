@@ -1,6 +1,5 @@
       subroutine tcav(np,x,px,y,py,z,g,dv,sx,sy,sz,al,vc,
-     $     w,phi,dphi,vnominal,
-     $     lwl,wakel,lwt,waket,
+     $     w,phi,dphi,vnominal,nwak,
      $     dx,dy,theta,v1,v20,v11,v02,
      $     fringe,mfring,autophi)
       use ffs_flag
@@ -10,13 +9,11 @@
       implicit none
       integer*4, parameter ::ndivmax=1000
       real*8, parameter::eps=1.d-3,oneev=1.d0+3.83d-12
-      integer*4 ,intent(in):: np,mfring,lwl,lwt
+      integer*4 ,intent(in):: np,mfring,nwak
       integer*4 ndiv,i,n
-      integer*4 ,dimension(:),allocatable :: itab,izs
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
      $     g(np),dv(np),sx(np),sy(np),sz(np)
-      real*8 ,intent(in):: wakel(2,lwl),waket(2,lwt),
-     $     al,vc,w,phi,dphi,vnominal,dx,dy,theta,v1,v20,v11,v02
+      real*8 ,intent(in):: al,vc,w,phi,dphi,vnominal,dx,dy,theta,v1,v20,v11,v02
       real*8 he,wi,cost,sint,v,v1a,ws(ndivmax),
      $     v20a,v11a,v02a,phis,r,wl,r1,ws1,we,wsn,phic,
      $     dphis,offset,offset1,tlim,sv,a,dpz,al1,h2,p2,
@@ -154,18 +151,10 @@ c          dpr=a/(1.d0+sqrt(1.d0+a))
           z(i)=-t*p2r*p0/h2-dzn
 20      continue
         if(lwake .or. twake)then
-          if(.not. allocated(itab))then
-            allocate(itab(np))
-            itab(np)=np
-            itab(1)=1
-          endif
-          if(.not. allocated(izs))then
-            allocate(izs(np))
-          endif
           fw=fw0*wsn
           call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         0.d0,0.d0,0.d0,int(anbunch),
-     $         fw,lwl,wakel,lwt,waket,p0,h0,itab,izs,.false.)
+     $         fw,nwak,p0,h0,.false.)
         endif
 110   continue
 c      write(*,'(a,1p5g15.7)')'tcav-2 ',y(1),py(1),z(1),g(1),dv(1)
