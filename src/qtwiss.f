@@ -866,6 +866,7 @@ c          enddo
         else
           call qtwiss1(ptwiss,idp,fbound%lb,fbound%le,
      $         trans2,cod,.true.,over)
+c          write(*,'(a,2l3,1p6g15.7)')'qcod-qt1 ',over,cod
         endif
         if(fbound%fe .gt. 0.d0)then
           call qtwissfrac1(ftwiss,transe,cod,idp,
@@ -892,7 +893,7 @@ c          enddo
         if(.not. orbitcal)then
           codfnd=.true.
         endif
-c        write(*,'(a,2l3,1p6g15.7)')'qcod ',codfnd,over,cod
+c        write(*,'(a,2l3,1p6g15.7)')'qcod-1 ',codfnd,over,cod
         if(codfnd)then
           cod0=cod
           return
@@ -1047,12 +1048,10 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
 c          write(*,'(a,1p8g15.7)')'qtwissfrac ',fr,sgr2,cod
         endif
 c        write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6)
-c        call tinv6(trans,ri)
         ftwiss=tfetwiss(tinv6(trans),cod,normal)
         ftwiss(mfitnx)=ftwiss(mfitnx)+twiss(l,0,mfitnx)
         ftwiss(mfitny)=ftwiss(mfitny)+twiss(l,0,mfitny)
         ftwiss(mfitnz)=ftwiss(mfitnz)+twiss(l,0,mfitnz)
-c        write(*,'(a,i5,1p8g14.6)')'qtwissfrac ',l,fr,gr,ftwiss(1:mfitny)
         over=.false.
         codplt=cp0
       else
