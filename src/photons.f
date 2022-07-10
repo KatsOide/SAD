@@ -319,6 +319,7 @@ c      write(*,*)'with ',itp,ilp
 
       real*8 function tphchge(cod) result(codx)
       use tmacro, only:irad
+      use chg, only:tchge
       implicit none
       dimension codx(6)
       real*8 ,intent(in):: cod(6)
@@ -328,7 +329,7 @@ c      write(*,*)'with ',itp,ilp
       irad=0
       codx=cod
       call tchge(trans,codx,beam,srot,
-     $     -pcvt%dx,-pcvt%dy,pcvt%theta,pcvt%dtheta,0.d0,0.d0,
+     $     -pcvt%dx,-pcvt%dy,0.d0,pcvt%theta,pcvt%dtheta,0.d0,0.d0,
      $     pcvt%phi0,.false.)
       irad=ir0
       return
@@ -857,7 +858,6 @@ c        s=abs(dcmplx(sps(1,2),abs(dcmplx(sps(2,2),sps(3,2)))))
      $       c1,c2,c3,c4,c5,c6,smu,
      $       dex1,dex2,dey1,dey2,dez1,dez2,
      $       rm(3,3),epol(3,3),b(3),rmd
-        integer*4 i
         smu=params(ipnup)*m_2pi
         drot=matmul(transpose(sps),matmul(srot(:,4:9),r))
         c1=drot(1,1)

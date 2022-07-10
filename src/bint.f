@@ -1,5 +1,7 @@
       real*8 function bint(f,a,b,epslon,epsabs) result(s)
+      use tfstk, only:ktfenanq
       implicit none
+      
       integer n,iter,i
       integer*4 ,parameter ::itmax=30
       real*8 ,intent(in):: a,b,epslon,epsabs
@@ -7,6 +9,9 @@
       real*8 ,external::f
       ba=b-a
       s0=ba*(f(a)+f(b))*.5d0
+      if(ktfenanq(s0))then
+        s0=0.d0
+      endif
 c      write(*,*)'bint ',a,b,f(a),f(b)
       xstep=ba
       s20=s0
@@ -17,6 +22,10 @@ c      write(*,*)'bint ',a,b,f(a),f(b)
         do i=1,n
           x=x+xstep
           s=s+f(x)
+          if(ktfenanq(s))then
+            s=0.d0
+c            write(*,'(a,2i5,1p10g12.4)')'bint ',i,iter,x,f(x),a,b
+          endif
         enddo
         s=s*xstep
         s1=(s+s0)*.5d0
@@ -24,13 +33,16 @@ c      write(*,*)'bint ',a,b,f(a),f(b)
         if(abs(s-s20) .lt. max(epslon*abs(s),epsabs))then
 c          write(*,*)'bint ',iter,itmax,s,s20
           return
+        elseif(iter .ge. itmax)then
+          write(*,'(a,l2,1p10g12.4)')'BINT Convergence failed. ',abs(s-s20) .lt. max(epslon*abs(s),epsabs),
+     $         s,s20,abs(s-s20),max(epslon*abs(s),epsabs)
+          return
         endif
         n=n*2
         xstep=xstep*.5d0
         s0=s1
         s20=s
       enddo
-      write(*,*)'BINT Convergence failed. ',s,s20
       return
       end
 

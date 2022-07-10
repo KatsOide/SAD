@@ -163,7 +163,6 @@ c     $     tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
           call tinitr12(trans)
           call srotinit(srot)
           call tsetr0(trans,cod,0.d0,0.d0)
-c          write(*,*)'temit-inical ',calint,intra,econv,postcal,plot
           if(econv)then
             call tturne(trans,cod,beam,srot,iae,
      1           plot .and. .not. postcal,.false.,rt,.false.)
@@ -216,8 +215,6 @@ c          endif
         exit converge
       enddo converge
       if(plot .and. postcal)then
-c        write(*,*)'temit-postcal ',calint,intra,beamplt,
-c     $       beamp(1),beamp(6),beamp(21)
         call tinitr12(trans)
         cod=codin
         beam(1:21)=merge(beamin,emitp,trpt)
@@ -273,13 +270,10 @@ c     $       beamp(1),beamp(6),beamp(21)
       emxe=rgetgl1('EMITXE')
       emye=rgetgl1('EMITYE')
       emze=rgetgl1('EMITZE')
-c     write(*,'(a/,6(1p6g15.7/))')'trans: ',(trans(i,1:6),i=1,6)
       if(trpt)then
         params(iptwiss:iptwiss+ntwissfun-1)=tfetwiss(ri,codin,.true.)
         rirx=matmul(ri,tinv6(rx))
         tw=tfetwiss(rirx,cod,.true.)
-c      write(*,'(a,1p6g15.7)')'temit-etwiss-exit ',
-c     $       tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
         ceig(1)=exp(dcmplx(0.d0,tw(mfitnx)))
         ceig(3)=exp(dcmplx(0.d0,tw(mfitny)))
         ceig(5)=exp(dcmplx(0.d0,tw(mfitnz)))
@@ -635,7 +629,6 @@ c      write(*,'(1p10g12.4)')spt
       endif
  7301 if(it > 1 .and. dc .lt. dcmin
      $     .and. de .lt. resib .or. it > itmax)then
-c        write(*,*)'tintraconv ',it,dc,de
         pri=lfno > 0
         if(.not. trpt)then
           if(de .ge. resib .or. dc .ge. dcmin)then

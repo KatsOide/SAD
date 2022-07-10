@@ -3,6 +3,7 @@
       use ffs_flag
       use tmacro
       use temw,only:tsetr0,tmulbs
+      use chg,only:tchge
       implicit none
       real*8 trans(6,12),cod(6),beam(42),trans1(6,6),srot(3,9),
      $     al,ak,harm,phi,freq,dx,dy,theta,w,v,p1,h1,dh1,phic,v1,t,
@@ -14,7 +15,7 @@
         return
       endif
       call tchge(trans,cod,beam,srot,
-     $     dx,dy,theta,0.d0,0.d0,0.d0,0.d0,.true.)
+     $     dx,dy,0.d0,theta,0.d0,0.d0,0.d0,0.d0,.true.)
       if(al .ne. 0.d0)then
         if(krad)then
           call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
@@ -72,6 +73,6 @@ c      p2=sqrt((h2-1.d0)*(h2+1.d0))
      $       .true.,krad,irad)
       endif
       call tchge(trans,cod,beam,srot,
-     $     dx,dy,theta,0.d0,0.d0,0.d0,0.d0,.false.)
+     $     dx,dy,0.d0,theta,0.d0,0.d0,0.d0,0.d0,.false.)
       return
       end

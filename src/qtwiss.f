@@ -285,6 +285,7 @@ c          endif
      $           cmp%value(ky_K1_BEND),
      1           cmp%value(ky_DX_BEND),
      $           cmp%value(ky_DY_BEND),
+     $           cmp%value(ky_DZ_BEND),
      $           theta0,dtheta,dchi2,
      $           cmp%value(p_LGEO_BEND),cmp%value(p_ANGLGEO_BEND),
      $           fb1,fb2,

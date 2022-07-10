@@ -4,35 +4,42 @@
       real*8 ,intent(out):: r(3,3),eig(3)
 
 c     Use extended double precision real for internal variables if possible
-      integer ex_real_kind
-      parameter (ex_real_kind=max(
-     $     selected_real_kind(precision(1.d0) * 2),
-     $     selected_real_kind(precision(1.d0) + 1),
-     $     selected_real_kind(precision(1.d0))))
+c      integer ex_real_kind
+c      parameter (ex_real_kind=max(
+c     $     selected_real_kind(precision(1.d0) * 2),
+c     $     selected_real_kind(precision(1.d0) + 1),
+c     $     selected_real_kind(precision(1.d0))))
 
-      integer itmax
-      parameter (itmax=8)
+      integer*4 ,parameter ::itmax=8,itmax1=3
 
-      integer it
-      real(ex_real_kind) one,d,c,s,x11,x21,x31,x22,x33,x32,
+      integer it,ix,iy
+c      real(ex_real_kind) one,d,c,s,x11,x21,x31,x22,x33,x32,
+      real*8 one,d,c,s,x11,x21,x31,x22,x33,x32,
      $     r11,r21,r31,r12,r22,r32,r13,r23,r33,rr,
-     $     fact,dd,u,g,y33,y22,y11
+     $     fact,dd,u,g,y33,y22,y11,tr,det,e
       parameter (one=1.)
 
-      d=hypot(a(2,1),a(3,1))
-      if(d .ne. 0.d0)then
-        c=a(2,1)/d
-        s=a(3,1)/d
+      if(abs(a(2,2)) < abs(a(1,1)))then
+        ix=1
+      else
+        ix=2
+      endif
+      iy=3-ix
+
+      d=hypot(a(ix,ix),a(3,ix))
+      if(d /= 0.d0)then
+        c=a(ix,ix)/d
+        s=a(3,ix)/d
       else
         c=1.d0
         s=0.d0
       endif
-      x11=a(1,1)
+      x11=a(iy,iy)
       x21=d
       x31=0.d0
-      x22=a(2,2)*c**2+a(3,3)*s**2+2.d0*a(3,2)*c*s
-      x33=a(2,2)*s**2+a(3,3)*c**2-2.d0*a(3,2)*c*s
-      x32=a(3,2)*(c-s)*(c+s)+(a(3,3)-a(2,2))*c*s
+      x22=a(ix,ix)*c**2+a(3,3)*s**2+2.d0*a(3,ix)*c*s
+      x33=a(ix,ix)*s**2+a(3,3)*c**2-2.d0*a(3,ix)*c*s
+      x32=a(3,ix)*(c-s)*(c+s)+(a(3,3)-a(ix,ix))*c*s
       r11=1.d0
       r21=0.d0
       r31=0.d0
@@ -43,68 +50,135 @@ c     Use extended double precision real for internal variables if possible
       r23=-s
       r33=c
       fact=1.d0
-      it=0
-1     continue
-      it=it+1
-c     write(*,'(1x6f12.6)')x11,x21,x31,x22,x32,x33
-      dd=abs(x11)+abs(x22)
-      if(abs(x21)/fact+dd .eq. dd)then
-        eig(1)=dble(x11)
-        u=x22-x33
-        d=hypot(u,2.d0*x32)
-        if(d .eq. 0.d0)then
-          eig(2)=dble(x22)
-          eig(3)=dble(x33)
-        else
-          c=sqrt(.5d0*(1.d0+abs(u)/d))
-          s=sign(sqrt(2.d0*x32**2/d/(d+abs(u))),u*x32)
-c         eig(2) * eig(3) == x22 * x33 - x32^2
-c         eig(2) + eig(3) == x22 + x33
-c         d := Sqrt[(x22 - x33)^2 + (2 * x32)^2]
-c         eig(2)=.5d0*(x22+x33+sign(d,u))
-c         eig(3)=.5d0*(x22+x33-sign(d,u))
-          if(sign(one,x22+x33) * sign(one,u) .ge. 0.d0)then
-            eig(2)=.5d0*dble(x22+x33+sign(d,u))
-            eig(3)=dble(x22*x33-x32**2)/eig(2)
-          else
-            eig(3)=.5d0*dble(x22+x33-sign(d,u))
-            eig(2)=dble(x22*x33-x32**2)/eig(3)
-          endif
-          rr=r12
-          r12= c*rr+s*r13
-          r13=-s*rr+c*r13
-          rr=r22
-          r22= c*rr+s*r23
-          r23=-s*rr+c*r23
-          rr=r32
-          r32= c*rr+s*r33
-          r33=-s*rr+c*r33
-        endif
-        go to 1000
-      endif
-      dd=abs(x22)+abs(x33)
-      if(abs(x32)/fact+dd .eq. dd)then
-        eig(3)=dble(x33)
-        u=x11-x22
-        d=hypot(u,2.d0*x21)
-        if(d .eq. 0.d0)then
+      do it=1,itmax
+        dd=abs(x11)+abs(x22)
+        if(abs(x21)/fact+dd == dd)then
           eig(1)=dble(x11)
-          eig(2)=dble(x22)
-        else
-          c=sqrt(.5d0*(1.d0+abs(u)/d))
-          s=sign(sqrt(2.d0*x21**2/d/(d+abs(u))),u*x21)
-c         eig(1) * eig(2) == x11 * x22 - x21^2
-c         eig(1) + eig(2) == x11 + x22
-c         d := Sqrt[(x11 - x22)^2 + (2 * x21)^2]
-c         eig(1)=.5d0*(x11+x22+sign(d,u))
-c         eig(2)=.5d0*(x11+x22-sign(d,u))
-          if(sign(one,x11+x22) * sign(one,u) .ge. 0.d0)then
-            eig(1)=.5d0*dble(x11+x22+sign(d,u))
-            eig(2)=dble(x11*x22-x21**2)/eig(1)
+          u=x22-x33
+          d=hypot(u,2.d0*x32)
+          if(d == 0.d0)then
+            eig(2)=dble(x22)
+            eig(3)=dble(x33)
           else
-            eig(2)=.5d0*dble(x11+x22-sign(d,u))
-            eig(1)=dble(x11*x22-x21**2)/eig(2)
+            c=sqrt(.5d0*(1.d0+abs(u)/d))
+            s=sign(sqrt(2.d0*x32**2/d/(d+abs(u))),u*x32)
+c     eig(2) * eig(3) == x22 * x33 - x32^2
+c     eig(2) + eig(3) == x22 + x33
+c     d := Sqrt[(x22 - x33)^2 + (2 * x32)^2]
+c     eig(2)=.5d0*(x22+x33+sign(d,u))
+c     eig(3)=.5d0*(x22+x33-sign(d,u))
+            tr=x22+x33
+            det=x22*x33-x32**2
+c     det=(tr-d)*(tr+d)/4.d0
+            e=.5d0*(tr+sign(d,tr))
+            if(tr*u >= 0.d0)then
+              eig(2)=dble(e)
+              eig(3)=dble(det/e)
+            else
+              eig(3)=dble(e)
+              eig(2)=dble(det/e)
+            endif
+            rr=r12
+            r12= c*rr+s*r13
+            r13=-s*rr+c*r13
+            rr=r22
+            r22= c*rr+s*r23
+            r23=-s*rr+c*r23
+            rr=r32
+            r32= c*rr+s*r33
+            r33=-s*rr+c*r33
           endif
+c          if(eig(2) < 0.d0)then
+c            write(*,'(a,i5,1p10g12.4)')'eigs33-3 ',it,eig,u,d
+c            write(*,'(1p4g23.15)')x22,x32,x32,x33
+c          endif
+          exit
+        endif
+        dd=abs(x22)+abs(x33)
+        if(abs(x32)/fact+dd == dd)then
+          eig(3)=dble(x33)
+          u=x11-x22
+          d=hypot(u,2.d0*x21)
+          if(d == 0.d0)then
+            eig(1)=dble(x11)
+            eig(2)=dble(x22)
+          else
+            c=sqrt(.5d0*(1.d0+abs(u)/d))
+            s=sign(sqrt(2.d0*x21**2/d/(d+abs(u))),u*x21)
+c     eig(1) * eig(2) == x11 * x22 - x21^2
+c     eig(1) + eig(2) == x11 + x22
+c     d := Sqrt[(x11 - x22)^2 + (2 * x21)^2]
+c     eig(1)=.5d0*(x11+x22+sign(d,u))
+c     eig(2)=.5d0*(x11+x22-sign(d,u))
+            tr=x11+x22
+c     det=(tr-d)*(tr+d)/4.d0
+            det=x11*x22-x21**2
+            e=.5d0*(tr+sign(d,tr))
+            if(tr*u >= 0.d0)then
+              eig(1)=dble(e)
+              eig(2)=dble(det/e)
+            else
+              eig(2)=dble(e)
+              eig(1)=dble(det/e)
+            endif
+            rr=r11
+            r11= c*rr+s*r12
+            r12=-s*rr+c*r12
+            rr=r21
+            r21= c*rr+s*r22
+            r22=-s*rr+c*r22
+            rr=r31
+            r31= c*rr+s*r32
+            r32=-s*rr+c*r32
+          endif
+          exit
+        endif
+        u=x22-x11
+        d=hypot(u,2.d0*x21)
+        if(d == 0.d0)then
+          g=x11
+        else
+          g=x11-2.d0*x21**2/(u+sign(d,u))
+        endif
+        d=hypot(x32,x33-g)
+        if(d == 0.d0)then
+          c=1.d0
+          s=0.d0
+        else
+          c=(x33-g)/d
+          s=-x32/d
+        endif
+        y22=x22
+        y33=x33
+        x22=y22*c**2+y33*s**2+2.d0*x32*c*s
+        x33=y22*s**2+y33*c**2-2.d0*x32*c*s
+        x32=x32*(c-s)*(c+s)-(y22-y33)*c*s
+        x31=-x21*s
+        x21= x21*c
+        rr=r12
+        r12= c*rr+s*r13
+        r13=-s*rr+c*r13
+        rr=r22
+        r22= c*rr+s*r23
+        r23=-s*rr+c*r23
+        rr=r32
+        r32= c*rr+s*r33
+        r33=-s*rr+c*r33
+        if(abs(x31)/fact+abs(x32) /= abs(x32))then
+          d=hypot(x32,x31)
+          if(d == 0.d0)then
+            c=1.d0
+            s=0.d0
+          else
+            c=x32/d
+            s=-x31/d
+          endif
+          y11=x11
+          y22=x22
+          x11=y11*c**2+y22*s**2+2.d0*x21*c*s
+          x22=y11*s**2+y22*c**2-2.d0*x21*c*s
+          x21=x21*(c-s)*(c+s)-(y11-y22)*c*s
+          x32=d
           rr=r11
           r11= c*rr+s*r12
           r12=-s*rr+c*r12
@@ -115,64 +189,19 @@ c         eig(2)=.5d0*(x11+x22-sign(d,u))
           r31= c*rr+s*r32
           r32=-s*rr+c*r32
         endif
-        go to 1000
-      endif
-      u=x22-x11
-      d=hypot(u,2.d0*x21)
-      g=x11-2.d0*x21**2/(u+sign(d,u))
-      d=hypot(x32,x33-g)
-      c=(x33-g)/d
-      s=-x32/d
-      y22=x22
-      y33=x33
-      x22=y22*c**2+y33*s**2+2.d0*x32*c*s
-      x33=y22*s**2+y33*c**2-2.d0*x32*c*s
-      x32=x32*(c-s)*(c+s)-(y22-y33)*c*s
-      x31=-x21*s
-      x21= x21*c
-      rr=r12
-      r12= c*rr+s*r13
-      r13=-s*rr+c*r13
-      rr=r22
-      r22= c*rr+s*r23
-      r23=-s*rr+c*r23
-      rr=r32
-      r32= c*rr+s*r33
-      r33=-s*rr+c*r33
-      if(abs(x31)/fact+abs(x32) .ne. abs(x32))then
-        d=hypot(x32,x31)
-        c=x32/d
-        s=-x31/d
-        y11=x11
-        y22=x22
-        x11=y11*c**2+y22*s**2+2.d0*x21*c*s
-        x22=y11*s**2+y22*c**2-2.d0*x21*c*s
-        x21=x21*(c-s)*(c+s)-(y11-y22)*c*s
-        x32=d
-        rr=r11
-        r11= c*rr+s*r12
-        r12=-s*rr+c*r12
-        rr=r21
-        r21= c*rr+s*r22
-        r22=-s*rr+c*r22
-        rr=r31
-        r31= c*rr+s*r32
-        r32=-s*rr+c*r32
-      endif
-      if(it .gt. itmax)then
-        fact=fact*4.d0
-        it=0
-      endif
-      go to 1
-1000  r(1,1)=dble(r11)
-      r(2,1)=dble(r21)
-      r(3,1)=dble(r31)
-      r(1,2)=dble(r12)
-      r(2,2)=dble(r22)
-      r(3,2)=dble(r32)
-      r(1,3)=dble(r13)
-      r(2,3)=dble(r23)
-      r(3,3)=dble(r33)
+        if(it >= itmax1)then
+          fact=fact*4.d0
+        endif
+      enddo
+      r(iy,iy)=dble(r11)
+      r(ix,iy)=dble(r21)
+      r(3, iy)=dble(r31)
+      r(iy,ix)=dble(r12)
+      r(1, ix)=dble(r22)
+      r(3, ix)=dble(r32)
+      r(iy, 3)=dble(r13)
+      r(ix, 3)=dble(r23)
+      r(3,  3)=dble(r33)
       return
       end
 
@@ -184,8 +213,8 @@ c         eig(2)=.5d0*(x11+x22-sign(d,u))
       real*8 ,intent(out):: u(3)
       real*8 a,b,s2,u1,u2,u3,w,x1,x2,x3,c,s
       s2=r(1,3)**2+r(2,3)**2
-      if(s2 .eq. 0.d0)then
-        if(r(3,3) .gt. 0.d0)then
+      if(s2 == 0.d0)then
+        if(r(3,3) > 0.d0)then
           u(1)=0.d0
           u(2)=0.d0
           u(3)=1.d0
