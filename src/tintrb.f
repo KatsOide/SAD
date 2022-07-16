@@ -128,9 +128,9 @@ c     real*8  vmin/0.d0/
         xx(3,2)=bmi(ia(5,3))
         xx(3,3)=bmi(ia(5,5))
         call eigs33(xx,r,eig)
-        vol1=sqrt(max(1.d-80,abs(eig(1)*eig(2)*eig(3))))
+        vol1=sqrt(max(1.d-80,eig(1)*eig(2)*eig(3)))
         vol=sqrt((4.d0*pi)**3)*vol1
-        bm=sqrt(min(abs(eig(1)),abs(eig(2)),abs(eig(3))))
+        bm=sqrt(min(eig(1),eig(2),eig(3)))
         xxs=xx
 c        call tmov(xx,xxs,9)
         xp(1,1)=bmi(ia(1,2))
@@ -162,8 +162,8 @@ c        call tmov(xx,xxs,9)
      1       -bmi(ia(6,1))*xp(1,3)-bmi(ia(6,3))*xp(2,3)
      $       -bmi(ia(6,5))*xp(3,3)
         call eigs33(pl,r,eig)
-        ptrans=sqrt(abs(eig(1)+eig(2)+eig(3)))
-        pvol=sqrt(max(1.d-80,abs(eig(1)*eig(2)*eig(3))))
+        ptrans=sqrt(eig(1)+eig(2)+eig(3))
+        pvol=sqrt(max(1.d-80,eig(1)*eig(2)*eig(3)))
         if(vol /= 0.d0 .and. caltouck)then
           if(ptrans /= 0.d0)then
             trans2=tinv6(matmul(trans1,transw))

@@ -1,10 +1,13 @@
       subroutine msolv1(a,b,x,na,m,nd,c,d,nc,ndc,cond,micado,nx,norm,
      1                  xc,t,u,c1,svd)
-      implicit real*8 (a-h,o-z)
-      parameter (epsc=1d-13,tol=1d-13)
-      logical cond,micado,norm,svd
-      dimension a(nd,m),b(na),x(m),c(ndc,m),d(nc),xc(m),t(nc),u(nc),
+      implicit none
+      real*8, parameter ::epsc=1d-13,tol=1d-13
+      integer*4 ,intent(in):: na,m,nd,nc,ndc,nx
+      logical*4 ,intent(in):: cond,micado,norm,svd
+      real*8 a(nd,m),b(na),x(m),c(ndc,m),d(nc),xc(m),t(nc),u(nc),
      1          c1(nc,m)
+      integer*4 l,i,j,k,itemon,itestr,itmon,itstr,nmona,nmonact,nstra,nstract
+      real*8 dpshft,eptsol,errval,s,optiv,rmin
       include 'inc/common.inc'
 c*** check **********************************************
 c     call msolvcheck(a,b,d,x,nd,na,nc,m,.true.)

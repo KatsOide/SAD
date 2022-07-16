@@ -1,6 +1,6 @@
       subroutine eigs33(a,r,eig)
       implicit none
-      real*8 ,intent(in):: a(3,3)
+      real*8 ,intent(inout):: a(3,3)
       real*8 ,intent(out):: r(3,3),eig(3)
 
 c     Use extended double precision real for internal variables if possible
@@ -12,34 +12,42 @@ c     $     selected_real_kind(precision(1.d0))))
 
       integer*4 ,parameter ::itmax=8,itmax1=3
 
-      integer it,ix,iy
+      integer*4 it,i2,i1,i3
 c      real(ex_real_kind) one,d,c,s,x11,x21,x31,x22,x33,x32,
-      real*8 one,d,c,s,x11,x21,x31,x22,x33,x32,
+      real*8 one,d,c,s,x21,x31,x22,x33,x32,
      $     r11,r21,r31,r12,r22,r32,r13,r23,r33,rr,
-     $     fact,dd,u,g,y33,y22,y11,tr,det,e
+     $     fact,dd,u,g,y33,y22,de,dde
       parameter (one=1.)
-
-      if(abs(a(2,2)) < abs(a(1,1)))then
-        ix=1
+      
+      a(1,2)=a(2,1)
+      a(1,3)=a(3,1)
+      a(2,3)=a(3,2)
+      if(abs(a(3,3)) >= max(abs(a(1,1)),abs(a(2,2))))then
+        i3=3
+        i2=merge(1,2,abs(a(2,2)) <= abs(a(1,1)))
+      elseif(abs(a(1,1)) >= max(abs(a(2,2)),abs(a(3,3))))then
+        i3=1
+        i2=merge(3,2,abs(a(2,2)) <= abs(a(3,3)))
       else
-        ix=2
+        i3=2
+        i2=merge(3,1,abs(a(1,1)) <= abs(a(3,3)))
       endif
-      iy=3-ix
+      i1=6-i2-i3
 
-      d=hypot(a(ix,ix),a(3,ix))
+      d=hypot(a(i2,i1),a(i3,i1))
       if(d /= 0.d0)then
-        c=a(ix,ix)/d
-        s=a(3,ix)/d
+        c=a(i2,i1)/d
+        s=a(i3,i1)/d
       else
         c=1.d0
         s=0.d0
       endif
-      x11=a(iy,iy)
+      de=a(i1,i1)
       x21=d
       x31=0.d0
-      x22=a(ix,ix)*c**2+a(3,3)*s**2+2.d0*a(3,ix)*c*s
-      x33=a(ix,ix)*s**2+a(3,3)*c**2-2.d0*a(3,ix)*c*s
-      x32=a(3,ix)*(c-s)*(c+s)+(a(3,3)-a(ix,ix))*c*s
+      x22=a(i2,i2)*c**2+a(i3,i3)*s**2+2.d0*a(i3,i2)*c*s-de
+      x33=a(i2,i2)*s**2+a(i3,i3)*c**2-2.d0*a(i3,i2)*c*s-de
+      x32=a(i3,i2)*(c-s)*(c+s)+(a(i3,i3)-a(i2,i2))*c*s
       r11=1.d0
       r21=0.d0
       r31=0.d0
@@ -51,33 +59,24 @@ c      real(ex_real_kind) one,d,c,s,x11,x21,x31,x22,x33,x32,
       r33=c
       fact=1.d0
       do it=1,itmax
-        dd=abs(x11)+abs(x22)
+        dd=abs(x22)
         if(abs(x21)/fact+dd == dd)then
-          eig(1)=dble(x11)
+          eig(i1)=0.d0
           u=x22-x33
           d=hypot(u,2.d0*x32)
           if(d == 0.d0)then
-            eig(2)=dble(x22)
-            eig(3)=dble(x33)
+            eig(i2)=dble(x22)
+            eig(i3)=dble(x33)
           else
-            c=sqrt(.5d0*(1.d0+abs(u)/d))
-            s=sign(sqrt(2.d0*x32**2/d/(d+abs(u))),u*x32)
+            c=sqrt(.5d0*(d+abs(u))/d)
+            s=x32/d*sign(one,u)
+c            c=sqrt(.5d0*(1.d0+abs(u)/d))
+c            s=sign(sqrt(2.d0*x32**2/d/(d+abs(u))),u*x32)
 c     eig(2) * eig(3) == x22 * x33 - x32^2
 c     eig(2) + eig(3) == x22 + x33
 c     d := Sqrt[(x22 - x33)^2 + (2 * x32)^2]
-c     eig(2)=.5d0*(x22+x33+sign(d,u))
-c     eig(3)=.5d0*(x22+x33-sign(d,u))
-            tr=x22+x33
-            det=x22*x33-x32**2
-c     det=(tr-d)*(tr+d)/4.d0
-            e=.5d0*(tr+sign(d,tr))
-            if(tr*u >= 0.d0)then
-              eig(2)=dble(e)
-              eig(3)=dble(det/e)
-            else
-              eig(3)=dble(e)
-              eig(2)=dble(det/e)
-            endif
+            eig(i2)=dble(.5d0*(x22+x33+sign(d,u)))
+            eig(i3)=dble(.5d0*(x22+x33-sign(d,u)))
             rr=r12
             r12= c*rr+s*r13
             r13=-s*rr+c*r13
@@ -88,39 +87,29 @@ c     det=(tr-d)*(tr+d)/4.d0
             r32= c*rr+s*r33
             r33=-s*rr+c*r33
           endif
-c          if(eig(2) < 0.d0)then
-c            write(*,'(a,i5,1p10g12.4)')'eigs33-3 ',it,eig,u,d
-c            write(*,'(1p4g23.15)')x22,x32,x32,x33
+c          if(eig(1)*eig(2)*eig(3) <= 0.d0)then
+c            write(*,'(a,3i5,1p10g12.4)')'eigs33-1 ',i1,i2,i3,eig,x22+x33,d,u
+c            stop
 c          endif
           exit
         endif
         dd=abs(x22)+abs(x33)
         if(abs(x32)/fact+dd == dd)then
-          eig(3)=dble(x33)
-          u=x11-x22
+          eig(i3)=dble(x33)
+          u=-x22
           d=hypot(u,2.d0*x21)
           if(d == 0.d0)then
-            eig(1)=dble(x11)
-            eig(2)=dble(x22)
+            eig(i1)=0.d0
+            eig(i2)=dble(x22)
           else
-            c=sqrt(.5d0*(1.d0+abs(u)/d))
-            s=sign(sqrt(2.d0*x21**2/d/(d+abs(u))),u*x21)
+            c=sqrt(.5d0*(d+abs(u))/d)
+            s=x21/d*sign(one,u)
+c            s=sign(sqrt(2.d0*x21**2/d/(d+abs(u))),u*x21)
 c     eig(1) * eig(2) == x11 * x22 - x21^2
 c     eig(1) + eig(2) == x11 + x22
 c     d := Sqrt[(x11 - x22)^2 + (2 * x21)^2]
-c     eig(1)=.5d0*(x11+x22+sign(d,u))
-c     eig(2)=.5d0*(x11+x22-sign(d,u))
-            tr=x11+x22
-c     det=(tr-d)*(tr+d)/4.d0
-            det=x11*x22-x21**2
-            e=.5d0*(tr+sign(d,tr))
-            if(tr*u >= 0.d0)then
-              eig(1)=dble(e)
-              eig(2)=dble(det/e)
-            else
-              eig(2)=dble(e)
-              eig(1)=dble(det/e)
-            endif
+            eig(i1)=dble(.5d0*(x22+sign(d,u)))
+            eig(i2)=dble(.5d0*(x22-sign(d,u)))
             rr=r11
             r11= c*rr+s*r12
             r12=-s*rr+c*r12
@@ -131,14 +120,18 @@ c     det=(tr-d)*(tr+d)/4.d0
             r31= c*rr+s*r32
             r32=-s*rr+c*r32
           endif
+c          if(eig(1)*eig(2)*eig(3) <= 0.d0)then
+c            write(*,'(a,3i5,1p10g12.4)')'eigs33-2 ',i1,i2,i3,eig,x22+x33,d,u
+c            stop
+c          endif
           exit
         endif
-        u=x22-x11
+        u=x22
         d=hypot(u,2.d0*x21)
         if(d == 0.d0)then
-          g=x11
+          g=0.d0
         else
-          g=x11-2.d0*x21**2/(u+sign(d,u))
+          g=-2.d0*x21**2/(u+sign(d,u))
         endif
         d=hypot(x32,x33-g)
         if(d == 0.d0)then
@@ -173,11 +166,12 @@ c     det=(tr-d)*(tr+d)/4.d0
             c=x32/d
             s=-x31/d
           endif
-          y11=x11
           y22=x22
-          x11=y11*c**2+y22*s**2+2.d0*x21*c*s
-          x22=y11*s**2+y22*c**2-2.d0*x21*c*s
-          x21=x21*(c-s)*(c+s)-(y11-y22)*c*s
+          dde=y22*s**2+2.d0*x21*c*s
+          de=de+dde
+          x33=x33-dde
+          x22=y22*c**2-2.d0*x21*c*s-dde
+          x21=x21*(c-s)*(c+s)+y22*c*s
           x32=d
           rr=r11
           r11= c*rr+s*r12
@@ -193,15 +187,16 @@ c     det=(tr-d)*(tr+d)/4.d0
           fact=fact*4.d0
         endif
       enddo
-      r(iy,iy)=dble(r11)
-      r(ix,iy)=dble(r21)
-      r(3, iy)=dble(r31)
-      r(iy,ix)=dble(r12)
-      r(1, ix)=dble(r22)
-      r(3, ix)=dble(r32)
-      r(iy, 3)=dble(r13)
-      r(ix, 3)=dble(r23)
-      r(3,  3)=dble(r33)
+      r(i1,i1)=dble(r11)
+      r(i2,i1)=dble(r21)
+      r(i3,i1)=dble(r31)
+      r(i1,i2)=dble(r12)
+      r(i2,i2)=dble(r22)
+      r(i3,i2)=dble(r32)
+      r(i1,i3)=dble(r13)
+      r(i2,i3)=dble(r23)
+      r(i3,i3)=dble(r33)
+      eig=eig+de
       return
       end
 
