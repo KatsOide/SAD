@@ -4,24 +4,32 @@
       real*8 ,intent(out):: r(3,3),eig(3)
 
 c     Use extended double precision real for internal variables if possible
-c      integer ex_real_kind
-c      parameter (ex_real_kind=max(
-c     $     selected_real_kind(precision(1.d0) * 2),
-c     $     selected_real_kind(precision(1.d0) + 1),
-c     $     selected_real_kind(precision(1.d0))))
+      integer ex_real_kind
+      parameter (ex_real_kind=max(
+     $     selected_real_kind(precision(1.d0) * 2),
+     $     selected_real_kind(precision(1.d0) + 1),
+     $     selected_real_kind(precision(1.d0))))
 
       integer*4 ,parameter ::itmax=8,itmax1=3
 
       integer*4 it,i2,i1,i3
-c      real(ex_real_kind) one,d,c,s,x11,x21,x31,x22,x33,x32,
+c      real(ex_real_kind) one,d,c,s,x21,x31,x22,x33,x32,
       real*8 one,d,c,s,x21,x31,x22,x33,x32,
      $     r11,r21,r31,r12,r22,r32,r13,r23,r33,rr,
-     $     fact,dd,u,g,y33,y22,de,dde
+     $     fact,dd,u,g,de,dde,dx22,dx32,dx21,tr
       parameter (one=1.)
+
+      real*8 a1(3,3),a2(3,3),w(3,3)
+      complex*16 ceig(3)
+      integer*4 ic
       
       a(1,2)=a(2,1)
       a(1,3)=a(3,1)
       a(2,3)=a(3,2)
+c      r=a
+c      call teigen(r,w,ceig,3,3)
+c      eig=dble(ceig)
+c      go to 10
       if(abs(a(3,3)) >= max(abs(a(1,1)),abs(a(2,2))))then
         i3=3
         i2=merge(1,2,abs(a(2,2)) <= abs(a(1,1)))
@@ -45,9 +53,14 @@ c      real(ex_real_kind) one,d,c,s,x11,x21,x31,x22,x33,x32,
       de=a(i1,i1)
       x21=d
       x31=0.d0
-      x22=a(i2,i2)*c**2+a(i3,i3)*s**2+2.d0*a(i3,i2)*c*s-de
-      x33=a(i2,i2)*s**2+a(i3,i3)*c**2-2.d0*a(i3,i2)*c*s-de
-      x32=a(i3,i2)*(c-s)*(c+s)+(a(i3,i3)-a(i2,i2))*c*s
+      dx22=s*((a(i3,i3)-a(i2,i2))*s+2.d0*a(i3,i2)*c)
+      dx32=s*((a(i3,i3)-a(i2,i2))*c-2.d0*a(i3,i2)*s)
+      x22=a(i2,i2)+dx22-de
+      x33=a(i3,i3)-dx22-de
+      x32=a(i3,i2)+dx32
+c      x22=a(i2,i2)*c**2+a(i3,i3)*s**2+2.d0*a(i3,i2)*c*s
+c      x33=a(i2,i2)*s**2+a(i3,i3)*c**2-2.d0*a(i3,i2)*c*s-de
+c      x32=a(i3,i2)*(c-s)*(c+s)+(a(i3,i3)-a(i2,i2))*c*s
       r11=1.d0
       r21=0.d0
       r31=0.d0
@@ -68,15 +81,16 @@ c      real(ex_real_kind) one,d,c,s,x11,x21,x31,x22,x33,x32,
             eig(i2)=dble(x22)
             eig(i3)=dble(x33)
           else
-            c=sqrt(.5d0*(d+abs(u))/d)
-            s=x32/d*sign(one,u)
+            s=-sign(sqrt(.5d0*(d+abs(u))/d),u)
+            c=abs(x32/s)/d
 c            c=sqrt(.5d0*(1.d0+abs(u)/d))
 c            s=sign(sqrt(2.d0*x32**2/d/(d+abs(u))),u*x32)
 c     eig(2) * eig(3) == x22 * x33 - x32^2
 c     eig(2) + eig(3) == x22 + x33
 c     d := Sqrt[(x22 - x33)^2 + (2 * x32)^2]
-            eig(i2)=dble(.5d0*(x22+x33+sign(d,u)))
-            eig(i3)=dble(.5d0*(x22+x33-sign(d,u)))
+            tr=x22+x33
+            eig(i2)=dble(.5d0*(tr+sign(d,tr)))
+            eig(i3)=dble(.5d0*(tr-sign(d,tr)))
             rr=r12
             r12= c*rr+s*r13
             r13=-s*rr+c*r13
@@ -91,25 +105,26 @@ c          if(eig(1)*eig(2)*eig(3) <= 0.d0)then
 c            write(*,'(a,3i5,1p10g12.4)')'eigs33-1 ',i1,i2,i3,eig,x22+x33,d,u
 c            stop
 c          endif
+          ic=1
           exit
         endif
-        dd=abs(x22)+abs(x33)
+        dd=sqrt(abs(x22*x33))
         if(abs(x32)/fact+dd == dd)then
           eig(i3)=dble(x33)
-          u=-x22
-          d=hypot(u,2.d0*x21)
+          d=hypot(x22,2.d0*x21)
           if(d == 0.d0)then
             eig(i1)=0.d0
-            eig(i2)=dble(x22)
+            eig(i2)=0.d0
           else
-            c=sqrt(.5d0*(d+abs(u))/d)
-            s=x21/d*sign(one,u)
+            s=sign(sqrt(.5d0*(d+abs(x22))/d),x22)
+            c=abs(x21/s)/d
 c            s=sign(sqrt(2.d0*x21**2/d/(d+abs(u))),u*x21)
 c     eig(1) * eig(2) == x11 * x22 - x21^2
 c     eig(1) + eig(2) == x11 + x22
 c     d := Sqrt[(x11 - x22)^2 + (2 * x21)^2]
-            eig(i1)=dble(.5d0*(x22+sign(d,u)))
-            eig(i2)=dble(.5d0*(x22-sign(d,u)))
+c            eig(i1)=dble(.5d0*(x22-sign(d,x22)))
+            eig(i1)=dble(.5d0*(x22+sign(d,x22)))
+            eig(i2)=dble(-x21*(x21/eig(i1)))
             rr=r11
             r11= c*rr+s*r12
             r12=-s*rr+c*r12
@@ -120,32 +135,22 @@ c     d := Sqrt[(x11 - x22)^2 + (2 * x21)^2]
             r31= c*rr+s*r32
             r32=-s*rr+c*r32
           endif
-c          if(eig(1)*eig(2)*eig(3) <= 0.d0)then
-c            write(*,'(a,3i5,1p10g12.4)')'eigs33-2 ',i1,i2,i3,eig,x22+x33,d,u
-c            stop
-c          endif
+          ic=2
           exit
         endif
-        u=x22
-        d=hypot(u,2.d0*x21)
-        if(d == 0.d0)then
-          g=0.d0
-        else
-          g=-2.d0*x21**2/(u+sign(d,u))
-        endif
+        d=hypot(x22,2.d0*x21)
+        g=2.d0*x21*(x21/(x22+sign(d,x22)))
         d=hypot(x32,x33-g)
-        if(d == 0.d0)then
-          c=1.d0
-          s=0.d0
-        else
-          c=(x33-g)/d
-          s=-x32/d
-        endif
-        y22=x22
-        y33=x33
-        x22=y22*c**2+y33*s**2+2.d0*x32*c*s
-        x33=y22*s**2+y33*c**2-2.d0*x32*c*s
-        x32=x32*(c-s)*(c+s)-(y22-y33)*c*s
+        c=(x33-g)/d
+        s=-x32/d
+        dx22=((x33-x22)*s+2.d0*x32*c)*s
+        dx32=((x33-x22)*c-2.d0*x32*s)*s
+c        x22=y22*c**2+x33*s**2+2.d0*x32*c*s
+c        x33=y22*s**2+x33*c**2-2.d0*x32*c*s
+c        x32=x32*(c-s)*(c+s)-(y22-x33)*c*s
+        x22=x22+dx22
+        x33=x33-dx22
+        x32=x32+dx32
         x31=-x21*s
         x21= x21*c
         rr=r12
@@ -159,20 +164,18 @@ c          endif
         r33=-s*rr+c*r33
         if(abs(x31)/fact+abs(x32) /= abs(x32))then
           d=hypot(x32,x31)
-          if(d == 0.d0)then
-            c=1.d0
-            s=0.d0
-          else
-            c=x32/d
-            s=-x31/d
-          endif
-          y22=x22
-          dde=y22*s**2+2.d0*x21*c*s
+          c=x32/d
+          s=-x31/d
+          dde =(x22*s+2.d0*x21*c)*s
+          dx21=(x22*c-2.d0*x21*s)*s
           de=de+dde
           x33=x33-dde
-          x22=y22*c**2-2.d0*x21*c*s-dde
-          x21=x21*(c-s)*(c+s)+y22*c*s
+          x22=x22-2.d0*dde
+          x21=x21+dx21
+c          x22=y22*c**2-2.d0*x21*c*s-dde
+c          x21=x21*(c-s)*(c+s)+y22*c*s
           x32=d
+          x31=0.d0
           rr=r11
           r11= c*rr+s*r12
           r12=-s*rr+c*r12
@@ -184,7 +187,7 @@ c          endif
           r32=-s*rr+c*r32
         endif
         if(it >= itmax1)then
-          fact=fact*4.d0
+          fact=fact*2.d0
         endif
       enddo
       r(i1,i1)=dble(r11)
@@ -196,7 +199,52 @@ c          endif
       r(i1,i3)=dble(r13)
       r(i2,i3)=dble(r23)
       r(i3,i3)=dble(r33)
-      eig=eig+de
+      eig=eig+dble(de)
+      a1=matmul(transpose(r),matmul(a,r))
+      if(abs(a1(2,1)) > 1e-10*sqrt(abs(a1(1,1)*a1(2,2))))then
+        write(*,'(a,4i3,1p9g12.4)')'eigs33 ',it,i1,i2,i3,a1
+        write(*,'(a,i3,1p9g12.4)')'                ',ic,a
+        write(*,'(a,1p9g12.4)')'                   ',r
+        write(*,'(a,1p9g12.4)')'                   ',eig,de,dde,.5d0*x22,0.5d0*sign(d,x22)
+        a2=a
+        call teigen(a2,w,ceig,3,3)
+        write(*,'(a,1p9g12.4)')'                   ',a2
+        write(*,'(a,1p9g12.4)')'                   ',ceig
+        call refs33(a,r,eig)
+        stop
+      endif
+      return
+      end
+
+      subroutine refs33(a,r,eig)
+      implicit none
+      real*8 ,intent(in):: a(3,3),r(3,3),eig(3)
+      integer*4 i1,i2,i3
+      real*8 rr(3,3),aa(3,3),da(3,3)
+      if(abs(eig(3)) >= max(abs(eig(1)),abs(eig(2))))then
+        i1=3
+        i2=merge(1,2,abs(eig(1)) >= abs(eig(2)))
+      elseif(abs(eig(2)) >= max(abs(eig(3)),abs(eig(1))))then
+        i1=2
+        i2=merge(3,1,abs(eig(3)) >= abs(eig(1)))
+      else
+        i1=1
+        i2=merge(2,3,abs(eig(2)) >= abs(eig(3)))
+      endif
+      i3=6-i1-i2
+      rr(:,1)=r(:,i1)/norm2(r(:,i1))
+      rr(:,2)=r(:,i2)-dot_product(rr(:,1),r(:,i2))*rr(:,1)
+      rr(:,2)=rr(:,2)/norm2(rr(:,2))
+      rr(:,3)=r(:,i3)-dot_product(rr(:,1),r(:,i3))*rr(:,1)-dot_product(rr(:,2),r(:,i3))*rr(:,2)
+      rr(:,3)=rr(:,3)/norm2(rr(:,3))
+      aa(1,:)=rr(:,1)*eig(i1)
+      aa(2,:)=rr(:,2)*eig(i2)
+      aa(3,:)=rr(:,3)*eig(i3)
+      aa=matmul(rr,aa)
+      da=a-aa
+      WRITE(*,'(a,1p10g12.4)')'refs33 ',aa
+      WRITE(*,'(a,1p10g12.4)')'       ',a
+      WRITE(*,'(a,1p10g12.4)')'       ',da
       return
       end
 

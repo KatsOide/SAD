@@ -40,14 +40,14 @@ c      parameter (eeuler=7.98221278918726d0,a=5.5077d0,b=1.1274d0)
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42)
       real*8 ,intent(out):: bmi(21)
       real*8 ,intent(in):: al,al1
-      real*8 pl(3,3),r(3,3),eig(3),xx(3,3),xxs(3,3),
-     $     bint,e1,e2,e3
+      real*8 pl(3,3),r(3,3),eig(3),xx(3,3),xxs(3,3),bint,e1,e2,e3
       real*8 xp(3,3),transw(6,6),bmi0(21),
      $     pxi,pyi,s,pr,pzi,alx,ale,alz,hi,a,b,d,vol,
      $     bm,ptrans,extrans,eytrans,eztrans,tf,aez,aex0,aey0,
      $     aez0,aexz,aeyz,f1,f2,f3,bn,bmax,bmin,ci,pvol,vol1,
      $     transsp(6,6)
       real*8 trans1(6,6),trans2(6,6)
+      complex*16 ceig(3)
       logical*4 ,intent(in):: optics
       real*8, parameter :: abserr=3.d-17
       real*8 ,external::fintrbu
@@ -127,7 +127,8 @@ c     real*8  vmin/0.d0/
         xx(2,2)=bmi(ia(3,3))
         xx(3,2)=bmi(ia(5,3))
         xx(3,3)=bmi(ia(5,5))
-        call eigs33(xx,r,eig)
+c        call eigs33(xx,r,eig)
+        call teigens33(xx,r,eig)
         vol1=sqrt(max(1.d-80,eig(1)*eig(2)*eig(3)))
         vol=sqrt((4.d0*pi)**3)*vol1
         bm=sqrt(min(eig(1),eig(2),eig(3)))
@@ -161,7 +162,8 @@ c        call tmov(xx,xxs,9)
         pl(3,3)=bmi(ia(6,6))
      1       -bmi(ia(6,1))*xp(1,3)-bmi(ia(6,3))*xp(2,3)
      $       -bmi(ia(6,5))*xp(3,3)
-        call eigs33(pl,r,eig)
+c        call eigs33(pl,r,eig)
+        call teigens33(pl,r,eig)
         ptrans=sqrt(eig(1)+eig(2)+eig(3))
         pvol=sqrt(max(1.d-80,eig(1)*eig(2)*eig(3)))
         if(vol /= 0.d0 .and. caltouck)then
