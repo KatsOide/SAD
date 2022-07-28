@@ -26,10 +26,6 @@ c      real(ex_real_kind) one,d,c,s,x21,x31,x22,x33,x32,
       a(1,2)=a(2,1)
       a(1,3)=a(3,1)
       a(2,3)=a(3,2)
-c      r=a
-c      call teigen(r,w,ceig,3,3)
-c      eig=dble(ceig)
-c      go to 10
       if(abs(a(3,3)) >= max(abs(a(1,1)),abs(a(2,2))))then
         i3=3
         i2=merge(1,2,abs(a(2,2)) <= abs(a(1,1)))
@@ -201,7 +197,7 @@ c          x21=x21*(c-s)*(c+s)+y22*c*s
       r(i3,i3)=dble(r33)
       eig=eig+dble(de)
       a1=matmul(transpose(r),matmul(a,r))
-      if(abs(a1(2,1)) > 1e-10*sqrt(abs(a1(1,1)*a1(2,2))))then
+      if(abs(a1(2,1)) > 1e-5*sqrt(abs(a1(1,1)*a1(2,2))))then
         write(*,'(a,4i3,1p9g12.4)')'eigs33 ',it,i1,i2,i3,a1
         write(*,'(a,i3,1p9g12.4)')'                ',ic,a
         write(*,'(a,1p9g12.4)')'                   ',r
