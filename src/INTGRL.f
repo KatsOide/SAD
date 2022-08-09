@@ -15,6 +15,7 @@
       use ffs_pointer
       use kyparam
       use macphys
+      use bendeb,only:tbinit
       implicit none
       integer*4 ,intent(in)::LFNO
       integer*4 IB,IQ
@@ -53,6 +54,7 @@ c
      +'     CONTRIBUTIONS FROM SOLENOID MAGNETS ARE NOT included '
       WRITE(LFNO,'(A)') '              IN THIS VERSION.   1991.2.26 '
       WRITE(LFNO,'(A)') '                  Refurbished:  2019.10.10 '
+      WRITE(LFNO,'(A)') '             Added K1 of BEND:  2022.08.05 '
       WRITE(LFNO,'(A)')
      +'****************************************************************'
 c      WRITE(LFNO,'(/ A,I6)') 'NLAT =',NLAT
@@ -89,18 +91,17 @@ c         WRITE(LFNO,'(A,2I5,1p2g13.5)') ' ELEMENT  ',J,ID,RLE,RLT
             E1=cmp%value(ky_E1_BEND)*ANG
             E2=cmp%value(ky_E2_BEND)*ANG
             TETA=cmp%value(ky_ROT_BEND)
-c            ANG=RLIST(LATT(2,J)+2)
-c            E1=RLIST(LATT(2,J)+3)*ANG
-c            E2=RLIST(LATT(2,J)+4)*ANG
-c            TETA=RLIST(LATT(2,J)+5)
-            IF(ANG.EQ.0) GOTO 10
+            RKL1=cmp%value(ky_K1_BEND)
+            IF(ANG == 0) GOTO 10
+            tbinit=.true.
             IR=min(14,max(1,int(ABS(ANG)/0.002d0)))
             IRP=2*IR
             DL=RLE/IRP
             DKL0=ANG/IRP
+            DKL1=RKL1/IRP
             TOTANG=TOTANG+ANG
 *      WRITE(LFNO,'(A,6F12.5)') ' BM ',ANG,E1,E2,RLE,TOTANG,RLT
-            IF(IPOUT.EQ.1.AND.IB.LE.10) THEN
+            IF(IPOUT == 1.AND.IB.LE.10) THEN
               WRITE(LFNO,'(// A,3F12.5)') PNAME(idc),RLE,RKL1,RLT
               WRITE(LFNO,'(/A,I4/ 10F8.3/ 1P,(10D8.1))')
      $             ' TWPIN ',J,TWPIN
@@ -108,25 +109,25 @@ c            TETA=RLIST(LATT(2,J)+5)
      $             ' TWPOT ',J,TWPOT
               WRITE(LFNO,'(/ A/ 10F8.3/ 1P,(10D8.1))') ' TWPMG ',TWPMG
             END IF
-            IF(E1.NE.0.) THEN
+            IF(E1 /= 0.) THEN
                CALL BEDGE(E1)
                CALL TEDGE(DIEG)
 c               write(*,*)'bend-e1 ',i,E1,tu(1,1),tu(2,2)
-               IF(IPOUT.EQ.1.AND.IB.LE.10)
+               IF(IPOUT == 1.AND.IB.LE.10)
      +         WRITE(LFNO,'(A/ 10F8.3/ 1P,(10D8.1))') ' TWPMG ',TWPMG
             ENDIF
             DO 100 I=1,IRP
                CALL BMAG(TETA)
 c               write(*,*)'bend-i ',i,tu(1,1),tu(2,2)
                CALL TCAL(I,0)
-               IF(IPOUT.EQ.1.AND.IB.LE.10)
+               IF(IPOUT == 1.AND.IB.LE.10)
      +         WRITE(LFNO,'(A/ 10F8.3/ 1P,(10D8.1))') ' TWPMG ',TWPMG
 100         CONTINUE
                CALL TCAL(IRP+1,1)
-            IF(E2.NE.0.) THEN
+            IF(E2 /= 0.) THEN
                CALL BEDGE(E2)
                CALL TEDGE(DIEG)
-               IF(IPOUT.EQ.1.AND.IB.LE.10)
+               IF(IPOUT == 1.AND.IB.LE.10)
      +         WRITE(LFNO,'(A/ 10F8.3/ 1P,(10D8.1))') ' TWPMG ',TWPMG
             ENDIF
           case (icQUAD)
@@ -135,28 +136,28 @@ c               write(*,*)'bend-i ',i,tu(1,1),tu(2,2)
             TETA=cmp%value(ky_ROT_QUAD)
 c            RKL1=RLIST(LATT(2,J)+2)
 c            TETA=RLIST(LATT(2,J)+4)
-            IF(IPOUT.EQ.1.AND.IQ.LE.10) THEN
+            IF(IPOUT == 1.AND.IQ.LE.10) THEN
               WRITE(LFNO,'(// A,3F12.5)') PNAME(idc),RLE,RKL1,RLT
               WRITE(LFNO,'(/A,I4/ 10F8.3/ 1P,(10D8.1))')
      $             ' TWPIN ',J,TWPIN
               WRITE(LFNO,'(/A,I4/ 10F8.3/ 1P,(10D8.1))')
      $             ' TWPOT ',J,TWPOT
             END IF
-            IF(RKL1.EQ.0) GOTO 10
+            IF(RKL1 == 0) GOTO 10
             IR=int(ABS(RKL1)/0.02d0)
-            IF(IR.EQ.0) IR=1
-            IF(IR.GT.14) IR=14
+            IF(IR == 0) IR=1
+            IF(IR > 14) IR=14
             IRP=2*IR
             DL=RLE/IRP
             DKL1=RKL1/IRP
             DO 200 I=1,IRP
-               IF(IPOUT.EQ.1.AND.IQ.LE.10)
+               IF(IPOUT == 1.AND.IQ.LE.10)
      +         WRITE(LFNO,'(A/ 10F8.3/ 1P,(10D8.1))') ' TWPMG ',TWPMG
                CALL QUADRU(TETA,TWPMG(mfitdx),TWPMG(mfitdy))
                CALL TCAL(I,0)
 200         CONTINUE
                CALL TCAL(IRP+1,1)
-               IF(IPOUT.EQ.1.AND.IQ.LE.10)
+               IF(IPOUT == 1.AND.IQ.LE.10)
      +         WRITE(LFNO,'(A/ 10F8.3/ 1P,(10D8.1))') ' TWPMG ',TWPMG
          case (icSEXT)
             RKL2=cmp%value(ky_K_THIN)
@@ -167,7 +168,7 @@ c            TETA=RLIST(LATT(2,J)+4)
             CALL SEXTU(TETA,TWPMG(mfitdx),TWPMG(mfitdy))
             IR=0
             CALL TCAL(1,0)
-            IF(RLE.EQ.0.) THEN
+            IF(RLE == 0.) THEN
                DL=0.2
                WRITE(LFNO,'(A)') ' L(SEXTUPOLE) EQ 0. SET L=0.2'
             ENDIF
@@ -180,7 +181,7 @@ c            RHARM=RLIST(LATT(2,J)+3)
 c            FREQ=RLIST(LATT(2,J)+5)
 *           WRITE(LFNO,*) RLIST(LATT(2,J)+3),RLIST(LATT(2,J)+5)
          END SELECT
-         IF(ID.EQ.icBEND.OR.ID.EQ.icQUAD.OR.ID.EQ.icSEXT) THEN
+         IF(ID == icBEND.OR.ID == icQUAD.OR.ID == icSEXT) THEN
 *      WRITE(LFNO,'( 7F10.3)') AX0,AX(J+1),BX0,BX(J+1),GX0,EX0,EX(J+1)
            DO I=1,NRI
              DI(I)=SYMPS(FUNI(1,I),IR)+DIEG(I)
@@ -193,8 +194,8 @@ c     +           (DI(I),I=1,8)
       QX=TWPOT(3)/(2*PI)
       QY=TWPOT(6)/(2*PI)
       WRITE(LFNO,'(//A)') '    SYNCHROTRON RADIATION INTEGRALS'
-      IF(RHARM.EQ.0) RHARM=FREQ*RLT/CVELOC
-      IF(FREQ.EQ.0) FREQ=RHARM*CVELOC/RLT
+      IF(RHARM == 0) RHARM=FREQ*RLT/CVELOC
+      IF(FREQ == 0) FREQ=RHARM*CVELOC/RLT
 *     WRITE(LFNO,'(A,E12.4,A,E12.4)') ' P0 = ',P0,'   H0 = ',H0
 *     BFIELD=ENERGY*1.0E9/(CVELOC*RHO)
 *     RAMBDAC=18.64/(BFIELD*ENERGY*ENERGY)
@@ -300,34 +301,34 @@ c     +           (DI(I),I=1,8)
      $     DPU=>TWPMG(mfitdpx),
      $     DV=>TWPMG(mfitdy),
      $     DPV=>TWPMG(mfitdpy))
-      IF(DL.EQ.0.) WRITE(6,'(A)') '  DL=0. IN TCAL '
+      IF(DL == 0.) WRITE(6,'(A)') '  DL=0. IN TCAL '
       RK1=CKL1X/DL
-      CURV=DSQRT(CKL0X*CKL0X+CKL0Y*CKL0Y)/DL
+      CURV=hypot(CKL0X,CKL0Y)/DL
       GU=(1+AU*AU)/BU
       GV=(1+AV*AV)/BV
-      IF(I.EQ.1) CALL R0CAL(R0,R0I)
+      IF(I == 1) CALL R0CAL(R0,R0I)
       CURV2=CURV*CURV
       CURV3=CURV2*ABS(CURV)
       FUNI(I,1)=CKL0X*
      +          (R0I(1,1)*EU+R0I(1,2)*EPU+R0I(1,3)*EV+R0I(1,4)*EPV)
       FUNI(I,2)=CURV2*DL
       FUNI(I,3)=CURV3*DL
-      IF(CURV.GT.0) THEN
-      FUNI(I,4)=(CKL0X+2*CKL1X/CURV)*CURV2*(R0I(1,1)*EU+R0I(1,2)*EPU)
-     +         +(CKL0Y-2*CKL1Y/CURV)*CURV2*(R0I(3,1)*EU+R0I(3,2)*EPU)
+      IF(CURV > 0) THEN
+        FUNI(I,4)=(CKL0X+2*CKL1X/CURV)*CURV2*(R0I(1,1)*EU+R0I(1,2)*EPU)
+     +       +(CKL0Y-2*CKL1Y/CURV)*CURV2*(R0I(3,1)*EU+R0I(3,2)*EPU)
       ELSE
-      FUNI(I,4)=0.
+        FUNI(I,4)=0.
       END IF
       FUNI(I,5)=CURV3*(GU*EU*EU+2.*AU*EPU*EU+BU*EPU*EPU)*DL
 c      write(*,*)'tcal-I5 ',funi(i,5),CURV3,DL
 * 6: I1Y    7:I4Y     8:I5Y
       FUNI(I,6)=CKL0Y*
      +          (R0I(3,1)*EU+R0I(3,2)*EPU+R0I(3,3)*EV+R0I(3,4)*EPV)
-      IF(CURV.GT.0) THEN
-      FUNI(I,7)=(CKL0X+2*CKL1X/CURV)*CURV2*(R0I(1,3)*EV+R0I(1,4)*EPV)
-     +         +(CKL0Y-2*CKL1Y/CURV)*CURV2*(R0I(3,3)*EV+R0I(3,4)*EPV)
+      IF(CURV > 0) THEN
+        FUNI(I,7)=(CKL0X+2*CKL1X/CURV)*CURV2*(R0I(1,3)*EV+R0I(1,4)*EPV)
+     +       +(CKL0Y-2*CKL1Y/CURV)*CURV2*(R0I(3,3)*EV+R0I(3,4)*EPV)
       ELSE
-      FUNI(I,7)=0.
+        FUNI(I,7)=0.
       END IF
       FUNI(I,8)=CURV3*(GV*EV*EV+2.*AV*EPV*EV+BV*EPV*EPV)*DL
 * 9:  CHROMX   10: CHROMY
@@ -338,35 +339,34 @@ c      FUNI(I,10)=-RK1*BV*DL
 c      write(*,'(a,1p6g15.7)')'chrom ',RK1,CURV2,BU,BV,DL
       FUNI(I,11)=CKL0X
       FUNI(I,12)=CKL0Y
-      IF(IFLG.EQ.1) RETURN
+      IF(IFLG == 1) RETURN
       CALL TMATRS(R0,R0I)
       CALL TWTRANS()
       end associate
       END subroutine
 
       subroutine BMAG(TETA1)
+      use tmacro, only:irad
+      use bendeb, only:tbendebody
       implicit none
-      real*8 TETA1,SI,CO,CURV
-      CURV=DKL0/DL
-      CALL ZEROV4(VM)
-      CALL UNITM4(TM,1.d0)
-      SI=DSIN(DKL0)
-      CO=DCOS(DKL0)
-      TM(1,1)=CO
-      IF(CURV.NE.0.) THEN
-        TM(1,2)=SI/CURV
-        TM(2,1)=-SI*CURV
-        VM(1)=(1-CO)/CURV
-        VM(2)= SI
-      ELSE
-        TM(1,2)=DL
-      END IF
-      TM(2,2)=TM(1,1)
-      TM(3,4)=DL
+      real*8 ,intent(in)::  TETA1
+      real*8 trans(6,12),cod(6),beam(42),srot(3,9)
+      irad=6
+      call tinitr(trans)
+      cod=0.d0
+      call tbendebody(trans,cod,beam,srot,DL,DKL0,
+     $     DKL1,DL,0.d0,0.d0,.false.)
+      TM(:,:)=trans(1:4,1:4)
+      VM(1:4)=trans(1:4,6)
+c      write(*,'(a,1p8g12.4)')'BMAG ',TM(:,1:2)
+c      write(*,'(a,1p8g12.4)')'     ',TM(:,3:4)
+c      write(*,'(a,1p8g12.4)')'     ',VM
       CKL0X=DCOS(TETA1)*DKL0
       CKL0Y=-DSIN(TETA1)*DKL0
-      CKL1X=0.
-      CKL1Y=0.
+      CKL1X=DCOS(TETA1)*DKL1
+      CKL1Y=-DCOS(TETA1)*DKL1
+c      CKL1X=0.
+c      CKL1Y=0.
       CALL TROT(TM,VM,TETA1,TO,VO)
       RETURN
       END subroutine
@@ -542,8 +542,8 @@ c      CALL VMUL4(TO,DX,DX1)
       CKL0X=DKL1*(DX*DCOS(TET2)-DY*DSIN(TET2))
 *     CKL1X=DKL1*DCOS(TETA1)
 *     CKL1Y=-CKL1X
-      DR=DSQRT(DX*DX+DY*DY)
-      IF(DR.GT.0.) THEN
+      DR=hypot(DX,DY)
+      IF(DR > 0.) THEN
         CKL1X=DKL1*DX/DR
         CKL1Y=-DKL1*DY/DR
       ELSE

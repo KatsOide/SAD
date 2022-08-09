@@ -1,4 +1,4 @@
-(* OpticsPlot 7/25/2020 *)
+(* OpticsPlot 5/8/2022 *)
 
 PkgConfig$DefaultList["OpticsPlot"->{
   "PlotDivision"->80,
@@ -35,6 +35,7 @@ With[{def={
       Null[]};
     {pr,rg,init,fh,il,lr,plb,gr,lat}={Region,PlotRegion,Initialize,FrameHeight,
       InfoLabel,LatticeRegion,PlotLabel,GridLines,Lattice}/.op;
+    If[f==={},Return[Graphics[{}]]];
     If[Head[pr]<=>List,pr={1,pr}];
     pr=LINE["POSITION",pr]/.{0->1,{}->LINE["LENGTH"]};
     lpr=-Subtract@@MinMax[LINE["S",pr]];
@@ -181,7 +182,6 @@ With[{tdr:=TopDrawer,cdr:=CanvasDrawer},
 With[{def={PlotRange->Automatic,
   Dashing->{{1},{0.6,0.15},{0.3,.1},{0.15,0.08},{0.1,.08},
     {0.6, 0.08, 0.08, 0.08},{0.3, 0.08, 0.08, 0.08}},
-!  Dashing->{1},
   FrameLabel->Automatic,
   PlotColor->PlotColorDefault[$DisplayFunction],
   PointColor->PlotColorDefault[$DisplayFunction],
@@ -194,10 +194,11 @@ With[{def={PlotRange->Automatic,
     {lf,plt,pra,fl,frame,lfr,fropt,l,unit,v,opv,min,max,am,ru,
       del,del1,leg,fly,
       {fopt,f1}=SwitchCases[f,{_Rule|_RuleDelayed,_}]},
+!    Print["OP1$-0: ",{fopt,f1}];
+    If[f1 === {} || f1[[1]]==={},Return[Graphics[{}]]];
     lf=Length[f1];
     fopt=Override[fopt,opt,def];
     {plt,pra,fl,leg}={Plot,PlotRange,FrameLabel,Legend}/.fopt;
-!    Print["OP$1 ",leg];
     {fl,fly}=If[ListQ[fl],
       {fl=Take[Join[fl,{"","","",""}],4],
       If[right,fl[[4]],fl[[2]]]},
@@ -215,9 +216,9 @@ With[{def={PlotRange->Automatic,
     unit=l[[1,1,2]];
     Scan[If[#[[1,2]]<=>unit,
       Message[OpticsPlot::units,Evaluate[#[[1,2]]],Evaluate[unit]]]&,l];
+!    Print["OP1$-l: ",{l,unit}];
     l=Cases[l,{{_,unit,_,_,_},_,_},1];
     v=l[[,3]];
-!    Print["OP$1-v ",{ss,l[[,3]]}];
     opv=l[[,2]];
     {min,max}=MinMax[#[[,2]]&/@v];
     am=Switch[pra,
@@ -424,7 +425,6 @@ With[{yoff0=0.1},
   LatticePlot1$[{pr1_,pr2_},off_,tag_,wid_,eh_,ss_]:=Module[
     {type,h,si,si1,yoff,s1=LINE["S",pr1],ds,h1,v},
     ds=(LINE["S",pr2-1]-s1)/400/wid;
-!    Literal[Print]["LatticePlot1$ ",{pr1,pr2,ss}];
     Table[
       type=LINE["TYPE",i];
       h=Switch[eh[i],

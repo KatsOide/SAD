@@ -759,16 +759,16 @@ CanvasGraphics=Class[{},
   With[{def={Dashing->{1},Plot->False,ErrorBarTickSize->1,
     ErrorBarThickness->1,ErrorBarColor->Default,PlotJoined->True,StepRatio->1,
     PointSize->1,PointSymbol->"1O",PlotColor->"Black",Thickness->1,
-    PointBorderColor->Automatic,Legend->False,Arrow->Null,Clip->True,
+    PointBorderColor->Automatic,Legend->False,Arrow->Null,ArrowShape->Null,Clip->True,
     LineTags->Null,PointTags->Null,PointColor->"forest green"}},
 
     Primitive[Line[body_,opt___]]:=Module[
       {pc,pl,pj,sr,size,sym,ebl,ptc,dash,ltag,ptag,thick,pbc,leg,arr,clip,canvr=Canvas$Range,
         bt=Thread[body],op=Override[opt,def],cmd,ebth},
-      {pc,pl,pj,sr,size,sym,ebl,ptc,dash,ltag,ptag,thick,pbc,leg,ebth,ebc,arr,clip}=
+      {pc,pl,pj,sr,size,sym,ebl,ptc,dash,ltag,ptag,thick,pbc,leg,ebth,ebc,arr,arrs,clip}=
         {PlotColor,Plot,PlotJoined,StepRatio,PointSize,PointSymbol,
 	  ErrorBarTickSize,PointColor,Dashing,LineTags,PointTags,Thickness,
-          PointBorderColor,Legend,ErrorBarThickness,ErrorBarColor,Arrow,Clip}/.op;
+          PointBorderColor,Legend,ErrorBarThickness,ErrorBarColor,Arrow,ArrowShape,Clip}/.op;
       ebc=ebc/.Default->pc;
       dash=Switch[dash,
         1,{1},
@@ -778,6 +778,7 @@ CanvasGraphics=Class[{},
       cmd={Fill->pc,
         If[ltag<=>Null,TagFrame[ltag]=Canvas$Frame;Tags->ltag,Null[]],
         If[arr<=>Null,Arrow->arr,Null[]],
+        If[arrs<=>Null,ArrowShape->arrs,Null[]],
         If[thick<>1,Width->thick,Null[]]};
       Switch[pj,
 	Step,  CanvasDrawerLine[cmd, dash, Thread[Canvas$StepData[sr, body]]],

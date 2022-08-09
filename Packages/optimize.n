@@ -15,7 +15,9 @@ Simplex=Class[{},{},{CurrentSimplex,Status="Stop",
     {pr,fr,tp=Take[p[[,2]],rr]},
     tp=Plus@@(wexp*tp);
     pr=MapThread[Restrict,{(1-r)*tp+p[[kr,2]]*r,limit[[1]],limit[[2]]}];
-    {pr,fr=f[pr],
+    fr=f[pr];
+(*    Print["Amoebr ",{fr,pr[[{1,-1}]]}]; *)
+    {pr,fr,
       If[fr<p[[kr,1]],
         Sort[ReplacePart[p,{fr,pr},kr]],
         p]}];
@@ -35,7 +37,8 @@ Simplex=Class[{},{},{CurrentSimplex,Status="Stop",
           pr]]],
       {kr,cont}];
     If[cont<>1,fr=fr0;pr=pr0];
-    If[lp>2 && fr < p[[-1-cl,1]],
+(*    Print["Amoeba ",{lp,cl,fr,p}]; *)
+    If[lp > 2 && fr < p[[-1-cl,1]],
       pr,
       If[fr < p[[-1,1]],
         Status="Contract+",

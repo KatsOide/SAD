@@ -6,6 +6,7 @@
       use tmacro
       use ffs_pointer, only: gammab
       use temw,only:tmulbs
+      use chg,only:tchge
       use mathfun
       implicit none
       real*8 eps,oneev
@@ -23,7 +24,7 @@
      $     dpx,dpy,dv,s0
       logical*4 fringe,autophi
       call tchge(trans,cod,beam,srot,
-     $     dx,dy,theta,0.d0,0.d0,0.d0,0.d0,.true.)
+     $     dx,dy,0.d0,theta,0.d0,0.d0,0.d0,0.d0,.true.)
       if(harm .eq. 0.d0)then
         w=pi2*freq/c
       else
@@ -206,7 +207,7 @@ c        rg=sqrt(rg2)
         call tesetdv(cod(6))
       endif
       call tchge(trans,cod,beam,srot,
-     $     dx,dy,theta,0.d0,0.d0,0.d0,0.d0,.false.)
+     $     dx,dy,0.d0,theta,0.d0,0.d0,0.d0,0.d0,.false.)
 c      write(*,'(a,i5,1p6g15.7)')'tcave ',l+1,dhg,rg2,
 c     $     trans(5,5),trans(5,6),trans(6,5),trans(6,6)
       return

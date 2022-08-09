@@ -29,7 +29,7 @@ c     end   initialize for preventing compiler warning
       end
 
       subroutine tsrote(trans,cod,rr,chi1,chi2,chi3)
-      use bendeb, only:tbgrote
+      use chg, only:tbgrote
       use mathfun, only:xsincos
       implicit none
       real*8 ,intent(inout):: cod(6)

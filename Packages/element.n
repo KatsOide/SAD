@@ -66,7 +66,7 @@ With[{setop=Set|AddTo|TimesBy|SubtractFrom|DivideBy},
           f[Element$[d,elp,op],z*LINE["DK",el]];
           If[Length[ll]>1,
             f[LINE[d,#],z*LINE["DK",#]]&/@Rest[ll]],
-          If[k<>"GEO" && Length[ll]>1,
+          If[k<=>"GEO" && Length[ll]>1,
 	    f[LINE[k,#],z]&/@ll,
             f[Element$[k,elp,op],z]]];
         Element$[k,elp]]]];

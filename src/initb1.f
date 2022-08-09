@@ -65,8 +65,9 @@ c
      $ky_LDEV_BEND=26,
      $ky_LRAD_BEND=27,
      $ky_CHI2_BEND=28,
+     $ky_DZ_BEND=29,
 c
-     $ky_MAX_BEND=29,
+     $ky_MAX_BEND=30,
      $     p_L_BEND=ky_MAX_BEND+1,
      $     p_PSI1_BEND=p_L_BEND+1,
      $     p_PSI2_BEND=p_PSI1_BEND+1,
@@ -1030,6 +1031,7 @@ c
       kytbl(kwLDEV,icBEND)=ky_LDEV_BEND
       kytbl(kwLRAD,icBEND)=ky_LRAD_BEND
       kytbl(kwCHI2,icBEND)=ky_CHI2_BEND
+      kytbl(kwDZ,icBEND)=ky_DZ_BEND
 c
       kytbl(kwMAX,icBEND)=ky_MAX_BEND
       kytbl(kwNPARAM,icBEND)=p_NPARAM_BEND

@@ -15,7 +15,7 @@ c      parameter (eeuler=7.98221278918726d0,a=5.5077d0,b=1.1274d0)
       touckf=merge(1.d200,
      $     (log(1.d0/x/eeuler+1.d0)*exp(-x)
      1     *(b+eeuler*x)/(b+x*(a+2.d0*x)))/x,
-     $     x .eq. 0.d0)
+     $     x == 0.d0)
       return
       end
 
@@ -40,18 +40,19 @@ c      parameter (eeuler=7.98221278918726d0,a=5.5077d0,b=1.1274d0)
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42)
       real*8 ,intent(out):: bmi(21)
       real*8 ,intent(in):: al,al1
-      real*8 pl(3,3),r(3,3),eig(3),xx(3,3),xxs(3,3),
-     $     bint,e1,e2,e3
-      real*8 xp(3,3),transw(6,6),
+      real*8 pl(3,3),r(3,3),eig(3),xx(3,3),xxs(3,3),bint,e1,e2,e3
+      real*8 xp(3,3),transw(6,6),bmi0(21),
      $     pxi,pyi,s,pr,pzi,alx,ale,alz,hi,a,b,d,vol,
      $     bm,ptrans,extrans,eytrans,eztrans,tf,aez,aex0,aey0,
      $     aez0,aexz,aeyz,f1,f2,f3,bn,bmax,bmin,ci,pvol,vol1,
      $     transsp(6,6)
       real*8 trans1(6,6),trans2(6,6)
+      complex*16 ceig(3)
       logical*4 ,intent(in):: optics
+      real*8, parameter :: abserr=3.d-17
       real*8 ,external::fintrbu
 c     real*8  vmin/0.d0/
-      if(al .eq. 0.d0)then
+      if(al == 0.d0)then
         bmi=0.d0
         return
       endif
@@ -75,12 +76,9 @@ c     real*8  vmin/0.d0/
       hi=p2h(p0*pr)
       trans1(5,6)=h0/hi**3*alx+s*alz
       if(wspac)then
-        bmi=merge(beamsize(:,ll),beam(22:42)+beam(1:21),
-     $       optics)
+        bmi=merge(beamsize(:,ll),beam(22:42)+beam(1:21),optics)
         call tmulbs(bmi,trans1,.false.)
         call twspace(transsp,cod,al,bmi,ll)
-c        write(*,*)'tintrab-wspac-twspace-end '
-c        write(*,'(1p6g16.7)')(transsp(i,:),i=1,6)
         trans2=matmul(tinv6(trans1),matmul(transsp,trans1))
         trans(:,1:irad)=matmul(trans2,trans(:,1:irad))
         if(optics)then
@@ -90,15 +88,8 @@ c        write(*,'(1p6g16.7)')(transsp(i,:),i=1,6)
       endif
       if(intra)then
         bmi=beam(22:42)+beam(1:21)
-c        call tmov(beam(22),bmi,21)
-c        call tmov(trans,transa,36)
-c      call tadd(transa,trans(1,7),transa,36)
-c        call tmulbs(bmi,transa,.false.)
-c        call tadd(bmi,beam,bmi,21)
         if(caltouck)then
           transw=matmul(trans(:,1:6),diagr)
-c          call tmov(diagr,transw,36)
-c          call tmultr(transw,trans,6)
         endif
         a=p0**2/(hi+1.d0)
         b=a/hi
@@ -128,6 +119,7 @@ c          call tmultr(transw,trans,6)
      $       +pzi*trans2(1:6,5))/pr
         trans2(1:6,6)=pr/pzi*trans2(1:6,6)
         trans1=matmul(trans2,trans1)
+        bmi0=bmi
         call tmulbs(bmi,trans1,.false.)
         xx(1,1)=bmi(ia(1,1))
         xx(2,1)=bmi(ia(3,1))
@@ -135,10 +127,11 @@ c          call tmultr(transw,trans,6)
         xx(2,2)=bmi(ia(3,3))
         xx(3,2)=bmi(ia(5,3))
         xx(3,3)=bmi(ia(5,5))
-        call eigs33(xx,r,eig)
+c        call eigs33(xx,r,eig)
+        call teigens33(xx,r,eig)
         vol1=sqrt(max(1.d-80,eig(1)*eig(2)*eig(3)))
         vol=sqrt((4.d0*pi)**3)*vol1
-        bm=sqrt(min(abs(eig(1)),abs(eig(2)),abs(eig(3))))
+        bm=sqrt(min(eig(1),eig(2),eig(3)))
         xxs=xx
 c        call tmov(xx,xxs,9)
         xp(1,1)=bmi(ia(1,2))
@@ -169,17 +162,18 @@ c        call tmov(xx,xxs,9)
         pl(3,3)=bmi(ia(6,6))
      1       -bmi(ia(6,1))*xp(1,3)-bmi(ia(6,3))*xp(2,3)
      $       -bmi(ia(6,5))*xp(3,3)
-        call eigs33(pl,r,eig)
-        ptrans=sqrt(abs(eig(1)+eig(2)+eig(3)))
+c        call eigs33(pl,r,eig)
+        call teigens33(pl,r,eig)
+        ptrans=sqrt(eig(1)+eig(2)+eig(3))
         pvol=sqrt(max(1.d-80,eig(1)*eig(2)*eig(3)))
-        if(vol .ne. 0.d0 .and. caltouck)then
-          if(ptrans .ne. 0.d0)then
+        if(vol /= 0.d0 .and. caltouck)then
+          if(ptrans /= 0.d0)then
             trans2=tinv6(matmul(trans1,transw))
             extrans=(trans2(1,6)**2+trans2(2,6)**2)*ptrans**2
             eytrans=(trans2(3,6)**2+trans2(4,6)**2)*ptrans**2
             eztrans=(trans2(5,6)**2+trans2(6,6)**2)*ptrans**2
             tf=al/vol/(ptrans*p0)**3
-            if(eztrans .ne. 0.d0)then
+            if(eztrans /= 0.d0)then
               do i=1,ntouckl
                 aez=(.002d0+i*.002d0)**2
      $               *(diagri(5,6)**2+diagri(6,6)**2)
@@ -205,13 +199,13 @@ c        call tmov(xx,xxs,9)
         endif
         a1=eig(1)/eig(2)
         a2=eig(1)/eig(3)
-        f1=2.d0*bint(fintrbu,0.d0,1.d0,1.d-3,1.d-19)*eig(1)
+        f1=2.d0*bint(fintrbu,0.d0,1.d0,1.d-3,abserr)*eig(1)
         a1=eig(2)/eig(3)
         a2=eig(2)/eig(1)
-        f2=2.d0*bint(fintrbu,0.d0,1.d0,1.d-3,1.d-19)*eig(2)
+        f2=2.d0*bint(fintrbu,0.d0,1.d0,1.d-3,abserr)*eig(2)
         a1=eig(3)/eig(1)
         a2=eig(3)/eig(2)
-        f3=2.d0*bint(fintrbu,0.d0,1.d0,1.d-3,1.d-19)*eig(3)
+        f3=2.d0*bint(fintrbu,0.d0,1.d0,1.d-3,abserr)*eig(3)
         e1=f2+f3-2.d0*f1
         e2=f3+f1-2.d0*f2
         e3=f1+f2-2.d0*f3
@@ -228,15 +222,7 @@ c        call tmov(xx,xxs,9)
      1       vol/pi/(ptrans*p0/h0*c)/pbunch
      $       /max(taurdx,taurdy,taurdz)))
      1       )
-c     write(*,*)'bmin,bmax,vol ',bmin,bmax,vol
-c     bmin=rclassic
-        ci=cintrb*al*log(2.d0*bmax/bmin)/vol1/pvol/h0**4
-c        write(*,*)'tintrb ',ll,vol1*pvol,ci,pl
-c     write(*,*)log(2.d0*bmax/bmin)
-c     if(ci .gt. vmin)then
-c     vmin=ci
-c     write(*,*)vmin,cintrb,bmin
-c     endif
+        ci=cintrb*al*log(max(1.d-300,2.d0*bmax/bmin))/vol1/pvol/h0**4
         bmi=0.d0
         bmi(ia(2,2))=ci*pl(1,1)
         bmi(ia(4,2))=ci*pl(2,1)
@@ -246,12 +232,6 @@ c     endif
         bmi(ia(6,6))=ci*pl(3,3)
         call tmulbs(bmi,tinv6(trans1),.false.)
         beam(1:21)=bmi+beam(1:21)
-c        if(mod(ll,10) .eq. 0)then
-c          write(*,'(a,i5,1p8g14.6)')'tintrb ',ll,ci,al,
-c     $         beam(3),beam(10),beam(21),bmi(3),bmi(10),bmi(21)
-c        endif
-c        call tadd(beam,bmi,beam,21)
-c        call tinv6(trans,transa)
         call tmulbs(bmi,tinv6(trans(:,1:6)),.false.)
       endif
       return
@@ -259,18 +239,21 @@ c        call tinv6(trans,transa)
 
       real*8 pure elemental function fintrb(t)
       use intrb
+      use mathfun
       implicit none
       real*8 , intent(in)::t
-      real*8 cost,sqsint
-      cost=cos(t)
-      sqsint=(1.d0-cost)*(1.d0+cost)
+      real*8 cost,sint,xsint,dcost,sqsint
+c      cost=cos(t)
+c      sqsint=(1.d0-cost)*(1.d0+cost)
+      call xsincos(t,sint,xsint,cost,dcost)
+      sqsint=sint**2
       fintrb=sqsint*cost/
      1       sqrt((sqsint+a1*cost**2)*(sqsint+a2*cost**2))
 c     fintrb=t/sqrt(((1.d0-a1)*t+a1)*((1.d0-a2)*t+a2))
       return
       end
 
-      real*8 pure elemental function fintrbu(u)
+      real*8 pure elemental function fintrbu(u) result(f)
       use intrb
       implicit none
       real*8 , intent(in)::u
@@ -278,8 +261,8 @@ c     fintrb=t/sqrt(((1.d0-a1)*t+a1)*((1.d0-a2)*t+a2))
       u21=1.d0-u**2
       u214=u21**4
       u2141=1.d0-u214
-      fintrbu=4.d0*u*u21*sqrt(u214*u2141/
-     $     ((u2141+a1*u214)*(u2141+a2*u214)))
+      f=4.d0*u*u21*sqrt(abs(u214*u2141/
+     $     ((u2141+a1*u214)*(u2141+a2*u214))))
 c      real*8 u2,u212
 c      u2=u**2
 c      u212=(1.d0-u2)**2
@@ -309,7 +292,7 @@ c      real*8 fx,fy,fu,fxx,fyy,fxy
       u=xx1-yy1
       v=2.d0*xy1
       a=hypot(u,v)
-      if(a .eq. 0.d0)then
+      if(a == 0.d0)then
         c2=1.d0
         s2=0.d0
       else
@@ -354,7 +337,7 @@ c      endif
       real*8 ,intent(inout)::  trans(4,5),cod(6),beam(42)
       real*8 trs(6,6)
       logical*4 ,intent(in):: coup
-      if(al .eq. 0.d0)then
+      if(al == 0.d0)then
         return
       endif
       call twspace(trs,cod,al,beam,l)
@@ -441,7 +424,7 @@ c        fx=az*dble(bb)
 c        fy=az*dimag(bb)
 c        dg=-(z(i)-zc)/sigzsq*az*
 c     $       twspu(dx1,dy1,sigx,sigy,4.d-2,1.d-4)
-c        if(l .lt. 10 .and. i .eq. 1)then
+c        if(l .lt. 10 .and. i == 1)then
 c          write(*,*)l,fx,fxx*dx1,fy,fyy*dy1
 c        endif
         fx=-az*fx
@@ -486,9 +469,9 @@ c        endif
       a=.5d0*x*ax
       b=.5d0*y*ay
       r=sigy/sigx
-      if(r .eq. 1.d0)then
+      if(r == 1.d0)then
         u=2.d0*(a+b)
-        twspu=merge(0.d0,gamma0log(u),u .eq. 0.d0)
+        twspu=merge(0.d0,gamma0log(u),u == 0.d0)
         return
       endif
       twspu=2.d0*(a+b/r)
@@ -557,7 +540,7 @@ c      use tmacro, only:l_track
       real*8 ,intent(out):: fx,fy,fu,fxx,fyy,fxy
       real*8 ,pointer,save::u(:,:,:),uxx(:,:,:),uyy(:,:,:),uxxyy(:,:,:),
      $     urr(:,:,:),uxxrr(:,:,:),uyyrr(:,:,:),uxxyyrr(:,:,:)     
-      if(iu .eq. 0)then
+      if(iu == 0)then
         iu=ktaloc(8*m)
         call c_f_pointer(c_loc(rlist(iu)),u,[nx+1,ny+1,nr+1])
         call c_f_pointer(c_loc(rlist(iu+m)),uxx,[nx+1,ny+1,nr+1])
@@ -787,7 +770,7 @@ c      write(*,*)'twspfu ',x,y,sigx,sigy
       use tfstk
       use ffs
       implicit none
-      v=wspac .and. (ifsize .eq. 0 .or. modesize .ne. 6)
+      v=wspac .and. (ifsize == 0 .or. modesize /= 6)
       if(v)then
         write(*,*)'WSPAC without beam matrix!  ',
      $       'You need EMIT with CODPLOT.'

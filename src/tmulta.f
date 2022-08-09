@@ -246,6 +246,7 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
       use tmacro
       use multa
       use temw,only:tmulbs
+      use chg,only:tchge
       use kradlib, only:tradke      
       implicit none
       integer*4 ndivmax
@@ -271,7 +272,7 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
         call gkninit
       endif
       call tchge(trans,cod,beam,srot,
-     $     dx,dy,theta,dtheta,dchi2,alg,phig,.true.)
+     $     dx,dy,0.d0,theta,dtheta,dchi2,alg,phig,.true.)
       if(dtheta .ne. 0.d0)then
         dphix=      phi*sin(.5d0*dtheta)**2
         dphiy= .5d0*phi*sin(dtheta)
@@ -343,12 +344,12 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
           endif
           call tbende(trans,cod,beam,srot,aln*.5d0,phibn*.5d0,phin*.5d0,
      $         psi1n,0.d0,apsi1,0.d0,ak1n*.5d0,
-     $         0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,
+     $         0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,
      1         fb1,fb2,mfr,fringe,eps0,enarad,.false.,.false.,l)
         else
           call tbende(trans,cod,beam,srot,aln,phibn,phin,
      $         0.d0,0.d0,0.d0,0.d0,ak1n,
-     $         0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,
+     $         0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,
      1         0.d0,0.d0,0,.false.,eps0,enarad,.false.,.false.,l)
         endif
         cx1=dcmplx(cod(1),cod(3))
@@ -412,13 +413,13 @@ c        write(*,*)'tmultae ',dble(csr*cx1)/r,dble(csl),nmmin
       endif
       call tbende(trans,cod,beam,srot,aln*.5d0,phibn*.5d0,phin*.5d0,
      $     0.d0,psi2n,0.d0,apsi2,ak1n*.5d0,
-     $     0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,
+     $     0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,
      1     fb1,fb2,mfr,fringe,eps0,enarad,.false.,.false.,l)
       if(dtheta .ne. 0.d0)then
         cod(2)=cod(2)+dphix
         cod(4)=cod(4)+dphiy
       endif
       call tchge(trans,cod,beam,srot,
-     $     dx,dy,theta,dtheta,dchi2,alg-al,phig-phi,.false.)
+     $     dx,dy,0.d0,theta,dtheta,dchi2,alg-al,phig-phi,.false.)
       return
       end

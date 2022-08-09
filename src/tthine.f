@@ -4,6 +4,7 @@
       use tmacro
       use temw,only:bsir0,tsetr0,tmulbs
       use multa, only:fact
+      use chg,only:tchge
       implicit none
       integer*4 kord,nord
       real*8 ,intent(in):: al,ak,dx,dy,theta
@@ -19,7 +20,7 @@
         return
       endif
       call tchge(trans,cod,beam,srot,
-     $     dx,dy,theta,0.d0,0.d0,0.d0,0.d0,.true.)
+     $     dx,dy,0.d0,theta,0.d0,0.d0,0.d0,0.d0,.true.)
       krad=enarad .and. al .ne. 0.d0
       if(krad)then
         call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
@@ -99,6 +100,6 @@ c        endif
       endif
       bradprev=0.d0
       call tchge(trans,cod,beam,srot,
-     $     dx,dy,theta,0.d0,0.d0,0.d0,0.d0,.false.)
+     $     dx,dy,0.d0,theta,0.d0,0.d0,0.d0,0.d0,.false.)
       return
       end
