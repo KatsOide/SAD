@@ -1,7 +1,6 @@
       subroutine tffscalc(kdp,df,iqcol,lfp,
      $     nqcola,nqcola1,ibegin,
-     $     r,rp,rstab,nstab,residual1,
-     $     zcal,wcal,parallel,lout,error)
+     $     r,residual1,zcal,wcal,parallel,lout,error)
       use tfstk
       use maccode
       use ffs, only:ndim,nlat,flv,maxcond,ffs_bound,nvevx,nelvx,
@@ -22,13 +21,14 @@ c      include 'DEBUG.inc'
       type (sad_descriptor) kx
       type (ffs_bound) fbound,ibound
       integer*4 ,intent(out):: ibegin,iqcol(maxcond),lfp(2,maxcond),nqcola1,nqcola,kdp(maxcond)
-      integer*4 i1,i2,i3,i,ii,j,iter,kt,iq,l,maxf,
-     $     ie,ie1,iv,nstab,lout,irtc
-      real*8 ,intent(out):: df(maxcond),r,rp,residual1(-ndimmax:ndimmax)
+      integer*4 i1,i2,i3,i,ii,j,iter,kt,iq,l,maxf,ie,ie1,iv,lout,irtc
+      type (ffs_res) ,intent(out):: r,residual1(-ndimmax:ndimmax)
+      real*8 ,intent(out):: df(maxcond)
       logical*4 ,intent(in):: parallel
-      logical*4 ,intent(out):: error,zcal,wcal
+      logical*4 ,intent(inout):: wcal
+      logical*4 ,intent(out):: error,zcal
       real*8 anux0,anuy0,anux0h,anuy0h,anuxi,anuyi,anuxih,anuyih,
-     $     rw,drw,rstab,wi,anusumi,anusum0,anudiffi,anudiff0
+     $     rw,drw,wi,anusumi,anusum0,anudiffi,anudiff0
       logical*4 fam,beg,zerores
       integer*4 irw,isw,ipr,ifb,ife,idir,jjfam(-nfam:nfam),ifpe,ntfun
       integer*4, external :: waitpid,itfdownlevel,itfuplevel,itgetfpe
@@ -59,7 +59,7 @@ c      call tfmemcheckprint('tffscalc-before-prolog',.true.,irtc)
       kx=tfeeval(dfromk(ktfsymbol+iprolog),.true.,irtc)
       l=itfdownlevel()
       if(irtc /= 0)then
-        if(irtc .gt. 0)then
+        if(irtc > 0)then
           if(ierrorprint /= 0)then
             call tfaddmessage(' ',0,lfno)
           endif
@@ -82,8 +82,7 @@ c      call tfmemcheckprint('tffscalc-before-prolog',.true.,irtc)
       ntfun=merge(ntwissfun,mfitdetr,orbitcal .or. calc6d)
       beg=ibegin .gt. fbound%lb
       if(beg)then
-        twiss(ibegin,0,1:ntfun)
-     $       =utwiss(1:ntfun,0,itwissp(ibegin))
+        twiss(ibegin,0,1:ntfun)=utwiss(1:ntfun,0,itwissp(ibegin))
         fbound%fb=0.d0
       else
         call twmov(1,twiss,nlat,ndim,.true.)
@@ -273,8 +272,8 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
               if(i .gt. 0 .and. i .le. nfr .or.
      $             kfam(i) /= 0 .and. jfam(i) .ge. 0)then
                 jb=iutm+(i+nfam)*4
-                optstat(i)%stabx=ilist(1,jb+1)
-                optstat(i)%staby=ilist(1,jb+2)
+                optstat(i)%stabx=ilist(1,jb+1) /= 0
+                optstat(i)%staby=ilist(1,jb+2) /= 0
                 optstat(i)%tracex=rlist(jb+3)
                 optstat(i)%tracey=rlist(jb+4)
               endif
@@ -284,8 +283,8 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
               if(i .gt. 0 .and. i .le. nfr .or.
      $             kfam(i) /= 0 .and. jfam(i) .ge. 0)then
                 jb=iutm+(i+nfam)*4
-                ilist(1,jb+1)=optstat(i)%stabx
-                ilist(1,jb+2)=optstat(i)%staby
+                ilist(1,jb+1)=merge(1,0,optstat(i)%stabx)
+                ilist(1,jb+2)=merge(1,0,optstat(i)%staby)
                 rlist(jb+3)=optstat(i)%tracex
                 rlist(jb+4)=optstat(i)%tracey
               endif
@@ -370,7 +369,7 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
      1     flv%ifitp,flv%kfitp,kdp,nqcola,iqcol,maxf,wcal)
       wcal=.false.
       rw=0.d0
-      residual1(nfam1:nfam)=0.d0
+      residual1(nfam1:nfam)=ffs_res(0.d0,0)
       wsum=0.d0
       do i=1,nqcola
         if(kdp(i) /= 0)then
@@ -386,35 +385,25 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
         if(df(i) /= 0.d0)then
           drw=min(1.d50,max(1.d-50,abs(df(i))))**wexponent
           rw=rw+drw
-          residual1(kdp(i))=residual1(kdp(i))+drw
+          residual1(kdp(i))%r=residual1(kdp(i))%r+drw
         endif
       enddo
-      r=merge(wsum*(max(rw,1.d-50)/wsum)**(2.d0/wexponent),
-     $     0.d0,rw .gt. 0.d0)
-      rp=r
-      nstab=0
+      r=ffs_res(merge(wsum*(max(rw,1.d-50)/wsum)**(2.d0/wexponent),
+     $     0.d0,rw .gt. 0.d0),0)
       if(cell)then
-        if(rstab == 0.d0)then
-          rstab=10.d0
-          do while(rstab .lt. r)
-            rstab=rstab*10.d0
-          enddo
-        endif
         cellstab=.true.
         zerores=.true.
         do i=nfam1,nfam
-          if(residual1(i) /= 0.d0)then
+          if(residual1(i)%r /= 0.d0)then
             zerores=.false.
             if(.not. optstat(i)%stabx)then
-              nstab=nstab+1
-              residual1(i)=residual1(i)+rstab
-              r=r+rstab
+              r%nstab=r%nstab+1
+              residual1(i)%nstab=residual1(i)%nstab+1
               cellstab=.false.
             endif
             if(.not. optstat(i)%staby)then
-              nstab=nstab+1
-              residual1(i)=residual1(i)+rstab
-              r=r+rstab
+              r%nstab=r%nstab+1
+              residual1(i)%nstab=residual1(i)%nstab+1
               cellstab=.false.
             endif
           endif
@@ -428,14 +417,14 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
       else
         do i=nfam1,nfam
           if(.not. optstat(i)%stabx)then
-            nstab=nstab+2
-            residual1(i)=residual1(i)+20.d0
+            r%nstab=r%nstab+2
+            residual1(i)%nstab=residual1(i)%nstab+2
           endif
         enddo
       endif
-      rlist(imr)=r
-      rlist(inr)=rp
-      rlist(isl)=dble(nstab)
+      rlist(imr)=res2r(r)
+      rlist(inr)=r%r
+      rlist(isl)=dble(r%nstab)
       ifpe=itgetfpe()
       call tclrfpe
       l=itfuplevel()
@@ -456,14 +445,13 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       return
       end associate
       end
-
-      subroutine twfit(kfit,
-     1     ifitp,kfitp,kdp,nqcola,iqcol,maxf,wcal)
+      
+      subroutine twfit(kfit,ifitp,kfitp,kdp,nqcola,iqcol,maxf,wcal)
       use tfstk
       use ffs, only:emx,emy,dpmax,coumin,emminv
       use ffs_pointer
       use ffs_fit
-      use ffs_flag, only:cell
+c      use ffs_flag, only:cell
       use tffitcode
       use eeval
       implicit none
@@ -551,10 +539,10 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
           case default
             wfit(i)=1.d0
           end select
-          if(cell .and.
-     $         kfitp(i) .gt. nfc0 .and. kfitp(i) .le. nfc0+4)then
-            wfit(i)=wfit(i)*0.7d0
-          endif
+c          if(cell .and.
+c     $         kfitp(i) .gt. nfc0 .and. kfitp(i) .le. nfc0+4)then
+c            wfit(i)=wfit(i)*0.7d0
+c          endif
         enddo
       endif
       do iq=1,nqcola
@@ -569,8 +557,7 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
           ilist(1,ifvloc)=len_trim(name)
           call tfpadstr(nlist(k),ifvfun+1,len_trim(nlist(k)))
           ilist(1,ifvfun)=len_trim(nlist(k))
-          klid%rbody(1)=merge(dble(iuid(idp)),dble(kfam(idp)),
-     $         inicond)
+          klid%rbody(1)=merge(dble(iuid(idp)),dble(kfam(idp)),inicond)
           klid%rbody(2)=dp(idp)
           klv%rbody(4)=wfit(i)
           call tclrfpe

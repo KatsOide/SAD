@@ -1301,12 +1301,19 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
         real*8 tracex,tracey,tracez
         logical*4 stabx,staby,stabz,over
       end type
+      type ffs_res
+      sequence
+      real*8 r
+      integer*4 nstab
+      end type
+
       integer*4 , parameter :: ndimmax=500
       type (ffs_stat) optstat(-ndimmax:ndimmax)
+      type (ffs_res) residual(-ndimmax:ndimmax)
       integer*4 iuid(-ndimmax:ndimmax),
      $     jfam(-ndimmax:ndimmax),kfam(-ndimmax:ndimmax)
       real*8 dp(-ndimmax:ndimmax),scale(mfit1),
-     $     dfam(4,-ndimmax:ndimmax),residual(-ndimmax:ndimmax),
+     $     dfam(4,-ndimmax:ndimmax),
      $     uini(ntwissfun,-ndimmax:ndimmax),wfit(maxcond),
      $     wiq(maxcond)
       logical*4 fitflg,geomet,inicond,chgini
@@ -1332,6 +1339,30 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
      $     'DEX     ','DEPX    ','DEY     ','DEPY    ',
      $     'DDX     ','DDPX    ','DDY     ','DDPY    ',
      $     'PDEX    ','PDEPX   ','PDEY    ','PDEPY   '/)
+
+      contains
+      logical*4 function resle(r1,r2,tol) result(f)
+      type (ffs_res) ,intent(in):: r1,r2
+      real*8 ,intent(in),optional::tol
+      if(present(tol))then
+        f=r1%nstab < r2%nstab .or. r1%nstab == r2%nstab .and. r1%r <= r2%r/tol
+      else
+        f=r1%nstab < r2%nstab .or. r1%nstab == r2%nstab .and. r1%r <= r2%r
+      endif
+      return
+      end function
+
+      real*8 function res2r(r1) result(f)
+      type (ffs_res),intent(in):: r1
+      real*8 rb
+      rb=10.d0
+      do while (rb < r1%r)
+        rb=rb*10.d0
+      enddo
+      f=rb*r1%nstab+r1%r
+      return
+      end function
+
       end module
 
       module ffs_wake

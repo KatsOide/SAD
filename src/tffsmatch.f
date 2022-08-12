@@ -18,24 +18,26 @@ c      include 'DEBUG.inc'
       real*8 , parameter :: flim1=-4.d0,flim2=-3.d0,aimp1=-1.8d0,
      $     aimp2=-.8d0,badc1=-3.5d0,badc2=-2.5d0,amedc1=-2.3d0,
      $     amedc2=-1.3d0,alit=0.75d0,wlmin=0.009d0,eps=1.d-5,
-     $     eps1=1.d-8,rtol=1.05d0,rtol1=1.05d0,tstol=1.d-6
+     $     eps1=1.d-8,rtol=1.05d0,rtol1=1.05d0,tstol=1.d-6,amtol=1.d-9
       real*8, parameter :: aloadmax=2.d4
       integer*4 ,intent(in):: nparallel,lfno
       integer*4 ,intent(out):: irtc
-      integer*4 ibegin,nqumax,nqcol0,nqcol00,
-     $     nqcola1,nqcol1a1,nqcola2,nqcol1a2,lout
+      integer*4 ibegin,nqumax,nqcol0,nqcol00,nqcola1,nqcol1a1,nqcola2,nqcol1a2,lout
       integer*4 ,allocatable,dimension(:)::kdpa1,kdpa2,iqcol0,iqcola1,iqcola2
-      integer*4 nretry,nstab,nstaba1
-      real*8 ,intent(out):: df(maxcond),r,dp0
+      integer*4 nretry
+      real*8 ,intent(out):: df(maxcond),dp0
+      type (ffs_res) ,intent(out):: r
+      type (ffs_res),allocatable::residuala1(:)
+      type (ffs_res) ra1,r0,r00
       real*8 ,allocatable,dimension(:)::dval,df0,df1,df2,
-     $     ddf1,ddf2,residuala1,bestval,wvar,wlimit
+     $     ddf1,ddf2,bestval,wvar,wlimit
       integer*4 ,allocatable,dimension(:,:)::lfpa1,lfpa2
       logical*4 ,allocatable,dimension(:)::free
       logical*4 zcal,error,error2,limited1,wcal1,zcal1
       integer*4 iter,ii,j,kc,nvara, i,ip,ipr,istep,npr(nparallel)
-      real*8 v00,rl,fuzz,a,b,x,crate,aimprv,fact,r0,r00,ra,alate,
-     $     smallf,badcnv,amedcv,rstab,vl1,vl2,aitm1,aitm2,
-     $     dg,f1,f2,g1,g2,ra1,rpa1,rstaba1,valvar0,rp,rp0,dv,vl,dvkc
+      real*8 v00,rl,fuzz,a,b,x,crate,aimprv,fact,ra,alate,
+     $     smallf,badcnv,amedcv,vl1,vl2,aitm1,aitm2,
+     $     dg,f1,f2,g1,g2,valvar0,rp0,dv,vl,dvkc
       real*8 twisss(ntwissfun)
       real*8 , pointer :: qu(:,:),quw(:,:)
       logical*4 chgmod,newton,imprv,limited,over,wcal,
@@ -67,8 +69,8 @@ c     begin initialize for preventing compiler warning
       nvara=0
       aitm1=0
       aitm2=0
-      r0=0.d0
-      r00=0.d0
+      r0=ffs_res(0.d0,0)
+      r00=r0
       ra=0.d0
       aimprv=0.d0
       crate=1.d0
@@ -85,7 +87,6 @@ c     end   initialize for preventing compiler warning
       irtc=0
       nqcol=0
       nqumax=0
-      wcal=.true.
       wexponent=max(.1d0,min(4.d0,rlist(iexponent)))
       offmw=rlist(inumw)
       rl=abs(rlist(iconvergence))*max(nfcol,1)
@@ -94,7 +95,7 @@ c     end   initialize for preventing compiler warning
          call twmov(1,twisss,1,0,.true.)
       endif
       ibegin=1
-      rstab=0.d0
+      chgmod=.true.
       if(fitflg)then
         allocate(kdpa1(maxcond),kdpa2(maxcond),iqcol0(maxcond),iqcola1(maxcond),
      $       iqcola2(maxcond),lfpa1(2,maxcond),lfpa2(2,maxcond),bestval(flv%nvar),
@@ -103,7 +104,7 @@ c     end   initialize for preventing compiler warning
         fact=1.d0
         iter=0
         newton=.true.
-        chgmod=.true.
+        imprv=.true.
         bestval(1:nvar)=nvevx(1:nvar)%valvar
         free=.false.
         free(nvevx(1:nvar)%ivarele)=.true.
@@ -122,10 +123,11 @@ c     end   initialize for preventing compiler warning
         do 200: do kkk=1,1
           call tftclupdate(int(rlist(intffs)))
           dp0=rlist(latt(1)+mfitddp)
+c          write(*,'(a,i5,3l2,i5,1p8g12.4)')'tffsmatch ',iter,chgmod,newton,wcal,r%nstab,r%r
+          wcal=chgmod
           call tffscalc(flv%kdp,df,flv%iqcol,flv%lfp,
      $         nqcol,nqcol1,ibegin,
-     $         r,rp,rstab,nstab,residual,
-     $         zcal,wcal,parallel,lout,error)
+     $         r,residual,zcal,wcal,parallel,lout,error)
           if(error)then
             if(irtc == 20001)then
               exit do9000
@@ -139,7 +141,7 @@ c     end   initialize for preventing compiler warning
               exit do200
             endif
           endif
-          convgo=r <= rl
+          convgo=res2r(r) <= rl
           fitflg=fitflg .and. nqcol > 0
           if(calexp)then
             sexp='  CALEXP'
@@ -147,7 +149,7 @@ c     end   initialize for preventing compiler warning
             sexp='  NOCALEXP'
           endif
           if(convgo)then
-            write(lfno,9501)' Matched. (',r,')',
+            write(lfno,9501)' Matched. (',res2r(r),')',
      $           dpmax,dp0,wexponent,ch,offmw,sexp
  9501       format(a,1pG11.4,a,
      $           ' DP =',0pf8.5,'  DP0 =',f8.5,
@@ -159,7 +161,7 @@ c     end   initialize for preventing compiler warning
             endif
             exit do9000
           elseif(.not. fitflg)then
-            write(lfno,9501)' Residual =',r,' ',
+            write(lfno,9501)' Residual =',res2r(r),' ',
      $           dpmax,dp0,wexponent,ch,offmw,sexp
             exit do9000
           else
@@ -172,21 +174,21 @@ c            chgini=.true.
               if(chgmod)then
                 fact=min(1.d0,fact*2.d0)
                 f1=0.d0
-                g1=rp
+                g1=r%r
                 chgmod=.false.
                 aimprv=0.d0
                 crate=1.d0
                 r0=r
-                rp0=rp
+                rp0=r%r
                 r00=r0
-                ra=r0*1.000000001d0
+                ra=r0%r*(1.d0+amtol)
                 if(cell)then
                   call twmov(1,twisss,1,0,.true.)
                 endif
               else
-                imprv=r .lt. r0
+                imprv=resle(r,r0)
                 if(imprv)then
-                  if(r .lt. r00/rtol1)then
+                  if(resle(r,r00,rtol1))then
                     lout=lfno
                     if(outt)then
                       write(lfno,*)
@@ -194,28 +196,28 @@ c            chgini=.true.
                       outt=.false.
                     endif
                     if(newton)then
-                      write(lfno,9701)iter,r,'  (NEWTON)  ',fact,nvara
+                      write(lfno,9701)iter,res2r(r),'  (NEWTON)  ',fact,nvara
 c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
  9701                 format(i8,3x,1pG11.4,a,1pG11.4,i7)
                     else
-                      write(lfno,9701)iter,r,'  (DESCEND) ',fact,nvara
+                      write(lfno,9701)iter,res2r(r),'  (DESCEND) ',fact,nvara
                     endif
                     r00=r
                   endif
-                  aimprv=fuzz(log10((ra-r)/ra),aimp1,aimp2)
-                  crate=(r0-r)/r0
+                  aimprv=fuzz(log10((ra-r%r)/ra),aimp1,aimp2)
+                  crate=(r0%r-r%r)/r0%r
                   if(newton)then
                     fact=min(1.d0,fact*4.d0)
                   else
                     fact=min(1.d0,fact*2.d0)
                   endif
                   f1=0.d0
-                  g1=rp
+                  g1=r%r
                   bestval(1:nvar)=nvevx(1:nvar)%valvar
                   if(cell)then
                     call twmov(1,twisss,1,0,.true.)
                   endif
-                  rp0=rp
+                  rp0=r%r
                   r0=r
                 else
                   aimprv=0.d0
@@ -232,8 +234,7 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                     chgmod=.true.
                   elseif(aimprv > .5d0)then
                     chgmod=.true.
-                  elseif(max(smallf,badcnv,min(alate,amedcv))
-     $                   > .5d0)then
+                  elseif(max(smallf,badcnv,min(alate,amedcv)) > .5d0)then
                     chgmod=.true.
                     if(nretry > 0)then
                       nretry=nretry-1
@@ -259,7 +260,7 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
                     f2=f1
                     g2=g1
                     f1=fact
-                    g1=rp
+                    g1=r%r
                     fact=tffsfmin(f1,f2,g1,g2,rp0,dg)
                   else
                     f1=fact
@@ -300,10 +301,10 @@ c     $                     2.d0*(rp-rp0)/dg/fact-1.d0
               enddo
 c              write(*,'(a,2l2,2i5)')'tffsmatch ',nderiv,cell,nstab,nvar*nfam*nlat
               nderiv=nderiv .or.
-     $             cell .and. nstab > 0
+     $             cell .and. r%nstab > 0
 c     $             .and. dble(nvar*nfam*nlat) .lt. aloadmax
               npa=min(nvar,nparallel)
-              chgini=(nstab == 0) .or. nderiv
+              chgini=(r%nstab == 0) .or. nderiv
               if(nderiv)then
                 call tffssetupqu(ifqu,ifquw,nqumax,nqcol,nvar,lfno)
                 ipr=-1
@@ -338,14 +339,12 @@ c     $             .and. dble(nvar*nfam*nlat) .lt. aloadmax
                   call tfsetv(nvar)
                   call tffscalc(kdpa1,df1,iqcola1,lfpa1,
      $                 nqcola1,nqcol1a1,ibegin,
-     $                 ra1,rpa1,rstaba1,nstaba1,residuala1,
-     $                 zcal1,wcal1,.false.,lfno,error)
+     $                 ra1,residuala1,zcal1,wcal1,.false.,lfno,error)
                   nvevx(kc)%valvar=valvar0-dvkc
                   call tfsetv(nvar)
                   call tffscalc(kdpa2,df2,iqcola2,lfpa2,
      $                 nqcola2,nqcol1a2,ibegin,
-     $                 ra1,rpa1,rstaba1,nstaba1,residuala1,
-     $                 zcal1,wcal1,.false.,lfno,error2)
+     $                 ra1,residuala1,zcal1,wcal1,.false.,lfno,error2)
                   nvevx(kc)%valvar=valvar0
                   if(error .or. error2)then
                     ddf1(1:nqcol)=0.d0
@@ -430,8 +429,7 @@ c     enddo
                       enddo
                     endif
                   enddo
-                  call tffswait(ipr,npa,npr,i00,0,
-     $                 'tffsmatch-EVDeriv',irtc)
+                  call tffswait(ipr,npa,npr,i00,0,'tffsmatch-EVDeriv',irtc)
                 endif
               endif
               if(irtc /= 0)then
@@ -446,8 +444,7 @@ c     enddo
  1082       if(newton)then
               call c_f_pointer(c_loc(rlist(ifqu)),qu,[nqcol,nvar])
               call c_f_pointer(c_loc(rlist(ifquw)),quw,[nqcol,nvar])
-              call tfsolv(qu,quw,
-     $             df,dval,wlimit,nqcol,nvar,flv%iqcol,
+              call tfsolv(qu,quw,df,dval,wlimit,nqcol,nvar,flv%iqcol,
      $             flv%kfitp,flv%mfitp,dg,wexponent,tstol/fact)
               if(wexponent /= 2.d0)then
                 dg=dg*(rp0/wsum)**(1.d0-wexponent/2.d0)
