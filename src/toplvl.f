@@ -685,6 +685,98 @@ c          enddo
       return
       end function
 
+      subroutine tffswait(ipr,npa,npr,kash,nwait,tag,irtc)
+      implicit none
+      integer*4 ,intent(out):: irtc,ipr
+      integer*4 ,intent(in):: npa,nwait
+      integer*4 ,intent(inout):: npr(npa)
+      integer*4 ist,i,j,waitpid,waitpid_nohang,iwait,lw
+      integer*8 ,intent(in):: kash
+      character*(*) ,intent(in):: tag
+      if(ipr == 0)then
+        if(kash /= 0)then
+          call tfreeshared(kash,-1)
+        endif
+        call tfresetsharedmap()
+        call exit_without_hooks(0)
+      elseif(ipr > 0)then
+        iwait=-1
+        if(nwait /= 0)then
+          lw=600*(1000000/nwait)
+        endif
+        irtc=0
+        do i=1,npa-1
+          dowait: do
+            if(nwait == 0)then
+              ipr=waitpid(-1,ist)
+            else
+              ipr=waitpid_nohang(-1,ist)
+              if(ipr == 0)then
+                call tpause(nwait)
+                if(iwait >= 0)then
+                  iwait=iwait+1
+                  if(iwait > lw)then
+                    do j=1,npa-1
+                      if(npr(j) /= 0)then
+                        call tkill(npr(j))
+                        write(*,*)'???-'//tag//' timeout :',j
+                      endif
+                    enddo
+                    irtc=20004
+                    return
+                  endif
+                endif
+                cycle dowait
+              endif
+            endif
+            do j=1,npa-1
+              if(npr(j) == ipr)then
+                iwait=0
+                npr(j)=0
+                exit dowait
+              endif
+            enddo
+            if(ipr /= -1)then
+              write(*,*)'???-'//tag//' Unexpected process:',ipr
+            endif
+          enddo dowait
+          if(ist /= 0)then
+            irtc=20003
+          endif
+        enddo 
+      endif
+      return
+      end subroutine
+
+      integer*8 function itmmapp(n)
+      use tfmem
+      use tfstk
+      use tmacro
+      implicit none
+      integer*4 ,intent(in):: n
+      integer*4 irtc
+      if(nparallel > 1)then
+        irtc=1
+        itmmapp=ktfallocshared(n)
+      else
+        itmmapp=ktaloc(n)
+      endif
+      return
+      end function
+
+      subroutine tmunmapp(i)
+      use tfstk
+      use tmacro
+      implicit none
+      integer*8 ,intent(in):: i
+      if(nparallel > 1)then
+        call tfreeshared(i)
+      else
+        call tfree(i)
+      endif
+      return
+      end subroutine
+
       end module
 
       module tfrbuf
@@ -797,7 +889,7 @@ c
         call tflocal1(ibuf(lfn)-1)
         ibuf(lfn)=0
       case (modeshared)
-        call tfreeshared(ibuf(lfn),irtc)
+        call tfreeshared(ibuf(lfn),0)
         ibuf(lfn)=0
       case default
         call unmapfile(klist(ibuf(lfn)),int8(lenbuf(lfn)))

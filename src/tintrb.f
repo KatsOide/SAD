@@ -47,7 +47,6 @@ c      parameter (eeuler=7.98221278918726d0,a=5.5077d0,b=1.1274d0)
      $     aez0,aexz,aeyz,f1,f2,f3,bn,bmax,bmin,ci,pvol,vol1,
      $     transsp(6,6)
       real*8 trans1(6,6),trans2(6,6)
-      complex*16 ceig(3)
       logical*4 ,intent(in):: optics
       real*8, parameter :: abserr=3.d-17
       real*8 ,external::fintrbu

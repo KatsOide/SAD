@@ -40,7 +40,7 @@ FFS;
 
      ReplaceDraw[""]="";
      ReplaceDraw[s_String]:=Module[{p=StringPosition[s,"\n<",1],p1},
-       If[p=={},
+       If[p==={},
          ReplaceIndent[s],
          p=p[[1,1]]+2;
          p1=StringPosition[s[p,-1],"\n",1];
@@ -56,7 +56,7 @@ FFS;
      ReplaceLaTeX[""]="";
      ReplaceLaTeX[s_String]:=Module[{p=StringPosition[s,"::<",1],
        p1,out,equ,pe,p2,p0,lx},
-       If[p=={},
+       If[p==={},
          ReplaceDraw[s],
          p=p[[1,2]]+1;
          p1=StringPosition[s[p,-1],">::",1];

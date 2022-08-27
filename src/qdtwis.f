@@ -436,13 +436,12 @@ c      return
       end
 
       subroutine qddtwiss(k,k1,l,trans,dtrans,dcod,idp,
-     $     ctrans,iclast,trpt)
+     $     ctrans,iclast,trpt1)
       use mackw
       use tfstk
       use ffs_pointer
       use ffs_fit, only:nut
       use tffitcode
-      use ffs, only:ffs_bound
       use temw, only:tmultr45
       implicit none
       type (ffs_bound) fbound,fbound1
@@ -456,7 +455,7 @@ c      return
       real*8 trans2(4,5),trans3(4,5),trans1(4,5),transe(4,5),
      $     transe2(4,5),cod2(6),code(6),dcode(6),w
       logical*4 over
-      logical*4 ,intent(in):: trpt
+      logical*4 ,intent(in):: trpt1
 c      equivalence (trans2,trans2s)
       itwk=itwissp(k)
       itwk1=itwissp(k1)
@@ -494,7 +493,7 @@ c      equivalence (trans2,trans2s)
             call tftmatu(utwiss(1,idp,itwissp(ibe1)),
      $           utwiss(1,idp,itwl),
      $           0.d0,0.d0,
-     $           transe2,ibe1,l,.false.,trpt)
+     $           transe2,ibe1,l,.false.,trpt1)
             cod2(1:5)=utwiss(mfitdx:mfitdz, idp,itwk1)
             call qcod(1,fbound1,trans3,cod2,.true.,over)
             trans3(2,5)=trans3(2,5)-cod2(2)+code(2)
@@ -505,7 +504,7 @@ c      equivalence (trans2,trans2s)
             call tftmatu(utwiss(1,idp,itwk1),
      $           utwiss(1,idp,itwbe),
      $           0.d0,0.d0,
-     $           transe,k1,ibe,.false.,trpt)
+     $           transe,k1,ibe,.false.,trpt1)
             dcode(1)=
      $            transe(1,1)*dcod(1)+transe(1,2)*dcod(2)
      $           +transe(1,3)*dcod(3)+transe(1,4)*dcod(4)
@@ -532,7 +531,7 @@ c      equivalence (trans2,trans2s)
             call tftmatu(utwiss(1,idp,itwk1),
      $           utwiss(1,idp,itwl),
      $           0.d0,0.d0,
-     $           transe2,k1,l,.false.,trpt)
+     $           transe2,k1,l,.false.,trpt1)
           endif
           cod2(1:5)=utwiss(mfitdx:mfitdz, idp,itwl)
           trans2=tmultr45(transe,transe2)
@@ -553,7 +552,7 @@ c      trans2s(1:20)=(trans2s(1:20)-trans(1:20))/w
       call qgettru(utwiss(1:ntwissfun,idp,itwk),
      $     utwiss(1:ntwissfun,idp,itwk1),
      $     utwiss(3,idp,nut),utwiss(6,idp,nut),
-     $     trans1,k,k1,.true.,.true.,trpt)
+     $     trans1,k,k1,.true.,.true.,trpt1)
       dtrans=tmultr45(trans1,trans2)+dtrans
 c      transe=tmultr45(trans1,trans2)
 c      call tadd(transe,dtrans,dtrans,20)

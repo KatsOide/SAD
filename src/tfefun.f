@@ -1148,6 +1148,7 @@ c      call tfdebugprint(kx,': ',1)
       use tfmem
       use tfshare
       use tfcsi,only:lfno
+      use findr,only:tffindroot,tffit
       use mathfun
       use eexpr
       use funs

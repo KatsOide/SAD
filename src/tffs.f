@@ -453,7 +453,7 @@ c$$$susp;
         detr1=2.d0*(1.d0-detr)
         alambda=merge(detr1/(trr+sqrt(trr**2+2.d0*detr1)),
      $       detr1/(trr-sqrt(trr**2+2.d0*detr1)),
-     $       trr .ge. 0.d0)
+     $       trr >= 0.d0)
         sqrdet1=sqrt(1.d0+xyth-detr)
         rt1=(r1+alambda)*sqrdet1
         rt2=r2*sqrdet1
@@ -644,7 +644,7 @@ c$$$susp;
         real*8 , parameter :: arad=0.02d0
         real*8 , intent(in)::ak,bz,phi,eps
         real*8 aka,eps1
-        eps1=merge(1.d0,eps,eps .le. 0.d0)
+        eps1=merge(1.d0,eps,eps <= 0.d0)
         aka=(abs(phi)+hypot(ak,bz)*arad)/eps1
         ndivrad=merge(int(1.d0+h0/100.d0*aka*10.d0),
      $       int(1.d0+h0/100.d0*aka),trpt)
@@ -678,6 +678,7 @@ c$$$susp;
 
       module ffs_pointer
       use sad_main
+      use ffs
       implicit none
       real*8 , pointer, contiguous :: errk(:,:),couple(:)
       integer*8, pointer, dimension(:) :: kele2 
@@ -768,7 +769,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         implicit none
         integer*4 ,intent(in):: i
         idtypecx=merge(icNull,idtype(idcomp(elatt,i)),
-     $       i .le. 0 .or. i .ge. nlat)
+     $       i <= 0 .or. i .ge. nlat)
         return
         end function
 
@@ -823,6 +824,97 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
         cmp%ori=v > 0.d0
         return
         end subroutine
+
+        subroutine tffsbound(fbound)
+        use tfstk
+c        use ffs_pointer
+        use mackw
+        implicit none
+        type (ffs_bound) ,intent(out):: fbound
+        call tffsbound1(1,nlat,fbound)
+        return
+        end subroutine
+
+        subroutine tffsbound1(lb,le,fbound)
+        use tfstk
+c        use ffs_pointer
+        use mackw
+        implicit none
+        type (ffs_bound) ,intent(out):: fbound
+        integer*4 ,intent(in):: lb,le
+        integer*4 le1
+        real*8 xnlat,offset
+        xnlat=nlat
+        offset=tffsmarkoffset(lb)
+        if(offset /= 0.d0)then
+          offset=max(1.d0,min(xnlat,lb+offset))
+          fbound%lb=int(offset)
+          fbound%fb=offset-fbound%lb
+        else
+          fbound%lb=lb
+          fbound%fb=0.d0
+        endif
+        le1=le
+        if(le == nlat)then
+          if(idtypec(nlat-1) == icMARK)then
+            le1=le1-1
+          else
+            fbound%le=le1
+            fbound%fe=0.d0
+            return
+          endif
+        endif
+        offset=tffsmarkoffset(le1)
+        if(offset /= 0.d0)then
+          offset=max(1.d0,min(xnlat,le1+offset))
+          fbound%le=int(offset)
+          fbound%fe=offset-fbound%le
+        else
+          fbound%le=le1
+          fbound%fe=0.d0
+        endif
+        return
+        end subroutine
+
+        real*8 function tffselmoffset(l)
+        use tfstk
+        use ffs
+        use mackw
+        use tfcsi, only:icslfno
+        implicit none
+        integer*4 ,intent(in):: l
+        integer*4 lm,nm,lx,nmmax
+        parameter (nmmax=256)
+        real*8 offset,xp,xe
+        nm=0
+        xp=l
+        if(l /= nlat .and. kytbl(kwOFFSET,idtypec(l)) /= 0)then
+          xe=nlat
+          lm=l
+          do
+            offset=tffsmarkoffset(lm)
+            if(offset /= 0.d0)then
+              xp=offset+lm
+              if(xp >= 1.d0 .and. xp <= xe)then
+                lx=int(xp)
+                if(idtypec(lx) == icMARK)then
+                  nm=nm+1
+                  if(nm .lt. nmmax)then
+                    lm=lx
+                    cycle
+                  else
+                    call termes(icslfno(),
+     $                   '?Recursive OFFSET in',pnamec(l))
+                  endif
+                endif
+              endif
+            endif
+            exit
+          enddo
+        endif
+        tffselmoffset=xp
+        return
+        end function
 
         integer*4 function nextl(i)
         use tmacro, only:nlat
@@ -937,6 +1029,33 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
      $       i > 0),trpt)
         return
         end function
+
+       real*8 function tffsmarkoffset(lp)
+       use tfstk
+       use sad_main
+       use mackw
+       use tmacro, only:nlat
+       use ffs
+       implicit none
+       type (sad_comp), pointer :: cmp
+       integer*4 ,intent(in):: lp
+       integer*4 k
+       if(lp >= nlat)then
+         tffsmarkoffset=0.d0
+         return
+       endif
+       call compelc(lp,cmp)
+       k=kytbl(kwOFFSET,idtype(cmp%id))
+       if(k > 0)then
+         tffsmarkoffset=cmp%value(k)
+         if(tffsmarkoffset /= 0.d0)then
+           tffsmarkoffset=(tffsmarkoffset-.5d0)*direlc(lp)+.5d0
+         endif
+       else
+         tffsmarkoffset=0
+       endif
+       return
+       end function
 
       end module
 
@@ -1059,7 +1178,7 @@ c        call c_f_pointer(c_loc(ilist(1,ifklp)),klp,[nele])
             fb2=cmp%value(ky_F1_BEND)+cmp%value(ky_FB1_BEND)
             fb1=cmp%value(ky_F1_BEND)+cmp%value(ky_FB2_BEND)
           endif
-          if(cmp%value(ky_FRMD_BEND) .le. 0.d0)then
+          if(cmp%value(ky_FRMD_BEND) <= 0.d0)then
             if(cmp%value(ky_FRMD_BEND) /= -1.d0)then
               fb1=0.d0
             endif
@@ -1229,7 +1348,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
      $           merge(merge(.true.,
      $           hypot(cmp%value(ky_K0_MULT+n*2),
      $           cmp%value(ky_K0_MULT+n*2))/al*ampmaxm**(n+1)*aninv(n+1)
-     $           > eps,n .le. 2),.false.,
+     $           > eps,n <= 2),.false.,
      $           cmp%value(ky_K0_MULT+n*2) /= 0.d0
      $           .or. cmp%value(ky_SK0_MULT+n*2) /= 0.d0)
           enddo
@@ -1286,7 +1405,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
         integer*4 i
         do i=1,nlat-1
           call compelc(i,cmp)
-          cmp%update=cmp%nparam .le. 0
+          cmp%update=cmp%nparam <= 0
         enddo
         tparaed=.false.
         return
@@ -1754,7 +1873,7 @@ c     begin initialize for preventing compiler warning
               go to 9100
             endif
             if(tflistq(lpi%dbody(1),lpi1))then
-              if(lpi1%nl > 2 .or. lpi1%nl .le. 0)then
+              if(lpi1%nl > 2 .or. lpi1%nl <= 0)then
                 go to 9100
               endif
               if(.not. ktfstringq(lpi1%dbody(1),stri1))then
@@ -1782,8 +1901,8 @@ c     begin initialize for preventing compiler warning
             isp=isp+1
             itastk(1,isp)=itftypekey(icMULT,stri1%str,stri1%nch)
             itastk(2,isp)=itftypekey(icMULT,stri2%str,stri2%nch)
-            if(itastk(1,isp) .le. 0 .or. itastk(1,isp) > nc .or.
-     $           itastk(2,isp) .le. 0 .or. itastk(2,isp) > nc)then
+            if(itastk(1,isp) <= 0 .or. itastk(1,isp) > nc .or.
+     $           itastk(2,isp) <= 0 .or. itastk(2,isp) > nc)then
               irtc=itfmessage(99,"FFS::wrongkey",'""')
               go to 9000
             elseif(defk(itastk(1,isp),itastk(2,isp)))then
@@ -1871,7 +1990,7 @@ c     begin initialize for preventing compiler warning
             cmpd%updateseg=.false.
           endif
         endif
-        cmpd%update=cmpd%nparam .le. 0
+        cmpd%update=cmpd%nparam <= 0
         return
         end subroutine
 
@@ -1892,7 +2011,7 @@ c     begin initialize for preventing compiler warning
      $       k == ky_PROF_MULT)then
           cmpd%updateseg=.false.
         endif
-        cmpd%update=cmpd%nparam .le. 0
+        cmpd%update=cmpd%nparam <= 0
         return
         end subroutine
 
@@ -2716,21 +2835,6 @@ c         enddo
 
       end module temw
 
-      subroutine tffs
-      use tfstk
-      use tfcsi
-      implicit none
-      type (sad_descriptor) kx
-      integer*4 irtc
-      logical*4 err
-      call tffsa(1,lfni,kx,irtc)
-      if(irtc /= 0 .and. ierrorprint /= 0)then
-        call tfreseterror
-      endif
-      call tffssaveparams(-1,0,err)
-      return
-      end
-
       subroutine tffsinitparam
       use kyparam
       use tfstk
@@ -2744,51 +2848,51 @@ c         enddo
       real*8 rgetgl1
       j=idvalc(1)
       emx=rlist(j+ky_EMIX_MARK)
-      if(emx .le. 0.d0)then
+      if(emx <= 0.d0)then
         emx=rgetgl1('EMITX')
       else
         call rsetgl1('EMITX',emx)
       endif
       emy=rlist(j+ky_EMIY_MARK)
-      if(emy .le. 0.d0)then
+      if(emy <= 0.d0)then
         emy=rgetgl1('EMITY')
       else
         call rsetgl1('EMITY',emy)
       endif
       emz=rlist(j+ky_EMIZ_MARK)
-      if(emz .le. 0.d0)then
+      if(emz <= 0.d0)then
         emz=rgetgl1('EMITZ')
       else
         call rsetgl1('EMITZ',emz)
       endif
       sizedp=rlist(j+ky_SIGE_MARK)
-      if(sizedp .le. 0.d0)then
+      if(sizedp <= 0.d0)then
         sizedp=rgetgl1('SIGE')
       else
         call rsetgl1('SIGE',sizedp)
       endif
       sigzs=max(0.d0,rlist(j+ky_SIGZ_MARk))
-      if(sigzs .le. 0.d0)then
+      if(sigzs <= 0.d0)then
         sigzs=rgetgl1('SIGZ')
       else
         call rsetgl1('SIGZ',sigzs)
       endif
       dpmax=max(0.d0,rlist(j+ky_DP_MARk))
       kdp=kxsymbolz('DP',2,symddp)
-      if(dpmax .le. 1.d-30)then
+      if(dpmax <= 1.d-30)then
         dpmax=rfromd(symddp%value)
       endif
-      if(dpmax .le. 1.d-30)then
+      if(dpmax <= 1.d-30)then
         dpmax=0.01d0
       endif
       symddp%value=dfromr(dpmax)
-      if(rlist(latt(1)+ky_BX_MARK) .le. 0.d0)then
+      if(rlist(latt(1)+ky_BX_MARK) <= 0.d0)then
         rlist(latt(1)+ky_BX_MARK)=1.d0
       endif
-      if(rlist(latt(1)+ky_BY_MARK) .le. 0.d0)then
+      if(rlist(latt(1)+ky_BY_MARK) <= 0.d0)then
         rlist(latt(1)+ky_BY_MARK)=1.d0
       endif
-      if(rlist(latt(1)+ky_BZ_MARK) .le. 0.d0)then
+      if(rlist(latt(1)+ky_BZ_MARK) <= 0.d0)then
         rlist(latt(1)+ky_BZ_MARK)=1.d0
       endif
       return
@@ -2815,6 +2919,7 @@ c
       use ffs_pointer
       use tffitcode
       use sad_main
+c      use ffsa
       implicit none
       integer*4 ntwis
       marki=1
@@ -2961,70 +3066,6 @@ c      call tfree(ifibzl)
       call tfree(ifibzl)
       call tfree(ifgamm)
       l=itfdownlevel()
-      return
-      end
-
-      recursive subroutine tfffs(isp1,kx,irtc)
-      use tfstk
-      use ffs
-      use tffitcode
-      use tfcsi
-      use readbuf, only:trbopen,trbopenmap
-      use tfrbuf, only:modestring,trbassign,trbclose
-      use iso_c_binding
-      use ffsfile, only:lfnp
-      implicit none
-      type (sad_descriptor) kx
-      type (sad_string), pointer :: str
-      type (csiparam) sav
-      integer*4 outfl1,irtc,narg,lfn,isp1,itfmessage,itfmessagestr
-      character*10 strfromis
-      narg=isp-isp1
-      if(narg > 2)then
-        irtc=itfmessage(9,'General::narg','"1 or 2"')
-        return
-      endif
-      if(.not. ktfstringq(dtastk(isp1+1),str))then
-        irtc=itfmessage(9,'General::wrongtype','"String for #1"')
-        return
-      endif
-      call tftclupdate(7)
-      outfl1=outfl
-      if(narg == 2)then
-        if(ktfnonrealq(ktastk(isp)))then
-          irtc=itfmessage(9,'General::wrongtype',
-     $         '"File number for #2"')
-          return
-        endif
-        outfl=int(rtastk(isp))
-        if(outfl == -1)then
-          outfl=icslfno()
-        endif
-      else
-        outfl=0
-      endif
-      levele=levele+1
-      sav=savep
-      call trbopen(lfn,ktfaddr(ktastk(isp1+1)),
-     $     int8(modestring),str%nch)
-      if(lfn .le. 0)then
-        irtc=itfmessagestr(9,'FFS::lfn',str%str(1:str%nch))
-        kx%k=ktfoper+mtfnull
-      else
-        call trbassign(lfn)
-        ipoint=1
-        lrecl=0
-        call tffsa(lfnp+1,lfn,kx,irtc)
-        call trbclose(lfn)
-        call tclrfpe
-        savep=sav
-        call trbassign(lfni)
-        outfl=outfl1
-        if(irtc == 0 .and. iffserr /= 0)then
-          irtc=itfmessagestr(9,'FFS::error',strfromis(int(iffserr)))
-        endif
-      endif
-      call tfconnect(kx,irtc)
       return
       end
 

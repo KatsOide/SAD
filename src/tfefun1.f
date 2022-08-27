@@ -3,6 +3,7 @@
       use tfstk
       use tflinepcom
       use temw, only:tfnormalcoord,tfinitemip
+      use ffsa,only:tfffs
       implicit none
       type (sad_descriptor) kx,kxj,kispi,tfextractbeamline,
      $     tfsetelement,teunmapp

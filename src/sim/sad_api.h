@@ -124,7 +124,7 @@ extern void tfdeval_(integer4*, integer8*, integer8*,
 		     integer4*, logical4 *, integer4*, integer4*);
 extern void tflocal_(integer8*);
 extern void tflocal1_(integer8*);
-extern void tfmakerulestk_(integer8*, integer8*);
+extern void __tfstk_MOD_tfmakerulestk_dd(integer8*, integer8*);
 
 /* Extended Allocation API Prototypes */
 extern integer4 itfgetoptionstk(integer4, const char**);

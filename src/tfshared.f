@@ -118,6 +118,69 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       return
       end subroutine
 
+      subroutine tffswait(ipr,npa,npr,kash,nwait,tag,irtc)
+      implicit none
+      integer*4 ,intent(out):: irtc,ipr
+      integer*4 ,intent(in):: npa,nwait
+      integer*4 ,intent(inout):: npr(npa)
+      integer*4 ist,i,j,waitpid,waitpid_nohang,iwait,lw
+      integer*8 ,intent(in):: kash
+      character*(*) ,intent(in):: tag
+      if(ipr == 0)then
+        if(kash /= 0)then
+          call tfreeshared(kash,-1)
+        endif
+        call tfresetsharedmap()
+        call exit_without_hooks(0)
+      elseif(ipr > 0)then
+        iwait=-1
+        if(nwait /= 0)then
+          lw=600*(1000000/nwait)
+        endif
+        irtc=0
+        do i=1,npa-1
+          dowait: do
+            if(nwait == 0)then
+              ipr=waitpid(-1,ist)
+            else
+              ipr=waitpid_nohang(-1,ist)
+              if(ipr == 0)then
+                call tpause(nwait)
+                if(iwait >= 0)then
+                  iwait=iwait+1
+                  if(iwait > lw)then
+                    do j=1,npa-1
+                      if(npr(j) /= 0)then
+                        call tkill(npr(j))
+                        write(*,*)'???-'//tag//' timeout :',j
+                      endif
+                    enddo
+                    irtc=20004
+                    return
+                  endif
+                endif
+                cycle dowait
+              endif
+            endif
+            do j=1,npa-1
+              if(npr(j) == ipr)then
+                iwait=0
+                npr(j)=0
+                exit dowait
+              endif
+            enddo
+            if(ipr /= -1)then
+              write(*,*)'???-'//tag//' Unexpected process:',ipr
+            endif
+          enddo dowait
+          if(ist /= 0)then
+            irtc=20003
+          endif
+        enddo 
+      endif
+      return
+      end subroutine
+
       end module
 
       subroutine tfsavesharedmap()

@@ -2,6 +2,7 @@
       use tfstk
       use ffs
       use tffitcode
+      use ffsa,only:tfffs
       use readbuf, only:trbopenmap
       use tfrbuf
       use tfcsi

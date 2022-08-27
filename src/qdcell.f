@@ -15,7 +15,7 @@
       integer*4 ,intent(out):: nqcola,nqcola1,
      $     iqcol(*),lfp(2,maxcond),kdp(*)
       real*8 ,intent(out):: df1(*)
-      real*8 vpeak(npeak),vf,vb,ve,v,vf1,ve0
+      real*8 vpeak(npeak),vf,vb,ve,v,vf1
       logical*4 ,intent(out):: error
       integer*4 ipeak(npeak),j,i,ka,kf,kp,kp1,mp,idp,kpb,kpe,
      $     k,ip,irtc,m
@@ -1199,24 +1199,25 @@ c..........going back to 4*4 world
       return
       end
 
-      subroutine tffsqu(nqcol,nqcol1,nvar,nqumax,ifquw,ifqu,
-     $     free,nlat,nele,nfam,nfam1,nut,
-     $     nparallel,cell,lfno,irtc)
+      subroutine tffsqu(nqcol,nqcol1,nvar,nqumax,ifquw,ifqu,free,lfno,irtc)
       use tfstk
-      use ffs, only:flv,ffs_bound,nvevx,nelvx,tsetintm
+      use ffs, only:flv,nvevx,nelvx,tsetintm,nlat,nele,nparallel
+c      use ffs, only: flv,dpmax,nele,ndim,nlat,maxcond,nvevx,nelvx,tsetintm
       use ffs_pointer
+      use ffs_flag,only:cell
+      use ffs_fit,only:nfam,nfam1,nut
       use tffitcode
+c      use match
       use tfshare
       use mackw
       implicit none
       type (ffs_bound) fbound
       integer*8 ,intent(inout):: ifquw,ifqu
-      integer*4 ,intent(in):: nqcol,nqcol1,nvar,nlat,nele,
-     $     lfno,nut,nfam,nfam1,nparallel
+      integer*4 ,intent(in):: nqcol,nqcol1,nvar,lfno
       integer*4 ,intent(out):: irtc,nqumax
-      logical*4 ,intent(in):: free(nele),cell
+      logical*4 ,intent(in):: free(nele)
       logical*4 , allocatable,dimension(:,:)::col
-      integer*8 itmmapp,kcm,kkqu,kqu,ic,iec
+      integer*8 kcm,kkqu,kqu,ic,iec
       integer*4 npp,nqu,k,kk,i,kq,j,kf,lp,idp,iv,kkf,kkq,
      $     ii,ltyp,jj,kc,ik1,iclast(-nfam:nfam),ik,nk,kk1,
      $     ip,ipr,istep,npr(nparallel),ll,ll1
@@ -1440,6 +1441,56 @@ c                        write(*,'(a,l2,5i5,1p10g12.4)')'ffsqu-bmag ',cell,i,kq,
       if(kcm /= 0)then
         call tfree(kcm)
       endif
+      return
+      end subroutine
+
+      subroutine tffscoupmatrix(kcm,lfno)
+      use tfstk
+      use ffs
+      use tffitcode
+      use ffs_pointer,only:kele2
+      use eeval
+      implicit none
+      type (sad_descriptor) km
+      type (sad_dlist),pointer ::klm
+      integer*8 ,intent(out):: kcm
+      integer*8 ktfmaloc
+      integer*4 ,intent(in):: lfno
+      integer*4 irtc,n,m
+      real*8 v
+      type (sad_descriptor) ,save::ktfcoupm
+      data ktfcoupm%k /0/
+      if(kele2(nlat) == 0)then
+        kcm=0
+        return
+      endif
+      if(ktfcoupm%k == 0)then
+        ktfcoupm=dtfcopy1(kxsymbolz('CouplingMatrix',14))
+      endif
+      levele=levele+1
+      km=tfsyeval(ktfcoupm,irtc)
+      call tfconnect(km,irtc)
+      if(irtc /= 0)then
+        go to 9010
+      endif
+c      call tfdebugprint(km,'coupmatrix',1)
+      if(.not. tflistq(km,klm))then
+        go to 9000
+      endif
+      if(ktfnonrealq(klm%dbody(1),v) .or. v <= 0.d0)then
+        go to 9100
+      endif
+      kcm=ktfmaloc(klm%dbody(2),n,m,.false.,.true.,irtc)
+      if(irtc /= 0)then
+        go to 9010
+      endif
+      return
+ 9010 if(irtc > 0 .and. ierrorprint /= 0)then
+        call tfreseterror
+      endif
+ 9000 call termes(lfno,
+     $     'Error or Non-numeric results in coupling matrix',' ')
+ 9100 kcm=0
       return
       end subroutine
 

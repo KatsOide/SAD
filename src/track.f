@@ -1,6 +1,7 @@
       subroutine track(latt,iparam)
       use tfstk
       use ffs
+      use ffsa, only:tffs
       use touschek_table, only: initialize_tampl
       use trackbypass, only: bypasstrack, lattuse
       use tffitcode

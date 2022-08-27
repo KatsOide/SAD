@@ -2,7 +2,7 @@
       use touschek_table
       use tfstk
       use tffitcode
-      use ffs, only: gettwiss,ffs_bound
+      use ffs, only: gettwiss
       use ffs_pointer
       use ffs_flag
       use tmacro
@@ -135,7 +135,7 @@ c      endif
       use touschek_table
       use tfstk
       use tffitcode
-      use ffs, only: gettwiss,ffs_bound
+      use ffs, only: gettwiss
       use ffs_pointer
       use ffs_flag
       use tmacro
@@ -152,7 +152,7 @@ c      endif
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 trans1(6,12),cod1(6),beam1(42)
       type (sad_descriptor) dsave(kwMAX)
-      real*8 xp,xb,xe,fr,fra,frb,tffselmoffset
+      real*8 xp,xb,xe,fr,fra,frb
       logical*4 ,intent(in):: plot,rt,optics
       logical*4 sol,chg,sol1,cp0,int0
       sol=.false.

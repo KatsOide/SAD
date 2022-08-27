@@ -24,9 +24,8 @@
       use tfstk
       use ffs_flag
       use tmacro
-      use ffs, only:ffs_bound
       use sad_main
-      use ffs_pointer, only:compelc
+      use ffs_pointer, only:compelc,ffs_bound,tffsbound1
       use tspin
       use tracklim
       implicit none

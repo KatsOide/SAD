@@ -4,6 +4,7 @@
       use ffs, only:pi2
       use ffs_fit
       use ffs_pointer, only:elatt
+      use calc,only:twmov
       use eeval
       implicit none
       real*8 sqrt3

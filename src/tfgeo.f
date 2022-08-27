@@ -11,7 +11,7 @@
       logical*4 ,intent(in):: calgeo0
       integer*4 i,lxp,lt,nv,j,it
       real*8 geo1(3,4),geo2(3,3),vsave(256),dpos,offset,xp,fr,pos0,
-     $     dgo(3),tffsmarkoffset,rgetgl1,poso,posi
+     $     dgo(3),rgetgl1,poso,posi
       logical*4 calgeo,calpol0,chg
       call tfsetparam
       if(.not. geocal)then
@@ -358,6 +358,7 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
       use tfstk
       use ffs_flag, only:geocal
       use tmacro , only:omega0
+      use ffsa,only:tffsa,tffssaveparams,idum
       use tfcsi , only:lfni
       implicit none
       type (sad_descriptor) kx
@@ -369,7 +370,7 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
         call tffsa(0,lfni,kx,irtc)
         geocal=geocal0
       endif
-      call tffssaveparams(0,-1,err)
+      call tffssaveparams(0,idum,err)
       return
       end
 

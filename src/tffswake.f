@@ -3,6 +3,8 @@
       use ffs
       use ffs_pointer
       use ffs_fit
+      use calc,only:tffssetutwiss
+      use cellm,only:qcell1
       use ffs_wake
       use tffitcode
       use iso_c_binding
@@ -61,7 +63,7 @@
             ii=min(1,abs(i))
             twiss(ibound%lb,ii,:)=utwiss(:,i,itp1)
             call qcell1(ibound,ii,optstat(i),i .ne. 0,.true.,0)
-            call tffssetutwiss(i,nlat,ibound,beg,
+            call tffssetutwiss(i,ibound,beg,
      $           ibound%lb .eq. fbound%lb,ibound%le .eq. fbound%le)
           enddo
         elseif(ibound%lb .eq. fbound%le)then

@@ -1,9 +1,12 @@
-      subroutine qcell(idp,optstat,fam)
+      module cellm
       use tfstk
       use ffs
       use ffs_pointer
       use ffs_fit, only:ffs_stat
       use tffitcode
+
+      contains
+      subroutine qcell(idp,optstat,fam)
       implicit none
       type (ffs_bound) fb
       type (ffs_stat) optstat
@@ -20,20 +23,14 @@
       end
 
       subroutine qcell1(fbound,idp,optstat,fam,chgini,lfno)
-      use tfstk
-      use ffs
-      use ffs_pointer
-      use ffs_fit , only:ffs_stat
-      use tffitcode
       implicit none
       type (ffs_bound) , intent(in)::fbound
       type (ffs_stat) , intent(out)::optstat
       real*8 ,parameter:: bmin=1.d-16,bmax=1.d16,amax=1.d16
       integer*4 ,parameter :: itmax=63
-      integer*4 , intent(in) :: idp
-      integer*4 , intent(inout) :: lfno
+      integer*4 , intent(in) :: idp,lfno
       logical*4 , intent(in)::fam,chgini
-      real*8 ftwiss(ntwissfun),tffselmoffset,
+      real*8 ftwiss(ntwissfun),
      $     r1,r2,r3,r4,c1,
      $     s11,s12,s13,s14,s21,s22,s23,s24,
      $     s31,s32,s33,s34,s41,s42,s43,s44,
@@ -406,16 +403,13 @@ c     (Note) Disperdion is defined in 2*2 world
         optstat%staby=optstat%staby .and. stab .and. (codfnd .or. fam)
       endif
       optstat%tracez=0.d0
-      if(pri)then
-        lfno=0
-      endif
+c      if(pri)then
+c        lfno=0
+c      endif
       return
       end
 
       subroutine qcell6d(fbound,idp,optstat,lfno)
-      use ffs
-      use ffs_fit ,only:ffs_stat
-      use ffs_pointer
       use temw,only:calint,normali,tinv6,etwiss2ri,tsymp,nparams,
      $     tfinibeam,iaez,tfetwiss
       use maccbk, only:i00
@@ -470,3 +464,5 @@ c     (Note) Disperdion is defined in 2*2 world
       irad=ir0
       return
       end
+
+      end module

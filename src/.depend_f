@@ -27,7 +27,7 @@ doACT.o: doACT.f tfstk.o toplvl.o
 doelem.o: doelem.f tfstk.o toplvl.o
 doexpn.o: doexpn.f tfstk.o toplvl.o
 doflag.o: doflag.f tfstk.o toplvl.o
-doline.o: doline.f tfstk.o toplvl.o
+doline.o: doline.f tffsa.o tfstk.o toplvl.o
 dolist.o: dolist.f tfstk.o toplvl.o
 doprin.o: doprin.f tfstk.o toplvl.o
 doread.o: doread.f tfstk.o toplvl.o
@@ -293,10 +293,10 @@ tfdset.o: tfdset.f itfpmat.o tfeeval.o tffuns.o tfstk.o
 tfearray.o: tfearray.f
 tfeeval.o: tfeeval.f tffuns.o tfstk.o toplvl.o
 tfeexpr.o: tfeexpr.f tfefun.o tfstk.o
-tfefun1.o: tfefun1.f tffs.o tfstk.o
+tfefun1.o: tfefun1.f tffsa.o tffs.o tfstk.o
 tfefun2.o: tfefun2.f tfstk.o
 tfefun3ep.o: tfefun3ep.f tfeeval.o tfefun.o tfstk.o
-tfefun.o: tfefun.f gamma.o tfeeval.o tffuns.o tfloor.o tfstk.o toplvl.o
+tfefun.o: tfefun.f gamma.o tfeeval.o tffindroot.o tffuns.o tfloor.o tfstk.o toplvl.o
 tfematrix.o: tfematrix.f tfstk.o
 tfemit.o: tfemit.f tffs.o tfstk.o toplvl.o
 tfepicsconstatcb.o: tfepicsconstatcb.f tfeeval.o tfstk.o
@@ -304,17 +304,17 @@ tfestk.o: tfestk.f tfeeval.o tfefun.o tfstk.o toplvl.o
 tfetok.o: tfetok.f tfestk.o tffs.o tfstk.o tfstrbuf.o toplvl.o
 tfeval1.o: tfeval1.f tfeeval.o tfefun.o tfstk.o toplvl.o
 tfeval.o: tfeval.f tfeeval.o tfestk.o tfstk.o toplvl.o
-tffamsetup.o: tffamsetup.f tfeeval.o tffs.o tfstk.o
-tffile.o: tffile.f tffs.o tfstk.o toplvl.o
+tffamsetup.o: tffamsetup.f tfeeval.o tffscalc.o tffs.o tfstk.o
+tffile.o: tffile.f tffsa.o tffs.o tfstk.o toplvl.o
 tffindroot.o: tffindroot.f gamma.o tfeeval.o tfstk.o
-tffsa.o: tffsa.f INTGRL.o tfeeval.o tffs.o tfstk.o tgrot.o toplvl.o
-tffscalc.o: tffscalc.f qdcell.o tfeeval.o tffs.o tfloor.o tfstk.o toplvl.o
+tffsa.o: tffsa.f INTGRL.o tfeeval.o tffscalc.o tffsmatch.o tffs.o tfstk.o tgrot.o toplvl.o
+tffscalc.o: tffscalc.f qcell.o qdcell.o tfeeval.o tffs.o tfloor.o tfstk.o toplvl.o
 tffs.o: tffs.f initb1.o tfefun.o tfloor.o tfstk.o toplvl.o
 tffsfreefix.o: tffsfreefix.f tffs.o tfstk.o toplvl.o
-tffsmatch.o: tffsmatch.f initb1.o qdcell.o tfeeval.o tfefun.o tffs.o tfstk.o toplvl.o
-tffswake.o: tffswake.f tfeeval.o tffs.o tfstk.o
+tffsmatch.o: tffsmatch.f initb1.o qcell.o qdcell.o tfeeval.o tfefun.o tffindroot.o tffscalc.o tffs.o tfstk.o toplvl.o
+tffswake.o: tffswake.f qcell.o tfeeval.o tffscalc.o tffs.o tfstk.o
 tffuns.o: tffuns.f tfstk.o
-tfgeo.o: tfgeo.f initb1.o photons.o tffs.o tfloor.o tfstk.o tgrot.o toplvl.o
+tfgeo.o: tfgeo.f initb1.o photons.o tffsa.o tffs.o tfloor.o tfstk.o tgrot.o toplvl.o
 tfgeti.o: tfgeti.f
 tfgetm.o: tfgetm.f tffs.o tfstk.o
 tfgetr.o: tfgetr.f
@@ -327,14 +327,14 @@ tflag.o: tflag.f tffs.o tfstk.o
 tflifetrack.o: tflifetrack.f tfstk.o
 tflogi.o: tflogi.f tffs.o
 tfloor.o: tfloor.f tfstk.o
-tfltr1.o: tfltr1.f tffs.o
+tfltr1.o: tfltr1.f qcell.o tffs.o
 tfltra.o: tfltra.f tffs.o tfstk.o
 tfmap.o: tfmap.f tfeeval.o tfefun.o tfstk.o
 tfmat.o: tfmat.f tffs.o tfstk.o
 tfmemcheck.o: tfmemcheck.f tfstk.o
 tfmodule.o: tfmodule.f tfeeval.o tfstk.o
 tfojit.o: tfojit.f tffs.o
-tfoptics.o: tfoptics.f tffs.o tfstk.o toplvl.o
+tfoptics.o: tfoptics.f qcell.o tffs.o tfstk.o toplvl.o
 tfpart.o: tfpart.f tfeeval.o tfefun.o tfstk.o
 tfprinta.o: tfprinta.f tfeeval.o tfestk.o tfstk.o tfstrbuf.o toplvl.o
 tfprint.o: tfprint.f tfeeval.o tfefun.o tffs.o tfstk.o toplvl.o
@@ -414,7 +414,7 @@ tracka.o: tracka.f tfeeval.o tffs.o tfstk.o toplvl.o
 trackb.o: trackb.f tffsa.o tffs.o tfstk.o
 trackd.o: trackd.f tffs.o tfstk.o tftrack.o toplvl.o
 tracke.o: tracke.f tffsa.o tffs.o tfstk.o
-track.o: track.f temit.o tffs.o tfstk.o toplvl.o
+track.o: track.f temit.o tffsa.o tffs.o tfstk.o toplvl.o
 trade.o: trade.f tffs.o tfloor.o toplvl.o
 trad.o: trad.f photons.o tffs.o tfloor.o tfstk.o toplvl.o
 trcoda.o: trcoda.f tffs.o tfstk.o

@@ -180,7 +180,7 @@ void tfsetlist(integer8 kx, integer8 iax, integer4 i) {
 
 void tfmakerulestk(integer8 ias, integer8 kx) {
   /*  fprintf(stderr,"mkrs_c: %d %f\n",kx); */
-  tfmakerulestk_(&ias,&kx);
+  __tfstk_MOD_tfmakerulestk_dd(&ias,&kx);
 }
 
 void tfevals(const char *buf,
