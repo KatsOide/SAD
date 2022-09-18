@@ -1,11 +1,11 @@
       module tfcc
+      use tfstk
       real*8 ,private::xmin,xmax,ymin,ymax
       integer*4 ,private::isp0
 
       contains
 
       subroutine tfcanvasclip(isp1,kx,irtc)
-      use tfstk
       use mathfun, only:outer2
       implicit none
       type (sad_descriptor) ,intent(out):: kx
@@ -277,7 +277,6 @@ c      write(*,*)'canvasclip-4'
       end subroutine
 
       subroutine tfccput(x,y)
-      use tfstk
       implicit none
       real*8 ,intent(in):: x,y
       real*8 xl,yl
@@ -292,7 +291,6 @@ c      write(*,*)'canvasclip-4'
       end subroutine
 
       subroutine tfccputa(x0,y0,x1,y1)
-      use tfstk
       implicit none
       real*8 ,intent(in):: x0,y0,x1,y1
       real*8 xm(2),ym(2)
@@ -833,6 +831,7 @@ c      write(*,*)'canvasclip-4'
 
       subroutine tfcanvassymbol(isp1,kx,irtc)
       use tfstk
+      use convstr,only:tfconvround
       use strbuf
       use macmath
       implicit none
@@ -984,11 +983,11 @@ c      parameter (a=sqrt(0.75d0))
 
       subroutine tfcanvassymboldirect(isp1,kx,irtc)
       use tfstk
+      use convstr,only:ktrsaloc
       use macmath
       implicit none
       type (sad_descriptor) kx
-      integer*8 ks,ka,kad,kad1,kad2,kat,
-     $     kavx,kavy,ktrsaloc,ka2
+      integer*8 ks,ka,kad,kad1,kad2,kat,kavx,kavy,ka2
       integer*4 isp1,irtc,itfmessage,isp0,m,i
       real*8 x,y,s,a,xmin,xmax,ymin,ymax,yoff,wmin,sa,sh,s1
       logical*4 ol

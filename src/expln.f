@@ -128,12 +128,12 @@ c     and then add statistical error
       subroutine tfreeln(idxe)
       use maccbk
       use mackw
-      use tfstk, only:ilist,klist,tfree,tflocald,levele
+      use tfstk, only:ilist,klist,tfree,tflocald,levele,itfdownlevel
       use sad_main
       implicit none
       type (sad_el), pointer :: el
       type (sad_comp), pointer :: cmp
-      integer*4 i,idxe,j,l,itfdownlevel,lt
+      integer*4 i,idxe,j,l,lt
       integer*8 k,ip
       levele=levele+1
       ip=idval(idxe)

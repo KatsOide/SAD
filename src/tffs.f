@@ -199,7 +199,7 @@ c        el%elmv%k=0
       end module
 
       module ffs0
-      use tfstk,only:sad_descriptor
+      use tfstk
       use tffitcode
       use tmacro
       implicit none
@@ -436,7 +436,6 @@ c$$$susp;
         end subroutine
 
         real*8 pure elemental function gettwiss(key,lp)
-        use tfstk
         implicit none
         integer*4 ,intent(in):: key,lp
         gettwiss=rlist(iftwis+((key-1)*(2*ndim+1)+ndim)*nlat+lp-1)
@@ -548,7 +547,6 @@ c$$$susp;
         end subroutine
 
         integer*8 function ktatwissaloc(mode,kl)
-        use tfstk
         use tffitcode
         implicit none
         type (sad_rlist), pointer,intent(out)::kl
@@ -1855,8 +1853,7 @@ c     begin initialize for preventing compiler warning
         type (sad_dlist) , pointer ,intent(out):: lsegp
         type (sad_dlist) , pointer :: lpi,lpi1,lk1
         type (sad_string), pointer :: stri1,stri2
-        integer*4 ltyp,lls,i,nseg,irtc,itfmessage,l,itfdownlevel,
-     $       isp0,i1,nk
+        integer*4 ltyp,lls,i,nseg,irtc,itfmessage,l,isp0,i1,nk
         integer*4 ,parameter :: nc=ky_PROF_MULT-1
         logical*4 defk(nc,nc)
         irtc=0
@@ -3033,7 +3030,7 @@ c      endif
       use ffs
       use tffitcode
       implicit none
-      integer*4 l,itfdownlevel,i
+      integer*4 l,i
       levele=levele+1
       call tfresethash
 c      call tfree(ilist(2,ifwakep))

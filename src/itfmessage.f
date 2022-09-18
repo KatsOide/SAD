@@ -226,9 +226,8 @@ c     Search '"' from string(is+1:l) with backslash escape
       
       subroutine tfaddmessage(str,ip,lfno)
       use tfstk
-      use efun
       implicit none
-      type (sad_descriptor) kx,kxaddmess
+      type (sad_descriptor) kx,kxaddmess,tfefunrefd
       type (sad_dlist), pointer :: kle
       integer*4 ,intent(in):: ip,lfno
       integer*4 irtc,isp1,ltr0
@@ -253,7 +252,7 @@ c     Search '"' from string(is+1:l) with backslash escape
       dtastk(isp1)=kxaddmess
       ktastk(isp)=kerror
 c      call tfdebugprint(kerror,'addmessage',1)
-      kx=tfefunref(isp1,.false.,irtc)
+      kx=tfefunrefd(isp1,irtc)
 c      call tfdebugprint(kx,'addmessage',1)
       isp=isp1-1
       if(irtc .eq. 0)then

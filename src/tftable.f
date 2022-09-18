@@ -1,11 +1,14 @@
+      module table
+      use tfstk
+
+      contains
       recursive function tftable(isp1,isp2,ispa,mode,irtc)
      $     result(kx)
-      use tfstk
-      use efun
       use eeval
+      use modul,only:tfdelete
       implicit none
       integer*4 ,parameter ::maxint=huge(0)
-      type (sad_descriptor) kx,kj,kxlistcopied,ke,ki,k1,kl
+      type (sad_descriptor) kx,kj,ke,ki,k1,kl,tfefunrefu
       type (sad_dlist), pointer :: listi,kle,klj
       type (sad_rlist), pointer :: klr
       type (sad_symbol), pointer :: name
@@ -13,7 +16,7 @@
       integer*4 ,intent(in):: isp1,isp2,ispa,mode
       integer*4 ,intent(out):: irtc
       integer*8 ls
-      integer*4 narg,ns,itfmessage,itfdownlevel,lv,m,j,isp0,ispb,i
+      integer*4 narg,ns,itfmessage,lv,m,j,isp0,ispb,i
       real*8 x0,x1,xstep,xns,xi,ve
       logical*4 var
       kx%k=ktfoper+mtfnull
@@ -394,7 +397,7 @@ c                      enddo
           call tflocal(ktastk(i))
         enddo
         ktastk(ispb)=ktfoper+merge(mtfplus,mtfmult,mode .eq. 2)
-        kx=tfefunref(ispb,.true.,irtc)
+        kx=tfefunrefu(ispb,irtc)
       endif
  9000 isp=ispb-1
       if(var)then
@@ -422,7 +425,6 @@ c        call tfcatchreturn(0,kx,irtc)
       end
 
       type (sad_descriptor) function kxlistcopied(isp1)
-      use tfstk
       implicit none
       type (sad_dlist), pointer ::klx
       type (sad_rlist), pointer ::klr
@@ -460,7 +462,6 @@ c        call tfcatchreturn(0,kx,irtc)
       end
 
       function tfrange(isp1,irtc) result(kx)
-      use tfstk
       implicit none
       type (sad_descriptor) kx
       integer*4 ,intent(in):: isp1
@@ -517,3 +518,5 @@ c        call tfcatchreturn(0,kx,irtc)
       irtc=0
       return
       end
+
+      end module table

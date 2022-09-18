@@ -15,7 +15,7 @@
       integer, parameter :: nkptbl = 6
       integer*4 ,intent(in):: np0,l,nt
       integer*4 ,intent(inout):: kptbl(np0,nkptbl),np
-      integer*4 itfdownlevel,i,j,k,isp0,irtc,m,kptmp(nkptbl),nc
+      integer*4 i,j,k,isp0,irtc,m,kptmp(nkptbl),nc
       real*8 ,intent(inout):: x(np0),px(np0),y(np0),py(np0),
      $     z(np0),g(np0),dv(np0),sx(np0),sy(np0),sz(np0)
       character*2 ord
@@ -25,7 +25,7 @@
       if(itfcontext .le. 0)then
         return
       endif
-      if(iem .eq. 0)then
+      if(iem == 0)then
         iem=ktfsymbolz('ExternalMap',11)
         ifv=ktsalocb(0,'TRACK',5)
       endif
@@ -48,7 +48,7 @@
       enddo
       do i=1,np0
         j=kptbl(i,1)
-        if((j .gt. np) .or. (kptbl(j,4) .ne. 0))then
+        if((j .gt. np) .or. (kptbl(j,4) /= 0))then
           do concurrent (k=1:nc)
             kav(k)%p%rbody(i)=0.d0
           enddo
@@ -68,23 +68,23 @@
         endif
       enddo
       kx=tfefunref(isp0+1,.false.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         levele=itfdownlevel()
         isp=isp0
-        if(ierrorprint .ne. 0)then
+        if(ierrorprint /= 0)then
           call tfaddmessage(' ',2,6)
         endif
         write(*,*)' Error in ExternalMap of ',l,ord(l),' element at ',
      $       nt,ord(nt),' turn.'
         return
-      elseif(.not. tflistq(kx,klx) .or. klx%nl .ne. 7)then
+      elseif(.not. tflistq(kx,klx) .or. klx%nl /= 7)then
         go to 9000
       endif
       do k=1,nc
         if(.not. tfreallistq(klx%dbody(k),klrk))then
           go to 9000
         endif
-        if(klrk%nl .ne. np0)then
+        if(klrk%nl /= np0)then
           go to 9000
         endif
         kav(k)%p=>klrk
@@ -93,7 +93,7 @@
       doinject=.false.
       do i=1,np0
         j=kptbl(i,1)
-        if(kav(nc)%p%rbody(i) .ne. 0.d0)then
+        if(kav(nc)%p%rbody(i) /= 0.d0)then
           if(.not. (j .le. np)) then
 c     Case: dropped before MAP element
             doinject=.true.
@@ -124,7 +124,7 @@ c     Copy-in ExternalMap[] result for alive/reinject case
             sx(i)=sr*cos(phir)
             sz(i)=sr*sin(phir)
           endif
-        elseif((j .le. np) .and. (kptbl(j,4) .eq. 0))then
+        elseif((j .le. np) .and. (kptbl(j,4) == 0))then
 c     Lose particle slot[j] at current MAP element[l]
           dodrop=.true.
           kptbl(j,4)=l
@@ -136,12 +136,12 @@ c     Lose particle slot[j] at current MAP element[l]
         i=np+1
         m=np0
         do while(i .le. m)
-          if(kptbl(i,4) .ne. 0)then
+          if(kptbl(i,4) /= 0)then
 c     Search alive paricle from tail: (i, m]
-            do while((i .lt. m) .and. (kptbl(m,4) .ne. 0))
+            do while((i .lt. m) .and. (kptbl(m,4) /= 0))
               m=m-1
             enddo
-            if(kptbl(m,4) .eq. 0)then
+            if(kptbl(m,4) == 0)then
 c     Swap dead particle slot[i] with tail alive particle slot[m]
               j=kptbl(m,2)
               k=kptbl(i,2)
@@ -212,6 +212,7 @@ c        call tfdebugprint(kx,'temap',1)
       subroutine temapp(isp1,kx,irtc)
       use tfstk
       use tftr
+      use maloc,only:tfmsize
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -221,7 +222,7 @@ c        call tfdebugprint(kx,'temap',1)
       real*8 xa
       integer*8 ka,ka0
       integer*4 n,np,nprm,i,itfmessage
-      if(isp .ne. isp1+3)then
+      if(isp /= isp1+3)then
         irtc=itfmessage(9,'General::narg','"3"')
         return
       endif
@@ -230,10 +231,10 @@ c        call tfdebugprint(kx,'temap',1)
         return
       endif
       call tfmsize(dtastk(isp1+2),n,np,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
-      if(n .ne. 7 .and. n .ne. 9)then
+      if(n /= 7 .and. n /= 9)then
         irtc=itfmessage(9,'General::wrongtype','"particles for #2"')
         return
       endif
@@ -244,7 +245,7 @@ c        call tfdebugprint(kx,'temap',1)
       call descr_dlist(dtastk(isp1+2),kzl)
       nprm=kpl%nl
       ka0=int8(xa)/8
-      if(ka0 .ne. 0)then
+      if(ka0 /= 0)then
         klist(ka0)=npz
         klist(ka0+1)=nprm
         ka=ka0+ipn+2
@@ -260,7 +261,7 @@ c        call tfdebugprint(kx,'temap',1)
       kx=kxadaloc(-1,3,kxl)
       kxl%rbody(1)=dble(ipn)
       kxl%rbody(2)=dble(npri)
-      if(iprid .eq. 0)then
+      if(iprid == 0)then
         kxl%rbody(3)=dble(dble(getpid()))
       else
         kxl%dbody(3)=kxavaloc(0,npr,kpri)
@@ -283,7 +284,7 @@ c        call tfdebugprint(kx,'temap',1)
       integer*8 ka,ka0
       integer*4 nprm,i,itfmessage,n,np
       kx=dxnullo
-      if(isp .ne. isp1+2)then
+      if(isp /= isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
@@ -322,18 +323,18 @@ c      write(*,*)'unmap ',ipn,n,np,kzi%rbody(4)
       use sad_main, only:iaidx
       use temw,only:tmulbs
       use efun
+      use maloc,only:ktfmalocp
       use iso_c_binding
       implicit none
-      type (sad_descriptor) kx
-      integer*8 k1,k2,k3,k4,kax,
-     $     ktfmalocp,ka1,kat1,kbm,krt
-      integer*4 l,isp0,itfdownlevel,n,m,irtc,i,j
+      type (sad_descriptor) kx,k2,k3,k4
+      integer*8 k1,kax,ka1,kat1,kbm,krt
+      integer*4 l,isp0,n,m,irtc,i,j
       real*8 trans(6,6),cod(6),beam(42)
       real*8 ,pointer::trat1(:,:)
       character*2 ord
       integer*8 , save :: ifv=0,iem=0
 c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
-      if(iem .eq. 0)then
+      if(iem == 0)then
         iem=ktfsymbolz('ExternalMap',11)
         ifv=ktsalocb(0,'EMIT',4)
       endif
@@ -348,9 +349,9 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       isp=isp+1
       dtastk(isp)=kxm2l(cod,0,6,1,.false.)
       kx=tfefunref(isp0+1,.false.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         levele=itfdownlevel()
-        if(ierrorprint .ne. 0)then
+        if(ierrorprint /= 0)then
           call tfaddmessage(' ',2,6)
         endif
         write(*,*)' Error in ExternalMap(EMIT) of ',l,ord(l),
@@ -362,8 +363,8 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
         go to 9000
       endif
       kax=ktfaddr(kx)
-      if(ilist(2,kax-1) .eq. 3 .and.
-     $     klist(kax) .eq. ktfsymbol+iem)then
+      if(ilist(2,kax-1) == 3 .and.
+     $     klist(kax) == ktfsymbol+iem)then
         go to 9000
       endif
       k1=klist(kax+1)
@@ -371,39 +372,39 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
         go to 9100
       endif
       ka1=ktfaddr(k1)
-      if(ilist(2,ka1-1) .ne. 6 .or. ktfnonreallistq(ka1))then
+      if(ilist(2,ka1-1) /= 6 .or. ktfnonreallistq(ka1))then
         go to 9100
       endif
       cod=rlist(ka1+1:ka1+6)
-      k2=klist(kax+2)
+      k2=dlist(kax+2)
       kat1=ktfmalocp(k2,n,m,.false.,.false.,
      $     .false.,.false.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         go to 9100
       endif
-      if(n .ne. 6 .or. m .ne. 6)then
+      if(n /= 6 .or. m /= 6)then
         call tfree(kat1)
         go to 9100
       endif
       call c_f_pointer(c_loc(rlist(kat1)),trat1,[6,6])
       kbm=0
       krt=0
-      if(ilist(2,kax-1) .ne. 2)then
-        if(ilist(2,kax-1) .eq. 4)then
-          k3=klist(kax+3)
+      if(ilist(2,kax-1) /= 2)then
+        if(ilist(2,kax-1) == 4)then
+          k3=dlist(kax+3)
           krt=ktfmalocp(k3,n,m,.false.,.false.,
      $         .false.,.false.,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 9110
-          elseif(n .ne. 6 .or. m .ne. 6)then
+          elseif(n /= 6 .or. m /= 6)then
             go to 9120
           endif
-          k4=klist(kax+4)
+          k4=dlist(kax+4)
           kbm=ktfmalocp(k4,n,m,.false.,.false.,
      $         .false.,.false.,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 9120
-          elseif(n .ne. 6 .or. m .ne. 6)then
+          elseif(n /= 6 .or. m /= 6)then
             call tfree(kbm)
             go to 9120
           endif
@@ -412,7 +413,7 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
         endif
       endif
       call tmultr(trans,trat1,irad)
-      if(kbm .ne. 0)then
+      if(kbm /= 0)then
         do i=0,35
           rlist(kat1+i)=rlist(kat1+i)+rlist(krt+i)
         enddo
@@ -447,16 +448,17 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       use tfstk
       use tmacro
       use efun
+      use maloc,only:tfl2m,tfmsize
       implicit none
       type (sad_descriptor) :: kx
       type (sad_dlist), pointer :: kxl, k2l
       type (sad_rlist), pointer :: k1l
-      integer*4 l,isp0,itfdownlevel,n,m,irtc
+      integer*4 l,isp0,n,m,irtc
       real*8 trans(6,6),cod(6)
       character*2 ord
       logical*4 err,coup
       integer*8, save:: ifv=0,iem=0
-      if(iem .eq. 0)then
+      if(iem == 0)then
         iem=ktfsymbolz('ExternalMap',11)
         ifv=ktsalocb(0,'OPTICS',6)
       endif
@@ -474,9 +476,9 @@ c      iat=itfm2l(cod,0,6,1,.false.)
       dtastk(isp)=kxm2l(cod,0,6,1,.false.)
 c      itastk(2,isp)=iat
       kx=tfefunref(isp0+1,.false.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         levele=itfdownlevel()
-        if(ierrorprint .ne. 0)then
+        if(ierrorprint /= 0)then
           call tfaddmessage(' ',2,6)
         endif
         write(*,*)' Error in ExternalMap(OPTICS) of ',l,ord(l),
@@ -484,25 +486,25 @@ c      itastk(2,isp)=iat
         isp=isp0
         return
       endif
-      if(ktfnonlistq(kx,kxl) .or. kxl%nl .eq. 3 .and.
-     $     kxl%body(0) .eq. ktfsymbol+iem)then
+      if(ktfnonlistq(kx,kxl) .or. kxl%nl == 3 .and.
+     $     kxl%body(0) == ktfsymbol+iem)then
         go to 9200
       endif
-      if(kxl%nl .ne. 2)then
+      if(kxl%nl /= 2)then
         go to 9100
       endif
-      if(tfnonreallistq(kxl%dbody(1),k1l) .or. k1l%nl .ne. 6)then
+      if(tfnonreallistq(kxl%dbody(1),k1l) .or. k1l%nl /= 6)then
         go to 9100
       endif
       cod=k1l%rbody(1:6)
       call tfmsize(kxl%dbody(2),n,m,irtc)
-      if(irtc .ne. 0 .or. n .ne. 6 .or. m .ne. 6)then
+      if(irtc /= 0 .or. n /= 6 .or. m /= 6)then
         go to 9100
       endif
       call descr_sad(kxl%dbody(2),k2l)
       call tfl2m(k2l,trans,6,6,.false.)
-      coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.
-     $     trans(2,3) .ne. 0.d0 .or. trans(2,4) .ne. 0.d0
+      coup=trans(1,3) /= 0.d0 .or. trans(1,4) /= 0.d0 .or.
+     $     trans(2,3) /= 0.d0 .or. trans(2,4) /= 0.d0
       err=.false.
  9000 levele=itfdownlevel()
       isp=isp0
@@ -524,12 +526,12 @@ c      itastk(2,isp)=iat
       implicit none
       type (sad_descriptor) kx
       integer*8 ktfgeol,kax,k1,k2,k11,k12,ka1,ka11,ka12,kdb
-      integer*4 l,isp0,irtc,itfdownlevel
+      integer*4 l,isp0,irtc
       character*2 ord
       logical*4 err
       integer*8 ifv,iem
       data ifv,iem/0,0/
-      if(iem .eq. 0)then
+      if(iem == 0)then
         iem=ktfsymbolz('ExternalMap',11)
         ifv=ktsalocb(0,'GEO',3)
       endif
@@ -550,13 +552,12 @@ c      ktastk(isp)=ktflist+ktfgeol(geo(1,1,l))
       isp=isp+1
       rtastk(isp)=pos(l)
       kx=tfefunref(isp0+1,.false.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         levele=itfdownlevel()
-        if(ierrorprint .ne. 0)then
+        if(ierrorprint /= 0)then
           call tfaddmessage(' ',2,6)
         endif
-        write(*,*)' Error in ExternalMap(GEO) of ',l,ord(l),
-     $       ' element.'
+        write(*,*)' Error in ExternalMap(GEO) of ',l,ord(l),' element.'
         isp=isp0
         return
       endif
@@ -564,11 +565,10 @@ c      ktastk(isp)=ktflist+ktfgeol(geo(1,1,l))
         go to 9000
       endif
       kax=ktfaddr(kx)
-      if(ilist(2,kax-1) .eq. 4 .and.
-     $     klist(kax) .eq. ktfsymbol+iem)then
+      if(ilist(2,kax-1) == 4 .and. klist(kax) == ktfsymbol+iem)then
         go to 9000
       endif
-      if(ilist(2,kax-1) .ne. 2)then
+      if(ilist(2,kax-1) /= 2)then
         go to 9100
       endif
       k1=klist(kax+1)
@@ -576,7 +576,7 @@ c      ktastk(isp)=ktflist+ktfgeol(geo(1,1,l))
         go to 9100
       endif
       ka1=ktfaddr(k1)
-      if(ilist(2,ka1-1) .ne. 2)then
+      if(ilist(2,ka1-1) /= 2)then
         go to 9100
       endif
       k11=klist(ka1+1)
@@ -584,7 +584,7 @@ c      ktastk(isp)=ktflist+ktfgeol(geo(1,1,l))
         go to 9100
       endif
       ka11=ktfaddr(k11)
-      if(ilist(2,ka11-1) .ne. 3 .or. ktfnonreallistq(ka11))then
+      if(ilist(2,ka11-1) /= 3 .or. ktfnonreallistq(ka11))then
         go to 9100
       endif
       k12=klist(ka1+1)
@@ -592,7 +592,7 @@ c      ktastk(isp)=ktflist+ktfgeol(geo(1,1,l))
         go to 9100
       endif
       ka12=ktfaddr(k12)
-      if(ilist(2,ka12-1) .ne. 3 .or. ktfnonreallistq(ka12))then
+      if(ilist(2,ka12-1) /= 3 .or. ktfnonreallistq(ka12))then
         go to 9100
       endif
       k2=klist(kax+2)

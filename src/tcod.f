@@ -2,10 +2,32 @@
       real*8, parameter :: 
      $     conv0=1.d-10,epsr0=1.d-6,ddpmax=3.e-5,
      1     epsrr=1.d-4,rmax=1.d200,fmin=1.d-4,a=0.25d0, dpthre=3.e-4
-      real*8 , parameter :: codw0(6) =
-     $     [1.d-6,1.d-5,1.d-6,1.d-5,1.d-5,1.d-6]
-      
+      real*8 , parameter :: codw0(6)=[1.d-6,1.d-5,1.d-6,1.d-5,1.d-8,1.d-8]
+      integer*8 ::kcodconv=0
+
       contains
+      subroutine tgetcodw(codw)
+      use tfstk
+      implicit none
+      real*8 ,intent(out):: codw(6)
+      type (sad_rlist),pointer :: lcodw
+      integer*4 nc
+      real*8 w
+      if(kcodconv == 0)then
+        kcodconv=ktfsymbolz('`CODCONV',8)-4
+      endif
+      if(tfreallistq(dlist(kcodconv),lcodw) .and. lcodw%nl > 0)then
+        codw=codw0
+        nc=min(6,lcodw%nl)
+        codw(1:nc)=codw0(1:nc)*lcodw%rbody(1:nc)
+      elseif(ktfrealq(klist(kcodconv),w))then
+        codw=codw0*w
+      else
+        codw=codw0
+      endif
+      return
+      end subroutine
+
       recursive subroutine tcod(trans,cod,beam,optics,fndcod)
       use tfstk
       use ffs_flag
@@ -22,8 +44,7 @@
       integer*4 , parameter :: lmax=100
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42)
       real*8 codi(6),codf(6),dcod(6),r0,fact,trf00,dtrf0,r,
-     $     dcod1(6),codw(6),conv,trs(6,6),
-     $     dcod0(6),s,trw,dz,alambdarf,trf0s,v0,red,ddp,srot(3,9)
+     $     dcod1(6),codw(6),conv,trs(6,6),dcod0(6),s,trw,dz,alambdarf,trf0s,v0,red,ddp,srot(3,9)
       integer*4 loop,i
       logical*4 rt,rtr
       vcalpha=1.d0
@@ -32,7 +53,7 @@
         rfsw=.false.
         call tcod(trans,cod,beam,optics,fndcod)
         rfsw=.true.
-        if(fndcod .and. vceff .ne. 0.d0)then
+        if(fndcod .and. vceff /= 0.d0)then
           cod(5)=asinz((u0*pgev-vcacc)/vceff)/wrfeff-trf0
         endif
 c        write(*,'(a,l2,1p7g15.7)')'tcod-0 ',
@@ -53,7 +74,7 @@ c     $       fndcod,vceff,wrfeff,trf0,vcacc,u0*pgev,cod(5)
       loop=lmax
       codi=cod
       fndcod=.true.
-      codw=codw0
+      call tgetcodw(codw)
       if(.not. rfsw)then
         codw=codw*0.01d0
       endif
@@ -69,7 +90,7 @@ c     $       fndcod,vceff,wrfeff,trf0,vcacc,u0*pgev,cod(5)
       endif
       conv=1.d0
  1    loop=loop-1
-      if(loop .le. 0)then
+      if(loop <= 0)then
         if(rtr)then
           rtr=.false.
           go to 10
@@ -81,14 +102,13 @@ c     $       fndcod,vceff,wrfeff,trf0,vcacc,u0*pgev,cod(5)
       call tinitr12(trans)
       codf=codi
       trf00=trf0
-      call tturne(trans,codf,beam,srot,
-     $     iaez,.false.,.true.,rt,optics)
+      call tturne(trans,codf,beam,srot,iaez,.false.,.true.,rt,optics)
       dz=(codi(5)+codf(5))*0.5d0
       rt=radtaper
       dcod1=codi-codf
       if(rfsw)then
         if(radtaper)then
-          if(.not. ktfenanq(dcod1(5)) .and. trans(5,6) .ne. 0.d0)then
+          if(.not. ktfenanq(dcod1(5)) .and. trans(5,6) /= 0.d0)then
             dptaper=dptaper-dcod1(5)/trans(5,6)
           endif
         endif

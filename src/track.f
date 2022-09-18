@@ -13,8 +13,7 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       type (sad_descriptor) kx
       integer*8 ikptbl,ig,ipz,ix,ixx,iy,iyy,iz,izz,ifz,
      $     latt,iparam,lscal
-      integer*4 irtc,l,isp1,
-     $     nts,itfdownlevel,naz,ltpara,IgetGL
+      integer*4 irtc,l,isp1,nts,naz,ltpara,IgetGL
       character*20 title
       logical*4, save :: trackinit=.false.
       real*8 ol,dt1,df,rgetgl1,dt0
@@ -34,7 +33,7 @@ c      use tfcsi, only:ipoint,lrecl,lfni
         call tfinitn
         call tfinittws
         call tinitintm
-        call tfevals('CONVERGENCE=1E-9;ExponentOfResidual=2;'//
+        call tfevals('CONVERGENCE=1E-9;ExponentOfResidual=2;CODCONV=1'//
      $       'OffMomentumWeight=1;MatchingResidual='//
      $       'NetResidual=StabilityLevel=0;'//
      $       'FFS$NumericalDerivative=False;'//

@@ -156,8 +156,7 @@
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       integer*4 nc,lenw,narg,idx,itype,
-     $     idt,n,i,nce,m,hsrchz,isp0, itfmessage,
-     $     itfdownlevel,l,itfmessagestr
+     $     idt,n,i,nce,m,hsrchz,isp0, itfmessage,l,itfmessagestr
       character*(MAXPNAME) ename,type,tfgetstrs,key,tfkwrd
       kx=dxnullo
       ename=tfgetstrs(ktastk(isp1+1),nce)

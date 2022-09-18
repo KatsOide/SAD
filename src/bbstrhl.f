@@ -829,7 +829,7 @@ c       call tfmemcheckprint('storecolb',1,.true.,irtc)
 c      use tfcbk
       implicit none
       type (sad_descriptor) kx,kem
-      integer*4 irtc,level,itfdownlevel,isp0
+      integer*4 irtc,level,isp0
       real*8 rlum_col
       save kem
       data kem%k/0/

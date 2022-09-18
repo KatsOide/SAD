@@ -351,7 +351,7 @@ c$$$      integer*8 , pointer, dimension(:) :: pidval(:)
         sethtb8=0
      
         idx= hsrch(token(:len_trim(token)))
-        if(idx .le. 0 .or. idx .gt. HTMAX) then
+        if(idx <= 0 .or. idx .gt. HTMAX) then
           call errmsg('sethtb8'
      &         ,'illegal index value for sethashtble: '//
      $         token(:len_trim(token))
@@ -359,7 +359,7 @@ c$$$      integer*8 , pointer, dimension(:) :: pidval(:)
         else
           idtype(idx)=type
           idval(idx)=merge(transfer(c_loc(ival),i00)/8,
-     $         ival,type .eq. icRSVD)
+     $         ival,type == icRSVD)
           sethtb8=idx
         endif
         return
@@ -475,7 +475,7 @@ c     Don't confuse, Emacs. This is -*- fortran -*- mode!
 c        kcpklist0=transfer(c_loc(kdummy),i00)
 c        write(*,*)'tfcbkinit ',kcpklist0,2**31
 c        kcpklist0=transfer(c_loc(kdummy),i00)-kcpoffset-8
-        if(lps .eq. 0)then
+        if(lps == 0)then
           lps=getpagesize()
         endif
         allocate(pname(0:HTMAX),lpname(0:HTMAX),idtype(0:HTMAX),idval(0:HTMAX))
@@ -547,7 +547,7 @@ c     kcpklist0=0
             return
           endif
           ic1=ic+min(m,minseg1)*2
-          if(ic1 .le. maxic)then
+          if(ic1 <= maxic)then
             ic2=min(maxic-2,ic1+10)
             do ic=ic1,ic2,2
               i=klist(ic)
@@ -581,7 +581,7 @@ c     kcpklist0=0
                 call tsetindexhash(i+m,m1-m)
                 ilist(1,i-1)=m
                 nnet=nnet+m
-                maxic=merge(ic-2,ic,klist(ic) .eq. ic)
+                maxic=merge(ic-2,ic,klist(ic) == ic)
                 ktaloc=i
                 return
               endif
@@ -594,7 +594,7 @@ c     kcpklist0=0
         i=klist(i1)
         do while(i .ne. ic)
           m1=ilist(1,i-1)
-          if(m1 .eq. m)then
+          if(m1 == m)then
             klist(i1)=klist(i)
             klist(klist(i)+1)=i1
             j=ich+iand(i+m+2,mhash)
@@ -663,7 +663,7 @@ c        use ffs0, only:ifinext
         integer*8 ix,ik,ik0,ip,ix1
         integer*4 m,mx
         m=ilist(1,ka-1)
-c        if(associated(ifinext) .and. ka .eq. ifinext)then
+c        if(associated(ifinext) .and. ka == ifinext)then
 c          write(*,*)'tfree ',ka,m
 c        endif
         if(m .lt. 4)then
@@ -681,7 +681,7 @@ c        endif
         do while(ip .ne. ik0)
           if(ip .lt. ix)then
             mx=ilist(1,ip-3)
-            if(ip+mx .eq. ix)then
+            if(ip+mx == ix)then
               klist(ik  )=klist(ip)
               klist(klist(ip-2)+1)=klist(ip-1)
               klist(klist(ip-1)  )=klist(ip-2)
@@ -699,7 +699,7 @@ c     if(tfchecklastp(ix1))then
         ik0=ik
         ip=klist(ik)
         do while(ip .ne. ik0)
-          if(ip .eq. ix1)then
+          if(ip == ix1)then
             klist(ik  )=klist(ip)
             klist(klist(ip-2)+1)=klist(ip-1)
             klist(klist(ip-1)  )=klist(ip-2)
@@ -972,6 +972,86 @@ c size limitation due to gfortran 7 on macOS ???
 
       end module
 
+      module ophash
+      use tfcode
+      implicit none
+      integer*4 nhash
+      parameter (nhash=4)
+      integer*4 iophash(nhash,0:63)
+      logical*4 , save :: opini=.true.
+      integer*8 ktfcode(0:ntfarg)
+      character*4, save :: opcode(0:mtfnopc) =(/
+     $     '    ','    ','    ','+   ','-   ',
+     $     '*   ','/   ','    ','^   ','>   ',
+
+     $     '>=  ','<=  ','<   ','==  ','<>  ',
+     $     '&&  ','||  ','~   ','=== ','<=> ',
+
+     $     '//  ','[   ',']   ','{   ','}   ',
+     $     ':=  ','=   ','    ','(   ',')   ',
+
+     $     ',   ',';   ','&   ',':   ','->  ',
+     $     ':>  ','/.  ','//. ','^=  ','^:= ',
+
+     $     '=.  ','?   ','?   ','#   ','##  ',
+     $     '.   ','|   ','/@  ','//@ ','@@  ',
+
+     $     '..  ','... ','    ','+=  ','-=  ',
+     $     '*=  ','/=  ','++  ','--  ','[[  ',
+
+     $     '@   ','::  ','/:  ','(*  ','*)  ',
+     $     '    ','    '/)
+      logical*4 :: constop(0:mtfnopc) = (/
+     $     .false.,.false.,.false.,.false.,.false.,
+     $     .false.,.false.,.false.,.false.,.false.,
+
+     $     .false.,.false.,.false.,.false.,.false.,
+     $     .false.,.false.,.false.,.false.,.false.,
+
+     $     .false.,.false.,.false.,.true. ,.false.,
+     $     .false.,.false.,.true., .false.,.false.,
+
+     $     .false.,.false.,.true. ,.true., .true.,
+     $     .true., .false.,.false.,.false.,.false.,
+
+     $     .false.,.true. ,.false.,.false.,.false.,
+     $     .false.,.false. ,.false.,.false.,.false.,
+c Alternatives is temporarily set .false. due to possible reduction.
+
+     $     .true. ,.true. ,.false.,.false.,.false.,
+     $     .false.,.false.,.false.,.false.,.false.,
+
+     $     .false.,.true., .true. ,.false.,.false.,
+     $     .true., .false.
+     $     /)
+
+      contains
+        subroutine tfopcodehash
+        integer*4 i,j,k
+        character*4 oper1
+        iophash=-1
+        LOOP_I: do i=0,mtfnopc
+          if(opcode(i) /= ' ')then
+            oper1=opcode(i)
+            j=ichar(oper1(1:1))+ichar(oper1(2:2))
+     $           +ichar(oper1(3:3))+ichar(oper1(4:4))
+            j=iand(j,63)
+            do k=1,nhash
+              if(iophash(k,j) < 0)then
+                iophash(k,j)=i
+                cycle LOOP_I
+              endif
+            enddo
+            write(*,*)'tfopcode hash implementation error. ',opcode(i)
+            stop
+          endif
+        enddo LOOP_I
+        opini=.false.
+        return
+        end subroutine
+
+      end module
+
       module tfstk
       use tfcbk
       use tfcode
@@ -1109,9 +1189,9 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
      $     tfgetllstkall_rlist
       end interface
 
-      interface tfgetdefargp
-        module procedure tfgetdefargp_dlist
-      end interface
+c      interface tfgetdefargp
+c        module procedure tfgetdefargp_dlist
+c      end interface
 
       interface ktfstringq
         module procedure ktfstringqk,ktfstringqd
@@ -1216,6 +1296,14 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
         module procedure tfinequalityqk,tfinequalityqd
       end interface
 
+      interface tflocal
+        module procedure tflocalk,tflocald
+      end interface
+
+      interface tflocal1
+        module procedure tflocal1k,tflocal1d
+      end interface
+
       contains
         subroutine tfinitstk
         use iso_c_binding
@@ -1228,7 +1316,7 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
 c        mstk=max(2**18,int(rgetgl1('STACKSIZ')))
         mstk=int(maxstack*2)
         ispbase=0
-        do while (ispbase .le. 0)
+        do while (ispbase <= 0)
           mstk=mstk/2
           if(mstk .lt. minstack)then
             write(*,*)'Stack allocation failed: ',mstk,ispbase
@@ -1302,15 +1390,15 @@ c     $           n,i,istat
         integer*4 j,j0,k
         j0=jcbk+1
         do j=1,jcbk
-          if(kcbk(2,j) .eq. ka-1)then
+          if(kcbk(2,j) == ka-1)then
             kcbk(2,j)=ka+n-1
             kcbk(3,j)=kcbk(2,j)
             do k=1,jcbk
-              if(kcbk(1,k) .eq. kcbk(2,j)+1)then
+              if(kcbk(1,k) == kcbk(2,j)+1)then
                 if(k .lt. j)then
                   kcbk(1,k)=kcbk(1,j)
                   kcbk(:,j)=0
-                  if(j .eq. jcbk)then
+                  if(j == jcbk)then
                     jcbk=jcbk-1
                   endif
                 else
@@ -1321,14 +1409,14 @@ c                  kcbk(3,j)=kcbk(2,k)
                 return
               endif
             enddo
-          elseif(kcbk(1,j) .eq. ka+n)then
+          elseif(kcbk(1,j) == ka+n)then
             kcbk(1,j)=ka
             do k=1,jcbk
-              if(kcbk(2,k) .eq. kcbk(1,j)+1)then
+              if(kcbk(2,k) == kcbk(1,j)+1)then
                 if(k .lt. j)then
                   kcbk(2:3,k)=kcbk(2:3,j)
                   kcbk(:,j)=0
-                  if(j .eq. jcbk)then
+                  if(j == jcbk)then
                     jcbk=jcbk-1
                   endif
                 else
@@ -1338,7 +1426,7 @@ c                  kcbk(3,j)=kcbk(2,k)
                 return
               endif
             enddo
-          elseif(kcbk(2,j) .eq. 0)then
+          elseif(kcbk(2,j) == 0)then
             j0=min(j0,j)
           endif
         enddo
@@ -1355,7 +1443,7 @@ c                  kcbk(3,j)=kcbk(2,k)
         integer*8 , intent(in) ::k
         integer*4 i
         do i=1,jcbk
-          if(k .le. kcbk(2,i) .and. k .ge. kcbk(1,i))then
+          if(k <= kcbk(2,i) .and. k .ge. kcbk(1,i))then
             itfcbk=i
             return
           endif
@@ -1382,7 +1470,7 @@ c                  kcbk(3,j)=kcbk(2,k)
         integer*8, intent(in):: k
         integer*4 i
         i=itfcbk(k)
-        tfchecklastp=merge(k .le. kcbk(3,i),.false.,i .ne. 0)
+        tfchecklastp=merge(k <= kcbk(3,i),.false.,i .ne. 0)
         if(.not. tfchecklastp)then
           if(i .ne. 0)then
             write(*,*)'tfcklastp ',k,i,kcbk(3,i),kcbk(2,i)
@@ -1553,7 +1641,7 @@ c                  kcbk(3,j)=kcbk(2,k)
         integer*8 , intent(in)::loc
         type (sad_string), pointer, intent(out) :: str
         type (sad_namtbl), pointer :: nam
-        if(loc .eq. 0)then
+        if(loc == 0)then
           call loc_sad(ktfaddr(kxnulls),str)
         else
           call loc_namtbl(loc,nam)
@@ -1748,7 +1836,7 @@ c                  kcbk(3,j)=kcbk(2,k)
         implicit none
         type (sad_object), pointer, optional, intent(out) :: obj
         integer*8 , intent(in)::k
-        if(iand(ktomask,k) .eq. ktfobj)then
+        if(iand(ktomask,k) == ktfobj)then
           ktfobjqk=.true.
           if(present(obj))then
             call loc_obj(iand(ktamask,k),obj)
@@ -1763,7 +1851,7 @@ c                  kcbk(3,j)=kcbk(2,k)
         implicit none
         type (sad_descriptor) , intent(in)::k
         type (sad_object), pointer, optional, intent(out) :: obj
-        if(iand(ktomask,k%k) .eq. ktfobj)then
+        if(iand(ktomask,k%k) == ktfobj)then
           ktfobjqd=.true.
           if(present(obj))then
             call loc_obj(iand(ktamask,k%k),obj)
@@ -1779,7 +1867,7 @@ c                  kcbk(3,j)=kcbk(2,k)
         implicit none
         integer*8 , intent(in)::k
         ka=merge(iand(ktamask,k),kfirstalloc+1,
-     $     iand(ktomask,k) .eq. ktfobj)
+     $     iand(ktomask,k) == ktfobj)
         return
         end function ktaobjk
 
@@ -1788,7 +1876,7 @@ c                  kcbk(3,j)=kcbk(2,k)
         implicit none
         type (sad_descriptor) , intent(in)::k
         ka=merge(iand(ktamask,k%k),kfirstalloc+1,
-     $       iand(ktomask,k%k) .eq. ktfobj)
+     $       iand(ktomask,k%k) == ktfobj)
         return
         end function ktaobjd
 
@@ -1802,7 +1890,7 @@ c                  kcbk(3,j)=kcbk(2,k)
         logical*4 function ktfnanq(x)
         implicit none
         real*8 , intent(in)::x
-        ktfnanq=transfer(x,i00) .eq. ktfnan
+        ktfnanq=transfer(x,i00) == ktfnan
         return
         end
 
@@ -1813,8 +1901,8 @@ c                  kcbk(3,j)=kcbk(2,k)
         integer*8 k
 c        k=kfromr(x)
         k=transfer(x,i00)
-        ktfenanq=k .eq. knotanumber .or.
-     $       iand(k,ktfenan) .eq. ktfenan .and.
+        ktfenanq=k == knotanumber .or.
+     $       iand(k,ktfenan) == ktfenan .and.
      $       iand(k,ktfenanb) .ne. 0 .and. k .ne. kinfinity .and.
      $       k .ne. kminfinity
         return
@@ -1823,7 +1911,7 @@ c        k=kfromr(x)
         logical*4 pure elemental function ktfenanzeroq(x)
         implicit none
         real*8 , intent(in)::x
-        ktfenanzeroq=x .eq. 0.d0 .and. ktfenanq(x)
+        ktfenanzeroq=x == 0.d0 .and. ktfenanq(x)
         return
         end function 
 
@@ -1886,7 +1974,7 @@ c        k=kfromr(x)
         implicit none
         integer*8 , intent(in)::k
         real*8, optional, intent(out) :: v
-        ktfnonrealq_k=iand(ktrmask,k) .eq. ktfnr
+        ktfnonrealq_k=iand(ktrmask,k) == ktfnr
         if(.not. ktfnonrealq_k .and. present(v))then
           v=transfer(k,0.d0)
         endif
@@ -1897,7 +1985,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_descriptor) , intent(in)::k
         real*8, optional, intent(out) :: v
-        ktfnonrealq_d=iand(ktrmask,k%k) .eq. ktfnr
+        ktfnonrealq_d=iand(ktrmask,k%k) == ktfnr
         if(.not. ktfnonrealq_d .and. present(v))then
           v=k%x(1)
         endif
@@ -1908,7 +1996,7 @@ c        k=kfromr(x)
         implicit none
         integer*8 , intent(in)::k
         integer*4 , intent(out) :: iv
-        ktfnonrealq_ki=iand(ktrmask,k) .eq. ktfnr
+        ktfnonrealq_ki=iand(ktrmask,k) == ktfnr
         if(.not. ktfnonrealq_ki)then
           iv=int(transfer(k,0.d0))
         endif
@@ -1919,7 +2007,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_descriptor) , intent(in)::k
         integer*4 , intent(out) :: iv
-        ktfnonrealq_di=iand(ktrmask,k%k) .eq. ktfnr
+        ktfnonrealq_di=iand(ktrmask,k%k) == ktfnr
         if(.not. ktfnonrealq_di)then
           iv=int(k%x(1))
         endif
@@ -1930,7 +2018,7 @@ c        k=kfromr(x)
         implicit none
         integer*8 , intent(in)::k
         integer*8 , optional, intent(out) :: ka
-        ktfoperqk=iand(ktfmask,k) .eq. ktfoper
+        ktfoperqk=iand(ktfmask,k) == ktfoper
         if(ktfoperqk .and. present(ka))then
           ka=ktfaddr(k)
         endif
@@ -1952,7 +2040,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_descriptor) , intent(in)::k
         integer*8, optional, intent(out) :: ka
-        v=iand(ktfmask,k%k) .eq. ktfoper
+        v=iand(ktfmask,k%k) == ktfoper
         if(v .and. present(ka))then
           ka=ktfaddr(k)
         endif
@@ -1975,7 +2063,7 @@ c        k=kfromr(x)
         complex*16, pointer, optional, intent(out) :: cx
         integer*8 , intent(in)::k
         integer*8 ia
-        ktfcxqk=iand(ktfmask,k) .eq. ktfcx
+        ktfcxqk=iand(ktfmask,k) == ktfcx
         if(present(cx) .and. ktfcxqk)then
           ia=ktfaddr(k)
           cx=dcmplx(rlist(ia),rlist(ia+1))
@@ -1988,7 +2076,7 @@ c        k=kfromr(x)
         complex*16, pointer, optional, intent(out) :: cx
         type (sad_descriptor) , intent(in)::k
         integer*8 ia
-        ktfcxqd=iand(ktfmask,k%k) .eq. ktfcx
+        ktfcxqd=iand(ktfmask,k%k) == ktfcx
         if(present(cx) .and. ktfcxqd)then
           ia=ktfaddrd(k)
           cx=dcmplx(rlist(ia),rlist(ia+1))
@@ -2000,7 +2088,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_string), pointer, optional, intent(out) :: str
         integer*8 , intent(in)::k
-        ktfstringqk=iand(ktfmask,k) .eq. ktfstring
+        ktfstringqk=iand(ktfmask,k) == ktfstring
         if(present(str) .and. ktfstringqk)then
           call loc_string(ktfaddr(k),str)
         endif
@@ -2011,7 +2099,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_descriptor) , intent(in)::k
         type (sad_string), pointer, optional, intent(out) :: str
-        ktfstringqd=iand(ktfmask,k%k) .eq. ktfstring
+        ktfstringqd=iand(ktfmask,k%k) == ktfstring
         if(present(str) .and. ktfstringqd)then
           call loc_string(ktfaddr(k%k),str)
         endif
@@ -2033,7 +2121,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_rlist), pointer, intent(out) :: kl
         integer*8 , intent(in)::k
-        if(iand(ktfmask,k) .eq. ktflist)then
+        if(iand(ktfmask,k) == ktflist)then
           ktflistq_rlist=.true.
           call loc_sad(iand(ktamask,k),kl)
         else
@@ -2046,7 +2134,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_dlist), pointer, optional, intent(out) :: kl
         integer*8 , intent(in)::k
-        if(iand(ktfmask,k) .eq. ktflist)then
+        if(iand(ktfmask,k) == ktflist)then
           ktflistq_dlist=.true.
           if(present(kl))then
             call loc_dlist(iand(ktamask,k),kl)
@@ -2061,7 +2149,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_rlist), pointer, intent(out) :: kl
         type (sad_descriptor), intent(in):: k
-        if(iand(ktfmask,k%k) .eq. ktflist)then
+        if(iand(ktfmask,k%k) == ktflist)then
           ktflistqd_rlist=.true.
           call loc_sad(iand(ktamask,k%k),kl)
         else
@@ -2074,7 +2162,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_dlist), pointer, optional, intent(out) :: kl
         type (sad_descriptor), intent(in):: k
-        if(iand(ktfmask,k%k) .eq. ktflist)then
+        if(iand(ktfmask,k%k) == ktflist)then
           ktflistqd_dlist=.true.
           if(present(kl))then
             call loc_dlist(iand(ktamask,k%k),kl)
@@ -2089,7 +2177,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_rlist), pointer,  intent(out) :: kl
         integer*8 k
-        if(iand(ktfmask,k) .eq. ktflist)then
+        if(iand(ktfmask,k) == ktflist)then
           ktfnonlistq_rlist=.false.
           call loc_sad(iand(ktamask,k),kl)
         else
@@ -2102,7 +2190,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_dlist), pointer, optional, intent(out) :: kl
         integer*8 , intent(in)::k
-        if(iand(ktfmask,k) .eq. ktflist)then
+        if(iand(ktfmask,k) == ktflist)then
           ktfnonlistq_dlist=.false.
           if(present(kl))then
             call loc_dlist(iand(ktamask,k),kl)
@@ -2117,7 +2205,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_rlist), pointer, intent(out) :: kl
         type (sad_descriptor), intent(in):: k
-        if(iand(ktfmask,k%k) .eq. ktflist)then
+        if(iand(ktfmask,k%k) == ktflist)then
           ktfnonlistqd_rlist=.false.
           call loc_sad(iand(ktamask,k%k),kl)
         else
@@ -2130,7 +2218,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_dlist), pointer, optional, intent(out) :: kl
         type (sad_descriptor), intent(in):: k
-        if(iand(ktfmask,k%k) .eq. ktflist)then
+        if(iand(ktfmask,k%k) == ktflist)then
           ktfnonlistqd_dlist=.false.
           if(present(kl))then
             call loc_dlist(iand(ktamask,k%k),kl)
@@ -2145,8 +2233,8 @@ c        k=kfromr(x)
         implicit none
         type (sad_rlist), pointer, optional, intent(out) :: kl
         integer*8 , intent(in)::k
-        if(iand(ktfmask,k) .eq. ktflist .and.
-     $       klist(ktfaddr(k)) .eq. ktfoper+mtflist)then
+        if(iand(ktfmask,k) == ktflist .and.
+     $       klist(ktfaddr(k)) == ktfoper+mtflist)then
           tflistq_rlist=.true.
           if(present(kl))then
             call loc_sad(iand(ktamask,k),kl)
@@ -2161,8 +2249,8 @@ c        k=kfromr(x)
         implicit none
         type (sad_dlist), pointer, intent(out) :: kl
         integer*8 , intent(in)::k
-        if(iand(ktfmask,k) .eq. ktflist .and.
-     $       klist(ktfaddr(k)) .eq. ktfoper+mtflist)then
+        if(iand(ktfmask,k) == ktflist .and.
+     $       klist(ktfaddr(k)) == ktfoper+mtflist)then
           tflistq_dlist=.true.
           call loc_dlist(iand(ktamask,k),kl)
         else
@@ -2175,8 +2263,8 @@ c        k=kfromr(x)
         implicit none
         type (sad_rlist), pointer, intent(out) :: kl
         type (sad_descriptor), intent(in):: k
-        if(iand(ktfmask,k%k) .eq. ktflist .and.
-     $       klist(ktfaddr(k%k)) .eq. ktfoper+mtflist)then
+        if(iand(ktfmask,k%k) == ktflist .and.
+     $       klist(ktfaddr(k%k)) == ktfoper+mtflist)then
           tflistqd_rlist=.true.
           call loc_sad(iand(ktamask,k%k),kl)
         else
@@ -2189,8 +2277,8 @@ c        k=kfromr(x)
         implicit none
         type (sad_dlist), pointer, optional, intent(out) :: kl
         type (sad_descriptor), intent(in):: k
-        if(iand(ktfmask,k%k) .eq. ktflist .and.
-     $       klist(ktfaddr(k%k)) .eq. ktfoper+mtflist)then
+        if(iand(ktfmask,k%k) == ktflist .and.
+     $       klist(ktfaddr(k%k)) == ktfoper+mtflist)then
           tflistqd_dlist=.true.
           if(present(kl))then
             call loc_dlist(iand(ktamask,k%k),kl)
@@ -2205,8 +2293,8 @@ c        k=kfromr(x)
         implicit none
         type (sad_rlist), pointer, optional, intent(out) :: kl
         integer*8 , intent(in)::k
-        if(iand(ktfmask,k) .eq. ktflist .and.
-     $       klist(ktfaddr(k)) .eq. ktfoper+mtflist)then
+        if(iand(ktfmask,k) == ktflist .and.
+     $       klist(ktfaddr(k)) == ktfoper+mtflist)then
           tfnonlistq_rlist=.false.
           if(present(kl))then
             call loc_sad(iand(ktamask,k),kl)
@@ -2221,8 +2309,8 @@ c        k=kfromr(x)
         implicit none
         type (sad_dlist), pointer, intent(out) :: kl
         integer*8 , intent(in)::k
-        if(iand(ktfmask,k) .eq. ktflist .and.
-     $       klist(ktfaddr(k)) .eq. ktfoper+mtflist)then
+        if(iand(ktfmask,k) == ktflist .and.
+     $       klist(ktfaddr(k)) == ktfoper+mtflist)then
           tfnonlistq_dlist=.false.
           call loc_dlist(iand(ktamask,k),kl)
         else
@@ -2235,8 +2323,8 @@ c        k=kfromr(x)
         implicit none
         type (sad_rlist), pointer, optional, intent(out) :: kl
         type (sad_descriptor), intent(in):: k
-        if(iand(ktfmask,k%k) .eq. ktflist .and.
-     $       klist(ktfaddr(k%k)) .eq. ktfoper+mtflist)then
+        if(iand(ktfmask,k%k) == ktflist .and.
+     $       klist(ktfaddr(k%k)) == ktfoper+mtflist)then
           tfnonlistqd_rlist=.false.
           if(present(kl))then
             call loc_sad(iand(ktamask,k%k),kl)
@@ -2251,8 +2339,8 @@ c        k=kfromr(x)
         implicit none
         type (sad_dlist), pointer, intent(out) :: kl
         type (sad_descriptor), intent(in):: k
-        if(iand(ktfmask,k%k) .eq. ktflist .and.
-     $       klist(ktfaddr(k%k)) .eq. ktfoper+mtflist)then
+        if(iand(ktfmask,k%k) == ktflist .and.
+     $       klist(ktfaddr(k%k)) == ktfoper+mtflist)then
           tfnonlistqd_dlist=.false.
           call loc_dlist(iand(ktamask,k%k),kl)
         else
@@ -2267,7 +2355,7 @@ c        k=kfromr(x)
         type (sad_rlist), pointer, optional, intent(out) :: kl
         type (sad_dlist), pointer :: kl1
         if(ktflistq(k,kl1))then
-          tfreallistqd=kl1%head%k .eq. ktfoper+mtflist
+          tfreallistqd=kl1%head%k == ktfoper+mtflist
      $         .and. ktfreallistq(kl1)
           if(tfreallistqd .and. present(kl))then
             call descr_sad(k,kl)
@@ -2285,7 +2373,7 @@ c        k=kfromr(x)
         type (sad_rlist), pointer :: kl1
         integer*8 k
         if(ktflistq(k,kl1))then
-          tfreallistqk=kl1%head%k .eq. ktfoper+mtflist
+          tfreallistqk=kl1%head%k == ktfoper+mtflist
      $         .and. ktfreallistq(kl1)
           if(tfreallistqk .and. present(kl))then
             kl=>kl1
@@ -2317,7 +2405,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_complex), pointer, optional, intent(out) :: cx
         integer*8 , intent(in)::k
-        if(iand(ktfmask,k) .eq. ktflist)then
+        if(iand(ktfmask,k) == ktflist)then
           ktflistqx=.true.
           if(present(cx))then
             call loc_complex(iand(ktamask,k),cx)
@@ -2333,9 +2421,9 @@ c        k=kfromr(x)
         type (sad_rlist), pointer, intent(out) :: kl
         integer*8 , intent(in)::k
         integer*8 ka
-        if(iand(ktfmask,k) .eq. ktflist)then
+        if(iand(ktfmask,k) == ktflist)then
           ka=ktfaddr(k)
-          if(klist(ka) .eq. ktfoper+mtflist)then
+          if(klist(ka) == ktfoper+mtflist)then
             tfnonlistqk_rlist=.false.
             call loc_rlist(ka,kl)
             return
@@ -2350,9 +2438,9 @@ c        k=kfromr(x)
         type (sad_dlist), pointer, intent(out) :: kl
         integer*8 , intent(in)::k
         integer*8 ka
-        if(iand(ktfmask,k) .eq. ktflist)then
+        if(iand(ktfmask,k) == ktflist)then
           ka=ktfaddr(k)
-          if(klist(ka) .eq. ktfoper+mtflist)then
+          if(klist(ka) == ktfoper+mtflist)then
             tfnonlistqk_dlist=.false.
             call loc_dlist(ka,kl)
             return
@@ -2448,8 +2536,8 @@ c        k=kfromr(x)
         type (sad_dlist), pointer :: kl
         integer*4 , intent(in)::n 
         if(ktflistq(k,kl))then
-          tfnumlistqnd=kl%head%k .eq. ktfoper+mtflist
-     $         .and. ktfreallistq(kl) .and. kl%nl .eq. n
+          tfnumlistqnd=kl%head%k == ktfoper+mtflist
+     $         .and. ktfreallistq(kl) .and. kl%nl == n
           if(present(kl1))then
             call descr_rlist(k,kl1)
           endif
@@ -2466,8 +2554,8 @@ c        k=kfromr(x)
         type (sad_dlist), pointer :: kl
         integer*4 , intent(in)::n 
         if(ktflistq(k,kl))then
-          tfnumlistqnk=kl%head%k .eq. ktfoper+mtflist
-     $         .and. ktfreallistq(kl) .and. kl%nl .eq. n
+          tfnumlistqnk=kl%head%k == ktfoper+mtflist
+     $         .and. ktfreallistq(kl) .and. kl%nl == n
           if(present(kl1))then
             call loc_rlist(ktfaddr(k),kl1)
           endif
@@ -2504,7 +2592,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_symbol), pointer, optional, intent(out) :: sym
         integer*8 , intent(in)::k
-        ktfsymbolqk=iand(ktfmask,k) .eq. ktfsymbol
+        ktfsymbolqk=iand(ktfmask,k) == ktfsymbol
         if(present(sym) .and. ktfsymbolqk)then
           call loc_sym(ktfaddr(k),sym)
         endif
@@ -2526,7 +2614,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_descriptor) , intent(in)::k
         type (sad_symbol), pointer, optional, intent(out) :: sym
-        ktfsymbolqd=iand(ktfmask,k%k) .eq. ktfsymbol
+        ktfsymbolqd=iand(ktfmask,k%k) == ktfsymbol
         if(present(sym) .and. ktfsymbolqd)then
           call loc_sym(ktfaddr(k%k),sym)
         endif
@@ -2548,7 +2636,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_symdef), pointer, optional, intent(out) :: symd
         integer*8 , intent(in)::k
-        ktfsymbolqdef=iand(ktfmask,k) .eq. ktfsymbol
+        ktfsymbolqdef=iand(ktfmask,k) == ktfsymbol
         if(present(symd) .and. ktfsymbolqdef)then
           call loc_symdef(ktfaddr(k),symd)
         endif
@@ -2559,7 +2647,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_pat), pointer, optional, intent(out) :: pat
         integer*8 , intent(in)::k
-        if(iand(ktfmask,k) .eq. ktfpat)then
+        if(iand(ktfmask,k) == ktfpat)then
           ktfpatqk=.true.
           if(present(pat))then
             call loc_pat(iand(ktamask,k),pat)
@@ -2593,7 +2681,7 @@ c        k=kfromr(x)
         implicit none
         integer*8 , intent(in)::k
         integer*8 , optional, intent(out) :: ka
-        ktfrefqk=iand(ktfmask,k) .eq. ktfref
+        ktfrefqk=iand(ktfmask,k) == ktfref
         if(ktfrefqk .and. present(ka))then
           ka=ktfaddr(k)
         endif
@@ -2604,7 +2692,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_descriptor) , intent(in)::k
         integer*8 , optional, intent(out) :: ka
-        ktfrefqd=iand(ktfmask,k%k) .eq. ktfref
+        ktfrefqd=iand(ktfmask,k%k) == ktfref
         if(ktfrefqd .and. present(ka))then
           ka=ktfaddr(k%k)
         endif
@@ -2621,7 +2709,7 @@ c        k=kfromr(x)
         logical*4 pure elemental function ktfreallistqk(ka)
         implicit none
         integer*8 , intent(in)::ka
-        ktfreallistqk=iand(ilist(2,ka-3),lnonreallist) .eq. 0
+        ktfreallistqk=iand(ilist(2,ka-3),lnonreallist) == 0
         return
         end function ktfreallistqk
 
@@ -2629,7 +2717,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_rlist), pointer, intent(out) :: kl
         integer*8 , intent(in)::ka
-        ktfreallistqk_rlist=iand(ilist(2,ka-3),lnonreallist) .eq. 0
+        ktfreallistqk_rlist=iand(ilist(2,ka-3),lnonreallist) == 0
         if(ktfreallistqk_rlist)then
           call loc_sad(ka,kl)
         endif
@@ -2639,7 +2727,7 @@ c        k=kfromr(x)
         logical*4 pure elemental function ktfreallistqd(ka)
         implicit none
         type (sad_descriptor) , intent(in)::ka
-        ktfreallistqd=iand(ilist(2,ktfaddrd(ka)-3),lnonreallist) .eq. 0
+        ktfreallistqd=iand(ilist(2,ktfaddrd(ka)-3),lnonreallist) == 0
         return
         end function ktfreallistqd
 
@@ -2648,7 +2736,7 @@ c        k=kfromr(x)
         type (sad_rlist), pointer, intent(out) :: kl
         type (sad_descriptor) , intent(in)::ka
         ktfreallistqd_rlist=
-     $       iand(ilist(2,ktfaddrd(ka)-3),lnonreallist) .eq. 0
+     $       iand(ilist(2,ktfaddrd(ka)-3),lnonreallist) == 0
         if(ktfreallistqd_rlist)then
           call loc_sad(ktfaddrd(ka),kl)
         endif
@@ -2665,14 +2753,14 @@ c        k=kfromr(x)
         logical*4 pure elemental function ktfreallistqo_rlist(list)
         implicit none
         type (sad_rlist) , intent(in)::list
-        ktfreallistqo_rlist=iand(list%attr,lnonreallist) .eq. 0
+        ktfreallistqo_rlist=iand(list%attr,lnonreallist) == 0
         return
         end function ktfreallistqo_rlist
 
         logical*4 pure elemental function ktfreallistqo_dlist(list)
         implicit none
         type (sad_dlist) , intent(in)::list
-        ktfreallistqo_dlist=iand(list%attr,lnonreallist) .eq. 0
+        ktfreallistqo_dlist=iand(list%attr,lnonreallist) == 0
         return
         end function ktfreallistqo_dlist
 
@@ -2701,8 +2789,8 @@ c        k=kfromr(x)
         implicit none
         type (sad_rlist), pointer, intent(out) :: kl
         integer*8 , intent(in)::k
-        v=iand(ktfmask,k) .eq. ktflist .and.
-     $       klist(iand(ktamask,k)) .eq. ktfoper+mtfnull
+        v=iand(ktfmask,k) == ktflist .and.
+     $       klist(iand(ktamask,k)) == ktfoper+mtfnull
         if(v)then
           call loc_sad(iand(ktamask,k),kl)
         endif
@@ -2713,8 +2801,8 @@ c        k=kfromr(x)
         implicit none
         type (sad_dlist), pointer, optional, intent(out) :: kl
         integer*8 , intent(in)::k
-        v=iand(ktfmask,k) .eq. ktflist .and.
-     $       klist(iand(ktamask,k)) .eq. ktfoper+mtfnull
+        v=iand(ktfmask,k) == ktflist .and.
+     $       klist(iand(ktamask,k)) == ktfoper+mtfnull
         if(v .and. present(kl))then
           call loc_dlist(iand(ktamask,k),kl)
         endif
@@ -2725,8 +2813,8 @@ c        k=kfromr(x)
         implicit none
         type (sad_rlist), pointer, intent(out) :: kl
         type (sad_descriptor) , intent(in)::k
-        v=iand(ktfmask,k%k) .eq. ktflist .and.
-     $       klist(iand(ktamask,k%k)) .eq. ktfoper+mtfnull
+        v=iand(ktfmask,k%k) == ktflist .and.
+     $       klist(iand(ktamask,k%k)) == ktfoper+mtfnull
         if(v)then
           call loc_sad(iand(ktamask,k%k),kl)
         endif
@@ -2737,8 +2825,8 @@ c        k=kfromr(x)
         implicit none
         type (sad_dlist), pointer, optional, intent(out) :: kl
         type (sad_descriptor) , intent(in)::k
-        v=iand(ktfmask,k%k) .eq. ktflist .and.
-     $       klist(iand(ktamask,k%k)) .eq. ktfoper+mtfnull
+        v=iand(ktfmask,k%k) == ktflist .and.
+     $       klist(iand(ktamask,k%k)) == ktfoper+mtfnull
         if(v .and. present(kl))then
           call loc_dlist(iand(ktamask,k%k),kl)
         endif
@@ -2790,8 +2878,8 @@ c        k=kfromr(x)
         logical*4 pure elemental function ktfovrwrtq(kl)
         implicit none
         type (sad_dlist) , intent(in)::kl
-        ktfovrwrtq=kl%ref .le. 0 .or.
-     $       kl%ref .eq. 1 .and. ktfaddr(kl%alloc) .eq. 0
+        ktfovrwrtq=kl%ref <= 0 .or.
+     $       kl%ref == 1 .and. ktfaddr(kl%alloc) == 0
         return
         end function ktfovrwrtq
 
@@ -2801,9 +2889,9 @@ c        k=kfromr(x)
         type (sad_complex), pointer, optional, intent(out) :: cx
         type (sad_descriptor) , intent(in)::k
         tfcomplexqdx=ktflistqx(k%k,c) .and.
-     $       c%head%k .eq. ktfoper+mtfcomplex
-     $       .and. c%nl .eq. 2 .and.
-     $       iand(lnonreallist,c%attr) .eq. 0
+     $       c%head%k == ktfoper+mtfcomplex
+     $       .and. c%nl == 2 .and.
+     $       iand(lnonreallist,c%attr) == 0
         if(tfcomplexqdx .and. present(cx))then
           cx=>c
         endif
@@ -2816,9 +2904,9 @@ c        k=kfromr(x)
         complex*16  cv
         type (sad_descriptor) , intent(in)::k
         tfcomplexqdc=ktflistqx(k%k,c) .and.
-     $       c%head%k .eq. ktfoper+mtfcomplex
-     $       .and. c%nl .eq. 2 .and.
-     $       iand(lnonreallist,c%attr) .eq. 0
+     $       c%head%k == ktfoper+mtfcomplex
+     $       .and. c%nl == 2 .and.
+     $       iand(lnonreallist,c%attr) == 0
         if(tfcomplexqdc)then
           cv=c%cx(1)
         endif
@@ -2831,9 +2919,9 @@ c        k=kfromr(x)
         type (sad_complex), pointer, optional, intent(out) :: cx
         integer*8 , intent(in)::k
         tfcomplexqx=ktflistqx(k,c) .and.
-     $       c%head%k .eq. ktfoper+mtfcomplex
-     $       .and. c%nl .eq. 2 .and.
-     $       iand(lnonreallist,c%attr) .eq. 0
+     $       c%head%k == ktfoper+mtfcomplex
+     $       .and. c%nl == 2 .and.
+     $       iand(lnonreallist,c%attr) == 0
         if(tfcomplexqx .and. present(cx))then
           cx=>c
         endif
@@ -2846,9 +2934,9 @@ c        k=kfromr(x)
         complex*16 cv
         integer*8 , intent(in)::k
         tfcomplexqc=ktflistqx(k,c) .and.
-     $       c%head%k .eq. ktfoper+mtfcomplex
-     $       .and. c%nl .eq. 2 .and.
-     $       iand(lnonreallist,c%attr) .eq. 0
+     $       c%head%k == ktfoper+mtfcomplex
+     $       .and. c%nl == 2 .and.
+     $       iand(lnonreallist,c%attr) == 0
         if(tfcomplexqc)then
           cv=c%cx(1)
         endif
@@ -2865,7 +2953,7 @@ c        k=kfromr(x)
         type (sad_pat), pointer :: pata,patp
         integer*8 , intent(in)::ka,kp
         integer*8 nc
-        if(ka .eq. kp)then
+        if(ka == kp)then
           lx=.true.
           return
         endif
@@ -2880,12 +2968,12 @@ c        k=kfromr(x)
         elseif(ktfstringq(ka,stra))then
           call loc_sad(ktfaddr(kp),strp)
           nc=stra%nch
-          if(nc .eq. strp%nch)then
-            lx=stra%str(1:nc) .eq. strp%str(1:nc)
+          if(nc == strp%nch)then
+            lx=stra%str(1:nc) == strp%str(1:nc)
           endif
         elseif(ktflistq(ka,kla))then
           call loc_sad(ktfaddr(kp),klp)
-          if(kla%nl .eq. klp%nl)then
+          if(kla%nl == klp%nl)then
             lx=tfsamelistqo(kla,klp)
           endif
         elseif(ktfpatq(ka,pata))then
@@ -2932,10 +3020,10 @@ c        k=kfromr(x)
                 kaai=ktfaddr(kai%k)
                 kapi=ktfaddr(kpi%k)
                 if(ilist(1,kapi-1) .ge. ilist(1,kaai-1))then
-                  call tflocal1(kai%k)
+                  call tflocal1d(kai)
                   lista%dbody(i)=dtfcopy1(kpi)
                 else
-                  call tflocal1(kpi%k)
+                  call tflocal1d(kpi)
                   listp%dbody(i)=dtfcopy1(kai)
                 endif
               endif
@@ -2957,7 +3045,7 @@ c        k=kfromr(x)
         if(ktfpatq(k))then
           f1=.false.
         elseif(ktflistq(k,kl))then
-          if(iand(kl%attr,lnopatlist) .eq. 0)then
+          if(iand(kl%attr,lnopatlist) == 0)then
             do i=0,kl%nl
               if(.not. tfnopatqd(kl%dbody(i)))then
                 f1=.false.
@@ -2974,8 +3062,8 @@ c        k=kfromr(x)
         use tfcode
         implicit none
         type(sad_symbol) , intent(in)::sa,sp
-        tfsamesymbolqo=sa%loc .eq. sp%loc .and.
-     $       max(0,sa%gen) .eq. max(0,sp%gen)
+        tfsamesymbolqo=sa%loc == sp%loc .and.
+     $       max(0,sa%gen) == max(0,sp%gen)
         return
         end function
 
@@ -2986,9 +3074,9 @@ c        k=kfromr(x)
         integer*8 ka,kp
         ka=ktfaddr(ka1)
         kp=ktfaddr(kp1)
-        if(ka .eq. kp)then
+        if(ka == kp)then
           tfsamesymbolqk=.true.
-        elseif(ka .eq. 0 .or. kp .eq. 0)then
+        elseif(ka == 0 .or. kp == 0)then
           tfsamesymbolqk=.false.
         else
           call loc_sad(ka,syma)
@@ -3009,7 +3097,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_string), pointer :: stra,strp
         integer*8 ka1,kp1
-        if(ktfaddr(ka1) .eq. ktfaddr(kp1))then
+        if(ktfaddr(ka1) == ktfaddr(kp1))then
           tfsamestringqk=.true.
         else
           call loc_sad(ktfaddr(ka1),stra)
@@ -3030,8 +3118,8 @@ c        k=kfromr(x)
         use tfcode
         implicit none
         type(sad_string) , intent(in)::sa,sp
-        tfsamestringqo=sa%nch .eq. sp%nch .and.
-     $       sa%str(:sa%nch) .eq. sp%str(:sp%nch)
+        tfsamestringqo=sa%nch == sp%nch .and.
+     $       sa%str(:sa%nch) == sp%str(:sp%nch)
         return
         end function
 
@@ -3070,7 +3158,7 @@ c        k=kfromr(x)
         integer*8 , intent(in)::k
         type (sad_dlist), pointer :: kl
         tfinequalityqk=ktflistq(k,kl) .and.
-     $       kl%head%k .eq. ktfoper+mtfinequality
+     $       kl%head%k == ktfoper+mtfinequality
         return
         end function
 
@@ -3079,7 +3167,7 @@ c        k=kfromr(x)
         type (sad_descriptor) , intent(in)::k
         type (sad_dlist), pointer :: kl
         tfinequalityqd=ktflistq(k,kl) .and.
-     $       kl%head%k .eq. ktfoper+mtfinequality
+     $       kl%head%k == ktfoper+mtfinequality
         return
         end function
 
@@ -3089,12 +3177,11 @@ c        k=kfromr(x)
         type (sad_dlist), pointer :: kl
         type (sad_symdef), pointer ::symd
         type (sad_pat), pointer :: pat
-        logical*4 tfconstlistqo
         lx=.true.
         if(ktfsymbolqdef(k,symd))then
           lx=ktfconstantsymq(symd%sym) .and.
-     $         symd%value%k .eq. ktfsymbol+ktfaddr(k)
-     $         .and. symd%upval .eq. 0
+     $         symd%value%k == ktfsymbol+ktfaddr(k)
+     $         .and. symd%upval == 0
         elseif(ktflistq(k,kl))then
           lx=tfconstlistqo(kl)
         elseif(ktfpatq(k,pat))then
@@ -3110,11 +3197,120 @@ c        k=kfromr(x)
         return
         end function
 
+      logical*4 function tfconstlistqo(list)
+      implicit none
+      type (sad_dlist) ,intent(inout):: list
+      type (sad_descriptor) kh
+      integer*4 i
+      logical*4 nr
+      if(iand(lnoconstlist,list%attr) .ne. 0)then
+        tfconstlistqo=.false.
+        return
+      endif
+      tfconstlistqo=.true.
+      if(iand(lconstlist,list%attr) .ne. 0)then
+        return
+      endif
+      kh=list%head
+      nr=ktfnonreallistqo(list)
+      if(kh%k .eq. ktfoper+mtfhold .or.
+     $     kh%k .eq. ktfoper+mtffun)then
+        tfconstlistqo=.not. tfseqqo(list)
+      elseif(kh%k .eq. ktfoper+mtfcomplex)then
+        tfconstlistqo=.not. nr
+      elseif(.not. tfconstheadqk(kh))then
+        tfconstlistqo=.false.
+      elseif(nr)then
+        if(iand(kconstarg,list%attr) .eq. 0)then
+          do i=1,list%nl
+            if(.not. tfconstq(list%dbody(i)%k))then
+              tfconstlistqo=.false.
+              list%attr=ior(lnoconstlist,list%attr)
+              return
+            endif
+          enddo
+          list%attr=ior(list%attr,kconstarg)
+        endif
+      endif
+      list%attr=ior(merge(lconstlist+kconstarg,lnoconstlist,
+     $     tfconstlistqo),list%attr)
+      return
+      end
+
+      logical*4 function tfconstheadqk(k)
+      use ophash
+      implicit none
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_dlist), pointer :: list
+      type (sad_pat), pointer :: pat
+      type (sad_symdef), pointer :: symd
+      integer*8 ka
+      tfconstheadqk=.true.
+      if(ktfoperq(k,ka))then
+        tfconstheadqk=merge(constop(ka),.false.,ka <= mtfend)
+      elseif(ktfstringq(k))then
+        tfconstheadqk=.false.
+      elseif(ktfsymbolqdef(k%k,symd))then
+        tfconstheadqk=ktfconstantsymq(symd%sym) .and.
+     $       symd%value%k .eq. ktfsymbol+ktfaddr(k)
+     $       .and. symd%downval .eq. 0
+      elseif(ktflistq(k,list))then
+        if(list%head%k .eq. ktfoper+mtflist .or.
+     $       list%head%k .eq. ktfoper+mtffun)then
+          tfconstheadqk=.false.
+        elseif(iand(lconstlist,list%attr) .eq. 0)then
+          if(iand(lnoconstlist,list%attr) .ne. 0)then
+            tfconstheadqk=.false.
+          elseif(.not. tfconstlistqo(list))then
+            tfconstheadqk=.false.
+          endif
+        endif
+      elseif(ktfpatq(k,pat))then
+        tfconstheadqk=tfconstq(pat%expr%k)
+      endif
+      return
+      end
+
+      recursive logical*4 function tfseqqo(list) result(lx)
+      use tfcode
+      implicit none
+      type (sad_dlist) ,intent(inout):: list
+      type (sad_dlist), pointer :: kli
+      integer*4 iadv,i
+      lx=.false.
+      iadv=list%attr
+      if(iand(lnonreallist,iadv) .eq. 0)then
+        return
+      endif
+      if(iand(iadv,kconstarg+knoseqarg) .ne. 0)then
+        return
+      elseif(iand(iadv,kseqarg) .ne. 0)then
+        lx=.true.
+        return
+      endif
+      do i=1,list%nl
+        if(ktflistq(list%dbody(i),kli))then
+          if(kli%head%k .eq. ktfoper+mtfnull)then
+            list%attr=ior(iadv,kseqarg)
+            lx=.true.
+            return
+          endif
+          if(tfconstlistqo(kli))then
+          elseif(tfseqqo(kli))then
+            list%attr=ior(iadv,kseqarg)
+            lx=.true.
+            return
+          endif
+        endif
+      enddo
+      list%attr=ior(iadv,knoseqarg)
+      return
+      end
+
         logical*4 function tfconstpatternqk(k)
         implicit none
         integer*8 , intent(in)::k
         type (sad_dlist), pointer :: kl
-        logical*4 tfconstpatternheadqk,tfconstpatternlistbodyqo
         tfconstpatternqk=.true.
         if(ktfpatq(k))then
           tfconstpatternqk=.false.
@@ -3129,7 +3325,6 @@ c        k=kfromr(x)
         implicit none
         type (sad_descriptor) , intent(in)::k
         type (sad_dlist), pointer :: kl
-        logical*4 tfconstpatternheadqk,tfconstpatternlistbodyqo
         tfconstpatternqd=.true.
         if(ktfpatq(k))then
           tfconstpatternqd=.false.
@@ -3140,12 +3335,60 @@ c        k=kfromr(x)
         return
         end function
 
+      recursive logical*4 function tfconstpatternheadqk(k)
+     $     result(lx)
+      implicit none
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_dlist), pointer :: kl
+      integer*8 ka
+      lx=merge(.false.,
+     $     merge(ka /= mtfalt .and. ka /= mtfrepeated .and.
+     $     ka /= mtfrepeatednull,
+     $     merge(tfconstpatternheadqk(kl%head) .and.
+     $     tfconstpatternlistbodyqo(kl),
+     $     merge(.not. tfsamesymbolqk(k%k,kxliteral),.true.,
+     $     ktfsymbolq(k)),
+     $     ktflistq(k,kl)),
+     $     ktfoperq(k,ka)),
+     $     ktfpatq(k))
+      return
+      end
+
+      logical function tfconstpatternlistbodyqo(list)
+      implicit none
+      type (sad_descriptor) ki
+      type (sad_dlist) ,intent(inout):: list
+      integer*4 i
+      tfconstpatternlistbodyqo=.true.
+      if(ktfnonreallistqo(list))then
+        if(iand(list%attr,kconstlist) /= 0)then
+          return
+        elseif(iand(list%attr,knoconstlist) /= 0)then
+          tfconstpatternlistbodyqo=.false.
+          return
+        endif
+        do i=1,list%nl
+          ki=list%dbody(i)
+          if(ktfpatq(ki))then
+            tfconstpatternlistbodyqo=.false.
+          elseif(ktflistq(ki))then
+            tfconstpatternlistbodyqo=tfconstpatternq(ki)
+          endif
+          if(.not. tfconstpatternlistbodyqo)then
+            list%attr=ior(list%attr,knoconstlist)
+            return
+          endif
+        enddo
+        list%attr=ior(list%attr,kconstlist)
+      endif
+      return
+      end
+
         logical*4 function tfheldqd(k)
         implicit none
         type (sad_descriptor) , intent(in)::k
         type (sad_dlist), pointer :: kl
-        tfheldqd=ktflistq(k,kl) .and.
-     $       kl%head%k .eq. ktfoper+mtfhold
+        tfheldqd=ktflistq(k,kl) .and. kl%head%k == ktfoper+mtfhold
         return
         end function
 
@@ -3159,7 +3402,7 @@ c        k=kfromr(x)
         type (sad_rlist), pointer :: kli1
         type (sad_dlist), pointer :: kl1,klb1
         if(ktflistq(k,kl1))then
-          if(tfsameq(kl1%head,kxmatrix) .and. kl1%nl .eq. 2)then
+          if(tfsameq(kl1%head,kxmatrix) .and. kl1%nl == 2)then
             if(tfreallistq(kl1%dbody(1),kli1) .and.
      $           ktflistq(kl1%dbody(2),klb1))then
               tfmatrixqd=.true.
@@ -3209,7 +3452,7 @@ c        k=kfromr(x)
         integer*8 , intent(in)::k
         integer*8 ka
         logical*4 , intent(inout)::d
-        if(iand(ktomask,k) .eq. ktfobj)then
+        if(iand(ktomask,k) == ktfobj)then
           d=.true.
           ka=iand(ktamask,k)
           ilist(1,ka-1)=ilist(1,ka-1)+1
@@ -3241,7 +3484,7 @@ c        k=kfromr(x)
         implicit none
         integer*8 , intent(in)::k
         integer*8 ka
-        if(iand(ktomask,k) .eq. ktfobj)then
+        if(iand(ktomask,k) == ktfobj)then
           ka=iand(ktamask,k)
           ilist(1,ka-1)=ilist(1,ka-1)+1
         endif
@@ -3267,7 +3510,7 @@ c        k=kfromr(x)
         implicit none
         type (sad_descriptor) , intent(in)::d
         integer*8 ka
-        if(iand(ktomask,d%k) .eq. ktfobj)then
+        if(iand(ktomask,d%k) == ktfobj)then
           ka=iand(ktamask,d%k)
           ilist(1,ka-1)=ilist(1,ka-1)+1
         endif
@@ -3282,6 +3525,27 @@ c        k=kfromr(x)
         return
         end function
 
+      subroutine tflocalk(k)
+      implicit none
+      type (sad_object), pointer :: obj
+      integer*8 ,intent(in):: k
+      integer*8 ka,itfroot
+      if(ktfobjq(k))then
+        ka=ktfaddr(k)
+        call loc_obj(ka,obj)
+        obj%ref=obj%ref-1
+        if(obj%ref <= 0)then
+          obj%ref=0
+          if(ktfaddr(obj%alloc) == 0)then
+            itfroot=itflocal+levele
+            obj%alloc%k=obj%alloc%k+ktfaddr(klist(itfroot))
+            klist(itfroot)=ka-2
+          endif
+        endif
+      endif
+      return
+      end
+
         subroutine tflocald(k)
         implicit none
         type (sad_descriptor) , intent(in)::k
@@ -3289,9 +3553,9 @@ c        k=kfromr(x)
         integer*8 itfroot
         if(ktfobjqd(k,obj))then
           obj%ref=obj%ref-1
-          if(obj%ref .le. 0)then
+          if(obj%ref <= 0)then
             obj%ref=0
-            if(ktfaddr(obj%alloc) .eq. 0)then
+            if(ktfaddr(obj%alloc) == 0)then
               itfroot=itflocal+levele
               obj%alloc%k=obj%alloc%k+ktfaddr(klist(itfroot))
               klist(itfroot)=ktfaddr(k%k)-2
@@ -3301,6 +3565,25 @@ c        k=kfromr(x)
         return
         end subroutine 
 
+      subroutine tflocal1k(k)
+      implicit none
+      type (sad_object), pointer :: obj
+      integer*8 ,intent(in):: k
+      integer*8 ka,itfroot
+      ka=ktfaddr(k)
+      call loc_obj(ka,obj)
+      obj%ref=obj%ref-1
+      if(obj%ref <= 0)then
+        obj%ref=0
+        if(ktfaddr(obj%alloc) == 0)then
+          itfroot=itflocal+levele
+          obj%alloc%k=obj%alloc%k+ktfaddr(klist(itfroot))
+          klist(itfroot)=ka-2
+        endif
+      endif
+      return
+      end
+
         subroutine tflocal1d(k)
         implicit none
         type (sad_descriptor) , intent(in)::k
@@ -3309,9 +3592,9 @@ c        k=kfromr(x)
         ka=ktfaddr(k)
         call loc_obj(ka,obj)
         obj%ref=obj%ref-1
-        if(obj%ref .le. 0)then
+        if(obj%ref <= 0)then
           obj%ref=0
-          if(ktfaddr(obj%alloc) .eq. 0)then
+          if(ktfaddr(obj%alloc) == 0)then
             itfroot=itflocal+levele
             obj%alloc%k=obj%alloc%k+ktfaddr(klist(itfroot))
             klist(itfroot)=ka-2
@@ -3331,7 +3614,7 @@ c        k=kfromr(x)
         subroutine tfconnectk(k,irtc)
         implicit none
         type (sad_object), pointer :: obj
-        integer*4 l,itfdownlevel
+        integer*4 l
         integer*4 , intent(out)::irtc
         integer*8 , intent(in)::k
         integer*8 ka,j
@@ -3340,11 +3623,11 @@ c        k=kfromr(x)
             l=itfdownlevel()
           elseif(ktfobjq(k))then
             ka=ktfaddr(k)
-            call loc_obj(ktfaddr(ka),obj)
+            call loc_obj(ka,obj)
             obj%ref=obj%ref+1
             l=itfdownlevel()
-            call tflocal1(ka)
-            if(ktfaddr(obj%alloc) .eq. 0)then
+            call tflocal1k(ka)
+            if(ktfaddr(obj%alloc) == 0)then
               j=itflocal+levele
               obj%alloc%k=ktftype(obj%alloc%k)+klist(j)
               klist(j)=sad_loc(obj%alloc)
@@ -3361,7 +3644,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         subroutine tfconnectk1(k,irtc)
         implicit none
         type (sad_object), pointer :: obj
-        integer*4 l,itfdownlevel
+        integer*4 l
         integer*4 , intent(out)::irtc
         integer*8 , intent(in)::k
         integer*8 ka
@@ -3373,7 +3656,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
             call loc_obj(ktfaddr(ka),obj)
             obj%ref=obj%ref+1
             l=itfdownlevel()
-            call tflocal1(ka)
+            call tflocal1k(ka)
           else
             l=itfdownlevel()
           endif
@@ -3559,7 +3842,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         if(present(symd0))then
           symd0=>symd
         endif        
-        if(const .and. symd%sym%gen .le. 0)then
+        if(const .and. symd%sym%gen <= 0)then
           symd%sym%attr=ior(symd%sym%attr,iattrconstant+iattrprotected)
         endif
         return
@@ -3591,7 +3874,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         integer*8 ktfaloc,l
         integer*4 , intent(in)::leng
         integer*4 nw,n
-        if(leng .eq. 0)then
+        if(leng == 0)then
           kxscopy=dxnulls
           go to 10
         endif
@@ -3628,7 +3911,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         call loc_namtbl(locp,loc)
         kp0=sad_loc(loc%symdef)
         kp=loc%symdef
-        if(kp .le. 0)then
+        if(kp <= 0)then
           kp=ktalocr(9+n)
           call loc1_symdef(kp,def)
           def%next=0
@@ -3650,7 +3933,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
           do while(lg .lt. ipg)
             kp0=kp
             kp=def0%next
-            if(kp .eq. 0)then
+            if(kp == 0)then
               exit
             endif
             call loc1_symdef(kp,def0)
@@ -3662,7 +3945,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
           def%prev=kp0
           if(kp .ne. 0)then
             def0%prev=kp1
-            if(lg .eq. ipg)then
+            if(lg == ipg)then
               def0%sym%override=0
             endif
           endif
@@ -3715,11 +3998,11 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         integer*4 , intent(in)::isp1
         integer*4 narg
         narg=isp-isp1
-        if(narg .le. 0)then
+        if(narg <= 0)then
           ktfmakelist0=ktfaddr(kxnulll)
           go to 10
-        elseif(narg .eq. 1)then
-          if(ktastk(isp) .eq. ktfoper+mtfnull)then
+        elseif(narg == 1)then
+          if(ktastk(isp) == ktfoper+mtfnull)then
             ktfmakelist0=ktfaddr(kxnulll)
             go to 10
           endif
@@ -3777,15 +4060,15 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         integer*4 , intent(in)::leng,mode
         integer*4 nw,ik
         character , intent(in)::string(leng)
-        if(leng .eq. 1)then
+        if(leng == 1)then
           ik=ichar(string(1))
           ktsalocb=iaxschar+ik*5+3
-          if(mode .eq. 0)then
+          if(mode == 0)then
             ilist(1,ktsalocb-1)=ilist(1,ktsalocb-1)+1
           endif
-        elseif(leng .eq. 0)then
+        elseif(leng == 0)then
           ktsalocb=ktfaddr(kxnulls)
-          if(mode .eq. 0)then
+          if(mode == 0)then
             ilist(1,ktsalocb-1)=ilist(1,ktsalocb-1)+1
           endif
         else
@@ -3804,9 +4087,9 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         implicit none
         integer*8 ktfaloc,l
         integer*4 leng,nw,mode
-        if(leng .eq. 0)then
+        if(leng == 0)then
           ktsalocbb=kxnulls
-          if(mode .eq. 0)then
+          if(mode == 0)then
             ilist(1,ktfaddr(kxnulls)-1)=
      $           ilist(1,ktfaddr(kxnulls)-1)+1
           endif
@@ -3885,7 +4168,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         k1=ktaloc(nd+3)
         ilist(1,k1-1)=0
         ilist(2,k1-1)=kconstarg
-        if(mode .eq. 0)then
+        if(mode == 0)then
           klist(k1)=ktflist
         else
           itfroot=itflocal+levele
@@ -3910,7 +4193,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         k1=ktaloc(nd+3)
         klist(k1-1)=0
         ilist(2,k1-1)=lnonreallist
-        if(mode .eq. 0)then
+        if(mode == 0)then
           klist(k1)=ktflist
         else
           itfroot=itflocal+levele
@@ -3988,7 +4271,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         kl%alloc%k=ktflist
         kl%ref=1
         kl%nl=nd
-        call tflocal1(ka)
+        call tflocal1k(ka)
         ktaalocsp=ka
         if(present(kl1))then
           kl1=>kl
@@ -4005,13 +4288,13 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
           ktfcomposev=ktfcompose(isp0)
         else
           kh=ktastk(isp0)
-          if(kh .eq. ktfoper+mtflist)then
+          if(kh == ktfoper+mtflist)then
             ktfcomposev=ktfaddr(kxnulll)
-          elseif(kh .eq. ktfoper+mtfnull)then
+          elseif(kh == ktfoper+mtfnull)then
             ktfcomposev=ktfaddr(kxnull)
-          elseif(kh.eq. ktfoper+mtfslot)then
+          elseif(kh== ktfoper+mtfslot)then
             ktfcomposev=ktfaddr(klist(iaxslotnull))
-          elseif(ktastk(isp0) .eq. ktfoper+mtfslotseq)then
+          elseif(ktastk(isp0) == ktfoper+mtfslotseq)then
             ktfcomposev=ktfaddr(klist(iaxslotnull+1))
           else
             kax=ktaaloc(-1,0,kl)
@@ -4044,8 +4327,8 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         integer*4 , intent(in)::isp1
         integer*4 narg
         narg=isp-isp1
-        if(narg .eq. 1)then
-          if(ktastk(isp) .eq. ktfoper+mtfnull)then
+        if(narg == 1)then
+          if(ktastk(isp) == ktfoper+mtfnull)then
             ktfmakelist_dlist=ktaaloc(-1,0,kl)
             return
           endif
@@ -4065,8 +4348,8 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         integer*4 , intent(in)::isp1
         integer*4 narg
         narg=isp-isp1
-        if(narg .eq. 1)then
-          if(ktastk(isp) .eq. ktfoper+mtfnull)then
+        if(narg == 1)then
+          if(ktastk(isp) == ktfoper+mtfnull)then
             ktfmakelist_rlist=ktavaloc(-1,0,kl)
             return
           endif
@@ -4140,8 +4423,8 @@ c        type (sad_symbol), pointer, intent(out) :: symx
         l=lenw(string)
         ip=index(string(1:l),'_')
         if(ip .gt. 0)then
-          k=merge(3,merge(2,1,string(ip:min(l,ip+1)) .eq. '__'),
-     $         string(ip:min(l,ip+2)) .eq. '___')
+          k=merge(3,merge(2,1,string(ip:min(l,ip+1)) == '__'),
+     $         string(ip:min(l,ip+2)) == '___')
         else
           k=0
           ip=l+1
@@ -4213,7 +4496,7 @@ c        type (sad_symbol), pointer, intent(out) :: symx
         if(ic2 .lt. 0)then
           ic2=n+1+ic2
         endif
-        if(ic2 .lt. ic1 .or. ic2 .le. 0 .or. ic1 .gt. n)then
+        if(ic2 .lt. ic1 .or. ic2 <= 0 .or. ic1 .gt. n)then
           kx%k=kxnulls
         else
           ic1=max(1,ic1)
@@ -4339,28 +4622,9 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         implicit none
         integer*8 , intent(in)::ka
         tfonstackq=ka .ge. isporg+ispbase
-     $       .and. ka .le. isporg+ivstkoffset*2+ispbase
+     $       .and. ka <= isporg+ivstkoffset*2+ispbase
         return
         end function
-
-        subroutine tfgetdefargp_dlist(kl,kas,kp,ev,irtc)
-        implicit none
-        type (sad_dlist) , intent(inout)::kl
-        type (sad_descriptor) kv
-        integer*8 , intent(in)::kas
-        integer*8 kp
-        integer*4 isp0
-        integer*4 , intent(out)::irtc
-        logical*4 , intent(out)::ev
-        isp=isp+1
-        isp0=isp
-        dtastk(isp)=kl%head
-        call tfgetllstkall(kl)
-        call tfdeval(isp0,kas,kv,1,.true.,ev,irtc)
-        kp=ktfaddrd(kv)
-        isp=isp0-1
-        return
-        end subroutine
 
         subroutine tfmakerulestk_dd(ks,kx)
         implicit none
@@ -4397,7 +4661,7 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         logical*4, intent(out):: rep
         logical*4 rep1
         rep=.false.
-        if(iand(kl%attr,ktoberebuilt) .eq. 0)then
+        if(iand(kl%attr,ktoberebuilt) == 0)then
           klx=>kl
           return
         endif
@@ -4450,7 +4714,7 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         cmplm=.false.
         vec=.false.
         if(ktflistq(k,kl))then
-          if(kl%head%k .eq. ktfoper+mtflist)then
+          if(kl%head%k == ktfoper+mtflist)then
             n=kl%nl
             if(ktfnonreallistqo(kl))then
               do i=1,n
@@ -4461,7 +4725,7 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
                 if(kli%head%k .ne. ktfoper+mtflist)then
                   return
                 endif
-                if(i .eq. 1)then
+                if(i == 1)then
                   m=kli%nl
                 elseif(m .ne. kli%nl)then
                   m=0
@@ -4490,7 +4754,7 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         integer*4 i
         logical*4 , intent(in)::trans
         real*8 , intent(in)::a(nd,m)
-        if(n .eq. 0)then
+        if(n == 0)then
           kx=kxavaloc(-1,m,klr)
           klr%rbody(1:m)=a(1:m,1)
           klr%attr=ior(klr%attr,lconstlist)
@@ -4601,7 +4865,7 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         elseif(ktfnonrealq(dtastk(isp),iv))then
           irtc=itfmessage(9,'General::wrongtype','"Real"')
           return
-        elseif(iv .le. 0)then
+        elseif(iv <= 0)then
           irtc=itfmessage(9,'General::wrongval','">= 1"')
           return
         endif
@@ -4611,4 +4875,169 @@ c        call omp_set_num_threads(iv)
         return
         end
 
+      subroutine tflocalrel(k,kan)
+      implicit none
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_object), pointer :: obj
+      integer*8 ,intent(inout):: kan
+      if(ktfobjq(k,obj))then
+        obj%ref=obj%ref-1
+        if(obj%ref <= 0)then
+          obj%ref=0
+          if(ktfaddr(obj%alloc%k) == 0)then
+            obj%alloc%k=ktftype(obj%alloc%k)+kan
+            kan=ktfaddr(k%k)-2
+          endif
+        endif
+      endif
+      return
+      end
+
+      subroutine tfreel(ip,last)
+      implicit none
+      integer*8 ,intent(in):: ip
+      integer*8 ,intent(inout):: last
+      if(ip == 0)then
+        if(last /= 0)then
+          call tfree(last)
+          last=0
+        endif
+      else
+        ilist(1,ip-1)=max(4,ilist(1,ip-1))
+        if(last == 0)then
+          last=ip
+        else
+          if(ilist(1,last-1)+last == ip)then
+            ilist(1,last-1)=ilist(1,last-1)+ilist(1,ip-1)
+          elseif(ilist(1,ip-1)+ip == last)then
+            ilist(1,ip-1)=ilist(1,ip-1)+ilist(1,last-1)
+            last=ip
+          else
+            call tfree(last)
+            last=ip
+          endif
+        endif
+      endif
+      return
+      end
+
+      integer*4 function itfdownlevel()
+      use tfcode
+      use iso_c_binding
+      implicit none
+      type (sad_dlist), pointer :: list
+      type (sad_pat), pointer :: pat
+      integer*8 j,kt,ka,i,lastfree
+      integer*4 kk
+      lastfree=0
+      j=itflocal+levele
+      i=klist(j)
+      do while(i /= j)
+        ka=ktfaddr(klist(i))
+        if(ilist(1,i+1) <= 0)then
+          kt=klist(i)-ka
+          if(kt == ktflist)then
+            call loc_sad(i+2,list)
+            if(iand(list%attr,lnonreallist) /= 0)then
+              do kk=list%nl,1,-1
+                call tflocalrel(list%dbody(kk),ka)
+              enddo
+            endif
+            call tflocalrel(list%head,ka)
+            i=i-list%lenp
+            ilist(1,i-1)=list%lenp+list%lena+list%nl+4
+          elseif(kt == ktfpat)then
+            call loc_pat(i+2,pat)
+            if(pat%sym%ref .gt. 1)then
+              call tflocalrel(sad_descr(pat%sym),ka)
+              pat%sym%attr=pat%len-7
+              pat%sym%gen=0
+              pat%len=7
+            endif
+            if(pat%sym%loc /= 0)then
+              call tflocalrel(pat%sym%alloc,ka)
+            endif
+            pat%sym%alloc%k=ktfsymbol
+            call tflocalrel(pat%default,ka)
+            call tflocalrel(pat%head,ka)
+            call tflocalrel(pat%expr,ka)
+          endif
+          call tfreel(i,lastfree)
+        else
+          klist(i)=klist(i)-ka
+        endif
+        i=ka
+      enddo
+      call tfreel(i00,lastfree)
+      klist(j)=j
+      levele=max(0,levele-1)
+      itfdownlevel=levele
+      return
+      end
+
+      integer*4 function itfuplevel()
+      implicit none
+      levele=min(maxlevele,levele+1)
+      klist(itflocal+levele)=itflocal+levele
+      itfuplevel=levele
+      return
+      end
+
+      end module tfstk
+
+      module opdata
+      use tfstk
+      implicit none
+      integer*4 :: iprior(0:mtfnopc) = (/
+     $     9999,
+     $     10,  20,  50,  50,  40,  40,  15,  15,  100, 100,
+     $     100, 100, 100, 100, 160, 170, 150, 120, 120, 80,
+     $     6,   3000,9999,3000,250, 250, 7000,9999,8000,9000,
+     $     1000,220, 180, 190, 190, 200, 200, 250, 250, 900,
+     $     4,   3,   3,   3,   10,  175, 9,   9,   9,   172,
+     $     172, 130, 210, 210, 210, 210, 7,   7,   6,   5,
+     $     2,   240, 9999,9999,1,   9999/)
+c          null
+c          m    i    +    -    *    /    v    ^    >    >=
+c          <=   <    ==   <>   &&   ||   ~    ===  <=>  //
+c          [    ]    {    }    :=   =    C    (    )    ,
+c          ;    &    :    ->   :>   /.   //.  ^=   ^:=  =.
+c          ?    flg  #    ##   .    |    /@   //@  @@   ..
+c          ...  ineq +=   -=   *=   /=   ++   --   [[   @
+c          msgn /:   (*   *)   Hold z
+      logical*4, parameter :: T=.true.,F=.false.
+      logical*4 :: nullfirst(0:mtfnopc) = (/
+     $     T,
+     $     T,   T,   F,   F,   F,   F,   F,   F,   F,   F,
+     $     F,   F,   F,   F,   F,   F,   T,   F,   F,   F,
+     $     T,   T,   T,   T,   F,   F,   F,   T,   T,   T,
+     $     T,   F,   F,   F,   F,   F,   F,   F,   F,   F,
+     $     T,   T,   T,   T,   F,   F,   F,   F,   F,   F,
+     $     F,   F,   F,   F,   F,   F,   T,   T,   F,   F,
+     $     F,   F,   F,   F,   F,   F/)
+      logical*4 :: lastfirst(0:mtfnopc) = (/
+     $     F,
+     $     F,   F,   F,   F,   F,   F,   F,   T,   F,   F,
+     $     F,   F,   F,   F,   F,   F,   F,   F,   F,   F,
+     $     F,   F,   F,   F,   T,   T,   F,   F,   F,   F,
+     $     F,   F,   F,   T,   T,   F,   F,   F,   F,   F,
+     $     F,   F,   F,   F,   F,   F,   T,   T,   T,   F,
+     $     F,   F,   F,   F,   F,   F,   F,   F,   F,   F,
+     $     F,   F,   F,   F,   F,   F/)
+
+      end module
+
+      module tfform
+      use tfstk
+      type (sad_descriptor) ,save::iaxform,iaxpagewidth
+      data iaxform%k,iaxpagewidth%k /0,0/
+      type (sad_symbol), pointer, save :: symform,sympw
+      contains
+        subroutine tfforminit
+        implicit none
+        iaxform=kxsymbolz('System`$FORM',12)
+        iaxpagewidth=kxsymbolz('System`PageWidth',16)
+        call descr_sym(iaxform,symform)
+        call descr_sym(iaxpagewidth,sympw)
+        end subroutine
       end module

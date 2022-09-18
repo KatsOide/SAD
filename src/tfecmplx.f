@@ -1,6 +1,124 @@
-      recursive function tfecmplxl(k1,k2,iopc1) result(kx)
+      module complex
       use tfstk
-      use eexpr
+      type (sad_descriptor),external::tfeexpr
+
+      contains
+      function tfcmplx(k1,k2,iopc,irtc) result(kx)
+      implicit none
+      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(in):: k1,k2
+      type (sad_descriptor) tfeval1
+      type (sad_complex), pointer :: cx1,cx2
+      integer*8 ki1,ki2
+      integer*4 ,intent(out):: irtc
+      integer*4 ,intent(in):: iopc
+      real*8 v1,v2
+      complex*16 c1
+      irtc=0
+      if(iopc == mtfnot)then
+        if(ktfrealq(k2))then
+          if(k2%k == 0)then
+            kx%k=ktftrue
+          else
+            kx%k=0
+          endif
+        else
+          go to 8000
+        endif
+        return
+      endif
+      if(ktfrealq(k1,v1))then
+        if(ktfrealq(k2,v2))then
+          if(iopc == mtfcomplex)then
+            kx=kxcalocv(-1,v1,v2)
+          elseif(iopc == mtfpower)then
+            if(k1%k .lt. 0)then
+              ki2=int(v2)
+              if(ki2 .ne. v2)then 
+                c1=dcmplx(v1,0.d0)**v2
+                kx=kxcalocc(-1,c1)
+              else
+                kx=dfromr(v1**ki2)
+              endif
+              return
+            endif
+            kx=tfenum(k1%x(1),k2%x(1),mtfpower,irtc)
+          elseif(iopc == mtfrevpower)then
+            if(k2%k .lt. 0)then
+              ki1=int(v1)
+              if(ki1 .ne. v1)then 
+                c1=dcmplx(v2,0.d0)**v1
+                kx=kxcalocc(-1,c1)
+              else
+                kx=sad_descr(v2**ki1)
+              endif
+              return
+            endif
+            kx=tfenum(v2,v1,mtfpower,irtc)
+          else
+            kx=tfenum(k1%x(1),k2%x(1),iopc,irtc)
+          endif
+          return
+         elseif(tfcomplexq(k2,cx2))then
+          kx=tfcmplxmath(dcmplx(v1,0.d0),cx2%cx(1),iopc,irtc)
+          return
+        else
+          go to 8000
+        endif
+      elseif(tfcomplexq(k1,cx1))then
+        if(ktfrealq(k2,v2))then
+          kx=tfcmplxmath(cx1%cx(1),dcmplx(v2,0.d0),iopc,irtc)
+          return
+        elseif(tfcomplexq(k2,cx2))then
+          kx=tfcmplxmath(cx1%cx(1),cx2%cx(1),iopc,irtc)
+          return
+        endif
+      endif
+ 8000 kx=tfeval1(k1,k2,iopc,irtc)
+      return
+      end
+
+      function tfcmplxmath(c1,c2,iopc1,irtc) result(kx)
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 ,intent(in):: iopc1
+      integer*4 ,intent(out):: irtc
+      complex*16 ,intent(in):: c1,c2
+      complex*16 cx
+      if(iopc1 .gt. mtfunequal .and. iopc1 .ne. mtfcomplex)then
+        kx=dxnullo
+        irtc=-1
+      else
+        cx=tfcmplxmathv(c1,c2,iopc1)
+        kx=kxcalocc(-1,cx)
+        irtc=0
+      endif
+      return
+      end
+
+      function tfecmplx1(k1,k2i,iopc1,c,d) result(kxi)
+      implicit none
+      type (sad_descriptor) kxi
+      type (sad_descriptor) ,intent(in):: k1,k2i
+      integer*4 ,intent(in):: iopc1
+      logical*4 ,intent(inout):: c,d
+      if(tflistq(k2i))then
+        kxi=dtfcopy(tfecmplxl(k1,k2i,iopc1))
+        d=.true.
+        c=c .and. tfconstq(kxi%k)
+        kxi=dtfcopy(kxi)
+      else
+        kxi=tfeexpr(k1,k2i,iopc1)
+        if(ktfnonrealq(kxi))then
+          c=c .and. tfconstq(kxi%k)
+          d=.true.
+          kxi=dtfcopy(kxi)                  
+        endif
+      endif
+      return
+      end function
+
+      recursive function tfecmplxl(k1,k2,iopc1) result(kx)
       implicit none
       type (sad_descriptor) kx
       type (sad_descriptor) ,intent(in):: k1,k2
@@ -633,8 +751,50 @@ c              write(*,*)'tfecmplx-rl*2 '
       return
       end function
 
+      complex*16 function tfcmplxmathv(c1,c2,iopc1)
+      implicit none
+      integer*4 ,intent(in):: iopc1
+      integer*8 i1,i2
+      complex*16 ,intent(in):: c1,c2
+      select case(iopc1)
+      case (mtfneg)
+        tfcmplxmathv=-c2
+      case (mtfinv)
+        tfcmplxmathv=1.d0/c2
+      case (mtfplus)
+        tfcmplxmathv=c1+c2
+      case (mtftimes)
+        tfcmplxmathv=c1*c2
+      case (mtfrevpower)
+        if(imag(c1) == 0.d0 .or. imag(c1) == -0.d0)then
+          i1=int8(c1)
+          tfcmplxmathv=merge(merge(1.d0/c2,c2**i1,i1 == -1),
+     $         c2**dble(c1),i1 == dble(c1))
+        else
+          tfcmplxmathv=c2**c1
+        endif
+      case(mtfpower)
+        if(imag(c2) == 0.d0 .or. imag(c2) == -0.d0)then
+          i2=int8(c2)
+          tfcmplxmathv=merge(merge(1.d0/c1,merge((1.d0,0.d0),c1**i2,
+     $         i2 == 0 .and. redmath%value%k .ne. 0),
+     $         i2 == -1),c1**dble(c2),i2 == dble(c2))
+        else
+          tfcmplxmathv=c1**c2
+        endif
+      case (mtfequal)
+        tfcmplxmathv=merge(1.d0,0.d0,c1 == c2)
+      case (mtfunequal)
+        tfcmplxmathv=merge(1.d0,0.d0,c1 .ne. c2)
+      case (mtfcomplex)
+        tfcmplxmathv=c1+dcmplx(-imag(c2),dble(c2))
+      case default
+        tfcmplxmathv=0.d0
+      end select
+      return
+      end
+
       recursive function tfcmplxf(k,mode,iaf,irtc) result(kx)
-      use tfstk
       implicit none
       type (sad_descriptor) kx
       type (sad_descriptor) ,intent(in):: k
@@ -685,7 +845,6 @@ c              write(*,*)'tfecmplx-rl*2 '
       end function
 
       type (sad_descriptor) function tfenum(v1,v,iopc1,irtc)
-      use tfstk
       implicit none
       real*8 ,intent(in):: v1,v
       real*8 x1
@@ -762,3 +921,5 @@ c        endif
       tfenum%x(1)=x1
       return
       end
+
+      end module complex

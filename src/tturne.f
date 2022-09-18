@@ -141,6 +141,7 @@ c      endif
       use tmacro
       use sad_main
       use temw, only:calint,iaemit,iaez,beamplt
+      use maloc,only:tfl2m
       implicit none
       type (iaemit) ,intent(in):: iae
       type (ffs_bound) ,intent(in):: fbound
@@ -148,7 +149,7 @@ c      endif
       type (sad_rlist), pointer :: klir
       type (sad_comp) , pointer :: cmp
       integer*4 ,intent(in):: idp
-      integer*4 ls,l,nvar,lx,le1,lv,itfdownlevel,irtc
+      integer*4 ls,l,nvar,lx,le1,lv,irtc
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 trans1(6,12),cod1(6),beam1(42)
       type (sad_descriptor) dsave(kwMAX)

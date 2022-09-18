@@ -686,17 +686,17 @@ c          write(*,*)'tffsvlimit ',vl,vl1,vl2
       use ffs
       use tffitcode
       use iso_c_binding
-      use efun
       use eeval
       implicit none
       type (sad_string), pointer, save :: svarn, skey
       type (sad_descriptor) , save ::ifvr,ifvw
       data ifvr%k/0/
       type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) tfefunrefd
       type (sad_symdef) ,pointer:: symd
       integer*4 ,intent(in):: id,ld,k
       integer*4 ,intent(out):: irtc
-      integer*4 isp1,level,itfuplevel,ltyp,itfdownlevel
+      integer*4 isp1,level,ltyp
       real*8 ,intent(in):: x
       character*(MAXPNAME) vn,tfkwrd
       integer*8, save :: ifvvarn,ifvkey
@@ -740,7 +740,7 @@ c        dtastk(isp1)=ifvw
         isp=isp+1
         rtastk(isp)=x
         call tclrfpe
-        kx=tfefunref(isp1,.false.,irtc)
+        kx=tfefunrefd(isp1,irtc)
 c        write(*,'(a,1x,a,1x,a,i5)')'vlimit:',svarn%str(1:svarn%nch),
 c     $       vn(1:skey%nch),irtc
 c        call tfdebugprint(kx,':',1)

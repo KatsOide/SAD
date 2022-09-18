@@ -299,6 +299,8 @@ C
 
       subroutine tfspline(isp1,kx,irtc)
       use tfstk
+      use repl, only:tfgetoption
+      use maloc,only:tfmsize
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_descriptor) kd,k1,k2
@@ -315,7 +317,7 @@ C
       endif
       mode=0
       if(isp .eq. isp1+2)then
-        call tfgetoption('Derivative',ktastk(isp),kd,irtc)
+        call tfgetoption('Derivative',dtastk(isp),kd,irtc)
         if(irtc .ne. 0)then
           if(irtc .eq. -1)then
             go to 9100
@@ -355,7 +357,7 @@ C
       elseif(isp .ne. isp1+1)then
         go to 9100
       endif
-      call tfmsize(ktastk(isp1+1),n,m,irtc)
+      call tfmsize(dtastk(isp1+1),n,m,irtc)
       if(irtc .ne. 0)then
         return
       endif

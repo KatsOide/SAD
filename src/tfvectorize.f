@@ -1,9 +1,8 @@
       subroutine tfvectorize(isp1,kx,irtc)
       use tfstk
-      use efun
       implicit none
       type (sad_descriptor) ,intent(out):: kx
-      type (sad_descriptor) kx1,kf,ki,k1
+      type (sad_descriptor) kx1,kf,ki,k1,tfefunrefu,tfefunrefd
       type (sad_dlist), pointer :: kli,kli1,klx1,kl,klx
       integer*8 kaf,kaf1,kai
       integer*4 ,intent(in):: isp1
@@ -29,7 +28,7 @@
               endif
             endif
           enddo
-          kx1=tfefunref(isp1+1,.true.,irtc)
+          kx1=tfefunrefu(isp1+1,irtc)
           if(irtc .ne. 0)then
             return
           endif
@@ -49,7 +48,7 @@ c          call tfdebugprint(kx1,'vectorize',1)
               kli1%dbody(1)=dtfcopy(k1)
             endif
           enddo
-          kx=tfefunref(isp1+1,.false.,irtc)
+          kx=tfefunrefd(isp1+1,irtc)
           return
         case (mtfend)
           kaf1=klist(ifunbase+kaf)+1
@@ -58,7 +57,7 @@ c          call tfdebugprint(kx1,'vectorize',1)
      $         (kl%head%k .eq. kxvect .or. kl%head%k .eq. kxvect1))then
             dtastk(isp)=kl%dbody(1)
             if(tflistq(ktastk(isp)))then
-              kx1=tfefunref(isp1+1,.false.,irtc)
+              kx1=tfefunrefd(isp1+1,irtc)
               go to 9000
             else
               irtc=itfmessage(999,'General::wrongtype',
@@ -93,7 +92,7 @@ c          call tfdebugprint(kx1,'vectorize',1)
         endif
       enddo
       if(nv .eq. 0)then
-        kx=tfefunref(isp1+1,.false.,irtc)
+        kx=tfefunrefd(isp1+1,irtc)
         return
       endif
       isp2=isp
@@ -110,7 +109,7 @@ c          call tfdebugprint(kx1,'vectorize',1)
           endif
         enddo
         isp=isp2+idsp
-        dtastk(isp2+j)=tfefunref(isp0,.true.,irtc)
+        dtastk(isp2+j)=tfefunrefu(isp0,irtc)
         if(irtc .ne. 0)then
           return
         endif

@@ -1,5 +1,9 @@
-      recursive function tfdot(k1,k2,irtc) result(kx)
+      module dot
       use tfstk
+      use maloc
+
+      contains
+      recursive function tfdot(k1,k2,irtc) result(kx)
       implicit none
       type (sad_descriptor) kx
       integer*4 ,intent(out):: irtc
@@ -172,7 +176,6 @@ c          enddo
       end
 
       subroutine tfloadrcstk(isp0,kl,x,irtc)
-      use tfstk
       implicit none
       type (sad_dlist) ,intent(in):: kl
       integer*4 ,intent(in):: isp0
@@ -180,7 +183,6 @@ c          enddo
       integer*4 i
       real*8 ,intent(in):: x
       complex*16 c
-      logical*4 tfcomplexq
       if(ktfreallistq(kl))then
         rtastk (isp0+1:isp0+kl%nl)=x*kl%rbody(1:kl%nl)
         rtastk2(isp0+1:isp0+kl%nl)=0.d0
@@ -203,7 +205,6 @@ c          enddo
       end
 
       subroutine tfaddrcstk(isp0,kl,x,irtc)
-      use tfstk
       implicit none
       type (sad_dlist) ,intent(in):: kl
       integer*4 ,intent(in):: isp0
@@ -211,7 +212,6 @@ c          enddo
       integer*4 i
       real*8 ,intent(in):: x
       complex*16 c
-      logical*4 tfcomplexq
       if(ktfreallistq(kl))then
         rtastk(isp0+1:isp0+kl%nl)=
      $       rtastk(isp0+1:isp0+kl%nl)+x*kl%rbody(1:kl%nl)
@@ -233,7 +233,6 @@ c          enddo
       end
 
       subroutine tfaddccstk(isp0,kl,cx,irtc)
-      use tfstk
       implicit none
       type (sad_dlist) ,intent(in):: kl
       integer*4 ,intent(in):: isp0
@@ -241,7 +240,6 @@ c          enddo
       integer*4 i
       complex*16 ,intent(in):: cx
       complex*16 c,cx1
-      logical*4 tfcomplexq
       if(ktfreallistq(kl))then
         rtastk(isp0+1:isp0+kl%nl)=
      $       rtastk (isp0+1:isp0+kl%nl)+dble(cx)*kl%rbody(1:kl%nl)
@@ -266,77 +264,7 @@ c          enddo
       return
       end
 
-      recursive subroutine tfinner(k1,k2,kx,ks,kp,irtc)
-      use tfstk
-      use efun
-      implicit none
-      type (sad_descriptor) ,intent(out):: kx
-      type (sad_descriptor) ,intent(in):: k1,k2,ks,kp
-      integer*4 ,intent(out):: irtc
-      type (sad_descriptor) k1i,ki
-      type (sad_dlist), pointer :: kl1,kl2,klx
-      integer*4 m1,i,m2,isp0,itfmessage
-      if(ktfnonlistq(k1,kl1) .or. ktfnonlistq(k2,kl2))then
-        irtc=itfmessage(9,'General::wrongtype','"List"')
-        return
-      endif
-      m1=kl1%nl
-      if(ktfnonreallistqo(kl1) .and. tflistq(kl1%head))then
-        kx=kxaaloc(-1,m1,klx)
-        do i=1,m1
-          k1i=kl1%dbody(i)
-          call tfinner(k1i,k2,ki,ks,kp,irtc)
-          if(irtc /= 0)then
-            klx%dbody(1:m1)%k=merge(ktfoper+mtfnull,i00,
-     $           ktfnonreallistqo(klx))
-            return
-          endif
-          if(ktfnonrealq(ki))then
-            klx%dbody(i)=dtfcopy1(ki)
-            klx%attr=ior(klx%attr,lnonreallist)
-          else
-            klx%dbody(i)=ki
-          endif
-        enddo
-        return
-      endif
-      m2=kl2%nl
-      if(m2 /= m1)then
-        irtc=itfmessage(9,'General::equalleng','"arguments"')
-        return
-      endif
-      isp=isp+3
-      isp0=isp
-      do i=1,m1
-        dtastk(isp-2)=kp
-        dtastk(isp-1)=kl1%dbody(i)
-        dtastk(isp  )=kl2%dbody(i)
-        ki=tfefunref(isp-2,.true.,irtc)
-        isp=isp0
-        if(irtc /= 0)then
-          isp=isp-3
-          return
-        endif
-        if(i == 1)then
-          kx=ki
-        else
-          dtastk(isp-2)=ks
-          dtastk(isp-1)=kx
-          dtastk(isp  )=ki
-          kx=tfefunref(isp-2,.true.,irtc)
-          isp=isp0
-          if(irtc /= 0)then
-            isp=isp-3
-            return
-          endif
-        endif
-      enddo
-      isp=isp-3
-      return
-      end
-
       subroutine tfouter(isp1,kx,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -403,7 +331,6 @@ c          enddo
       end
 
       subroutine tftranspose(k,kx,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_descriptor) ,intent(in):: k
@@ -451,79 +378,7 @@ c          enddo
       return
       end
 
-      subroutine tftr(isp1,kx,irtc)
-      use tfstk
-      use efun
-      implicit none
-      type (sad_descriptor) ,intent(out):: kx
-      integer*4 ,intent(in):: isp1
-      integer*4 ,intent(out):: irtc
-      type (sad_dlist), pointer :: kl,kli
-      integer*4 n,m,narg,itfmessage,i,isp0,nm
-      real*8 s
-      logical*4 cmplm,realm,vec
-      narg=isp-isp1
-      if(narg /= 1 .and. narg /= 2)then
-        irtc=itfmessage(9,'General::narg','"1 or 2"')
-        return
-      endif
-      call tfmatrixmaybeq(dtastk(isp1+1),cmplm,realm,vec,n,m,kl)
-      if(m == 0)then
-        go to 9000
-        return
-      endif
-      nm=min(n,m)
-      if(narg == 1)then
-        if(realm)then
-          s=0.d0
-          do i=1,nm
-            if(ktflistq(kl%dbody(i),kli))then
-              s=s+kli%rbody(i)
-            else
-              go to 9000
-            endif
-          enddo
-          kx=dfromr(s)
-          irtc=0
-        else
-          isp0=isp
-          isp=isp+1
-          ktastk(isp)=ktfoper+mtfplus
-          do i=1,nm
-            if(ktflistq(kl%dbody(i),kli))then
-              isp=isp+1
-              dtastk(isp)=kli%dbody(i)
-            else
-              isp=isp0
-              go to 9000
-            endif
-          enddo
-          kx=tfefunref(isp0+1,.true.,irtc)
-          isp=isp0
-        endif
-      else
-        isp0=isp
-        isp=isp+1
-        dtastk(isp)=dtastk(isp1+2)
-        do i=1,nm
-          if(ktflistq(kl%dbody(i),kli))then
-            isp=isp+1
-            dtastk(isp)=kli%dbody(i)
-          else
-            isp=isp0
-            go to 9000
-          endif
-        enddo
-        kx=tfefunref(isp0+1,.true.,irtc)
-        isp=isp0
-      endif
-      return
- 9000 irtc=itfmessage(9,'General::wrongtype','"Matrix"')
-      return
-      end
-
       subroutine tfdet(isp1,kx,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -559,7 +414,6 @@ c          enddo
       end
 
       subroutine tfrdet(kl,kx,n)
-      use tfstk
       implicit none
       type (sad_descriptor) , intent(out)::kx
       type (sad_dlist) , intent(in):: kl
@@ -574,7 +428,6 @@ c          enddo
       end
 
       subroutine tfcdet(kl,kx,n,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(out)::kx
       type (sad_dlist) ,intent(in)::kl
@@ -595,7 +448,6 @@ c          enddo
       end
 
       subroutine tfsingularvalues(isp1,kx,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -648,11 +500,9 @@ c          enddo
       end
 
       subroutine tcsvdma(kl,kux,kvx,kwx,m,n,eps,inv,irtc)
-      use tfstk
       implicit none
       type (sad_dlist) , intent(in)::kl
       integer*8 , intent(out)::kux,kvx,kwx
-      integer*8 ktfcm2l
       integer*4 ,intent(in)::n,m
       integer*4 mn
       integer*4 ,intent(out)::irtc
@@ -677,7 +527,6 @@ c          enddo
       end
 
       subroutine tsvdma(kl,kux,kvx,kwx,m,n,eps,inv)
-      use tfstk
       implicit none
       type (sad_dlist) ,intent(in)::kl
       integer*8,intent(out):: kux,kvx,kwx
@@ -694,12 +543,11 @@ c          enddo
       kvx=ktfaddr(kxm2l(a,mn,m,n,.false.))
       kwx=ktavaloc(-1,mn)
       rlist(kwx+1:kwx+mn)=w(1:mn)
-      deallocate(a,u,w)
+      deallocate(a,w,u)
       return
       end
 
       subroutine tflinearsolve(isp1,kx,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) , intent(out) :: kx
       type (sad_descriptor) k,kb
@@ -757,7 +605,6 @@ c          enddo
       end
 
       subroutine tflsolve(kl,klb,kx,n,m,mb,mx,eps)
-      use tfstk
       implicit none
       type (sad_descriptor) , intent(out)::kx
       type (sad_dlist) , intent(in)::kl,klb
@@ -782,7 +629,6 @@ c          enddo
       end
 
       subroutine tfdiagonalmatrix(k,kx,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(in):: k
       type (sad_descriptor) ,intent(out):: kx
@@ -813,7 +659,6 @@ c          enddo
       end
 
       subroutine tfidentitymatrix(k,kx,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(in):: k
       type (sad_descriptor) ,intent(out):: kx
@@ -839,7 +684,6 @@ c          enddo
       end
 
       subroutine tfeigensystem(k,kx,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(in):: k
       type (sad_descriptor) ,intent(out):: kx
@@ -873,11 +717,9 @@ c          enddo
       end
 
       subroutine tfceigen(kl,m,kvx,kex,irtc)
-      use tfstk
       implicit none
       type (sad_dlist) ,intent(in):: kl
       integer*8 ,intent(out):: kvx,kex
-      integer*8 ktfcm2l,ktfc2l
       complex*16 , allocatable ::c(:,:),cw(:,:),ce(:)
       integer*4 ,intent(out):: irtc
       integer*4 ,intent(in):: m
@@ -898,11 +740,10 @@ c          enddo
       end
 
       subroutine tfreigen(kl,m,kvx,kex)
-      use tfstk
       implicit none
       type (sad_dlist) ,intent(in):: kl
       integer*8 ,intent(out):: kvx,kex
-      integer*8 kvxkvr,kvxkvi,kzi1,kzi2,ktfc2l
+      integer*8 kvxkvr,kvxkvi,kzi1,kzi2
       integer*4 ,intent(in):: m
       integer*4 i,j
       real*8 , allocatable :: a(:,:),w(:,:)
@@ -961,7 +802,6 @@ c          enddo
       end
 
       subroutine tffourier(inv,k,kx,irtc)
-      use tfstk
       use macmath
       implicit none
       type (sad_descriptor) ,intent(in):: k
@@ -994,14 +834,12 @@ c          enddo
       end
 
       subroutine tffft(kl,m,kx,inv,irtc)
-      use tfstk
       use macmath
       use iso_c_binding
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist),intent(in):: kl
       type (sad_complex), pointer :: klic
-      integer*8 ktfc2l
       integer*4 ,intent(in):: m
       integer*4 ,intent(out):: irtc
       integer*4 n,i
@@ -1111,6 +949,145 @@ c        enddo
       irtc=0
       return
       end
+
+      recursive subroutine tfinner(k1,k2,kx,ks,kp,irtc)
+      implicit none
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) ,intent(in):: k1,k2,ks,kp
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) k1i,ki,tfefunrefu
+      type (sad_dlist), pointer :: kl1,kl2,klx
+      integer*4 m1,i,m2,isp0,itfmessage
+      if(ktfnonlistq(k1,kl1) .or. ktfnonlistq(k2,kl2))then
+        irtc=itfmessage(9,'General::wrongtype','"List"')
+        return
+      endif
+      m1=kl1%nl
+      if(ktfnonreallistqo(kl1) .and. tflistq(kl1%head))then
+        kx=kxaaloc(-1,m1,klx)
+        do i=1,m1
+          k1i=kl1%dbody(i)
+          call tfinner(k1i,k2,ki,ks,kp,irtc)
+          if(irtc /= 0)then
+            klx%dbody(1:m1)%k=merge(ktfoper+mtfnull,i00,
+     $           ktfnonreallistqo(klx))
+            return
+          endif
+          if(ktfnonrealq(ki))then
+            klx%dbody(i)=dtfcopy1(ki)
+            klx%attr=ior(klx%attr,lnonreallist)
+          else
+            klx%dbody(i)=ki
+          endif
+        enddo
+        return
+      endif
+      m2=kl2%nl
+      if(m2 /= m1)then
+        irtc=itfmessage(9,'General::equalleng','"arguments"')
+        return
+      endif
+      isp=isp+3
+      isp0=isp
+      do i=1,m1
+        dtastk(isp-2)=kp
+        dtastk(isp-1)=kl1%dbody(i)
+        dtastk(isp  )=kl2%dbody(i)
+        ki=tfefunrefu(isp-2,irtc)
+        isp=isp0
+        if(irtc /= 0)then
+          isp=isp-3
+          return
+        endif
+        if(i == 1)then
+          kx=ki
+        else
+          dtastk(isp-2)=ks
+          dtastk(isp-1)=kx
+          dtastk(isp  )=ki
+          kx=tfefunrefu(isp-2,irtc)
+          isp=isp0
+          if(irtc /= 0)then
+            isp=isp-3
+            return
+          endif
+        endif
+      enddo
+      isp=isp-3
+      return
+      end
+
+      subroutine tftr(isp1,kx,irtc)
+      implicit none
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) :: tfefunrefu
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_dlist), pointer :: kl,kli
+      integer*4 n,m,narg,itfmessage,i,isp0,nm
+      real*8 s
+      logical*4 cmplm,realm,vec
+      narg=isp-isp1
+      if(narg /= 1 .and. narg /= 2)then
+        irtc=itfmessage(9,'General::narg','"1 or 2"')
+        return
+      endif
+      call tfmatrixmaybeq(dtastk(isp1+1),cmplm,realm,vec,n,m,kl)
+      if(m == 0)then
+        go to 9000
+        return
+      endif
+      nm=min(n,m)
+      if(narg == 1)then
+        if(realm)then
+          s=0.d0
+          do i=1,nm
+            if(ktflistq(kl%dbody(i),kli))then
+              s=s+kli%rbody(i)
+            else
+              go to 9000
+            endif
+          enddo
+          kx=dfromr(s)
+          irtc=0
+        else
+          isp0=isp
+          isp=isp+1
+          ktastk(isp)=ktfoper+mtfplus
+          do i=1,nm
+            if(ktflistq(kl%dbody(i),kli))then
+              isp=isp+1
+              dtastk(isp)=kli%dbody(i)
+            else
+              isp=isp0
+              go to 9000
+            endif
+          enddo
+          kx=tfefunrefu(isp0+1,irtc)
+          isp=isp0
+        endif
+      else
+        isp0=isp
+        isp=isp+1
+        dtastk(isp)=dtastk(isp1+2)
+        do i=1,nm
+          if(ktflistq(kl%dbody(i),kli))then
+            isp=isp+1
+            dtastk(isp)=kli%dbody(i)
+          else
+            isp=isp0
+            go to 9000
+          endif
+        enddo
+        kx=tfefunrefu(isp0+1,irtc)
+        isp=isp0
+      endif
+      return
+ 9000 irtc=itfmessage(9,'General::wrongtype','"Matrix"')
+      return
+      end
+
+      end module
 c
 c
 c  K. Yokoya's FFT routines.   Received 2/26/1998.
@@ -1372,3 +1349,4 @@ C---------------ZFTWTR -----------------
       ENDDO
       RETURN
       END
+

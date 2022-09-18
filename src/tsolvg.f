@@ -30,9 +30,10 @@ c                 a=U^T.W.V .
 c               when .false. a quicker routine is used to obtain x.
 c                 a and b do not return meaningful things.
 c
+      use mathfun,only:nmaxsvd
       implicit none
       integer*4 ,intent(in):: n,m,ndim
-      integer*4 , parameter ::nmax=100000,itmax=256
+      integer*4 , parameter ::nmax=nmaxsvd,itmax=256
       real*8 ,intent(inout):: a(ndim,m),b(n)
       real*8 ,intent(out):: x(m)
       real*8 ,intent(in):: epslon
@@ -50,7 +51,7 @@ c     end   initialize for preventing compiler warning
 
       nfail=4
       mn=min(n,m)
-      if(max(mn+m,n) > nmax)then
+      if(mn*n*max(n,m) > nmax)then
         write(*,*)' TSVD Too large matrix. ',n,m
         return
       endif

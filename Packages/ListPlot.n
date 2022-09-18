@@ -23,7 +23,7 @@ Graphics$Options=AspectRatio|FrameLabel|PlotRange|GridLines|Alignment|DataRange|
     InfoBind|FrameUnitLabel|FontScale|TickFontScale|FrameFontScale|LegendFontScale|
       TitleFontScale|FrameColor|TickColor|LegendBG|LegendRaise|BelowFrame;
 
-Plot$DefaultColor={"dodger blue","tomato3","forest green","dark goldenrod",
+Plot$DefaultColor={"dodger blue","tomato2","forest green","dark goldenrod",
       "royal blue","orange3","blue violet"};
 
 With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},

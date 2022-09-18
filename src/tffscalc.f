@@ -34,7 +34,7 @@ c      include 'DEBUG.inc'
      $     rw,drw,wi,anusumi,anusum0,anudiffi,anudiff0
       logical*4 fam,beg,zerores
       integer*4 irw,isw,ipr,ifb,ife,idir,jjfam(-nfam:nfam),ifpe,ntfun
-      integer*4, external :: waitpid,itfdownlevel,itfuplevel,itgetfpe
+      integer*4, external :: waitpid,itgetfpe
       integer*8 iutm,jb
       integer*4 , parameter:: ivoid=9999
       integer*8 ,save :: iprolog=0,iepilog=0,imr=0,inr=0,isl=0
@@ -452,7 +452,7 @@ c      use ffs_flag, only:cell
       logical*4 ,intent(in):: wcal
       integer*4 i,j,k,iq
       real*8 coum,emxx,emyy,dpm,coup,em
-      integer*4 itfuplevel, level,irtc,idp
+      integer*4 level,irtc,idp
       character*16 name
       type (sad_descriptor) kx
       type (sad_descriptor) ,save::kfv

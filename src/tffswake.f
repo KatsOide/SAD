@@ -312,14 +312,14 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
       use tffitcode
       use ffs_wake
       use eeval
+      use maloc,only:ktfmalocp
       use iso_c_binding
       implicit none
       type (sad_dlist) ,pointer :: kwll,kwtl
       type (sad_descriptor) kx
       type (ffs_bound) fbound
-      integer*8 kal,kalj,ktfmalocp,kat,katj
-      integer*4 irtc,isp0,isp1,lfno,n,m,lenw,l,itfdownlevel,isp2,
-     $     i,j,k
+      integer*8 kal,kalj,kat,katj
+      integer*4 irtc,isp0,isp1,lfno,n,m,lenw,l,isp2,i,j,k
       character*(MAXPNAME+10) name
       integer*8 ifname,ifwfunl,ifwfunt
       save ifname,ifwfunl,ifwfunt

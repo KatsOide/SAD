@@ -1,8 +1,12 @@
-      function tfmodule(isp1,module,eval,irtc) result(kx)
+      module modul
       use tfstk
+
+      contains
+      function tfmodule(isp1,module,eval,irtc) result(kx)
       use eeval
+      use repl, only:tfreplacesymbolstk1,tfreplacesymbolstk
       implicit none
-      type (sad_descriptor) kx,ke,kxl1,tfredefslist
+      type (sad_descriptor) kx,ke,kxl1
       type (sad_dlist), pointer :: lvlist,kle
       type (sad_symdef), pointer :: symdi
       integer*4 ,intent(out):: irtc
@@ -87,8 +91,94 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       return
       end
 
+      subroutine tfdelete(def,del,unset)
+      use tfcode
+      use dset,only:tfcleardaloc
+      implicit none
+      type (sad_symdef) ,intent(inout):: def
+      type (sad_symdef), pointer :: def1
+      type (sad_defhash), pointer :: dhash
+      type (sad_descriptor) kx,tfefunrefu
+      integer*8 ka1,ka10,kp1,kadi,kadi0,kp0
+      integer*4 i,kk,irtc,isp0
+      logical*4 ,intent(in):: del,unset
+      if(unset)then
+        if(def%upval .ne. 0)then
+          isp0=isp
+          isp=isp+1
+          ktastk(isp)=ktfoper+mtfunset
+          isp=isp+1
+          dtastk(isp)=sad_descr(def%sym)
+          kx=tfefunrefu(isp0+1,irtc)
+          if(irtc .ne. 0 .and. ierrorprint .ne. 0)then
+            call tfreseterror
+          endif
+          isp=isp0
+        endif
+      endif
+      ka1=def%upval
+      def%upval=0
+      do kk=1,2
+        do while(ka1 .ne. 0)
+          call loc_defhash(ka1,dhash)
+          ka10=dhash%next
+          if(dhash%gen .eq. maxgeneration)then
+            do i=0,dhash%nhash
+              kadi=dhash%dhash(i)%k
+              do while(kadi .ne. 0)
+                kadi0=klist(kadi)
+                call tfcleardaloc(kadi)
+                call tfree(kadi)
+                kadi=kadi0
+              enddo
+            enddo
+          else
+            call tfcleardaloc(ka1)
+          endif
+          call tfree(ka1)
+          ka1=ka10
+        enddo
+        ka1=def%downval
+        def%downval=0
+      enddo
+      call tflocald(def%value)
+      if(del)then
+        kp0=def%prev
+        kp1=def%next
+        if(kp1 .ne. 0)then
+          call loc1_symdef(kp1,def1)
+          def1%prev=kp0
+          if(max(0,def1%sym%gen) .eq. max(0,def%sym%gen) .and.
+     $         def1%sym%override .eq. 0)then
+            def1%sym%override=-2
+          endif
+        endif
+        klist(kp0)=kp1
+        def%sym%override=0
+        def%sym%attr=def%len-6
+        def%len=6
+        call tfree(sad_loc(def%next))
+        call tflocal1(sad_loc(def%sym%loc))
+      else
+        def%value=dtfcopy1(sad_descr(def%sym))
+      endif
+      return
+      end
+
+      subroutine tfunblocksym(str,nch,del)
+      implicit none
+      character*(*) ,intent(in):: str
+      integer*4 ,intent(in):: nch
+      logical*4 ,intent(in):: del
+      type (sad_descriptor) ks
+      type (sad_symdef), pointer :: symd
+      ks=kxsymbolf(str,nch,.false.)
+      call descr_symdef(ks,symd)
+      call tfdelete(symd,del,.true.)
+      return
+      end
+
       subroutine tfmlocalv(list,module,eval,irtc)
-      use tfstk
       use eeval
       implicit none
       type (sad_descriptor) ki,ki1i,ki1,ki2
@@ -261,7 +351,6 @@ c        write(*,*)'mlocalv-1'
 
       recursive function tfredefslist(isp1,isp2,lvlist)
      $     result(kx)
-      use tfstk
       implicit none
       type (sad_descriptor) kx,k11,kj,k1
       type (sad_dlist) ,intent(in):: lvlist
@@ -315,13 +404,11 @@ c        write(*,*)'mlocalv-1'
       end
 
       subroutine tfwith(isp1,kx,eval,irtc)
-      use tfstk
       use eeval
+      use repl,only:tfinitrule,tfreplacestk,tfreplacesymbolstk1,tfreplacesymbolstk,tfresetrule
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_descriptor) ki,k1,kxi
-      type (sad_descriptor) tfreplacestk
-      type (sad_descriptor) tfreplacesymbolstk1
       type (sad_dlist), pointer :: list,listi,klx
       type (sad_symbol), pointer :: symi
       integer*4 ,intent(in):: isp1
@@ -450,7 +537,6 @@ c        write(*,*)'mlocalv-1'
 
       recursive function tfredefsymbol(isp1,isp2,k,rep)
      $     result(kx)
-      use tfstk
       use tfcode
       implicit none
       type (sad_descriptor) ,intent(in):: k
@@ -520,3 +606,5 @@ c        write(*,*)'mlocalv-1'
       endif
       return
       end
+
+      end module

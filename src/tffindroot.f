@@ -1,5 +1,4 @@
       module findr
-
       use tfstk
 
       type symv
@@ -45,6 +44,7 @@
       end
 
       subroutine tffindroot(isp1,kx,irtc)
+      use modul,only:tfdelete
       implicit none
       real*8 , parameter :: eps0=1.d-20, frac0=1.d-7
       integer*4 , parameter :: nvmax=2048, maxi0=50
@@ -261,11 +261,12 @@ c     enddo
       end
 
       subroutine tfevalresidual(sav,v,ke,f,am,d,nvar,neq,trace,irtc)
+      use sameq,only:tfcomplexlistqk
       use eeval
       implicit none
       integer*4 ,intent(in):: nvar,neq
       integer*4 ,intent(out):: irtc
-      integer*4 i,l,itfuplevel,itfdownlevel,itfmessage
+      integer*4 i,l,itfmessage
       type (symv) ,intent(in):: sav(nvar)
       type (sad_descriptor) kx
       type (sad_dlist),pointer::kl
@@ -274,7 +275,6 @@ c     enddo
       real*8 ,intent(in):: v(nvar)
       real*8 a,b
       logical*4 ,intent(in):: trace
-      logical*4 tfcomplexlistqk
       do i=1,nvar
         if(trace)then
           write(*,*)'FindRoot Vars: ',i,v(i)
@@ -334,6 +334,7 @@ c     call tfdebugprint(kx,'evalres-2',1)
       subroutine tfsetupvars(isp1,isp2,
      $     nvar,sav,sav0,v0,vmin,vmax,nvmax,irtc)
       use eeval
+      use modul,only:tfdelete
       implicit none
       type (sad_descriptor) k1,ki,kv,k3
       type (sad_symbol), pointer :: sym1
@@ -415,6 +416,7 @@ c     endif
       end
 
       subroutine tfsetupeqs(kl,ke,neq,irtc)
+      use part,only:tfreplist
       implicit none
       type (sad_dlist), pointer :: list,listi,liste
       type (sad_descriptor) kei
@@ -430,7 +432,7 @@ c     endif
       if(list%head%k == ktfoper+mtfequal)then
         neq=1
         list=>tfduplist(list)
-        call tfreplist(list%list(1),0,ktfoper+mtflist,eval)
+        call tfreplist(list,0,dfromk(ktfoper+mtflist),eval)
         kae=ksad_loc(list%head%k)
         irtc=0
       elseif(list%head%k == ktfoper+mtflist)then
@@ -460,6 +462,9 @@ c     endif
       end
 
       subroutine tffit(isp1,kx,irtc)
+      use repl, only:tfgetoption
+      use modul,only:tfdelete
+      use maloc,only:ktfmaloc
       use iso_c_binding
       use gammaf
       implicit none
@@ -474,7 +479,7 @@ c     endif
       real*8 ,parameter:: eps0=1.d-9
       integer*4 nvar,i,maxi,ispv,isp2,n,m,iu,ig,itfmessage
       type (symv) , allocatable::sav(:),sav0(:)
-      integer*8 kdp,ktfmaloc
+      integer*8 kdp
       type (sad_descriptor) kdl(nvmax),kdm,kcv,kci
       real*8 , allocatable::v0(:),vmin(:),vmax(:),v0s(:)
       real*8 r,vx,cut,cutoff
@@ -507,7 +512,7 @@ c     endif
       cutoff=0.d0
       ispv=isp
       do i=isp,isp1+4,-1
-        call tfgetoption('MaxIterations',ktastk(i),kx,irtc)
+        call tfgetoption('MaxIterations',dtastk(i),kx,irtc)
         if(irtc == -1)then
           ispv=i
           allocate (sav(nvmax),sav0(nvmax),
@@ -521,7 +526,7 @@ c     endif
           ispv=i-1
           cycle
         endif
-        call tfgetoption('D',ktastk(i),kx,irtc)
+        call tfgetoption('D',dtastk(i),kx,irtc)
         if(irtc /= 0)then
           return
         endif
@@ -530,7 +535,7 @@ c     endif
           used=vx /= 0.d0
           cycle
         endif
-        call tfgetoption('Cutoff',ktastk(i),kx,irtc)
+        call tfgetoption('Cutoff',dtastk(i),kx,irtc)
         if(irtc /= 0)then
           return
         endif
@@ -895,7 +900,7 @@ c     enddo
       type (sad_descriptor) k1,ke,kx
       integer*4 ,intent(out):: irtc
       integer*4 ,intent(in):: n,m,nvar
-      integer*4 i,itfuplevel,itfdownlevel,l,itfmessage
+      integer*4 i,l,itfmessage
       type (symv) sav(nvar)
       integer*8 kavvec,kaxvec
       real*8 ,intent(out):: df(m),r

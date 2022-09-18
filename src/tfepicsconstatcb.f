@@ -68,7 +68,7 @@
       real*8 chid
       integer*8 kx, iastart,icarlch,kaa,
      $     ka,iacscomm,iarn
-      integer*4 isp0,irtc,n,l,itfdownlevel,istat
+      integer*4 isp0,irtc,n,l,istat
       real*8 vn
       logical*4 ev
       levele=levele+1
@@ -186,7 +186,7 @@
       integer*8 karray(nc),kx,iarn,iavalcomm,kaa,icarlch
       integer*4 istat,jsev,itype,nc
       real*8 t,vn,stat
-      integer*4 isp0,isp2,irtc,n,l,i,itfdownlevel
+      integer*4 isp0,isp2,irtc,n,l,i
       logical*4 ev
       levele=levele+1
       isp0=isp

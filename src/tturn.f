@@ -39,7 +39,7 @@
       logical*4 ,intent(out):: normal
       integer*4 la,ls,nvar
       real*8 pgev00
-      integer*4 lv,itfdownlevel,irtc
+      integer*4 lv,irtc
       logical*4 sol,chg,tfinsol
       pgev00=pgev
       sol=tfinsol(lb)

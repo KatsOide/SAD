@@ -204,7 +204,7 @@ c                cmp%update=cmp%nparam .le. 0
       use eeval
       implicit none
       integer*4 ,intent(out):: irtc
-      integer*4 ia,itfdownlevel,irtc1
+      integer*4 ia,irtc1
       type (sad_dlist), pointer :: kl
       type (sad_descriptor) ifcoupv,ifsetcoup,k,kx
       type (sad_symdef), pointer, save :: symdcoupv

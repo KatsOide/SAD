@@ -16,7 +16,7 @@ OBJMOD= tfstk.o		tfstrbuf.o	toplvl.o	tintrb.o \
 OBJRC= 	tfefun1.o	tfsort.o	tfmodule.o	itfmaloc.o \
 	tfwrite.o	itfaloc.o	tfmemcheck.o	tfdot.o		tfematrix.o \
 	tfconvstr.o	tfpart.o	tfreplace.o	tftake.o	tfeval1.o \
-	tfeexpr.o	tfsetlist.o	tfeeval.o	tfmap.o	tftable.o \
+	tfecmplx.o	tfsetlist.o	tfeeval.o	tfmap.o	tftable.o \
 	itfdepth.o	tfdset.o	tfsameq.o	itfpmat.o	tmatch.o \
 	gamma.o		spkick.o	tsolqu.o	tsolque.o \
 	tfinitn.o	tffsa.o photons.o
@@ -111,7 +111,7 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      tspch_.o     ft.o        psn.o       spch.o \
      csrtest.o csrtrack.o csroy.o txwake.o tbbbrem.o
 
-OBJF=tfeval.o    itfcopy.o tfefun.o  tffuns.o tfmap.o     tfprinta.o  tfestk.o
+OBJF=tfeval.o tfefun.o  tffuns.o tfmap.o tfprinta.o  tfestk.o
 
 OBJUTIL=utils.o
 

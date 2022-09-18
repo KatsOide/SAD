@@ -11,8 +11,9 @@ c               a=U^T.W.V .
 c    
 c
       use tfstk, only:ktfenanq
+      use mathfun,only:nmaxsvd
       implicit none
-      integer*4 ,parameter ::nmax=100000,itmax=256
+      integer*4 ,parameter ::nmax=nmaxsvd,itmax=256
       integer*4 ,intent(in):: n,m,ndim,ndimb
       real*8 ,intent(inout):: a(ndim,m),b(ndimb,n)
       real*8 ,intent(out):: x(m)
@@ -26,7 +27,7 @@ c
       logical*4 inv
       mn=min(n,m)
       n1=min(ndimb,n)
-      if(max(mn+m,n) .gt. nmax)then
+      if(mn*n1*max(n1,m) > nmax)then
         write(*,*)' TSVDM Too large matrix. ',n,m
         return
       endif
@@ -39,9 +40,9 @@ c
       enddo
       do i=1,mn
         i1=i+1
-        if(i .lt. n)then
+        if(i < n)then
           do j=i1,n
-            if(abs(a(i,i)) .gt. abs(a(j,i)))then
+            if(abs(a(i,i)) > abs(a(j,i)))then
               p=a(j,i)/a(i,i)
               h1=v(i)+v(j)*p**2
               q=v(j)*p/h1
@@ -77,7 +78,7 @@ c              enddo
             endif
           enddo
         endif
-        if(i1 .lt. m)then
+        if(i1 < m)then
           do j=i1+1,m
             r1=x(i1)*a(i,i1)
             r2=x(j )*a(i,j )
@@ -85,7 +86,7 @@ c              enddo
             if(r .ne. 0.d0)then
               c=r1/r
               s=r2/r
-              if(abs(c) .gt. abs(s))then
+              if(abs(c) > abs(s))then
                 a(i,j)=0.d0
                 h1=x(i1)/c
                 h2=x(j )*c
@@ -117,8 +118,8 @@ c                enddo
               s=0.d0
             endif
             a(i,j)=s
-C     if(j .lt. ndim+2)then
-            if(j .lt. n+2)then
+C     if(j < ndim+2)then
+            if(j < n+2)then
               a(j-1,i)=c
             else
               if(c .le. abs(s) .and. c .ne. 0.d0)then
@@ -138,7 +139,7 @@ C     if(j .lt. ndim+2)then
 c        do k=1,n1
           b(i,1:n1)=b(i,1:n1)*p
 c        enddo
-        if(i .lt. m)then
+        if(i < m)then
           a(i,i+1)=a(i,i+1)*p
           v(i)=a(i,i+1)*x(i+1)
         else
@@ -158,19 +159,19 @@ c      enddo
         i1mn=i1+mn
         do j=m,i+2,-1
           s=a(i,j)
-C     if(j .lt. ndim+2)then
-          if(j .lt. n+2)then
+C     if(j < ndim+2)then
+          if(j < n+2)then
             c=a(j-1,i)
             a(j-1,i)=0.d0
           else
-            if(abs(s) .gt. 1.d0)then
+            if(abs(s) > 1.d0)then
               c=abs(1.d0/s)
               s=sign(1.d0-c**2/(1.d0+sqrt((1.d0-c)*(1.d0+c))),s)
             else
               c=1.d0-s**2/(1.d0+sqrt((1.d0-s)*(1.d0+s)))
             endif
           endif
-          if(abs(c) .gt. abs(s))then
+          if(abs(c) > abs(s))then
             h1=v(i1mn)*c
             h2=v(j +mn)/c
             p=s*v(j +mn)/h1
@@ -258,7 +259,7 @@ c            an=max(abs(x(i)),abs(x(i+1)))
           w=x(ibegin)
           z=x(iend)
           y=x(iend-1)
-          g=merge(v(iend-2),0.d0,ibegin .lt. iend-1)
+          g=merge(v(iend-2),0.d0,ibegin < iend-1)
           h=v(iend-1)
           f=((y-z)*(y+z)+(g-h)*(g+h))*.5d0
           if(w .eq. 0.d0)then
@@ -302,7 +303,7 @@ c            an=max(abs(x(i)),abs(x(i+1)))
               w=-s*g+c*y
               g=v(i1)*s
               h=v(i1)*c
-              if(abs(c) .gt. abs(s))then
+              if(abs(c) > abs(s))then
                 h1=v(i+mn)/c
                 h2=v(i1+mn)*c
                 r=s*v(i+mn)/h2
@@ -364,7 +365,7 @@ c                enddo
         do i=1,mn
           s=abs(x(i))
           f=v(i+mn)
-          if(s .gt. anorm)then
+          if(s > anorm)then
             x(i)=1.d0/s
             w=f*x(i)
           else
@@ -382,7 +383,7 @@ c          enddo
         do i=1,mn
           s=abs(x(i))
           f=v(i+mn)
-          if(s .gt. anorm)then
+          if(s > anorm)then
             w=f/s
           else
             s=0.d0

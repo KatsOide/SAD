@@ -287,6 +287,7 @@ c
         use mackw
         use macphys
         use macfile
+        use tfstk
         real*8, parameter :: c=cveloc,hp=plankr,e=elemch,epsrad=1.d-6,
      $       emminv=1.d-15,eps00m=0.005d0,ampmaxm=0.05d0
         integer*4 ,parameter :: ndivmaxm=1000
@@ -309,7 +310,6 @@ c
 
         contains
         subroutine tinitintm
-        use tfstk
         implicit none
         intffsm=ktfsymbolz('System`FFS$InterruptMask',24)-4
         call tsetintm(0.d0)
@@ -317,16 +317,16 @@ c
         end
 
         subroutine tsetintm(x)
-        use tfstk
         implicit none
         real*8 ,intent(in):: x
         rlist(intffsm)=x
         return
         end
 
-      end module
+      end module tmacro
 
       module tfshare
+      use tfstk
       integer*4, parameter:: nshmax=1024
       integer*8, save:: kashare(nshmax)=0,lshare(nshmax)=0
       integer*4, save :: ishared(nshmax)=0,kstshare(0:nshmax)=0
@@ -335,7 +335,6 @@ c
       
       contains
       integer*8 function ktfallocshared(n)
-      use tfstk
       use iso_c_binding
       implicit none
       integer*4, save :: lps=0
@@ -404,7 +403,6 @@ c     $     transfer(c_loc(klist(kpb)),k)/8
       end function
 
       subroutine tfreeshared(kpb,ist)
-      use tfstk
       implicit none
       integer*4, optional ,intent(in):: ist
       integer*4 i,is
@@ -427,7 +425,6 @@ c     $     transfer(c_loc(klist(kpb)),k)/8
       end subroutine
 
       subroutine tfreleaseshared(kpb)
-      use tfstk
       implicit none
       integer*8 ,intent(in):: kpb
       integer*8 k
@@ -447,7 +444,6 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       end subroutine
 
       subroutine tfsavesharedmap()
-      use tfstk
       use tmacro, only:tsetintm
       implicit none
       ishared=0
@@ -457,7 +453,6 @@ c      write(*,*)'savesharedmap'
       end subroutine
 
       subroutine tfresetsharedmap()
-      use tfstk
       implicit none
       integer*4 i
       do i=1,kstshare(0)
@@ -469,7 +464,6 @@ c      write(*,*)'savesharedmap'
       end subroutine
 
       subroutine ktfinitshare
-      use tfstk
       use iso_c_binding
       implicit none
       integer*4, save :: lps=0
@@ -481,7 +475,6 @@ c      write(*,*)'savesharedmap'
       end
 
       recursive subroutine tfrecallshared(isp0,k,kx,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_descriptor) ,intent(in):: k
@@ -550,7 +543,6 @@ c        call tfdebugprint(k,'recallshared',3)
       end
 
       subroutine tfstoreshared(isp0,k,kap)
-      use tfstk
       implicit none
       integer*8 ,intent(in):: k,kap
       integer*8 ka,kh,ki,kt
@@ -608,7 +600,6 @@ c          enddo
       end
 
       recursive subroutine tfsharedsize(isp0,k,n,irtc)
-      use tfstk
       implicit none
       integer*8 ,intent(in):: k
       integer*8 ka,kt,ki,kh
@@ -750,7 +741,6 @@ c          enddo
 
       integer*8 function itmmapp(n)
       use tfmem
-      use tfstk
       use tmacro
       implicit none
       integer*4 ,intent(in):: n
@@ -765,7 +755,6 @@ c          enddo
       end function
 
       subroutine tmunmapp(i)
-      use tfstk
       use tmacro
       implicit none
       integer*8 ,intent(in):: i
@@ -777,7 +766,16 @@ c          enddo
       return
       end subroutine
 
-      end module
+      end module tfshare
+
+      function ktfallocsharedf(n) result(k)
+      use tfshare
+      implicit none
+      integer*8 k
+      integer*4 ,intent(in):: n
+      k=ktfallocshared(n)
+      return
+      end
 
       module tfrbuf
       use tfstk
@@ -1468,4 +1466,3 @@ c
       ival=jival
       go to 1100
       end
-

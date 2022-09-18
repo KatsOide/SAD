@@ -214,8 +214,7 @@ c'\
         return
         end subroutine
  
-        recursive subroutine tfconvstrb(strb,
-     $     k,nc,str,gens,lfno,form,irtc)
+        recursive subroutine tfconvstrb(strb,k,nc,str,gens,lfno,form,irtc)
         use tfcode
         use iso_c_binding
         implicit none

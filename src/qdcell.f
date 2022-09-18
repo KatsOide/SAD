@@ -210,7 +210,7 @@ c                      write(*,'(a,3i5,l2,1p10g12.4)')'tdfun ',ka,j,kf,maxfit,vf
       type (sad_descriptor) kx
       type (sad_dlist),pointer,save::klv,klv1
       type (sad_rlist),pointer,save::klid
-      integer*4 lenw,itfuplevel,itfdownlevel
+      integer*4 lenw
       real*8 vf1
       logical retry,retry1
       character*(MAXPNAME+8) name,name1
@@ -342,7 +342,7 @@ c     Note: index(name1,'.') > 0 if kp1 != 0
       type (sad_descriptor) kx
       type (sad_descriptor) ,save :: kff
       data kff%k /0/
-      integer*4 itfuplevel,itfdownlevel,i,m,level,irtc
+      integer*4 i,m,level,irtc
       if(kff%k == 0)then
         kff=kxsymbolz('`FitFunction',12)
       endif
@@ -1450,11 +1450,11 @@ c                        write(*,'(a,l2,5i5,1p10g12.4)')'ffsqu-bmag ',cell,i,kq,
       use tffitcode
       use ffs_pointer,only:kele2
       use eeval
+      use maloc,only:ktfmaloc
       implicit none
       type (sad_descriptor) km
       type (sad_dlist),pointer ::klm
       integer*8 ,intent(out):: kcm
-      integer*8 ktfmaloc
       integer*4 ,intent(in):: lfno
       integer*4 irtc,n,m
       real*8 v

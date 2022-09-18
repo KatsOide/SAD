@@ -13,6 +13,7 @@
      $     xthcs1=min(xths1,xthc1),
      $     xthcs2=min(xths2,xthc2),
      $     xthasx=(epsieee*13312.d0/231.d0/6.d0)**(1.d0/10.d0)
+      integer*4 ,parameter ::nmaxsvd=10000000
 
       contains
       real*8 pure function tfloor(x)

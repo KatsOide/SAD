@@ -1,8 +1,8 @@
-      module tfpmat
+      module pmat
+      use tfstk
 
       contains
       subroutine tflinkedpat(pat0,pat)
-      use tfstk
       use tfcode
       use iso_c_binding
       implicit none
@@ -25,15 +25,11 @@ c      endif
       return
       end subroutine
 
-      end module
-
       integer*4 function itfpmat(k,kp)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(in):: k,kp
       type (sad_pat), pointer :: pat
       type (sad_dlist), pointer :: list
-      integer*4 itfpatmat,itflistmat
       itfpmat=-1
       if(ktfpatq(kp,pat))then
         itfpmat=itfpatmat(k,pat)
@@ -46,15 +42,67 @@ c      endif
         itfpmat=1
       endif
       return
+      end function
+
+      integer*4 function itfpmatc(k,kp)
+      implicit none
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) ,intent(in):: kp
+      type (sad_pat), pointer :: pat
+      type (sad_dlist), pointer :: klp
+      integer*4 mstk0,iop,isp0
+      if(ktflistq(kp,klp))then
+        itfpmatc=itfpmatcl(k,klp)
+      elseif(ktfpatq(kp,pat))then
+        iop=iordless
+        iordless=0
+        isp0=isp
+        mstk0=mstk
+        call tfinitpat(isp0,kp)
+        isp=isp0
+        itfpmatc=itfpatmat(k,pat)
+        call tfresetpat(kp)
+        mstk=mstk0
+        isp=isp0
+        iordless=iop
+      else
+        itfpmatc=merge(1,-1,tfsameq(k,kp))
+      endif
+      return
+      end
+
+      integer*4 function itfpmatcl(k,klp)
+      implicit none
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_dlist) ,intent(inout):: klp
+      integer*4 mstk0,iop,isp0
+      if(ktfnonlistq(k) .and. iand(klp%attr,lsimplepat) /= 0)then
+        itfpmatcl=-1
+        return
+      endif
+      iop=iordless
+      iordless=0
+      mstk0=mstk
+      isp0=isp
+      if(iand(klp%attr,lnopatlist) == 0)then
+        call tfinitpatlist(isp0,klp)
+        isp=isp0
+        itfpmatcl=itflistmat(k,klp)
+        call tfresetpatlist(klp)
+      else
+        itfpmatcl=itflistmat(k,klp)
+      endif
+      mstk=mstk0
+      isp=isp0
+      iordless=iop
+      return
       end
 
       integer*4 function itflistmat1(k,listp,f)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(in):: k
       type (sad_dlist) ,intent(inout):: listp
       logical*4 ,intent(in):: f
-      integer*4 itflistmat
       if(f)then
         write(*,*)'listmat1 ',f
       endif
@@ -62,256 +110,7 @@ c      endif
       return
       end
 
-      integer*4 function itflistmat(k,listp)
-      use tfstk
-      use efun
-      use eeval
-      implicit none
-      type (sad_descriptor) ,intent(in):: k
-      type (sad_descriptor) kph,ki,kc,kh,kf,k1,kp1
-      type (sad_dlist) ,intent(inout):: listp
-      type (sad_dlist), pointer :: lista,kl1
-      integer*8 kpp,ierrorth0
-      integer*4 i,itfpmat,isp3,irtc,isp1,itfseqmatseq,isp0,
-     $     itfseqmatstk,iop,isp2,ic,itfconstpart,icm,
-     $     np,itfseqmatstk1
-      logical*4 tfconstpatternlistbodyqo,ra,tfordlessq
-      itflistmat=-1
-      kph=listp%head
-      main: do
-        if(iand(lsimplepat,listp%attr) /= 0)then
-          if(ktfnonlistq(k,lista))then
-            return
-          endif
-          isp0=isp
-          kh=lista%head
-          itflistmat=itfpmat(kh,listp%head)
-          if(itflistmat .lt. 0)then
-            return
-          endif
-          isp1=isp
-          np=listp%nl
-          if(tfordlessq(kh) .and. lista%nl > 1)then
-            iop=iordless
-            do while(iop /= 0)
-              if(ktastk(iop) /= ksad_loc(listp%head%k))then
-                iop=itastk2(1,iop)
-              else
-                exit
-              endif
-            enddo
-            if(iop /= 0)then
-              iordless=iop
-              itflistmat=min(itflistmat,
-     $             itfseqmatstk(itastk(1,iop+1),itastk(2,iop+1),
-     $             listp%dbody(1),np,1,ktfreallistq(listp),int8(-1)))
-              if(itflistmat .lt. 0)then
-                call tfresetpat(kph)
-              endif
-              return
-            else
-              kpp=sad_loc(listp%head)
-            endif
-            icm=isp1
-            call tfgetllstkall(lista)
-            if(np == 0)then
-              if(isp1 .lt. isp)then
-                itflistmat=-1
-                call tfresetpat(kph)
-                isp=isp0
-              else
-                isp=isp1
-              endif
-              return
-            endif
-          else
-            call tfgetllstkall(lista)
-            if(np == 0)then
-              if(isp1 .lt. isp)then
-                exit main
-              else
-                isp=isp1
-              endif
-              return
-            endif
-            if(ktfreallistq(listp))then
-              if(np /= isp-isp1)then
-                exit main
-              endif
-              do i=1,np
-                if(ktfnonrealq(ktastk(isp1+i)) .or.
-     $               ktastk(isp1+i) /= listp%dbody(i)%k)then
-                  exit main
-                endif
-              enddo
-              isp=isp1
-              return
-            elseif(tfconstpatternlistbodyqo(listp))then
-              if(np /= isp-isp1)then
-                exit main
-              endif
-              do i=1,np
-                if(.not. tfsameq(ktastk(isp1+i),listp%dbody(i)%k))then
-                  exit main
-                endif
-              enddo
-              return
-            endif
-            icm=isp1
-            ic=itfconstpart(listp,np,0,kc)
-            loop20: do while(ic /= 0)
-              LOOP_I: do i=icm+1,isp
-                if(tfsameq(dtastk(i),kc))then
-                  if(i == icm+1 .and. i-isp1 == ic)then
-                    icm=i
-                  endif
-                  exit loop20
-                endif
-              enddo LOOP_I
-              exit main
-            enddo loop20
-            ic=itfconstpart(listp,np,ic,kc)
-          endif
-          kpp=0
-          isp2=isp
-          if(itflistmat .ge. 0)then
-            if(np == icm-isp1+1)then
-              itflistmat=min(itflistmat,
-     $             itfseqmatstk1(icm+1,isp2,listp%dbody(np)))
-            else
-              itflistmat=min(0,
-     $             itfseqmatstk(icm+1,isp2,listp%dbody(1),np,icm-isp1+1,
-     $             ktfreallistq(listp),kpp))
-            endif
-          endif
-          if(itflistmat .lt. 0)then
-            call tfresetpat(kph)
-            isp=isp0
-          endif
-        else
-          select case (kph%k)
-          case (ktfoper+mtfalt)
-            if(ktfreallistq(listp))then
-              if(ktfrealq(k))then
-                do i=1,listp%nl
-                  if(k%k == listp%dbody(i)%k)then
-                    itflistmat=1
-                    return
-                  endif
-                enddo
-              endif
-            else
-              ra=.true.
-              do i=1,listp%nl
-                ki=listp%dbody(i)
-                if(ktfpatq(ki) .or. ktflistq(ki))then
-                  ra=.false.
-                endif
-                itflistmat=itfpmat(k,ki)
-                if(itflistmat .ge. 0)then
-                  if(ra)then
-                    if(i > 1)then
-                      listp%dbody(2:i)=listp%dbody(1:i-1)
-                      listp%dbody(1)=ki
-                    endif
-                  endif
-                  return
-                endif
-              enddo
-            endif
-          case (ktfoper+mtfpattest)
-            if(listp%nl == 2)then
-              itflistmat=itfpmat(k,listp%dbody(1))
-              if(itflistmat .ge. 0)then
-                isp3=isp
-                isp=isp+1
-                dtastk(isp)=tfeevalref(listp%dbody(2),irtc)
-                if(irtc /= 0)then
-                  if(irtc > 0 .and. ierrorprint /= 0)then
-                    call tfreseterror
-                  endif
-                  itflistmat=-1
-                  call tfresetpat(listp%dbody(1))
-                  isp=isp3
-                else
-                  isp=isp+1
-                  dtastk(isp)=k
-                  ierrorth0=ierrorth
-                  ierrorth=10
-                  kf=tfefunref(isp3+1,.true.,irtc)
-                  ierrorth=ierrorth0
-                  isp=isp3
-                  do
-                    if(irtc /= 0)then
-                      if(irtc > 0 .and. ierrorprint /= 0)then
-                        call tfreseterror
-                      endif
-                      exit
-                    elseif(ktfnonrealq(kf) .or. kf%k == 0)then
-                      exit
-                    endif
-                    return
-                  enddo
-                  itflistmat=-1
-                  call tfresetpat(listp%dbody(1))
-                  return
-                endif
-              endif
-            endif
-          case (ktfoper+mtfrepeated,ktfoper+mtfrepeatednull)
-            if(ktfsequenceq(k%k))then
-              isp1=isp
-              isp=isp+1
-              dtastk(isp)=lista%dbody(1)
-              isp2=isp
-              itflistmat=itfseqmatseq(isp1+1,isp2,listp,1)
-              if(itflistmat .lt. 0)then
-                isp=isp1
-              endif
-            else
-              if(k%k == ktfoper+mtfnull)then
-                if(kph%k == ktfoper+mtfrepeatednull)then
-                  itflistmat=1
-                endif
-              else
-                kp1=listp%dbody(1)
-                do
-                  k1=k
-                  itflistmat=itfpmat(k1,kp1)
-                  if(itflistmat .lt. 0 .and. ktflistq(k1,kl1))then
-                    k1=kl1%head
-                    cycle
-                  endif
-                  exit
-                enddo
-              endif
-            endif
-          case default
-            if(kph%k == kxliteral)then
-              if(listp%nl == 0)then
-                if(k%k == ktfoper+mtfnull)then
-                  itflistmat=1
-                endif
-              else
-                kp1=listp%dbody(1)
-                itflistmat=itfpmat(k,kp1)
-              endif
-              return
-            endif
-            listp%attr=ior(lsimplepat,listp%attr)
-            cycle
-          end select
-        endif
-        return
-      enddo main
-      itflistmat=-1
-      call tfresetpat(kph)
-      isp=isp0
-      return
-      end
-
       integer*4 function itfconstpart(list,m,n,kx)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_descriptor) ki
@@ -349,9 +148,7 @@ c      endif
       end
 
       integer*4 function itfpatmat(k,pat0)
-      use tfstk
       use tfcode
-      use tfpmat
       implicit none
       type (sad_descriptor) ,intent(in):: k
       type (sad_descriptor) kv1
@@ -359,7 +156,7 @@ c      endif
       type (sad_pat), pointer :: pat
       type (sad_dlist), pointer :: list
       integer*8 kav1
-      integer*4 itfsinglepat,isp1,isp2,i,np,iss
+      integer*4 isp1,isp2,i,np,iss
       itfpatmat=-1
       call tflinkedpat(pat0,pat)
       kv1=pat%value
@@ -394,11 +191,9 @@ c        write(*,*)'patmat-result ',itfpatmat,pat%mat
       end
 
       integer*4 function itfseqmatseq(isp1,isp2,kl,mp1)
-      use tfstk
       implicit none
       type (sad_dlist) ,intent(inout):: kl
       integer*4 ,intent(in):: isp1,isp2,mp1
-      integer*4 itfseqmatstk21
       if(isp1 > isp2 .and. mp1 > kl%nl)then
         itfseqmatseq=0
       else
@@ -430,12 +225,10 @@ c$$$      return
 c$$$      end
 
       integer*4 function itfseqmatstk11(isp10,isp20,kp,f)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(inout):: kp
       integer*4 ,intent(in):: isp10,isp20
       logical*4 ,intent(in):: f
-      integer*4 itfseqmatstk1
       if(.not. f)then
         write(*,*)'seqmatstk11 '
       endif
@@ -444,11 +237,10 @@ c$$$      end
       end
 
       integer*4 function itfseqmatstk1(isp10,isp20,kp)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(inout):: kp
       integer*4 ,intent(in):: isp10,isp20
-      integer*4 isps,itfseqm,i,ispm,iop0,ispm0,mstk0
+      integer*4 isps,i,ispm,iop0,ispm0,mstk0
       mstk0=mstk
       ispm=isp10-1
       iop0=iordless
@@ -484,13 +276,11 @@ c        write(*,*)'itfsqms1-2 ',i
       recursive integer*4 function
      $     itfseqmatstk21(isp10,isp20,kp0,map,mp1,realp,kpp,f)
      $      result(ix)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(inout):: kp0(1)
       integer*8 ,intent(in):: kpp
       integer*4 ,intent(in):: isp10,isp20,map,mp1
       logical*4 ,intent(in):: realp,f
-      integer*4 itfseqmatstk
       if(f)then
         write(*,*)'seqmatstk21 '
       endif
@@ -501,15 +291,13 @@ c        write(*,*)'itfsqms1-2 ',i
       recursive integer*4 function
      $     itfseqmatstk(isp10,isp20,kp0,map,mp1,realp,kpp)
      $      result(ix)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(inout):: kp0(1)
       type (sad_descriptor) kp,k1
       integer*8 ,intent(in):: kpp
       integer*4 ,intent(in):: isp10,isp20,map,mp1
-      integer*4 isps,itfseqm,i,ispf,
-     $     np,ispp,mop,iop,iop0,np0,npd,npdi,
-     $     isp1a,isp2a,ispt,mstk0,itfseqmatstk1
+      integer*4 isps,i,ispf,np,ispp,mop,iop,iop0,np0,npd,npdi,
+     $     isp1a,isp2a,ispt,mstk0
       logical*4 ,intent(in):: realp
       mop=0
       if(mp1 > map)then
@@ -697,25 +485,466 @@ c     write(*,*)'at ',ispp,' with ',mop,np
       enddo
       end
 
+      subroutine tfstkpat(isp1,isp2,pat)
+      use tfcode
+      implicit none
+      type (sad_pat) ,intent(inout):: pat
+      integer*4 ,intent(in):: isp1,isp2
+      if(pat%sym%loc /= 0)then
+        pat%mat=1
+        if(isp1 .ge. isp2)then
+          pat%value=dxnull
+        elseif(isp2 == isp1+1)then
+          pat%value=dtastk(isp2)
+c          call tfdebugprint(sad_descr(pat),'stkstk',1)
+c          call tfdebugprint(ktastk(isp),'stkstk',1)
+c          write(*,*)'at ',sad_loc(pat%value)
+        else
+          pat%value%k=ktfref+isp1+ispbase
+          itastk2(1,isp1)=isp2
+        endif
+      endif
+      return
+      end
+
+      recursive subroutine tfunsetpat(k)
+      use tfcode
+      use iso_c_binding
+      implicit none
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_pat), pointer :: pat
+      type (sad_dlist), pointer :: klp
+      if(ktflistq(k,klp))then
+        call tfunsetpatlist(klp)
+      elseif(ktfpatq(k,pat))then
+c        do while(associated(pat%equiv))
+c          pat=>pat%equiv
+c          pat%mat=0
+c          pat%value%k=ktfref
+c          call tfunsetpat(sad_descr(pat%equiv))
+c        enddo
+        pat%mat=0
+        pat%value%k=ktfref
+        call tfunsetpat(pat%expr)
+      endif
+      return
+      end
+
+      recursive subroutine tfunsetpatlist(klp)
+      implicit none
+      type (sad_dlist) ,intent(inout):: klp
+      integer*4 i
+      if(iand(klp%attr,lnopatlist) /= 0)then
+        return
+      endif
+      call tfunsetpat(klp%head)
+      if(ktfnonreallistqo(klp))then
+        if(iand(klp%attr,knopatarg) == 0)then
+          do i=1,klp%nl
+            call tfunsetpat(klp%dbody(i))
+          enddo
+        endif
+      endif
+      return
+      end
+
+      recursive subroutine tfresetpat(kp)
+      implicit none
+      type (sad_descriptor) ,intent(in):: kp
+      type (sad_pat), pointer :: pat
+      type (sad_dlist), pointer :: list
+      if(ktflistq(kp,list))then
+        call tfresetpatlist(list)
+      elseif(ktfpatq(kp,pat))then
+        call tfresetpatpat(pat)
+      endif
+      return
+      end
+
+      recursive subroutine tfresetpatpat(pat)
+      use tfcode
+      use iso_c_binding
+      implicit none
+      type (sad_pat) ,intent(inout):: pat
+      call tfresetpat(pat%expr)
+      pat%mat=0
+      pat%value%k=ktfref
+      if(associated(pat%equiv))then
+c        pat=pat%equiv
+c        nullify(pat%equiv)
+      endif
+      return
+      end
+
+      recursive subroutine tfresetpatlist(list)
+      implicit none
+      type (sad_dlist) ,intent(inout):: list
+      integer*4 i
+      if(iand(list%attr,lnopatlist) /= 0)then
+        return
+      endif
+      call tfresetpat(list%head)
+      if(ktfnonreallistqo(list))then
+        if(iand(list%attr,knopatarg) == 0)then
+          do i=1,list%nl
+            call tfresetpat(list%dbody(i))
+          enddo
+        endif
+      endif
+      return
+      end
+
+      recursive subroutine tfinitpat(isp0,k)
+      use tfcode
+      use iso_c_binding
+      implicit none
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_dlist), pointer :: kl
+      type (sad_pat), pointer :: pat
+      integer*8 kas
+      integer*4 ,intent(in):: isp0
+      integer*4 i
+      if(ktflistq(k,kl))then
+        call tfinitpatlist(isp0,kl)
+      elseif(ktfpatq(k,pat))then
+        loop10: do
+          nullify(pat%equiv)
+          if(pat%sym%loc /= 0)then
+            kas=ktfaddr(pat%sym%alloc)
+            do i=isp0+1,isp-1,2
+              if(kas == ktastk(i+1) .and.
+     $             ktastk(i) /= k%k)then
+                call loc_pat(ktfaddr(ktastk(i)),pat%equiv)
+c                call tfdebugprint(sad_descr(pat%equiv),'initpat-e',1)
+c                write(*,*)':',ktfaddr(ktastk(i))
+                exit loop10
+              endif
+            enddo
+            isp=isp+2
+            dtastk(isp-1)=k
+            ktastk(isp  )=kas
+          endif
+          pat%value%k=ktfref
+          exit
+        enddo loop10
+        call tfinitpat(isp0,pat%expr)
+        pat%mat=0
+      endif
+      return
+      end
+
+      recursive subroutine tfinitpatlist(isp0,kl)
+      implicit none
+      type (sad_dlist) ,intent(inout):: kl
+      integer*4 ,intent(in):: isp0
+      integer*4 isp1,m,i
+      if(iand(kl%attr,lnopatlist) /= 0)then
+        return
+      endif
+      isp1=isp
+      call tfinitpat(isp0,kl%head)
+      if(ktfnonreallistqo(kl))then
+        if(iand(kl%attr,knopatarg) == 0)then
+          m=kl%nl
+          if(kl%head%k == ktfoper+mtfpattest)then
+            m=1
+          endif
+          do i=1,m
+            call tfinitpat(isp0,kl%dbody(i))
+          enddo
+          if(isp == isp1)then
+            kl%attr=ior(kl%attr,knopatarg)
+          endif
+        endif
+      endif
+      if(isp == isp1)then
+        kl%attr=ior(kl%attr,lnopatlist)
+      endif
+      return
+      end
+
+      logical*4 function tfordlessq(k)
+      use iso_c_binding
+      implicit none
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_funtbl), pointer ::fun
+      type (sad_symbol), pointer ::sym
+      if(ktfoperq(k))then
+        call c_f_pointer(c_loc(klist(klist(ifunbase+ktfaddrd(k))-9)),
+     $       fun)
+        tfordlessq=iand(iattrorderless,fun%def%sym%attr) /= 0
+      else
+        tfordlessq=merge(iand(iattrorderless,sym%attr) /= 0,.false.,
+     $       ktfsymbolq(k,sym))
+      endif
+      return
+      end
+
+      subroutine itfpmatdummy
+      use mackw
+      return
+      end
+
+      integer*4 function itflistmat(k,listp)
+      use tfstk
+      use eeval
+      implicit none
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_descriptor) kph,ki,kc,kh,kf,k1,kp1,tfefunrefu
+      type (sad_dlist) ,intent(inout):: listp
+      type (sad_dlist), pointer :: lista,kl1
+      integer*8 kpp,ierrorth0
+      integer*4 i,isp3,irtc,isp1,isp0,iop,isp2,ic,icm,np
+      logical*4 ra
+      itflistmat=-1
+      kph=listp%head
+      main: do
+        if(iand(lsimplepat,listp%attr) /= 0)then
+          if(ktfnonlistq(k,lista))then
+            return
+          endif
+          isp0=isp
+          kh=lista%head
+          itflistmat=itfpmat(kh,listp%head)
+          if(itflistmat .lt. 0)then
+            return
+          endif
+          isp1=isp
+          np=listp%nl
+          if(tfordlessq(kh) .and. lista%nl > 1)then
+            iop=iordless
+            do while(iop /= 0)
+              if(ktastk(iop) /= ksad_loc(listp%head%k))then
+                iop=itastk2(1,iop)
+              else
+                exit
+              endif
+            enddo
+            if(iop /= 0)then
+              iordless=iop
+              itflistmat=min(itflistmat,
+     $             itfseqmatstk(itastk(1,iop+1),itastk(2,iop+1),
+     $             listp%dbody(1),np,1,ktfreallistq(listp),int8(-1)))
+              if(itflistmat .lt. 0)then
+                call tfresetpat(kph)
+              endif
+              return
+            else
+              kpp=sad_loc(listp%head)
+            endif
+            icm=isp1
+            call tfgetllstkall(lista)
+            if(np == 0)then
+              if(isp1 .lt. isp)then
+                itflistmat=-1
+                call tfresetpat(kph)
+                isp=isp0
+              else
+                isp=isp1
+              endif
+              return
+            endif
+          else
+            call tfgetllstkall(lista)
+            if(np == 0)then
+              if(isp1 .lt. isp)then
+                exit main
+              else
+                isp=isp1
+              endif
+              return
+            endif
+            if(ktfreallistq(listp))then
+              if(np /= isp-isp1)then
+                exit main
+              endif
+              do i=1,np
+                if(ktfnonrealq(ktastk(isp1+i)) .or.
+     $               ktastk(isp1+i) /= listp%dbody(i)%k)then
+                  exit main
+                endif
+              enddo
+              isp=isp1
+              return
+            elseif(tfconstpatternlistbodyqo(listp))then
+              if(np /= isp-isp1)then
+                exit main
+              endif
+              do i=1,np
+                if(.not. tfsameq(ktastk(isp1+i),listp%dbody(i)%k))then
+                  exit main
+                endif
+              enddo
+              return
+            endif
+            icm=isp1
+            ic=itfconstpart(listp,np,0,kc)
+            loop20: do while(ic /= 0)
+              LOOP_I: do i=icm+1,isp
+                if(tfsameq(dtastk(i),kc))then
+                  if(i == icm+1 .and. i-isp1 == ic)then
+                    icm=i
+                  endif
+                  exit loop20
+                endif
+              enddo LOOP_I
+              exit main
+            enddo loop20
+            ic=itfconstpart(listp,np,ic,kc)
+          endif
+          kpp=0
+          isp2=isp
+          if(itflistmat .ge. 0)then
+            if(np == icm-isp1+1)then
+              itflistmat=min(itflistmat,
+     $             itfseqmatstk1(icm+1,isp2,listp%dbody(np)))
+            else
+              itflistmat=min(0,
+     $             itfseqmatstk(icm+1,isp2,listp%dbody(1),np,icm-isp1+1,
+     $             ktfreallistq(listp),kpp))
+            endif
+          endif
+          if(itflistmat .lt. 0)then
+            call tfresetpat(kph)
+            isp=isp0
+          endif
+        else
+          select case (kph%k)
+          case (ktfoper+mtfalt)
+            if(ktfreallistq(listp))then
+              if(ktfrealq(k))then
+                do i=1,listp%nl
+                  if(k%k == listp%dbody(i)%k)then
+                    itflistmat=1
+                    return
+                  endif
+                enddo
+              endif
+            else
+              ra=.true.
+              do i=1,listp%nl
+                ki=listp%dbody(i)
+                if(ktfpatq(ki) .or. ktflistq(ki))then
+                  ra=.false.
+                endif
+                itflistmat=itfpmat(k,ki)
+                if(itflistmat .ge. 0)then
+                  if(ra)then
+                    if(i > 1)then
+                      listp%dbody(2:i)=listp%dbody(1:i-1)
+                      listp%dbody(1)=ki
+                    endif
+                  endif
+                  return
+                endif
+              enddo
+            endif
+          case (ktfoper+mtfpattest)
+            if(listp%nl == 2)then
+              itflistmat=itfpmat(k,listp%dbody(1))
+              if(itflistmat .ge. 0)then
+                isp3=isp
+                isp=isp+1
+                dtastk(isp)=tfeevalref(listp%dbody(2),irtc)
+                if(irtc /= 0)then
+                  if(irtc > 0 .and. ierrorprint /= 0)then
+                    call tfreseterror
+                  endif
+                  itflistmat=-1
+                  call tfresetpat(listp%dbody(1))
+                  isp=isp3
+                else
+                  isp=isp+1
+                  dtastk(isp)=k
+                  ierrorth0=ierrorth
+                  ierrorth=10
+                  kf=tfefunrefu(isp3+1,irtc)
+                  ierrorth=ierrorth0
+                  isp=isp3
+                  do
+                    if(irtc /= 0)then
+                      if(irtc > 0 .and. ierrorprint /= 0)then
+                        call tfreseterror
+                      endif
+                      exit
+                    elseif(ktfnonrealq(kf) .or. kf%k == 0)then
+                      exit
+                    endif
+                    return
+                  enddo
+                  itflistmat=-1
+                  call tfresetpat(listp%dbody(1))
+                  return
+                endif
+              endif
+            endif
+          case (ktfoper+mtfrepeated,ktfoper+mtfrepeatednull)
+            if(ktfsequenceq(k%k))then
+              isp1=isp
+              isp=isp+1
+              dtastk(isp)=lista%dbody(1)
+              isp2=isp
+              itflistmat=itfseqmatseq(isp1+1,isp2,listp,1)
+              if(itflistmat .lt. 0)then
+                isp=isp1
+              endif
+            else
+              if(k%k == ktfoper+mtfnull)then
+                if(kph%k == ktfoper+mtfrepeatednull)then
+                  itflistmat=1
+                endif
+              else
+                kp1=listp%dbody(1)
+                do
+                  k1=k
+                  itflistmat=itfpmat(k1,kp1)
+                  if(itflistmat .lt. 0 .and. ktflistq(k1,kl1))then
+                    k1=kl1%head
+                    cycle
+                  endif
+                  exit
+                enddo
+              endif
+            endif
+          case default
+            if(kph%k == kxliteral)then
+              if(listp%nl == 0)then
+                if(k%k == ktfoper+mtfnull)then
+                  itflistmat=1
+                endif
+              else
+                kp1=listp%dbody(1)
+                itflistmat=itfpmat(k,kp1)
+              endif
+              return
+            endif
+            listp%attr=ior(lsimplepat,listp%attr)
+            cycle
+          end select
+        endif
+        return
+      enddo main
+      itflistmat=-1
+      call tfresetpat(kph)
+      isp=isp0
+      return
+      end
+
       recursive integer*4 function
      $     itfseqm(isp1,isp2,kp0,ispf,isps,ispt) result(ix)
       use tfstk
       use tfcode
-      use tfpmat
-      use efun
       use eeval
       use iso_c_binding
       implicit none
       type (sad_descriptor) ,intent(in):: kp0
-      type (sad_descriptor) kp1,kp,kd,k2,kf
+      type (sad_descriptor) kp1,kp,kd,k2,kf,tfefunrefu
       type (sad_pat), pointer :: pat,pat0
       type (sad_dlist), pointer :: listp
       integer*8 ka2,kad,ierrorth0
       integer*4 ,intent(out):: ispf,isps
       integer*4 ,intent(in):: isp1,isp2,ispt
-      integer*4 itfpmat,m,iss,isp0,irtc,
-     $     itfseqmatseq,itflistmat,itfsinglepat,ireppat
-      integer*4 np,i
+      integer*4 m,iss,isp0,irtc,ireppat,np,i
       ix=-1
       isps=0
       kp=kp0
@@ -848,7 +1077,7 @@ c          write(*,*)'==> ',ix
               isp=isp+isps-isp1
               ierrorth0=ierrorth
               ierrorth=10
-              kf=tfefunref(isp0+1,.true.,irtc)
+              kf=tfefunrefu(isp0+1,irtc)
               ierrorth=ierrorth0
               isp=isp0
               if(irtc /= 0)then
@@ -910,7 +1139,7 @@ c     $           iand(lsimplepat,listp%attr) /= 0)
       type (sad_pat) ,intent(inout):: pat
       type (sad_pat), pointer :: pata
       integer*8 kax,ka,ka1
-      integer*4 isp3,irtc,isp1,itfpmat,i
+      integer*4 isp3,irtc,isp1,i
       itfsinglepat=-1
       kx=pat%expr
       if(ktfrefq(kx,kax))then
@@ -978,320 +1207,4 @@ c        write(*,*)'at ',sad_loc(pat%value)
       return
       end
 
-      subroutine tfstkpat(isp1,isp2,pat)
-      use tfstk
-      use tfcode
-      implicit none
-      type (sad_pat) ,intent(inout):: pat
-      integer*4 ,intent(in):: isp1,isp2
-      if(pat%sym%loc /= 0)then
-        pat%mat=1
-        if(isp1 .ge. isp2)then
-          pat%value=dxnull
-        elseif(isp2 == isp1+1)then
-          pat%value=dtastk(isp2)
-c          call tfdebugprint(sad_descr(pat),'stkstk',1)
-c          call tfdebugprint(ktastk(isp),'stkstk',1)
-c          write(*,*)'at ',sad_loc(pat%value)
-        else
-          pat%value%k=ktfref+isp1+ispbase
-          itastk2(1,isp1)=isp2
-        endif
-      endif
-      return
-      end
-
-      integer*4 function itfpmatc(k,kp)
-      use tfstk
-      implicit none
-      type (sad_descriptor) ,intent(in):: k
-      type (sad_descriptor) ,intent(inout):: kp
-      type (sad_pat), pointer :: pat
-      type (sad_dlist), pointer :: klp
-      integer*4 mstk0,itfpatmat,iop,isp0,itfpmatcl
-      if(ktflistq(kp,klp))then
-        itfpmatc=itfpmatcl(k,klp)
-      elseif(ktfpatq(kp,pat))then
-        iop=iordless
-        iordless=0
-        isp0=isp
-        mstk0=mstk
-        call tfinitpat(isp0,kp)
-        isp=isp0
-        itfpmatc=itfpatmat(k,pat)
-        call tfresetpat(kp)
-        mstk=mstk0
-        isp=isp0
-        iordless=iop
-      else
-        itfpmatc=merge(1,-1,tfsameq(k,kp))
-      endif
-      return
-      end
-
-      integer*4 function itfpmatcl(k,klp)
-      use tfstk
-      implicit none
-      type (sad_descriptor) ,intent(in):: k
-      type (sad_dlist) ,intent(inout):: klp
-      integer*4 mstk0,itflistmat,iop,isp0
-      if(ktfnonlistq(k) .and. iand(klp%attr,lsimplepat) /= 0)then
-        itfpmatcl=-1
-        return
-      endif
-      iop=iordless
-      iordless=0
-      mstk0=mstk
-      isp0=isp
-      if(iand(klp%attr,lnopatlist) == 0)then
-        call tfinitpatlist(isp0,klp)
-        isp=isp0
-        itfpmatcl=itflistmat(k,klp)
-        call tfresetpatlist(klp)
-      else
-        itfpmatcl=itflistmat(k,klp)
-      endif
-      mstk=mstk0
-      isp=isp0
-      iordless=iop
-      return
-      end
-
-      recursive subroutine tfunsetpat(k)
-      use tfstk
-      use tfcode
-      use iso_c_binding
-      implicit none
-      type (sad_descriptor) ,intent(in):: k
-      type (sad_pat), pointer :: pat
-      type (sad_dlist), pointer :: klp
-      if(ktflistq(k,klp))then
-        call tfunsetpatlist(klp)
-      elseif(ktfpatq(k,pat))then
-c        do while(associated(pat%equiv))
-c          pat=>pat%equiv
-c          pat%mat=0
-c          pat%value%k=ktfref
-c          call tfunsetpat(sad_descr(pat%equiv))
-c        enddo
-        pat%mat=0
-        pat%value%k=ktfref
-        call tfunsetpat(pat%expr)
-      endif
-      return
-      end
-
-      recursive subroutine tfunsetpatlist(klp)
-      use tfstk
-      implicit none
-      type (sad_dlist) ,intent(inout):: klp
-      integer*4 i
-      if(iand(klp%attr,lnopatlist) /= 0)then
-        return
-      endif
-      call tfunsetpat(klp%head)
-      if(ktfnonreallistqo(klp))then
-        if(iand(klp%attr,knopatarg) == 0)then
-          do i=1,klp%nl
-            call tfunsetpat(klp%dbody(i))
-          enddo
-        endif
-      endif
-      return
-      end
-
-      recursive subroutine tfresetpat(kp)
-      use tfstk
-      implicit none
-      type (sad_descriptor) ,intent(inout):: kp
-      type (sad_pat), pointer :: pat
-      type (sad_dlist), pointer :: list
-      if(ktflistq(kp,list))then
-        call tfresetpatlist(list)
-      elseif(ktfpatq(kp,pat))then
-        call tfresetpatpat(pat)
-      endif
-      return
-      end
-
-      recursive subroutine tfresetpatpat(pat)
-      use tfstk
-      use tfcode
-      use iso_c_binding
-      implicit none
-      type (sad_pat) ,intent(inout):: pat
-      call tfresetpat(pat%expr)
-      pat%mat=0
-      pat%value%k=ktfref
-      if(associated(pat%equiv))then
-c        pat=pat%equiv
-c        nullify(pat%equiv)
-      endif
-      return
-      end
-
-      recursive subroutine tfresetpatlist(list)
-      use tfstk
-      implicit none
-      type (sad_dlist) ,intent(inout):: list
-      integer*4 i
-      if(iand(list%attr,lnopatlist) /= 0)then
-        return
-      endif
-      call tfresetpat(list%head)
-      if(ktfnonreallistqo(list))then
-        if(iand(list%attr,knopatarg) == 0)then
-          do i=1,list%nl
-            call tfresetpat(list%dbody(i))
-          enddo
-        endif
-      endif
-      return
-      end
-
-      recursive subroutine tfinitpat(isp0,k)
-      use tfstk
-      use tfcode
-      use iso_c_binding
-      implicit none
-      type (sad_descriptor) ,intent(inout):: k
-      type (sad_dlist), pointer :: kl
-      type (sad_pat), pointer :: pat
-      integer*8 kas
-      integer*4 ,intent(in):: isp0
-      integer*4 i
-      if(ktflistq(k,kl))then
-        call tfinitpatlist(isp0,kl)
-      elseif(ktfpatq(k,pat))then
-        loop10: do
-          nullify(pat%equiv)
-          if(pat%sym%loc /= 0)then
-            kas=ktfaddr(pat%sym%alloc)
-            do i=isp0+1,isp-1,2
-              if(kas == ktastk(i+1) .and.
-     $             ktastk(i) /= k%k)then
-                call loc_pat(ktfaddr(ktastk(i)),pat%equiv)
-c                call tfdebugprint(sad_descr(pat%equiv),'initpat-e',1)
-c                write(*,*)':',ktfaddr(ktastk(i))
-                exit loop10
-              endif
-            enddo
-            isp=isp+2
-            dtastk(isp-1)=k
-            ktastk(isp  )=kas
-          endif
-          pat%value%k=ktfref
-          exit
-        enddo loop10
-        call tfinitpat(isp0,pat%expr)
-        pat%mat=0
-      endif
-      return
-      end
-
-      recursive subroutine tfinitpatlist(isp0,kl)
-      use tfstk
-      implicit none
-      type (sad_dlist) ,intent(inout):: kl
-      integer*4 ,intent(in):: isp0
-      integer*4 isp1,m,i
-      if(iand(kl%attr,lnopatlist) /= 0)then
-        return
-      endif
-      isp1=isp
-      call tfinitpat(isp0,kl%head)
-      if(ktfnonreallistqo(kl))then
-        if(iand(kl%attr,knopatarg) == 0)then
-          m=kl%nl
-          if(kl%head%k == ktfoper+mtfpattest)then
-            m=1
-          endif
-          do i=1,m
-            call tfinitpat(isp0,kl%dbody(i))
-          enddo
-          if(isp == isp1)then
-            kl%attr=ior(kl%attr,knopatarg)
-          endif
-        endif
-      endif
-      if(isp == isp1)then
-        kl%attr=ior(kl%attr,lnopatlist)
-      endif
-      return
-      end
-
-      recursive logical*4 function tfconstpatternheadqk(k)
-     $     result(lx)
-      use tfstk
-      implicit none
-      type (sad_descriptor) ,intent(in):: k
-      type (sad_dlist), pointer :: kl
-      integer*8 ka
-      logical*4 tfconstpatternlistbodyqo
-      lx=merge(.false.,
-     $     merge(ka /= mtfalt .and. ka /= mtfrepeated .and.
-     $     ka /= mtfrepeatednull,
-     $     merge(tfconstpatternheadqk(kl%head) .and.
-     $     tfconstpatternlistbodyqo(kl),
-     $     merge(.not. tfsamesymbolqk(k%k,kxliteral),.true.,
-     $     ktfsymbolq(k)),
-     $     ktflistq(k,kl)),
-     $     ktfoperq(k,ka)),
-     $     ktfpatq(k))
-      return
-      end
-
-      logical function tfconstpatternlistbodyqo(list)
-      use tfstk
-      implicit none
-      type (sad_descriptor) ki
-      type (sad_dlist) ,intent(inout):: list
-      integer*4 i
-      tfconstpatternlistbodyqo=.true.
-      if(ktfnonreallistqo(list))then
-        if(iand(list%attr,kconstlist) /= 0)then
-          return
-        elseif(iand(list%attr,knoconstlist) /= 0)then
-          tfconstpatternlistbodyqo=.false.
-          return
-        endif
-        do i=1,list%nl
-          ki=list%dbody(i)
-          if(ktfpatq(ki))then
-            tfconstpatternlistbodyqo=.false.
-          elseif(ktflistq(ki))then
-            tfconstpatternlistbodyqo=tfconstpatternq(ki)
-          endif
-          if(.not. tfconstpatternlistbodyqo)then
-            list%attr=ior(list%attr,knoconstlist)
-            return
-          endif
-        enddo
-        list%attr=ior(list%attr,kconstlist)
-      endif
-      return
-      end
-
-      logical*4 function tfordlessq(k)
-      use tfstk
-      use tfcode
-      use iso_c_binding
-      implicit none
-      type (sad_descriptor) ,intent(in):: k
-      type (sad_funtbl), pointer ::fun
-      type (sad_symbol), pointer ::sym
-      if(ktfoperq(k))then
-        call c_f_pointer(c_loc(klist(klist(ifunbase+ktfaddrd(k))-9)),
-     $       fun)
-        tfordlessq=iand(iattrorderless,fun%def%sym%attr) /= 0
-      else
-        tfordlessq=merge(iand(iattrorderless,sym%attr) /= 0,.false.,
-     $       ktfsymbolq(k,sym))
-      endif
-      return
-      end
-
-      subroutine itfpmatdummy
-      use mackw
-      return
-      end
+      end module pmat

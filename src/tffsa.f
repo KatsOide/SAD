@@ -39,6 +39,7 @@
       use ffsfile
       use radint
       use geolib
+      use modul,only:tfunblocksym
       use iso_c_binding
       implicit none
       integer*4 maxrpt,hsrchz
@@ -48,8 +49,7 @@
       integer*8 itwisso,kax,ildummy
       integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,k,
      $     irtc0,it,itt,lfn,
-     $     iuse,l,itfuplevel,
-     $     levelr,lfnl0,lpw,meas0,mfpnta,igetgl,lenw,
+     $     iuse,l,levelr,lfnl0,lpw,meas0,mfpnta,igetgl,lenw,
      $     mphi2,next,nextt,nfp,
      $     nrpt1,itfpeeko,itfgetrecl,nl
       real*8 rmax,amus0,amus1,amusstep,apert,axi,ayi,ctime1,
@@ -57,6 +57,7 @@
      $     trval,rese,v,wa,wd,wl,xa,ya,xxa,xya,yya,getva,rgetgl1,
      $     wp,getvad,tgetgcut
       type (ffs_res) r
+      type (sad_string),pointer::strc
       parameter (rmax=1.d35)
       parameter (maxrpt=32)
       character*256 word,wordp,title,case,tfgetstrv,tfgetstrs,tfgetstr
@@ -848,6 +849,10 @@ c        geo0(:,1:3)=tfchitogeo(-chi0*scale(mfitchi1:mfitchi3))
         call twbuf('NBUNCH='//autofg(anbunch,''),'',lfno,1,lpw,8,1)
         call twbuf('NP='//autofg(dble(np0),'S8.1'),'',lfno,1,lpw,8,1)
         call twbuf('GCUT='//autofg(tgetgcut(),''),'',lfno,1,lpw,8,1)
+        call tfevals('StandardForm[$FORM="S8.3";"CODCONV="//CODCONV]',kx,irtc)
+        if(ktfstringq(kx,strc))then
+          call twbuf(strc%str(1:strc%nch),'',lfno,1,lpw,8,1)
+        endif
         call twbuf('EMITDIV='//autofg(emidiv,''),'',lfno,1,lpw,8,1)
         call twbuf('EMITDIVB='//autofg(emidib,''),'',lfno,1,lpw,8,1)
         call twbuf('EMITDIVQ='//autofg(emidiq,''),'',lfno,1,lpw,8,1)
@@ -1257,7 +1262,6 @@ c        write(*,*)'tffsa-setupwake-done ',nwakep
       end
 
       integer*8 function iutwiss(nvar,nfcol,nfam,nut,nonl)
-      use tfstk
       use ffs, only:flv,nvevx
       use ffs_pointer
       use tffitcode
@@ -1356,7 +1360,6 @@ c        write(*,*)'tffsa-setupwake-done ',nwakep
       end
 
       subroutine tffssaveparams(icmd,ilattp,err)
-      use tfstk
       use ffs, local_ilattp=>ilattp
       use iso_c_binding
       implicit none
@@ -1444,7 +1447,6 @@ c          call tmov(rlist(iffssave+2),ffv,nxh)
       end
 
       logical*4 function tffsinitialcond(lfno,err)
-      use tfstk
       use ffs_fit
       use tffitcode
       use eeval
@@ -1513,7 +1515,6 @@ c            call tclr(uini(1,0),28)
       end
 
       subroutine tffsclearcouple
-      use tfstk
       use ffs
       use tffitcode
       use ffs_pointer,only:kele2
@@ -1530,7 +1531,6 @@ c            call tclr(uini(1,0),28)
       end
 
       subroutine tffssetupcouple(lfno)
-      use tfstk
       use ffs
       use ffs_pointer, only: kele2
       use tffitcode
@@ -1632,7 +1632,6 @@ c                  write(*,*)'setupcouple ',k,iet,ik,nk
       end
 
       subroutine tfkeya(i,keyword,ia)
-      use tfstk
       use ffs
       use tffitcode
       use ffs_pointer, only:idelc,idtypec
@@ -1716,7 +1715,6 @@ c$$$      flv%mfitp(flv%nfc)=mfc
       end
 
       subroutine tscale(nlist,scale,lfno)
-      use tfstk
       use ffs
       use tffitcode
       implicit none
@@ -1730,7 +1728,6 @@ c$$$      flv%mfitp(flv%nfc)=mfc
       end
 
       recursive subroutine tclrline(line)
-      use tfstk
       use maccode
       implicit none
       integer*4 i,n,idx
@@ -1751,7 +1748,6 @@ c$$$      flv%mfitp(flv%nfc)=mfc
       end
 
       subroutine tfblocksym(str,nch)
-      use tfstk
       implicit none
       character*(*) ,intent(in):: str
       integer*4 ,intent(in):: nch
@@ -1760,20 +1756,6 @@ c$$$      flv%mfitp(flv%nfc)=mfc
       ks=kxsymbolf(str,nch,.false.)
       call descr_sym(ks,sym)
       kx=kxnaloc1(max(0,sym%gen),sym%loc)
-      return
-      end
-
-      subroutine tfunblocksym(str,nch,del)
-      use tfstk
-      implicit none
-      character*(*) ,intent(in):: str
-      integer*4 ,intent(in):: nch
-      logical*4 ,intent(in):: del
-      type (sad_descriptor) ks
-      type (sad_symdef), pointer :: symd
-      ks=kxsymbolf(str,nch,.false.)
-      call descr_symdef(ks,symd)
-      call tfdelete(symd,del,.true.)
       return
       end
 
@@ -1787,7 +1769,6 @@ c$$$      flv%mfitp(flv%nfc)=mfc
       end
 
       recursive subroutine tfffs(isp1,kx,irtc)
-      use tfstk
       use ffs
       use tffitcode
       use tfcsi

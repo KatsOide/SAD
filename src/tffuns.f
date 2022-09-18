@@ -1,8 +1,8 @@
       module funs
+      use tfstk
 
       contains
       function tfsequence(isp1,isp2) result(kx)
-      use tfstk
       implicit none
       type (sad_descriptor) kx
       integer*4 ,intent(in):: isp1,isp2
@@ -12,54 +12,8 @@
      $     isp1 .ge. isp2)
       return
       end
-      function tfreplace1(isp1,irtc) result(kx)
-      use tfstk
-      implicit none
-      type (sad_descriptor) kx,k1
-      integer*4 ,intent(in):: isp1
-      integer*4 ,intent(out):: irtc
-      integer*4 i,itfmessage
-      kx=dxnullo
-      if(isp .le. isp1+1)then
-        irtc=itfmessage(9,'General::narg','"2 or more"')
-        return
-      endif
-      k1=dtastk(isp1+1)
-      do i=isp1+2,isp
-        call tfreplace(k1,dtastk(i),kx,.true.,.true.,.false.,irtc)
-        if(irtc .ne. 0)then
-          return
-        endif
-        k1=kx
-      enddo
-      return
-      end
-
-      function tfreplacerepeated1(isp1,irtc) result(kx)
-      use tfstk
-      implicit none
-      type (sad_descriptor) kx
-      integer*4 ,intent(in):: isp1
-      integer*4 ,intent(out):: irtc
-      integer*4 i,itfmessage
-      kx=dxnullo
-      if(isp .le. isp1+1)then
-        irtc=itfmessage(9,'General::narg','"2 or more"')
-        return
-      endif
-      kx%k=ktastk(isp1+1)
-      irtc=0
-      do i=isp1+2,isp
-        call tfreplacerepeated(kx,ktastk(i),kx,.true.,.true.,irtc)
-        if(irtc .ne. 0)then
-          return
-        endif
-      enddo
-      return
-      end
 
       function tfsameq1(isp1,iopc,irtc) result(kx)
-      use tfstk
       implicit none
       type (sad_descriptor) kx,k,k1
       integer*4 ,intent(in):: isp1,iopc
@@ -85,71 +39,7 @@
       return
       end
 
-      function tfupset(k1,k2,kas,irtc) result(kx)
-      use tfstk
-      implicit none
-      type (sad_descriptor) ,intent(in):: k1,k2
-      type (sad_descriptor) kx,ki,karg
-      type (sad_dlist), pointer :: kl,kli
-      type (sad_symbol), pointer :: symi
-      type (sad_symdef), pointer :: symd
-      integer*8 ,intent(in):: kas
-      integer*4 ,intent(out):: irtc
-      integer*4 i,isp0,isp1,m,itfmessage
-      kx=dxnullo
-      if(ktfnonlistq(k1,kl))then
-        irtc=itfmessage(999,'General::wrongtype','"Expression"')
-        return
-      endif
-      m=kl%nl
-      if(m .le. 0)then
-        irtc=itfmessage(999,'General::wrongleng',
-     $       '"Expression","longer than 0"')
-        return
-      endif
-      isp0=isp
-      isp1=isp0+1
-      call tfgetllstk(kl,0,-1)
-      karg=kxcompose(isp1)
-      LOOP_I: do i=isp1+1,isp
-        ki=dtastk(i)
-        do while(ktflistq(ki,kli))
-          ki=kli%head
-        enddo
-        if(ktfsymbolqdef(ki%k,symd))then
-          if(symd%sym%override .ne. 0)then
-            if(symd%sym%gen .lt. 0 .and. symd%sym%gen .ne. -3)then
-              cycle LOOP_I
-            endif
-            if(kas .eq. 0 .or. kas .eq. ktfaddr(ki))then
-              call tfdset(k2,symd%upval,kx,karg)
-              if(kas .ne. 0)then
-                cycle LOOP_I
-              endif
-            endif
-          else
-            symi=>tfsydef(symd%sym)
-            if(symi%gen .lt. 0 .and. symi%gen .ne. -3)then
-              cycle LOOP_I
-            endif
-            if(kas .eq. 0 .or. kas .eq. ksad_loc(symi%loc))then
-              call sym_symdef(symi,symd)
-              call tfdset(k2,symd%upval,kx,karg)
-              if(kas .ne. 0)then
-                cycle LOOP_I
-              endif
-            endif
-          endif
-        endif
-      enddo LOOP_I
-      kx=k2
-      isp=isp0
-      irtc=0
-      return
-      end
-
       function tfoverride(isp1,irtc) result(kx)
-      use tfstk
       implicit none
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: kli
@@ -220,4 +110,76 @@
       isp=isp0-1
       return
       end
+
+      recursive subroutine tfgetstkstk(ks,rep)
+      implicit none
+      type (sad_descriptor) ,intent(in):: ks
+      type (sad_descriptor) ki
+      type (sad_dlist), pointer :: kl,kli
+      integer*8 i,ka
+      logical*4 ,intent(out):: rep
+      logical*4 rep1
+      if(ktfrefq(ks,ka))then
+        rep=.true.
+        if(ka > 3)then
+          ka=ka-ispbase
+          do i=ka+1,itastk2(1,ka)
+            ki=dtastk(i)
+            if(ktfrefq(ki))then
+              call tfgetstkstk(ki,rep1)
+            elseif(ktflistq(ki,kli))then
+              if(kli%head%k == ktfoper+mtfnull)then
+                call tfgetllstkall(kli)
+              else
+                isp=isp+1
+                dtastk(isp)=ki
+              endif
+            else
+              isp=isp+1
+              dtastk(isp)=ki
+            endif
+          enddo
+          return
+        endif
+        isp=isp+1
+        dtastk(isp)=dxnull
+        return
+      elseif(ktflistq(ks,kl))then
+        if(kl%head%k == ktfoper+mtfnull)then
+          call tfgetllstkall(kl)
+          rep=.true.
+          return
+        endif
+      endif        
+      rep=.false.
+      isp=isp+1
+      dtastk(isp)=ks
+      return
+      end
+
+      subroutine tfgetllstk(list,i1,i2)
+      implicit none
+      type (sad_dlist) ,intent(in):: list
+      type (sad_dlist), pointer :: kl
+      integer*4 i,m
+      integer*4 ,intent(in):: i1,i2
+      if(i2 .ge. 0)then
+        m=min(i2,list%nl)
+      else
+        m=list%nl+i2+1
+      endif
+      if(i1 .gt. m)then
+        return
+      endif
+      do i=max(0,i1),m
+        isp=isp+1
+        dtastk(isp)=list%dbody(i)
+        if(ktfsequenceq(ktastk(isp),kl))then
+          isp=isp-1
+          call tfgetllstkall(kl)
+        endif
+      enddo
+      return
+      end
+
       end module

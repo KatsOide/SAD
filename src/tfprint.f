@@ -13,7 +13,7 @@
       logical*4 exist,force
       character*(*) ,intent(inout):: word
       character peekch
-      integer*4 l,itfdownlevel,lenw,irtc
+      integer*4 l,lenw,irtc
       real*8 , parameter :: amaxline=8
       character*256 word0,word1
       itx=-1
@@ -102,18 +102,20 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
 
       subroutine tfsetout(kx,lfno,amaxline)
       use tfstk
+      use dset,only:itfhasharg,ktdaloc,ktdhtaloc
       implicit none
       type (sad_descriptor) ,intent(in):: kx
+      type (sad_descriptor) karg
       type (sad_rlist), pointer ::klarg
       type (sad_symdef), pointer :: sdout
-      integer*8 karg,kh,ktdhtaloc,kad,kan,ktdaloc
+      integer*8 kh,kad,kan
       integer*4 ,intent(in):: lfno
-      integer*4 irtc,itfhasharg
+      integer*4 irtc
       real*8 al
       real*8 ,intent(in):: amaxline
       al=rlist(iaxline)+1.d0
       rlist(iaxline)=al
-      karg=ktavaloc(-1,1,klarg)
+      karg=kxavaloc(-1,1,klarg)
       klarg%head%k=ktfsymbol+ktfcopy1(iaxout)
       klarg%rbody(1)=al
       call loc_symdef(iaxout,sdout)
@@ -122,8 +124,8 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
         kad=ktdhtaloc(iaxout-5,i00,15)
       endif
       ilist(2,kad-1)=ior(ilist(2,kad-1),1)
-      kh=itfhasharg(ktflist+karg,ilist(2,kad+2))+kad+3
-      kan=ktdaloc(i00,kh,klist(kh),ktfref,karg,kx,karg,.false.)
+      kh=itfhasharg(karg,ilist(2,kad+2))+kad+3
+      kan=ktdaloc(i00,kh,klist(kh),dfromk(ktfref),karg,kx,karg,.false.)
       rlist(kan+7)=1.d100
       if(lfno .gt. 0)then
         call tfprintout(amaxline,irtc)
@@ -139,13 +141,15 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
       use tfrbuf
       use ffs_flag
       use efun
+      use tfcx,only:tfclassmember
       use eeval
+      use dset,only:itfhasharg
       implicit none
       type (sad_dlist), pointer :: kl
       type (sad_symbol), pointer :: sym
-      type (sad_descriptor) kx
-      integer*8 kad,kah,ka,k,kt,k1
-      integer*4 irtc,l,lenw,itfhasharg,isp0
+      type (sad_descriptor) kx,k,k1
+      integer*8 kad,kah,ka,kt
+      integer*4 irtc,l,lenw,isp0
       real*8 al,amaxline
       character*10 n,autofg
       type (sad_descriptor),save:: iaxshort
@@ -161,7 +165,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
         isp=isp+1
         rtastk(isp)=al
         kad=klist(iaxout-5)
-        kah=itfhasharg(ktfref+isp-1+ispbase,ilist(2,kad+2))
+        kah=itfhasharg(dfromk(ktfref+isp-1+ispbase),ilist(2,kad+2))
         isp=isp-2
         kad=klist(kad+kah+3)
         n=autofg(al,'S10.0')
@@ -170,9 +174,9 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
         ncprolog=l+8
         do while(kad .ne. 0)
           if(al .eq. rlist(ktfaddr(klist(kad+3))+1))then
-            k=klist(kad+6)
-            ka=ktfaddr(k)
-            kt=k-ka
+            k=dlist(kad+6)
+            ka=ktfaddr(k%k)
+            kt=k%k-ka
             if(ktflistq(k,kl) .and. ktfsymbolq(kl%head%k,sym) .and.
      $           sym%gen .eq. -3)then
               call tfclassmember(k,iaxshort,k1,.true.,irtc)
@@ -183,7 +187,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
               endif
               isp=isp+1
               isp0=isp
-              ktastk(isp)=k1
+              dtastk(isp)=k1
               kx=tfefunref(isp0,.true.,irtc)
               isp=isp0-1
               ncprolog=0
@@ -193,7 +197,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
             isp0=isp
             dtastk(isp)=iaxshort
             isp=isp+1
-            ktastk(isp)=k
+            dtastk(isp)=k
             isp=isp+1
             rtastk(isp)=amaxline
             kx=tfefunref(isp0,.true.,irtc)

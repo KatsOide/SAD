@@ -362,6 +362,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       use tfstk
       use ffs
       use tffitcode
+      use repl, only:tfgetoption
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -397,7 +398,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       else
         if(narg .gt. 2)then
           if(narg == 3)then
-            call tfgetoption('Saved',ktastk(isp),kx,irtc)
+            call tfgetoption('Saved',dtastk(isp),kx,irtc)
             if(irtc /= 0)then
               return
             endif
@@ -683,7 +684,7 @@ c              k=ilist(ie,ifklp)
      $     gv(3,4),ogv(3,4),cod(6),vtwiss(ntwissfun),tfbzs
       character*(*) ,intent(in):: keyword
       character*64 name,key1
-      integer*4 lv,itfdownlevel
+      integer*4 lv
       logical*4 ,intent(in):: ref
       logical*4 over
 c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
