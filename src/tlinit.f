@@ -157,6 +157,7 @@ c      write(*,*)ltbl,lpoint,katbl,ilist(1,katbl-1)
 
       subroutine tlfield(isp1,kx,irtc)
       use tfstk
+      use maloc,only:tfmsize
       implicit none
       type (sad_rlist), pointer :: klt
       integer*8 kx, ke
@@ -166,7 +167,7 @@ c      write(*,*)ltbl,lpoint,katbl,ilist(1,katbl-1)
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
-      call tfmsize(ktastk(isp1+1),n,m,irtc)
+      call tfmsize(dtastk(isp1+1),n,m,irtc)
       if(irtc .ne. 0)then
         return
       elseif(n .ne. 4)then
@@ -193,12 +194,14 @@ c      write(*,*)ltbl,lpoint,katbl,ilist(1,katbl-1)
       subroutine tlcalc(ka,ke,lpoint,tx,ty,tz)
       use tfstk
       use tmacro
+      use maloc,only:tfl2m
       implicit none
+      type (sad_dlist) ,pointer :: dl
       integer*8 ka,ke
       integer*4 lpoint,i,j
-      real*8 xtbl(lpoint,4),f(lpoint,10),
-     $     tx,ty,tz,dxi,dyi,dzi,ri,r0,dri,coeff,dt,f1,z0
-      call tfl2m(klist(ktfaddr(ka)-3),xtbl,lpoint,4,.true.)
+      real*8 xtbl(lpoint,4),f(lpoint,10),tx,ty,tz,dxi,dyi,dzi,ri,r0,dri,coeff,dt,f1,z0
+      call loc_sad(ktfaddr(ka)-3,dl)
+      call tfl2m(dl,xtbl,lpoint,4,.true.)
       z0=4.d-7*2.d0*asin(1.d0)*c
       r0=sqrt(tx**2+ty**2+tz**2)
       do i=1,lpoint

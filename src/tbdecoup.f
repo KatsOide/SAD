@@ -96,7 +96,8 @@
       trans(3,2)=r2
       trans(4,1)=r3
       trans(4,2)=r4
-      call tmultr(beam,trans,6)
+      beam=matmul(trans,beam)
+c      call tmultr(beam,trans,6)
       trans(1,3)=r1
       trans(1,4)=r3
       trans(2,3)=r2
@@ -105,7 +106,8 @@
       trans(3,2)=r3
       trans(4,1)=r2
       trans(4,2)=-r1
-      call tmultr(trans,beam,6)
+      trans=matmul(beam,trans)
+c      call tmultr(trans,beam,6)
       beam=trans
 c      write(*,'(1x,:1p6g12.4)')beam
       d=beam(1,1)*beam(2,2)-beam(2,1)**2

@@ -161,7 +161,7 @@ static int tclsadcommand(ClientData clientData, Tcl_Interp *interp,
   }
 
   isp = isp0;
-  itfdownlevel();
+  __tfstk_MOD_itfdownlevel();
 
   return TCL_OK;
 }

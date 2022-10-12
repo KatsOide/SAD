@@ -5,6 +5,7 @@
       use ffs_pointer
       use tffitcode
       use ffs_fit, only:ffs_stat
+      use cellm,only:qcell
       implicit none
       type (ffs_stat) optstat
       integer*4 ndp,maxdp,ntmax

@@ -14,10 +14,8 @@
       type (ffs_bound) fbound
       type (iaemit) iae
       integer*8 kaparam
-      integer*4 isp1,irtc,narg,mode,itgetfpe,itfmessage,lno,
-     $     is,ie,nel
-      real*8 param(nparams),trans(6,12),cod(6),beam(42),btr(441),sx,
-     $     srot(3,9)
+      integer*4 isp1,irtc,narg,mode,itgetfpe,itfmessage,lno,is,ie,nel
+      real*8 param(nparams),trans(6,12),cod(6),beam(42),btr(441),sx,srot(3,9)
       real*8 dummy(6,6),ris(6,6)
       logical*4 stab,rt,bi
       call tfinitemip
@@ -192,7 +190,7 @@ c        ilist(2,iwakepold+6)=ifsize
       end
 
       subroutine rotri(is,ris)
-      use ffs_pointer
+      use ffs_pointer,only:twiss
       use tffitcode
       use temw,only:r,ri,tinv6
       implicit none

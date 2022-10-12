@@ -612,7 +612,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           call tffserrorhandle(l,irtc)
           return
         endif
-        if(l == nextwake)then
+        if(l == nextwake .and. lt /= icMULT)then
           fw=(abs(charge)*e*pbunch*anbunch/amass)/np0*.5d0
           kdx=kytbl(kwDX,lt)
           dx=merge(cmp%value(kdx),0.d0,kdx /= 0)
@@ -715,8 +715,11 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
      $         cmp%value(ky_VOLT_CAVI)+cmp%value(ky_DVOLT_CAVI),
      $         cmp%value(p_W_CAVI),
      $         cmp%value(ky_PHI_CAVI),ph,cmp%value(p_VNOMINAL_CAVI),
-     $         0.d0,1.d0,autophi,1,0,
+     $         0.d0,1.d0,autophi,1,0,nwak,
      $         n,kptbl)
+          nwak=nwak+1
+          nextwake=merge(0,iwakeelm(nwak),nwak .gt. nwakep)
+          
         case (icSOL)
           bz1=merge(0.d0,tfbzs(l,kbz),l == ke)
           krad=rad .and. cmp%value(ky_RAD_SOL) == 0.d0
@@ -780,7 +783,7 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
           endif
         end select
 
-        if(l == nextwake .and. l /= ke)then
+        if(l == nextwake .and. l /= icMULT .and. l /= ke)then
           call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         dx,dy,rot,int(anbunch),
      $         fw,nwak,p0,h0,.false.)

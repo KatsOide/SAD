@@ -19,7 +19,7 @@ ColorTable=Class[{},
     w = KBMainFrame["ColorTable", f];
     cf = KBFComponentFrame[f, Add->{
       KBFTextEditor[WidgetVariable:>tx,
-	WidgetOption->{Width->30,Height->20}],
+	WidgetOption->{Width->30,Height->40}],
       Null[]}];
     Do[(
       tx[Insert] = {{i, 0}, "               ", "t"//i};

@@ -1,8 +1,10 @@
-      integer*8 function ktfmaloc(k,n,m,vec,trans,irtc)
+      module maloc
       use tfstk
+
+      contains
+      integer*8 function ktfmaloc(k,n,m,vec,trans,irtc)
       implicit none
       type (sad_descriptor) ,intent(in):: k
-      integer*8 ktfmalocp
       integer*4 ,intent(inout):: n,m,irtc
       logical*4 ,intent(in):: vec,trans
       ktfmaloc=ktfmalocp(k,n,m,vec,trans,.false.,.true.,irtc)
@@ -10,13 +12,11 @@
       end
 
       integer*8 function ktfmalocp(k,n,m,vec,trans,map,err,irtc)
-      use tfstk
-      use tfshare
       use tmacro
       implicit none
       type (sad_descriptor) ,intent(in):: k
       type (sad_dlist), pointer :: kl,kl1,kli
-      integer*8 kap,i0,ip0
+      integer*8 kap,i0,ip0,ktfallocsharedf
       integer*4 ,intent(out):: n,m,irtc
       integer*4 i,itfmessage
       logical*4 ,intent(in):: vec,trans,map,err
@@ -32,7 +32,7 @@ c
           m=0
           if(map .and. nparallel .gt. 1)then
             irtc=1
-            kap=ktfallocshared(n)
+            kap=ktfallocsharedf(n)
 c            kap=mapalloc8(rlist(0), n, 8, irtc)
           else
             kap=ktaloc(n)
@@ -70,7 +70,7 @@ c          call tmov(rlist(ka+1),rlist(kap),n)
       enddo
       if(map .and. nparallel .gt. 1)then
         irtc=1
-        kap=ktfallocshared(m*n)
+        kap=ktfallocsharedf(m*n)
 c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
       else
         kap=ktaloc(m*n)
@@ -113,7 +113,6 @@ c          enddo
       end
 
       subroutine tfl2m(kl,a,n,m,trans)
-      use tfstk
       implicit none
       type (sad_dlist) ,intent(in):: kl
       type (sad_dlist), pointer :: kli
@@ -136,7 +135,6 @@ c          enddo
       end
 
       subroutine tfl2cm(kl,c,n,m,trans,irtc)
-      use tfstk
       implicit none
       type (sad_dlist) ,intent(in):: kl
       type (sad_dlist), pointer :: kli
@@ -196,7 +194,6 @@ c          enddo
       end
 
       subroutine tfmsize(k,n,m,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(in):: k
       type (sad_dlist), pointer ::kl,kl1,kli
@@ -236,7 +233,6 @@ c          enddo
       end
 
       integer*8 function ktfcmaloc(k,n,m,vec,trans,err,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(in):: k
       type (sad_complex), pointer :: cxi
@@ -398,9 +394,7 @@ c            enddo
       end
 
       integer*8 function ktfc2l(cx,n)
-      use tfstk
       implicit none
-      integer*8 ktfcm2l
       integer*4 ,intent(in)::n
       complex*16 ,intent(in):: cx(n)
       ktfc2l=ktfcm2l(cx,0,n,1,.false.,.false.)
@@ -408,7 +402,6 @@ c            enddo
       end
 
       subroutine nanchecka(a,n,m,ndim,tag,k)
-      use tfstk, only:ktfenanq
       implicit none
       integer*4 n,m,ndim,i,j,k
       real*8, intent(in):: a(ndim,m)
@@ -425,7 +418,6 @@ c            enddo
       end
 
       integer*8 function ktfcm2l(a,n,m,nd,trans,conj)
-      use tfstk
       implicit none
       type (sad_dlist), pointer :: klx,klxi
       type (sad_rlist), pointer :: klj,kl
@@ -525,5 +517,18 @@ c     $           imag_sign*imag(a(1,i)))
         endif
       endif
       ktfcm2l=kax
+      return
+      end
+
+      end module maloc
+
+      subroutine tfl2cmf(kl,c,n,irtc)
+      use maloc
+      implicit none
+      type (sad_dlist) ,intent(in):: kl
+      integer*4 ,intent(in)::n
+      integer*4 ,intent(out)::irtc
+      complex*16, intent(out):: c(n,1)
+      call tfl2cm(kl,c,n,0,.true.,irtc)
       return
       end

@@ -1,16 +1,18 @@
+      module calc
+
+      contains
       subroutine tffscalc(kdp,df,iqcol,lfp,
      $     nqcola,nqcola1,ibegin,
-     $     r,rp,rstab,nstab,residual1,
-     $     zcal,wcal,parallel,lout,error)
+     $     r,residual1,zcal,wcal,parallel,lout,error)
       use tfstk
       use maccode
-      use ffs, only:ndim,nlat,flv,maxcond,ffs_bound,nvevx,nelvx,
-     $     tsetintm
+      use ffs, only:ndim,nlat,flv,maxcond,ffs_bound,nvevx,nelvx,tsetintm
       use ffs_flag
       use ffs_pointer
       use ffs_fit
       use ffs_wake
       use tffitcode
+      use cellm
       use dfun
       use tfshare
       use tfcsi,only:lfno
@@ -22,16 +24,17 @@ c      include 'DEBUG.inc'
       type (sad_descriptor) kx
       type (ffs_bound) fbound,ibound
       integer*4 ,intent(out):: ibegin,iqcol(maxcond),lfp(2,maxcond),nqcola1,nqcola,kdp(maxcond)
-      integer*4 i1,i2,i3,i,ii,j,iter,kt,iq,l,maxf,
-     $     ie,ie1,iv,nstab,lout,irtc
-      real*8 ,intent(out):: df(maxcond),r,rp,residual1(-ndimmax:ndimmax)
+      integer*4 i1,i2,i3,i,ii,j,iter,kt,iq,l,maxf,ie,ie1,iv,lout,irtc
+      type (ffs_res) ,intent(out):: r,residual1(-ndimmax:ndimmax)
+      real*8 ,intent(out):: df(maxcond)
       logical*4 ,intent(in):: parallel
-      logical*4 ,intent(out):: error,zcal,wcal
+      logical*4 ,intent(inout):: wcal,zcal
+      logical*4 ,intent(out):: error
       real*8 anux0,anuy0,anux0h,anuy0h,anuxi,anuyi,anuxih,anuyih,
-     $     rw,drw,rstab,wi,anusumi,anusum0,anudiffi,anudiff0
+     $     rw,drw,wi,anusumi,anusum0,anudiffi,anudiff0
       logical*4 fam,beg,zerores
       integer*4 irw,isw,ipr,ifb,ife,idir,jjfam(-nfam:nfam),ifpe,ntfun
-      integer*4, external :: waitpid,itfdownlevel,itfuplevel,itgetfpe
+      integer*4, external :: waitpid,itgetfpe
       integer*8 iutm,jb
       integer*4 , parameter:: ivoid=9999
       integer*8 ,save :: iprolog=0,iepilog=0,imr=0,inr=0,isl=0
@@ -59,7 +62,7 @@ c      call tfmemcheckprint('tffscalc-before-prolog',.true.,irtc)
       kx=tfeeval(dfromk(ktfsymbol+iprolog),.true.,irtc)
       l=itfdownlevel()
       if(irtc /= 0)then
-        if(irtc .gt. 0)then
+        if(irtc > 0)then
           if(ierrorprint /= 0)then
             call tfaddmessage(' ',0,lfno)
           endif
@@ -80,10 +83,9 @@ c      call tfmemcheckprint('tffscalc-before-prolog',.true.,irtc)
       optstat(nfam1:nfam)%stabz=.true.
       jjfam(nfam1:nfam)=ivoid
       ntfun=merge(ntwissfun,mfitdetr,orbitcal .or. calc6d)
-      beg=ibegin .gt. fbound%lb
+      beg=ibegin > fbound%lb
       if(beg)then
-        twiss(ibegin,0,1:ntfun)
-     $       =utwiss(1:ntfun,0,itwissp(ibegin))
+        twiss(ibegin,0,1:ntfun)=utwiss(1:ntfun,0,itwissp(ibegin))
         fbound%fb=0.d0
       else
         call twmov(1,twiss,nlat,ndim,.true.)
@@ -92,7 +94,7 @@ c      call tfmemcheckprint('tffscalc-before-prolog',.true.,irtc)
         if(orbitcal)then
           twiss(1,0,mfitddp)=twiss(1,0,mfitddp)+dp(0)
         endif
-        if(fbound%lb .gt. 1)then
+        if(fbound%lb > 1)then
           twiss(fbound%lb,0,1:ntfun)=twiss(1,0,1:ntfun)
         endif
         ibegin=fbound%lb
@@ -103,7 +105,7 @@ c      call tfmemcheckprint('tffscalc-before-prolog',.true.,irtc)
         call tffswake(ibound,beg)
       else
         call qcell1(ibound,0,optstat(0),.false.,chgini,lout)
-        call tffssetutwiss(0,nlat,fbound,beg,.true.,.true.)
+        call tffssetutwiss(0,fbound,beg,.true.,.true.)
         if(cell)then
           anux0=aint(twiss(nlat,0,mfitnx)/pi2)
           anuy0=aint(twiss(nlat,0,mfitny)/pi2)
@@ -134,7 +136,7 @@ c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
           else
             ipr=-1
           endif
-          if(ipr .gt. 0)then
+          if(ipr > 0)then
             idir=-1
             ifb=-1
             ife=-nfr
@@ -152,7 +154,7 @@ c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
             if(fam)then
               if(kfam(ii) == 0)then
                 cycle
-              elseif(ipr .gt. 0 .and. jfam(ii) .ge. 0 .or.
+              elseif(ipr > 0 .and. jfam(ii) >= 0 .or.
      $               ipr == 0 .and. jfam(ii) .lt. 0)then
                 cycle
               endif
@@ -167,13 +169,8 @@ c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
             if(optstat(i2)%over)then
               utwiss(1,ii,1:nut)=utwiss(1,i2,1:nut)
               utwiss(mfitddp,ii,1:nut)=utwiss(mfitddp,ii,1:nut)+dp(ii)
-              optstat(ii)%over=.true.
-              optstat(ii)%stabx=.false.
-              optstat(ii)%staby=.false.
-              optstat(ii)%stabz=.false.
-              optstat(ii)%tracex=optstat(i2)%tracex
-              optstat(ii)%tracey=optstat(i2)%tracey
-              optstat(ii)%tracez=optstat(i2)%tracez
+              optstat(ii)=ffs_stat(optstat(i2)%tracex,optstat(i2)%tracey,optstat(i2)%tracez,
+     $             .false.,.false.,.false.,.true.)
             else
               if(beg)then
                 twiss(ibegin,1,1:ntfun)
@@ -181,7 +178,7 @@ c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
               else
                 twiss(1,1,:)=utwiss(:,0,1)
                 if(inicond)then
-                  if(uini(mfitbx,ii) .gt. 0.d0)then
+                  if(uini(mfitbx,ii) > 0.d0)then
                     twiss(1,1,:)=uini(:,ii)
                   endif
                   twiss(1,1,mfitdx:mfitddp)=
@@ -196,7 +193,7 @@ c                    call tgetphysdispu(utwiss(1,i2,1),physd)
 c                    physd1=(utwiss(mfitdx:mfitdpy,i2,1)
 c     $                     -utwiss(mfitdx:mfitdpy,i3,1))/(dp(i2)-dp(i3))
 c                    do i=1,4
-c                      if(abs(physd(i)) .gt. abs(physd1(i)))then
+c                      if(abs(physd(i)) > abs(physd1(i)))then
 c                        physd(i)=physd1(i)
 c                      endif
 c                    enddo
@@ -214,12 +211,12 @@ c                    endif
                 endif
                 twiss(1,1,mfitnx)=0.d0
                 twiss(1,1,mfitny)=0.d0
-                if(fbound%lb .gt. 1)then
+                if(fbound%lb > 1)then
                   twiss(fbound%lb,1,1:ntfun)=twiss(1,1,1:ntfun)
                 endif
               endif
               call qcell1(ibound,1,optstat(ii),fam,chgini,lout)
-              call tffssetutwiss(ii,nlat,fbound,beg,.true.,.true.)
+              call tffssetutwiss(ii,fbound,beg,.true.,.true.)
             endif
             if(cell)then
               anuxih=aint(twiss(nlat,1,mfitnx)/pi)
@@ -230,11 +227,6 @@ c                    endif
      $             +twiss(nlat,1,mfitny))/pi2)
               anudiffi=tfloor((twiss(nlat,1,mfitnx)
      $             -twiss(nlat,1,mfitny))/pi2)
-c              anudiffi=twiss(nlat,1,mfitnx)/pi2-
-c     $             aint(twiss(nlat,1,mfitnx)/pi2)-
-c     $             twiss(nlat,1,mfitny)/pi2+
-c     $             aint(twiss(nlat,1,mfitny)/pi2)
-c              write(*,*)'tffscalc ',anudiffi,anudiff0
               optstat(ii)%stabx=fam .or. optstat(ii)%stabx .and. (
      $             (.not. intres .or. anuxi == anux0) .and.
      $             (.not. halfres .or. anuxih == anux0h) .and.
@@ -253,14 +245,14 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
             ife=-nfr
             go to 2
           endif
-          if(.not. fam .and. nfam .gt. nfr)then
+          if(.not. fam .and. nfam > nfr)then
             fam=.true.
             ifb=nfam1
             ife=nfam
             idir=1
             go to 1
           endif
-          if(ipr .gt. 0)then
+          if(ipr > 0)then
             irw=0
             do while(irw /= ipr)
               irw=waitpid(-1,isw)
@@ -270,29 +262,29 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
      1             '?Error in parallel process.',' ')
             endif
             do i=nfam1,nfam
-              if(i .gt. 0 .and. i .le. nfr .or.
-     $             kfam(i) /= 0 .and. jfam(i) .ge. 0)then
+              if(i > 0 .and. i <= nfr .or.
+     $             kfam(i) /= 0 .and. jfam(i) >= 0)then
                 jb=iutm+(i+nfam)*4
-                optstat(i)%stabx=ilist(1,jb+1)
-                optstat(i)%staby=ilist(1,jb+2)
+                optstat(i)%stabx=ilist(1,jb+1) /= 0
+                optstat(i)%staby=ilist(1,jb+2) /= 0
                 optstat(i)%tracex=rlist(jb+3)
                 optstat(i)%tracey=rlist(jb+4)
               endif
             enddo
           elseif(ipr == 0)then
             do i=nfam1,nfam
-              if(i .gt. 0 .and. i .le. nfr .or.
-     $             kfam(i) /= 0 .and. jfam(i) .ge. 0)then
+              if(i > 0 .and. i <= nfr .or.
+     $             kfam(i) /= 0 .and. jfam(i) >= 0)then
                 jb=iutm+(i+nfam)*4
-                ilist(1,jb+1)=optstat(i)%stabx
-                ilist(1,jb+2)=optstat(i)%staby
+                ilist(1,jb+1)=merge(1,0,optstat(i)%stabx)
+                ilist(1,jb+2)=merge(1,0,optstat(i)%staby)
                 rlist(jb+3)=optstat(i)%tracex
                 rlist(jb+4)=optstat(i)%tracey
               endif
             enddo
             stop
           endif
-          if(ipr .gt. 0)then
+          if(ipr > 0)then
             call tfreeshared(iutm)
           endif
         endif
@@ -315,7 +307,7 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
           endif
         enddo
         if(fitflg)then
-          if(nvar .le. 0)then
+          if(nvar <= 0)then
             call termes(lfno,'?No variable.',' ')
             error=.true.
           endif
@@ -338,7 +330,7 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
                   ibegin=i
                   go to 1023
                 endif
-                if(nvevx(j)%ivarele .gt. ie)then
+                if(nvevx(j)%ivarele > ie)then
                   exit
                 endif
               enddo
@@ -355,7 +347,7 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
             maxf=max(maxf,
      $           flv%ifitp(flv%kfitp(i)),flv%ifitp1(flv%kfitp(i)))
           enddo
-          if(pos(maxf) .le. pos(1))then
+          if(pos(maxf) <= pos(1))then
             maxf=fbound%le
           endif
         endif
@@ -370,7 +362,7 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
      1     flv%ifitp,flv%kfitp,kdp,nqcola,iqcol,maxf,wcal)
       wcal=.false.
       rw=0.d0
-      residual1(nfam1:nfam)=0.d0
+      residual1(nfam1:nfam)=ffs_res(0.d0,0)
       wsum=0.d0
       do i=1,nqcola
         if(kdp(i) /= 0)then
@@ -386,35 +378,24 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
         if(df(i) /= 0.d0)then
           drw=min(1.d50,max(1.d-50,abs(df(i))))**wexponent
           rw=rw+drw
-          residual1(kdp(i))=residual1(kdp(i))+drw
+          residual1(kdp(i))%r=residual1(kdp(i))%r+drw
         endif
       enddo
-      r=merge(wsum*(max(rw,1.d-50)/wsum)**(2.d0/wexponent),
-     $     0.d0,rw .gt. 0.d0)
-      rp=r
-      nstab=0
+      r=ffs_res(merge(wsum*(max(rw,1.d-50)/wsum)**(2.d0/wexponent),0.d0,rw > 0.d0),0)
       if(cell)then
-        if(rstab == 0.d0)then
-          rstab=10.d0
-          do while(rstab .lt. r)
-            rstab=rstab*10.d0
-          enddo
-        endif
         cellstab=.true.
         zerores=.true.
         do i=nfam1,nfam
-          if(residual1(i) /= 0.d0)then
+          if(residual1(i)%r /= 0.d0)then
             zerores=.false.
             if(.not. optstat(i)%stabx)then
-              nstab=nstab+1
-              residual1(i)=residual1(i)+rstab
-              r=r+rstab
+              r%nstab=r%nstab+1
+              residual1(i)%nstab=residual1(i)%nstab+1
               cellstab=.false.
             endif
             if(.not. optstat(i)%staby)then
-              nstab=nstab+1
-              residual1(i)=residual1(i)+rstab
-              r=r+rstab
+              r%nstab=r%nstab+1
+              residual1(i)%nstab=residual1(i)%nstab+1
               cellstab=.false.
             endif
           endif
@@ -428,21 +409,21 @@ c              write(*,*)'tffscalc ',anudiffi,anudiff0
       else
         do i=nfam1,nfam
           if(.not. optstat(i)%stabx)then
-            nstab=nstab+2
-            residual1(i)=residual1(i)+20.d0
+            r%nstab=r%nstab+2
+            residual1(i)%nstab=residual1(i)%nstab+2
           endif
         enddo
       endif
-      rlist(imr)=r
-      rlist(inr)=rp
-      rlist(isl)=dble(nstab)
+      rlist(imr)=res2r(r)
+      rlist(inr)=r%r
+      rlist(isl)=dble(r%nstab)
       ifpe=itgetfpe()
       call tclrfpe
       l=itfuplevel()
       kx=tfeeval(dfromk(ktfsymbol+iepilog),.true.,irtc)
       l=itfdownlevel()
       if(irtc /= 0)then
-        if(irtc .gt. 0)then
+        if(irtc > 0)then
           if(ierrorprint /= 0)then
             call tfaddmessage(' ',0,lfno)
           endif
@@ -456,14 +437,13 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       return
       end associate
       end
-
-      subroutine twfit(kfit,
-     1     ifitp,kfitp,kdp,nqcola,iqcol,maxf,wcal)
+      
+      subroutine twfit(kfit,ifitp,kfitp,kdp,nqcola,iqcol,maxf,wcal)
       use tfstk
       use ffs, only:emx,emy,dpmax,coumin,emminv
       use ffs_pointer
       use ffs_fit
-      use ffs_flag, only:cell
+c      use ffs_flag, only:cell
       use tffitcode
       use eeval
       implicit none
@@ -472,7 +452,7 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       logical*4 ,intent(in):: wcal
       integer*4 i,j,k,iq
       real*8 coum,emxx,emyy,dpm,coup,em
-      integer*4 itfuplevel, level,irtc,idp
+      integer*4 level,irtc,idp
       character*16 name
       type (sad_descriptor) kx
       type (sad_descriptor) ,save::kfv
@@ -551,15 +531,15 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
           case default
             wfit(i)=1.d0
           end select
-          if(cell .and.
-     $         kfitp(i) .gt. nfc0 .and. kfitp(i) .le. nfc0+4)then
-            wfit(i)=wfit(i)*0.7d0
-          endif
+c          if(cell .and.
+c     $         kfitp(i) > nfc0 .and. kfitp(i) <= nfc0+4)then
+c            wfit(i)=wfit(i)*0.7d0
+c          endif
         enddo
       endif
       do iq=1,nqcola
         i=iqcol(iq)
-        if(i .gt. 0)then
+        if(i > 0)then
           k=kfit(kfitp(i))
           j=ifitp(kfitp(i))
           idp=kdp(iq)
@@ -569,8 +549,7 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
           ilist(1,ifvloc)=len_trim(name)
           call tfpadstr(nlist(k),ifvfun+1,len_trim(nlist(k)))
           ilist(1,ifvfun)=len_trim(nlist(k))
-          klid%rbody(1)=merge(dble(iuid(idp)),dble(kfam(idp)),
-     $         inicond)
+          klid%rbody(1)=merge(dble(iuid(idp)),dble(kfam(idp)),inicond)
           klid%rbody(2)=dp(idp)
           klv%rbody(4)=wfit(i)
           call tclrfpe
@@ -592,147 +571,79 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       return
       end
 
-      subroutine tffsbound(fbound)
+      subroutine twmov(l,twiss,n1,n2,right)
       use tfstk
-      use ffs, only:nlat,ffs_bound
-      use ffs_pointer
-      use mackw
+      use ffs
+      use tffitcode
+      use sad_main
+      use ffs_pointer,only:direlc,compelc
       implicit none
-      type (ffs_bound) ,intent(out):: fbound
-      call tffsbound1(1,nlat,fbound)
-      return
-      end
-
-      subroutine tffsbound1(lb,le,fbound)
-      use tfstk
-      use ffs, only:nlat,ffs_bound
-      use ffs_pointer
-      use mackw
-      implicit none
-      type (ffs_bound) ,intent(out):: fbound
-      integer*4 ,intent(in):: lb,le
-      integer*4 le1
-      real*8 xnlat,offset,tffsmarkoffset
-      xnlat=nlat
-      offset=tffsmarkoffset(lb)
-      if(offset /= 0.d0)then
-        offset=max(1.d0,min(xnlat,lb+offset))
-        fbound%lb=int(offset)
-        fbound%fb=offset-fbound%lb
-      else
-        fbound%lb=lb
-        fbound%fb=0.d0
-      endif
-      le1=le
-      if(le == nlat)then
-        if(idtypec(nlat-1) == icMARK)then
-          le1=le1-1
-        else
-          fbound%le=le1
-          fbound%fe=0.d0
-          return
-        endif
-      endif
-      offset=tffsmarkoffset(le1)
-      if(offset /= 0.d0)then
-        offset=max(1.d0,min(xnlat,le1+offset))
-        fbound%le=int(offset)
-        fbound%fe=offset-fbound%le
-      else
-        fbound%le=le1
-        fbound%fe=0.d0
-      endif
-      return
-      end
-
-      real*8 function tffsmarkoffset(lp)
-      use tfstk
-      use ffs_pointer
-      use mackw
-      use tmacro, only:nlat
-      implicit none
-      type (sad_comp), pointer :: cmp
-      integer*4 ,intent(in):: lp
-      integer*4 k
-      if(lp .ge. nlat)then
-        tffsmarkoffset=0.d0
-        return
-      endif
-      call compelc(lp,cmp)
-      k=kytbl(kwOFFSET,idtype(cmp%id))
-      if(k .gt. 0)then
-        tffsmarkoffset=cmp%value(k)
-        if(tffsmarkoffset /= 0.d0)then
-          tffsmarkoffset=(tffsmarkoffset-.5d0)*direlc(lp)+.5d0
-        endif
-      else
-        tffsmarkoffset=0
-      endif
-      return
-      end
-
-      real*8 function tffselmoffset(l)
-      use tfstk
-      use ffs, only:nlat
-      use ffs_pointer
-      use mackw
-      use tfcsi, only:icslfno
-      implicit none
-      integer*4 ,intent(in):: l
-      integer*4 lm,nm,lx,nmmax
-      parameter (nmmax=256)
-      real*8 offset,xp,xe,tffsmarkoffset
-      nm=0
-      xp=l
-      if(l /= nlat .and. kytbl(kwOFFSET,idtypec(l)) /= 0)then
-        xe=nlat
-        lm=l
-        do
-          offset=tffsmarkoffset(lm)
-          if(offset /= 0.d0)then
-            xp=offset+lm
-            if(xp .ge. 1.d0 .and. xp .le. xe)then
-              lx=int(xp)
-              if(idtypec(lx) == icMARK)then
-                nm=nm+1
-                if(nm .lt. nmmax)then
-                  lm=lx
-                  cycle
-                else
-                  call termes(icslfno(),
-     $                 '?Recursive OFFSET in',pnamec(l))
-                endif
-              endif
-            endif
+      type (sad_comp), pointer::cmp
+      integer*4 ,intent(in):: n1,n2,l
+      integer*4 ntfun
+      real*8 ,intent(out):: twiss(n1,-n2:n2,1:ntwissfun)
+      logical*4 ,intent(in):: right
+c
+      call compelc(l,cmp)
+      if(right)then
+        ntfun=merge(ntwissfun,mfitdetr,
+     $       orbitcal .or. calc6d)
+        twiss(1,0,1:ntfun)=cmp%value(1:ntfun)
+        if(direlc(l) .lt. 0.d0)then
+          twiss(1,0,mfitax)=-cmp%value(mfitax)
+          twiss(1,0,mfitay)=-cmp%value(mfitay)
+          twiss(1,0,mfitaz)=-cmp%value(mfitaz)
+          twiss(1,0,mfitepx)=-cmp%value(mfitepx)
+          twiss(1,0,mfitepy)=-cmp%value(mfitepy)
+          twiss(1,0,mfitzpx)=-cmp%value(mfitzpx)
+          twiss(1,0,mfitzpy)=-cmp%value(mfitzpy)
+          twiss(1,0,mfitr2)=-cmp%value(mfitr2)
+          twiss(1,0,mfitr3)=-cmp%value(mfitr3)
+          if(orbitcal)then
+            twiss(1,0,mfitdpx)=-cmp%value(mfitdpx)
+            twiss(1,0,mfitdpy)=-cmp%value(mfitdpy)
           endif
-          exit
-        enddo
+        endif
+      else
+        cmp%value(1:ntwissfun)=twiss(1,0,1:ntwissfun)
+        if(direlc(l) .lt. 0.d0)then
+          cmp%value(mfitax)=-twiss(1,0,mfitax)
+          cmp%value(mfitay)=-twiss(1,0,mfitay)
+          cmp%value(mfitaz)=-twiss(1,0,mfitaz)
+          cmp%value(mfitepx)=-twiss(1,0,mfitepx)
+          cmp%value(mfitepy)=-twiss(1,0,mfitepy)
+          cmp%value(mfitzpx)=-twiss(1,0,mfitzpx)
+          cmp%value(mfitzpy)=-twiss(1,0,mfitzpy)
+          cmp%value(mfitr2)=-twiss(1,0,mfitr2)
+          cmp%value(mfitr3)=-twiss(1,0,mfitr3)
+          cmp%value(mfitdpx)=-twiss(1,0,mfitdpx)
+          cmp%value(mfitdpy)=-twiss(1,0,mfitdpy)
+        endif
       endif
-      tffselmoffset=xp
       return
       end
 
-      subroutine tffssetutwiss(idp,nlat,fbound,beg,begin,end)
+      subroutine tffssetutwiss(idp,fbound,beg,begin,end)
       use tfstk
-      use ffs, only:ffs_bound
+      use ffs, only:ffs_bound,nlat
       use ffs_pointer
       use tffitcode
       use mackw
       implicit none
       type (ffs_bound) ,intent(in):: fbound
-      integer*4 ,intent(in):: nlat,idp
+      integer*4 ,intent(in):: idp
       integer*4 jdp,j,jp,le1
       logical*4 ,intent(in):: beg,begin,end
       jdp=min(1,abs(idp))
       do concurrent (j=fbound%lb:fbound%le)
         jp=itwissp(j)
-        if(jp .gt. 0)then
+        if(jp > 0)then
           utwiss(:,idp,jp)=twiss(j,jdp,:)
         endif
       enddo
       jp=itwissp(1)
       if(begin)then
-        if(jp .gt. 0 .and. .not. beg)then
+        if(jp > 0 .and. .not. beg)then
           twiss(1,jdp,:)=twiss(fbound%lb,jdp,:)
           utwiss(:,idp,jp)=twiss(fbound%lb,jdp,:)
         endif
@@ -743,14 +654,16 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
           twiss(nlat-1,jdp,:)=twiss(le1,jdp,:)
           twiss(nlat,jdp,:)=twiss(le1,jdp,:)
           jp=itwissp(nlat-1)
-          if(jp .gt. 0)then
+          if(jp > 0)then
             utwiss(:,idp,jp)=twiss(le1,jdp,:)
           endif
           jp=itwissp(nlat)
-          if(jp .gt. 0)then
+          if(jp > 0)then
             utwiss(:,idp,jp)=twiss(le1,jdp,:)
           endif
         endif
       endif
       return
       end
+
+      end module

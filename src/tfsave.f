@@ -9,7 +9,7 @@
       implicit none
       type (sad_comp), pointer ::cmp,cmpd
       integer*8 j
-      integer*4 i,l,lt,next,itfdownlevel
+      integer*4 i,l,lt,next
       integer*4 ,intent(in):: ntou
       character*(*) ,intent(in):: word
       logical*4 ,intent(in):: cmd0
@@ -108,7 +108,7 @@
       implicit none
       type (sad_comp), pointer :: cmp,cmps
       integer*8 j
-      integer*4 l,i,lt,k,next,itfdownlevel
+      integer*4 l,i,lt,k,next
       character*(*) ,intent(in):: word
       logical*4 ,intent(in):: cmd0
       logical*4 cmd,exist,tmatch,exist1,all

@@ -1,5 +1,4 @@
-      subroutine trackb(latt,nlat1,name,print,
-     z     word,title,case,exist,
+      subroutine trackb(latt,nlat1,name,
      $     kx,irtc,ret,
      $     xa,ya,xxa,xya,yya,lfno)
       use tfstk
@@ -9,14 +8,12 @@
      $     ix3=>itt5,ix4=>itt6
       implicit none
 ckikuchi ... 1 line modified
-      logical print, exist
 ckikuchi ... 1 line added
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: klx,klx2
       type (sad_rlist), pointer :: klx1,klxi
       integer*4 irtc,lfno,nlat1,i,np
       real*8 result(6,7),xa,ya,xxa,xya,yya
-      character*(*) word,title,case
       character*(MAXPNAME) name
       integer*8 latt(nlat)
       real*8 sv(5)
@@ -28,9 +25,6 @@ ckikuchi ... 1 line added
       xxa=sv(3)
       xya=sv(5)
       yya=sv(4)
-c      if(print)then
-c        call phdrw(ix,np,word,title,case,exist,lfno)
-c      endif
       if(ret)then
         kx=kxadaloc(-1,3,klx)
         klx%dbody(1)=dfromr(dble(np))

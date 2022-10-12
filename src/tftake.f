@@ -1,5 +1,8 @@
-      function tftake(k,kn,take0,eval,irtc) result(kx)
+      module take
       use tfstk
+
+      contains
+      function tftake(k,kn,take0,eval,irtc) result(kx)
       use eeval
       implicit none
       type (sad_descriptor) kx
@@ -174,7 +177,6 @@
       end
 
       subroutine tfreverse(isp1,kx,irtc)
-      use tfstk
       use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
@@ -215,7 +217,6 @@ c        enddo
       end
 
       subroutine tfrotateright1(isp1,kx,irtc)
-      use tfstk
       use eeval
       implicit none
       type (sad_descriptor) ,intent(out):: kx
@@ -277,14 +278,14 @@ c        enddo
       end
 
       subroutine tfdifference(isp1,kx,irtc)
-      use tfstk
+      use complex
       use eeval
       use iso_c_binding
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
-      type (sad_descriptor) k0,k1,ks,krv,tfecmplxl
+      type (sad_descriptor) k0,k1,ks,krv
       type (sad_dlist), pointer :: klx
       type (sad_dlist), pointer :: kl
       type (sad_rlist), pointer :: klr
@@ -342,12 +343,10 @@ c        enddo
       end
 
       subroutine tfrest(isp1,kx,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
-      type (sad_descriptor) tftake
       integer*4 itfmessage
       if(isp .ne. isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
@@ -360,175 +359,7 @@ c        enddo
       return
       end
 
-      subroutine tfclear(isp1,kx,irtc)
-      use tfstk
-      implicit none
-      type (sad_descriptor) kx,ki
-      type (sad_symbol), pointer :: sym
-      type (sad_symdef), pointer :: symd
-      type (sad_dlist), pointer :: kl
-      integer*4 isp1,irtc,i,itfmessage
-      LOOP_I: do i=isp1+1,isp
-        ki=dtastk(i)
-        if(ktfsymbolq(ki,sym))then
-          if(sym%override .eq. 0)then
-            sym=>tfsydef(sym)
-          endif
-          if(ktfprotectedqo(sym))then
-            irtc=itfmessage(999,'General::protect','""')
-            return
-          endif
-          call sym_symdef(sym,symd)
-          call tfdelete(symd,.false.,.false.)
-        elseif(ktflistq(ki,kl))then
-          ki=dtfcopy1(ki)
-          call tfcleardef(kl,irtc)
-          call tflocal1(ki%k)
-          if(irtc .ne. 0)then
-            return
-          endif
-        endif
-      enddo LOOP_I
-      kx%k=ktfoper+mtfnull
-      irtc=0
-      return
-      end
-
-      subroutine tfcleardef(kl,irtc)
-      use tfstk
-      use tfcode
-      use funs
-      use eeval
-      use iso_c_binding
-      implicit none
-      type (sad_descriptor) kh,kx
-      type (sad_dlist) ,intent(inout):: kl
-      type (sad_dlist), pointer :: klh
-      type (sad_symbol), pointer :: symh
-      type (sad_symdef), pointer :: def
-      type (sad_deftbl), pointer :: dtbl
-      type (sad_defhash), pointer :: dhash
-c      include 'DEBUG.inc'
-      integer*8 kad,kad1,kadi,kadi1
-      integer*4 ,intent(out):: irtc
-      integer*4 isp0,ik,i
-      logical*4 tfdefheadq,discard,discard1
-      isp0=isp
-      isp=isp+1
-      ktastk(isp)=ktfoper+mtfset
-      isp=isp+1
-      dtastk(isp)=sad_descr(kl)
-      isp=isp+1
-      ktastk(isp)=ktfref
-      kx=tfset(isp0+1,.false.,irtc)
-      isp=isp0
-      if(irtc .ne. 0)then
-        return
-      endif
-      kh=kl%head
-      do while(ktflistq(kh,klh))
-        kh=klh%head
-      enddo
-      if(ktfsymbolqdef(kh%k,def))then
-        if(def%sym%override .eq. 0)then
-          symh=>tfsydef(def%sym)
-          call sym_symdef(symh,def)
-        endif
-        kad=def%upval
-        discard=.true.
-        do ik=1,2
-          do while(kad .ne. 0)
-            call loc_defhash(kad,dhash)
-            kad1=dhash%next
-            discard1=.true.
-            if(dhash%gen .eq. maxgeneration)then
-              do i=0,dhash%nhash
-                kadi=dhash%dhash(i)%k
-                do while(kadi .ne. 0)
-                  call loc_deftbl(kadi,dtbl)
-                  kadi1=dtbl%next
-                  if(tfdefheadq(dtbl%arg,kl))then
-                    call tfcleardaloc(kadi)
-                    if(kadi1 .ne. 0)then
-                      klist(kadi1+1)=dtbl%prev
-                    endif
-                    klist(dtbl%prev)=kadi1
-                    call tfree(kadi)
-                  else
-                    discard1=.false.
-                  endif
-                  kadi=kadi1
-                enddo
-              enddo
-            else
-              call loc_deftbl(kad,dtbl)
-              if(tfdefheadq(dtbl%arg,kl))then
-                call tfcleardaloc(kad)
-              else
-                discard1=.false.
-              endif
-            endif
-            if(discard1)then
-              if(kad1 .ne. 0)then
-                klist(kad1+1)=dhash%prev
-              endif
-              klist(dhash%prev)=kad1
-              call tfree(kad)
-            else
-              discard=.false.
-            endif
-            kad=kad1
-          enddo
-          kad=def%downval
-          if(discard)then
-            if(ik .eq. 1)then
-              def%upval=0
-            else
-              def%downval=0
-            endif
-          endif
-        enddo
-      endif
-      irtc=0
-      return
-      end
-
-      logical function tfdefheadq(k,listp)
-      use tfstk
-      implicit none
-      type (sad_descriptor) ,intent(in):: k
-      type (sad_dlist) ,intent(out):: listp
-      type (sad_dlist), pointer :: kli,kla1,kla
-      integer*4 i
-      tfdefheadq=.true.
-      call descr_sad(k,kla)
-      if(tfsamelistqo(kla,listp))then
-        return
-      endif
-      kla1=>kla
-      do while(ktflistq(kla1%head,kla1))
-        if(tfsamelistqo(kla1,listp))then
-          return
-        endif
-      enddo
-      do i=1,kla%nl
-        if(ktflistq(kla%dbody(i),kli))then
-          if(tfsamelistqo(kli,listp))then
-            return
-          endif
-          do while(ktflistq(kli%head,kli))
-            if(tfsamelistqo(kli,listp))then
-              return
-            endif
-          enddo
-        endif
-      enddo
-      tfdefheadq=.false.
-      return
-      end
-
       subroutine tfprotect(isp1,kx,protect,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -565,6 +396,8 @@ c      include 'DEBUG.inc'
       return
       end
 
+      end module take
+
       module attrib
       use tfstk
       implicit none
@@ -589,11 +422,8 @@ c      include 'DEBUG.inc'
         iaxprotected =kxsymbolf('Protected',9,.true.)
         return
         end subroutine tfattrinit
-      end module
 
       subroutine tfattributes(isp1,kx,irtc)
-      use attrib
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -660,8 +490,6 @@ c      include 'DEBUG.inc'
       end
 
       recursive subroutine tfsetattributes(isp1,kx,irtc)
-      use attrib
-      use tfstk
       use tfcode
       implicit none
       type (sad_descriptor) ,intent(out):: kx
@@ -776,7 +604,6 @@ c      include 'DEBUG.inc'
       end
 
       subroutine tfreleasehold(isp1,kx,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -802,7 +629,6 @@ c      include 'DEBUG.inc'
       end
 
       recursive subroutine tfreleaseholdstk(isp1,isp2,irtc)
-      use tfstk
       use eeval
       implicit none
       type (sad_dlist), pointer :: kli
@@ -851,3 +677,5 @@ c      include 'DEBUG.inc'
       enddo
       return
       end
+
+      end module attrib

@@ -10,7 +10,6 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       use tfshare
       use macmath
       use iso_c_binding
-      use macfile, only:outfl
       implicit none
       integer*4 ,parameter ::n1p0=256,n2p=51,maxturn=2**29,
      $     maxpara=256,nw=16,nkptbl = 6, minnp=16,limw=600

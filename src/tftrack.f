@@ -14,6 +14,7 @@
       use photontable,only:tphotoninit,tphotonlist
       use tfcsi
       use tftr
+      use maloc,only:ktfmalocp,tfmsize
       use iso_c_binding
       implicit none
       type (sad_descriptor) ,intent(out):: kx
@@ -21,8 +22,7 @@
       type (sad_dlist), pointer :: klx,kl
       integer, parameter :: nkptbl = 6
       integer*4, parameter :: npparamin=9,npnlatmin=3000
-      integer*8 kz,kzp,kzf,kaxl,ktfmalocp,ktfresetparticles,kdv,
-     $     kpsx,kpsy,kpsz
+      integer*8 kz,kzp,kzf,kaxl,ktfresetparticles,kdv,kpsx,kpsy,kpsz
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       integer*4 narg,itfloc,outfl0,ld,ls,mc,npa,np00,
@@ -130,7 +130,7 @@
       ipn=0
       npr=0
       npp=npz
-      kz=ktfmalocp(kp%k,mc,npz,.false.,.true.,.true.,.true.,irtc)
+      kz=ktfmalocp(kp,mc,npz,.false.,.true.,.true.,.true.,irtc)
       if(irtc /= 0)then
         go to 8900
       endif

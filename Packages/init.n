@@ -454,11 +454,12 @@ Range[`n_Real]:=(Range[n]=Range[1,n,1]);
 Range[`n1_Real,`n2_Real]:=(Range[n1,n2]=Range[n1,n2,1]);
 Range[x__Real]:=(Range[x]=Range$[x]);
 
-!TimeZoneOffset = +540; (* SAD Default TimeZone: Asia/Tokyo[JST] *)
 (TimeZoneOffset = tz_) ^:= SetTimeZone[tz];
-TimeZoneOffset = SetTimeZone[];
+TimeZoneOffset=Block[{f=OpenRead["!date +\"%z\""]},{Read[f]*0.6,Close[f]}[[1]]]; (* Use local time *)
+!TimeZoneOffset = SetTimeZone[];
 Protect[TimeZoneOffset];
 	(* Switch to Local TimeZone *)
+
 MkSecureTemp[template_String:Null, op___Rule]:=Module[{prefix, suffix, dir},
   {prefix, suffix, dir} = SwitchCases[Join[{op}, {}],
     {Rule[Prefix, _String], Rule[Suffix, _String], Rule[Directory, _String]}];

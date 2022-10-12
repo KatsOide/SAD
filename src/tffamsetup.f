@@ -4,6 +4,7 @@
       use ffs, only:pi2
       use ffs_fit
       use ffs_pointer, only:elatt
+      use calc,only:twmov
       use eeval
       implicit none
       real*8 sqrt3
@@ -19,7 +20,7 @@ c      parameter (sqrt3=sqrt(3.d0))
       real*8 ,intent(in):: em
       real*8 twissi(50),trans(4,4),
      $     dx(4,maxnfp*2),dxp(4,maxnfp*2)
-      integer*4 m,nfa,i,j,irtc,itfdownlevel,l,nfp
+      integer*4 m,nfa,i,j,irtc,l,nfp
       real*8 dpw,x0,px0,y0,py0,dpi,x,y,dp0,c,s
       data kxmamp%k /0/
       lp=elatt%comp(ll)

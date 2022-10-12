@@ -278,6 +278,7 @@ c              call tfgetllstkall(klist(kai-3))
 
       recursive subroutine tfgetcanvasargstk(ka,irtc)
       use tfstk
+      use convstr,only:ktrsaloc
       use strbuf
       use tclstrbuf
       implicit none
@@ -285,7 +286,7 @@ c              call tfgetllstkall(klist(kai-3))
       type (sad_strbuf), pointer :: strb
       type (sad_string), pointer :: str
       type (sad_dlist), pointer ::kl,k2l
-      integer*8 ktrsaloc,ka,ki,kai
+      integer*8 ka,ki,kai
       integer*4 n,i,isp3,irtc,nc
       logical*4 ev,full
       real*8 x
@@ -408,6 +409,7 @@ c              call tfdebugprint(k2,'== ',2)
       end
 
       subroutine tfuniconvs(in,m,out,m1)
+      use convstr,only:Unicode2UTF8
       implicit none
       integer*4 m,m1,i,j
       character*(m) in
@@ -415,7 +417,6 @@ c              call tfdebugprint(k2,'== ',2)
       character(len=8) :: ubuf
       integer :: ulen
       logical*4 alt
-      integer, external :: Unicode2UTF8
       integer :: kgcode(0:255)=(/
 c     00h - 1Fh
      $     int2(z'0000'),int2(z'0001'),int2(z'0002'),int2(z'0003'),

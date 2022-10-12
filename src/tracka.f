@@ -30,7 +30,6 @@
       character*32 vname
       data vname/'RESULTSOFTRACKING'/
       character*2 ord
-      integer*4 itfuplevel,itfdownlevel
       lp0=latt(1)+kytbl(kwmax,idtypec(1))+1
       np=np0
       emx=sqrt(abs(rgetgl1('EMITX')+rgetgl1('EMITY')))

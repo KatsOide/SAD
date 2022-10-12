@@ -511,7 +511,7 @@ c          endif
       use tfstk
       implicit none
       type (sad_descriptor) k1
-      integer*4 isp0,irtc,itfdownlevel,i,k
+      integer*4 isp0,irtc,i,k
       character*(*) tag
       logical*4 pri
       isp0=isp

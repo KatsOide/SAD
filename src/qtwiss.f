@@ -997,7 +997,7 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
       type (sad_descriptor) dsave(kwMAX)
       type (sad_comp) , pointer :: cmp
       integer*4 , intent(in)::l
-      integer*4 nvar,le,itfdownlevel,irtc
+      integer*4 nvar,le,irtc
       real*8 , intent(in)::fr
       real*8 , intent(out)::ftwiss(ntwissfun),gv(3,4)
       real*8 trans(6,6),cod(6),gr,sgr,sgr2,gr1,
@@ -1086,7 +1086,7 @@ c        write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6)
       type (sad_descriptor) dsave(kwMAX)
       type (sad_comp) ,pointer :: cmp,cmp0
       integer*4 ,intent(in):: idp,l
-      integer*4 nvar,le,itfdownlevel,irtc
+      integer*4 nvar,le,irtc
       real*8 , intent(out)::ftwiss(ntwissfun),gv(3,4),
      $     trans(4,5),cod(6)
       real*8 ,intent(in):: fr1,fr2

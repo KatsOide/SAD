@@ -14,8 +14,7 @@
       type (sad_comp), pointer :: cmps
       integer*4 ,intent(in):: nvar,lfno
       integer*4 ,intent(out)::  irtc
-      integer*4 i,iv,kk,level, itfuplevel,itfdownlevel,
-     $     isp1,next,ifany
+      integer*4 i,iv,kk,level,isp1,next,ifany
       integer*4 lenw
       real*8 x3,vmin,vmax,coup
       integer*4 k

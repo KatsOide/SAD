@@ -4,6 +4,7 @@
       use tffitcode
       use tfcsi, only:icslfno
       use ffs_fit, only:ffs_stat
+      use cellm, only:qcell1
       implicit none
       type (ffs_bound) fbound
       type (ffs_stat) optstat

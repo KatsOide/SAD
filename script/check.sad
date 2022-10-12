@@ -44,7 +44,7 @@ FFS;
      {"Complex SingularValues",Module[{{u,w,v}=SingularValues[#,Inverse->False]},
        Conjugate[Transpose[u]].DiagonalMatrix[w].v-#]&,4.6},
      {"Real Eigensystem",Module[{{e,v}=Eigensystem[Re[#]]},
-       Re[#].Transpose[v]-Transpose[e*v]]&,125},
+       Re[#].Transpose[v]-Transpose[e*v]]&,200},
      {"Complex Eigensystem",Module[{{e,v}=Eigensystem[#]},
        #.Transpose[v]-Transpose[e*v]]&,84},
      {"SetPart",Module[{x=Table[0,{Length[#]}]},Do[x[[i]]=i,{i,Length[x]}];x-Range[Length[x]]]&,0},

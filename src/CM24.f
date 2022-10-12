@@ -4,12 +4,13 @@
 c
       save
 c     
-      DO 10 I=1,2
-      DO 10 J=1,2
-      R(I,J)=A(I,J)
-      R(I,J+2)=B(I,J)
-      R(I+2,J)=C(I,J)
-      R(I+2,J+2)=D(I,J)
-10    CONTINUE
+      DO I=1,2
+        DO J=1,2
+          R(I,J)=A(I,J)
+          R(I,J+2)=B(I,J)
+          R(I+2,J)=C(I,J)
+          R(I+2,J+2)=D(I,J)
+        enddo
+      enddo
       RETURN
       END

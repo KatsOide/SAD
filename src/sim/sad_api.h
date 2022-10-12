@@ -90,7 +90,7 @@ extern void __readbuf_MOD_tfreadbuf(integer4*, integer4*, integer4*);
 extern void __tfrbuf_MOD_trbinit(integer4*, integer4*);
 extern void gettok_(character, integer4*, integer4*, real8*, integer4*, ftnlen);
 extern void __tfmem_MOD_tfree(integer8*);
-extern integer4 itfdownlevel_(void);
+extern integer4 __tfstk_MOD_itfdownlevel(void);
 extern logical8 tfruleqk_(integer8*);
 extern logical4 tfsamesymbolq_(integer4*, integer4*);
 extern logical4 tfsamesymbolqk_(integer8*, integer8*);
@@ -111,7 +111,7 @@ extern integer4 italoc_(integer4*);
 extern integer8 ktaaloc_(integer4*,integer4*);
 extern integer8 ktavaloc_(integer4*, integer4*);
 extern integer8 ktadaloc_(integer4*, integer4*);
-extern integer8 ktfmaloc_(integer8*, integer4*, integer4*,
+extern integer8 __maloc_MOD_ktfmaloc(integer8*, integer4*, integer4*,
 			  logical4*, logical4*, integer4*);
 extern integer4 itfunaloc_(const_character, integer4*, integer4*,
 			   integer4*, integer4*, integer4*, ftnlen);
@@ -122,9 +122,9 @@ extern void tfevalb_(const_character, integer4, integer8*, integer4*);
 extern void tfevalc_(const_character, integer4);
 extern void tfdeval_(integer4*, integer8*, integer8*, 
 		     integer4*, logical4 *, integer4*, integer4*);
-extern void tflocal_(integer8*);
-extern void tflocal1_(integer8*);
-extern void tfmakerulestk_(integer8*, integer8*);
+extern void __tfstk_MOD_tflocalk(integer8*);
+extern void __tfstk_MOD_tflocal1k(integer8*);
+extern void __tfstk_MOD_tfmakerulestk_dd(integer8*, integer8*);
 
 /* Extended Allocation API Prototypes */
 extern integer4 itfgetoptionstk(integer4, const char**);
@@ -151,7 +151,6 @@ extern integer8 ktadaloc(integer4, integer4);
 extern integer8 ktfmaloc(integer8, integer4*, integer4*,
 			 logical4, logical4, integer4*);
 extern integer8 ktfm2l(real8*, integer4, integer4, integer4, logical4);
-#define	itfdownlevel	itfdownlevel_
 extern integer8 ktfmakelist(integer4);
 extern void tfsetlist(integer8, integer8, integer4);
 extern void tfmakerulestk(integer8, integer8);
@@ -162,6 +161,7 @@ extern void tfdeval(integer4, integer8, integer8*,
 		    integer4*, integer4*);
 extern void tflocal(integer8);
 extern void tflocal1(integer8);
+extern integer4 itfdownlevel();
 
 /* EPICS Channel Access Value Callback API Prototypes */
 extern void tfcavaluecb_(real8*, integer4*, integer4*, real8*,

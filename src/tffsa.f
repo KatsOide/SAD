@@ -1,10 +1,27 @@
-
       module track_tt
         integer*8 itt1,itt2,itt3,itt4,itt5,itt6
       end module
 
-      subroutine tffsa(lfnb,lfn,kffs,irtcffs)
+      module ffsa
       use tfstk
+      use tfcsi
+      integer*8 ::idum=-1
+
+      contains
+      subroutine tffs
+      implicit none
+      type (sad_descriptor) kx
+      integer*4 irtc
+      logical*4 err
+      call tffsa(1,lfni,kx,irtc)
+      if(irtc /= 0 .and. ierrorprint /= 0)then
+        call tfreseterror
+      endif
+      call tffssaveparams(-1,idum,err)
+      return
+      end
+
+      subroutine tffsa(lfnb,lfn,kffs,irtcffs)
       use ffs
       use ffs_pointer
       use trackbypass
@@ -12,32 +29,35 @@
       use ffs_fit
       use ffs_wake
       use sad_main
-      use tfcsi
+      use match
       use track_tt
       use tparastat
       use temw, only:nparams
       use tfrbuf
-      use tfshare, only:tfresetsharedmap
+      use calc,only:twmov
+      use tfshare, only:tfresetsharedmap,tmunmapp
       use ffsfile
       use radint
       use geolib
+      use modul,only:tfunblocksym
       use iso_c_binding
       implicit none
       integer*4 maxrpt,hsrchz
       type (sad_descriptor) ,intent(out):: kffs
       type (sad_descriptor) kx,tfvars
       real*8 ,allocatable,dimension(:)::vparams
-      integer*8 itwisso,kax,iutwiss,ildummy
+      integer*8 itwisso,kax,ildummy
       integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,k,
      $     irtc0,it,itt,lfn,
-     $     iuse,l,itfuplevel,
-     $     levelr,lfnl0,lpw,meas0,mfpnta,igetgl,lenw,
+     $     iuse,l,levelr,lfnl0,lpw,meas0,mfpnta,igetgl,lenw,
      $     mphi2,next,nextt,nfp,
      $     nrpt1,itfpeeko,itfgetrecl,nl
       real*8 rmax,amus0,amus1,amusstep,apert,axi,ayi,ctime1,
-     $     dpm2,dpxi,dpyi,em,emxe,emye,epxi,epyi,pspan,r,r2i,r3i,
+     $     dpm2,dpxi,dpyi,em,emxe,emye,epxi,epyi,pspan,r2i,r3i,
      $     trval,rese,v,wa,wd,wl,xa,ya,xxa,xya,yya,getva,rgetgl1,
      $     wp,getvad,tgetgcut
+      type (ffs_res) r
+      type (sad_string),pointer::strc
       parameter (rmax=1.d35)
       parameter (maxrpt=32)
       character*256 word,wordp,title,case,tfgetstrv,tfgetstrs,tfgetstr
@@ -46,13 +66,10 @@
       character*(MAXPNAME+8) name
       character*16 autofg
       character*20 str
-      integer*4 irtcffs,irtc,nc,nrpt(maxrpt),
-     $     irptp(maxrpt),df(maxcond)
-      real*8 chi0(3),trdtbl(3,6)
+      integer*4 irtcffs,irtc,nc,nrpt(maxrpt),irptp(maxrpt)
+      real*8 chi0(3),trdtbl(3,6),df(maxcond)
       logical*4 err,new,cmd,open98,abbrev,ftest,
-     $     frefix,exist,init,expnd,chguse,visit,
-     $     byeall,tfvcomp,tffsinitialcond,
-     $     geocal0,busy
+     $     frefix,exist,init,expnd,chguse,visit,byeall,geocal0,busy
       save open98,exist,init
       save busy
       data busy /.false./
@@ -832,6 +849,10 @@ c        geo0(:,1:3)=tfchitogeo(-chi0*scale(mfitchi1:mfitchi3))
         call twbuf('NBUNCH='//autofg(anbunch,''),'',lfno,1,lpw,8,1)
         call twbuf('NP='//autofg(dble(np0),'S8.1'),'',lfno,1,lpw,8,1)
         call twbuf('GCUT='//autofg(tgetgcut(),''),'',lfno,1,lpw,8,1)
+        call tfevals('StandardForm[$FORM="S8.3";"CODCONV="//CODCONV]',kx,irtc)
+        if(ktfstringq(kx,strc))then
+          call twbuf(strc%str(1:strc%nch),'',lfno,1,lpw,8,1)
+        endif
         call twbuf('EMITDIV='//autofg(emidiv,''),'',lfno,1,lpw,8,1)
         call twbuf('EMITDIVB='//autofg(emidib,''),'',lfno,1,lpw,8,1)
         call twbuf('EMITDIVQ='//autofg(emidiq,''),'',lfno,1,lpw,8,1)
@@ -920,8 +941,7 @@ c     $         ilist(1,iwakepold)*8
         vcalpha=1.d0
         title=tfgetstrv('TITLE')
         case=tfgetstrv('CASE')
-        call trackb(latt,flv%measp,name,.true.,
-     $       word,title,case,exist,
+        call trackb(latt,flv%measp,name,
      $       kffs,irtcffs,lfnb > 1,
      1       xa,ya,xxa,xya,yya,lfno)
         if(.not. exist)then
@@ -1175,14 +1195,14 @@ c        write(*,*)'tffsa-setupwake-done ',nwakep
           wake=.false.
         endif
       endif
-      flv%iut=iutwiss(nlat,flv%nvar,nfcol,nfam,nut,.not. cell)
+      flv%iut=iutwiss(flv%nvar,nfcol,nfam,nut,.not. cell)
       if(flv%iut <= 1)then
         call termes(lfno,
      $       '?Too many off-momentum or fit points.',' ')
         go to 8810
       endif
       call tfevalb('Setup$FF[]',kx,irtc)
-      call tffsmatch(df,dp0,r,nparallel,lfno,irtc)
+      call tffsmatch(df,dp0,r,lfno,irtc)
       if(.not. setref)then
         call tfsetref
       endif
@@ -1241,21 +1261,19 @@ c        write(*,*)'tffsa-setupwake-done ',nwakep
       return
       end
 
-      integer*8 function iutwiss(nlat,nvar,nfcol,nfam,nut,nonl)
-      use tfstk
+      integer*8 function iutwiss(nvar,nfcol,nfam,nut,nonl)
       use ffs, only:flv,nvevx
       use ffs_pointer
       use tffitcode
       use ffs_wake
       use iso_c_binding
       use sad_main
+      use tfshare,only:itmmapp
       use mackw
       implicit none
-      integer*4 ,intent(in):: nlat,nvar,nfcol,nfam
+      integer*4 ,intent(in):: nvar,nfcol,nfam
       integer*4 ,intent(out):: nut
       integer*4 i2,i,j,id,k
-      integer*8 itmmapp
-      real*8 tffsmarkoffset
       logical*4 ,intent(in):: nonl
       itwissp(3:nlat-1)=0
       if(idtypec(nlat-1) == icMARK)then
@@ -1342,7 +1360,6 @@ c        write(*,*)'tffsa-setupwake-done ',nwakep
       end
 
       subroutine tffssaveparams(icmd,ilattp,err)
-      use tfstk
       use ffs, local_ilattp=>ilattp
       use iso_c_binding
       implicit none
@@ -1430,7 +1447,6 @@ c          call tmov(rlist(iffssave+2),ffv,nxh)
       end
 
       logical*4 function tffsinitialcond(lfno,err)
-      use tfstk
       use ffs_fit
       use tffitcode
       use eeval
@@ -1499,7 +1515,6 @@ c            call tclr(uini(1,0),28)
       end
 
       subroutine tffsclearcouple
-      use tfstk
       use ffs
       use tffitcode
       use ffs_pointer,only:kele2
@@ -1516,7 +1531,6 @@ c            call tclr(uini(1,0),28)
       end
 
       subroutine tffssetupcouple(lfno)
-      use tfstk
       use ffs
       use ffs_pointer, only: kele2
       use tffitcode
@@ -1618,7 +1632,6 @@ c                  write(*,*)'setupcouple ',k,iet,ik,nk
       end
 
       subroutine tfkeya(i,keyword,ia)
-      use tfstk
       use ffs
       use tffitcode
       use ffs_pointer, only:idelc,idtypec
@@ -1702,7 +1715,6 @@ c$$$      flv%mfitp(flv%nfc)=mfc
       end
 
       subroutine tscale(nlist,scale,lfno)
-      use tfstk
       use ffs
       use tffitcode
       implicit none
@@ -1716,7 +1728,6 @@ c$$$      flv%mfitp(flv%nfc)=mfc
       end
 
       recursive subroutine tclrline(line)
-      use tfstk
       use maccode
       implicit none
       integer*4 i,n,idx
@@ -1737,7 +1748,6 @@ c$$$      flv%mfitp(flv%nfc)=mfc
       end
 
       subroutine tfblocksym(str,nch)
-      use tfstk
       implicit none
       character*(*) ,intent(in):: str
       integer*4 ,intent(in):: nch
@@ -1749,20 +1759,6 @@ c$$$      flv%mfitp(flv%nfc)=mfc
       return
       end
 
-      subroutine tfunblocksym(str,nch,del)
-      use tfstk
-      implicit none
-      character*(*) ,intent(in):: str
-      integer*4 ,intent(in):: nch
-      logical*4 ,intent(in):: del
-      type (sad_descriptor) ks
-      type (sad_symdef), pointer :: symd
-      ks=kxsymbolf(str,nch,.false.)
-      call descr_symdef(ks,symd)
-      call tfdelete(symd,del,.true.)
-      return
-      end
-
       subroutine tfsetref
       use ffs
       use ffs_pointer
@@ -1771,3 +1767,68 @@ c$$$      flv%mfitp(flv%nfc)=mfc
       setref=.true.
       return
       end
+
+      recursive subroutine tfffs(isp1,kx,irtc)
+      use ffs
+      use tffitcode
+      use tfcsi
+      use readbuf, only:trbopen,trbopenmap
+      use tfrbuf, only:modestring,trbassign,trbclose
+      use iso_c_binding
+      use ffsfile, only:lfnp
+      implicit none
+      type (sad_descriptor) kx
+      type (sad_string), pointer :: str
+      type (csiparam) sav
+      integer*4 outfl1,irtc,narg,lfn,isp1,itfmessage,itfmessagestr
+      character*10 strfromis
+      narg=isp-isp1
+      if(narg > 2)then
+        irtc=itfmessage(9,'General::narg','"1 or 2"')
+        return
+      endif
+      if(.not. ktfstringq(dtastk(isp1+1),str))then
+        irtc=itfmessage(9,'General::wrongtype','"String for #1"')
+        return
+      endif
+      call tftclupdate(7)
+      outfl1=outfl
+      if(narg == 2)then
+        if(ktfnonrealq(ktastk(isp)))then
+          irtc=itfmessage(9,'General::wrongtype',
+     $         '"File number for #2"')
+          return
+        endif
+        outfl=int(rtastk(isp))
+        if(outfl == -1)then
+          outfl=icslfno()
+        endif
+      else
+        outfl=0
+      endif
+      levele=levele+1
+      sav=savep
+      call trbopen(lfn,ktfaddr(ktastk(isp1+1)),
+     $     int8(modestring),str%nch)
+      if(lfn <= 0)then
+        irtc=itfmessagestr(9,'FFS::lfn',str%str(1:str%nch))
+        kx%k=ktfoper+mtfnull
+      else
+        call trbassign(lfn)
+        ipoint=1
+        lrecl=0
+        call tffsa(lfnp+1,lfn,kx,irtc)
+        call trbclose(lfn)
+        call tclrfpe
+        savep=sav
+        call trbassign(lfni)
+        outfl=outfl1
+        if(irtc == 0 .and. iffserr /= 0)then
+          irtc=itfmessagestr(9,'FFS::error',strfromis(int(iffserr)))
+        endif
+      endif
+      call tfconnect(kx,irtc)
+      return
+      end
+
+      end module

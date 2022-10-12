@@ -2,6 +2,7 @@
       use tfstk
       use tfcode
       use efun
+      use dset,only:tfcleardaloc
       implicit none
       type (sad_symdef) ,intent(inout):: def
       type (sad_symdef), pointer :: def1

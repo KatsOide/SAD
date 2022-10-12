@@ -1,35 +1,50 @@
       module findr
-        use tfstk
-        type symv
-        sequence
-        type (sad_symdef), pointer :: p
-        end type
+      use tfstk
 
-        contains
-        subroutine tfassignrules(sav0,v0,nvar,klx)
-        implicit none
-        type (sad_descriptor) kx
-        type (sad_dlist), pointer ,intent(out) ::klx
-        type (sad_dlist), pointer ::kli
-        integer*4 ,intent(in)::nvar
-        integer*4 i
-        type (symv),intent(in):: sav0(nvar)
-        real*8 ,intent(in):: v0(nvar)
-        kx=kxadaloc(-1,nvar,klx)
-        do i=1,nvar
-          klx%dbody(i)=kxadaloc(0,2,kli)
-          kli%head%k=ktfoper+mtfrule
-          kli%dbody(1)=dtfcopy1(sad_descr(sav0(i)%p%sym))
-          kli%rbody(2)=v0(i)
-        enddo
-        return
-        end subroutine
+      type symv
+      sequence
+      type (sad_symdef), pointer :: p
+      end type
 
-      end module
+      contains
+      subroutine tfassignrules(sav0,v0,nvar,klx)
+      implicit none
+      type (sad_descriptor) kx
+      type (sad_dlist), pointer ,intent(out) ::klx
+      type (sad_dlist), pointer ::kli
+      integer*4 ,intent(in)::nvar
+      integer*4 i
+      type (symv),intent(in):: sav0(nvar)
+      real*8 ,intent(in):: v0(nvar)
+      kx=kxadaloc(-1,nvar,klx)
+      do i=1,nvar
+        klx%dbody(i)=kxadaloc(0,2,kli)
+        kli%head%k=ktfoper+mtfrule
+        kli%dbody(1)=dtfcopy1(sad_descr(sav0(i)%p%sym))
+        kli%rbody(2)=v0(i)
+      enddo
+      return
+      end subroutine
+
+      real*8 pure function fmincube(f1,f2,g1,g2,g0,dg) result(f)
+      use macmath,only:m_euler
+      implicit none
+      real*8 ,intent(in):: f1,f2,g1,g2,g0,dg
+      real*8 a,b,s
+      if(f2 == 0.d0)then
+        f=-.5d0*f1*dg/((g1-g0)/f1-dg)
+      else
+        a=((g1-g0)/f1**2-(g2-g0)/f2**2)/(f1-f2)+dg/f1/f2
+        b=(-f2*(g1-g0)/f1**2+f1*(g2-g0)/f2**2)-dg*(f1+f2)/f1/f2
+        s=sqrt(max(0.d0,b**2-3.d0*a*dg))
+        f=merge(-dg/(s+b),(s-b)/3.d0/a,b > 0.d0)
+      endif
+      f=min(m_euler*f1,max(f1/16.d0,f))
+      return
+      end
 
       subroutine tffindroot(isp1,kx,irtc)
-      use tfstk
-      use findr
+      use modul,only:tfdelete
       implicit none
       real*8 , parameter :: eps0=1.d-20, frac0=1.d-7
       integer*4 , parameter :: nvmax=2048, maxi0=50
@@ -89,14 +104,14 @@
       endif
       ke=dtfcopy(ke)
       kdl(1:nvar)%k=ktfoper+mtfnull
-c      write(*,*)'findroot-D ',used
+c     write(*,*)'findroot-D ',used
       if(used)then
         call tfderiv(ke,nvar,sav,kdl,irtc)
         if(irtc /= 0)then
           call tflocal1(ke%k)
           go to 9000
         endif
-c        call tfdebugprint(ke,'tffindroot-deriv',1)
+c     call tfdebugprint(ke,'tffindroot-deriv',1)
       endif
       call tfnewton(ke%k,sav,v0,d0,kdl,
      $     vmin,vmax,neq,nvar,maxi,eps,trace,frac,irtc)
@@ -120,8 +135,6 @@ c        call tfdebugprint(ke,'tffindroot-deriv',1)
 
       subroutine tfnewton(ke,sav,v0,d0,kdl,vmin,vmax,
      $     neq,nvar,maxi,eps,trace,frac,irtc)
-      use tfstk
-      use findr
       use eeval
       implicit none
       type (sad_dlist), pointer :: klx
@@ -134,7 +147,7 @@ c        call tfdebugprint(ke,'tffindroot-deriv',1)
       real*8 ,intent(inout):: v0(nvar),d0
       real*8 ,intent(in):: vmin(nvar),vmax(nvar),eps,frac
       real*8 ,allocatable,dimension(:):: f,f0,dv,v
-      real*8 fact,fact1,fact2,d,d1,d2,dg,am,sv,goal,tffsfmin,svi
+      real*8 fact,fact1,fact2,d,d1,d2,dg,am,sv,goal,svi
       real*8 , allocatable :: a(:,:),a0(:,:)
       logical*4 ,intent(in):: trace
       real*8 , parameter :: factmin=1.d-4,svmin=1.d-7,svdtol=1.d-5
@@ -143,10 +156,10 @@ c        call tfdebugprint(ke,'tffindroot-deriv',1)
       call tfevalresidual(sav,v0,ke,f0,am,d0,nvar,neq,trace,irtc)
       goal=am*eps
       sv=svmin+sum(abs(v0))*frac
-c      sv=0.d0
-c      do i=1,nvar
-c        sv=sv+abs(v0(i)*frac)+svmin
-c      enddo
+c     sv=0.d0
+c     do i=1,nvar
+c     sv=sv+abs(v0(i)*frac)+svmin
+c     enddo
       sv=sv/nvar
       fact=1.d0
       d1=d0
@@ -204,18 +217,18 @@ c      enddo
       call tsolva(a,f,dv,neq,nvar,neq,svdtol)
       dg=0.d0
       do i=1,neq
-c        s=0.d0
-c        do j=1,nvar
-c          s=s+a0(i,j)*dv(j)
-c        enddo
+c     s=0.d0
+c     do j=1,nvar
+c     s=s+a0(i,j)*dv(j)
+c     enddo
         dg=dg+f0(i)*sum(a0(i,1:nvar)*dv(1:nvar))
       enddo
       dg=dg*2.d0
  2    v=min(vmax,max(vmin,v0+dv*fact))
-c 2    do i=1,nvar
-c        write(*,*)'newton ',i,v0(i),dv(i)
-c        v(i)=min(vmax(i),max(vmin(i),v0(i)+dv(i)*fact))
-c      enddo
+c     2    do i=1,nvar
+c     write(*,*)'newton ',i,v0(i),dv(i)
+c     v(i)=min(vmax(i),max(vmin(i),v0(i)+dv(i)*fact))
+c     enddo
       call tfevalresidual(sav,v,ke,f0,am,d,nvar,neq,trace,irtc)
       if(irtc /= 0)then
         deallocate (a0,a)
@@ -238,7 +251,7 @@ c      enddo
         d1=d
         fact2=fact1
         fact1=fact
-        fact=tffsfmin(fact1,fact2,d1,d2,d0,dg)
+        fact=fmincube(fact1,fact2,d1,d2,d0,dg)
         if(fact < factmin)then
           deallocate (a0,a)
           return
@@ -248,13 +261,12 @@ c      enddo
       end
 
       subroutine tfevalresidual(sav,v,ke,f,am,d,nvar,neq,trace,irtc)
-      use tfstk
-      use findr
+      use sameq,only:tfcomplexlistqk
       use eeval
       implicit none
       integer*4 ,intent(in):: nvar,neq
       integer*4 ,intent(out):: irtc
-      integer*4 i,l,itfuplevel,itfdownlevel,itfmessage
+      integer*4 i,l,itfmessage
       type (symv) ,intent(in):: sav(nvar)
       type (sad_descriptor) kx
       type (sad_dlist),pointer::kl
@@ -263,7 +275,6 @@ c      enddo
       real*8 ,intent(in):: v(nvar)
       real*8 a,b
       logical*4 ,intent(in):: trace
-      logical*4 tfcomplexlistqk
       do i=1,nvar
         if(trace)then
           write(*,*)'FindRoot Vars: ',i,v(i)
@@ -273,7 +284,7 @@ c      enddo
       l=itfuplevel()
       call loc_sad(ktfaddr(ke),kl)
       kx=tfleval(kl,.true.,irtc)
-c      call tfdebugprint(kx,'evalres-2',1)
+c     call tfdebugprint(kx,'evalres-2',1)
       if(irtc /= 0)then
         go to 9000
       endif
@@ -322,9 +333,8 @@ c      call tfdebugprint(kx,'evalres-2',1)
 
       subroutine tfsetupvars(isp1,isp2,
      $     nvar,sav,sav0,v0,vmin,vmax,nvmax,irtc)
-      use tfstk
-      use findr
       use eeval
+      use modul,only:tfdelete
       implicit none
       type (sad_descriptor) k1,ki,kv,k3
       type (sad_symbol), pointer :: sym1
@@ -376,9 +386,9 @@ c      call tfdebugprint(kx,'evalres-2',1)
         call descr_symdef(kxnaloc1(ig,sym1%loc),sav(j)%p)
         call tflocald(sav(j)%p%value)
         sav(j)%p%value%k=0
-c        isp=isp+2
-c        ktastk(isp-1)=sad_loc(symd%sym%loc)
-c        ktastk(isp)=ig
+c     isp=isp+2
+c     ktastk(isp-1)=sad_loc(symd%sym%loc)
+c     ktastk(isp)=ig
         kv=tfeevalref(kli%dbody(2),irtc)
         if(irtc /= 0)then
           go to 9000
@@ -390,11 +400,11 @@ c        ktastk(isp)=ig
         endif
         v0(j)=min(vmax(j),max(vmin(j),v0(j)))
       enddo
-c      if(isp > isp0)then
-c        isp4=isp
-c        call tfredefsymbol(isp0+1,isp4,
+c     if(isp > isp0)then
+c     isp4=isp
+c     call tfredefsymbol(isp0+1,isp4,
 c     $       ite1,iae1,ve1,ite,iae,ve,rep)
-c      endif
+c     endif
       isp=isp0
       return
  8900 irtc=itfmessage(9,'General::wrongtype',
@@ -406,7 +416,7 @@ c      endif
       end
 
       subroutine tfsetupeqs(kl,ke,neq,irtc)
-      use tfstk
+      use part,only:tfreplist
       implicit none
       type (sad_dlist), pointer :: list,listi,liste
       type (sad_descriptor) kei
@@ -422,7 +432,7 @@ c      endif
       if(list%head%k == ktfoper+mtfequal)then
         neq=1
         list=>tfduplist(list)
-        call tfreplist(list%list(1),0,ktfoper+mtflist,eval)
+        call tfreplist(list,0,dfromk(ktfoper+mtflist),eval)
         kae=ksad_loc(list%head%k)
         irtc=0
       elseif(list%head%k == ktfoper+mtflist)then
@@ -452,8 +462,9 @@ c      endif
       end
 
       subroutine tffit(isp1,kx,irtc)
-      use tfstk
-      use findr
+      use repl, only:tfgetoption
+      use modul,only:tfdelete
+      use maloc,only:ktfmaloc
       use iso_c_binding
       use gammaf
       implicit none
@@ -468,7 +479,7 @@ c      endif
       real*8 ,parameter:: eps0=1.d-9
       integer*4 nvar,i,maxi,ispv,isp2,n,m,iu,ig,itfmessage
       type (symv) , allocatable::sav(:),sav0(:)
-      integer*8 kdp,ktfmaloc
+      integer*8 kdp
       type (sad_descriptor) kdl(nvmax),kdm,kcv,kci
       real*8 , allocatable::v0(:),vmin(:),vmax(:),v0s(:)
       real*8 r,vx,cut,cutoff
@@ -501,7 +512,7 @@ c      endif
       cutoff=0.d0
       ispv=isp
       do i=isp,isp1+4,-1
-        call tfgetoption('MaxIterations',ktastk(i),kx,irtc)
+        call tfgetoption('MaxIterations',dtastk(i),kx,irtc)
         if(irtc == -1)then
           ispv=i
           allocate (sav(nvmax),sav0(nvmax),
@@ -515,7 +526,7 @@ c      endif
           ispv=i-1
           cycle
         endif
-        call tfgetoption('D',ktastk(i),kx,irtc)
+        call tfgetoption('D',dtastk(i),kx,irtc)
         if(irtc /= 0)then
           return
         endif
@@ -524,7 +535,7 @@ c      endif
           used=vx /= 0.d0
           cycle
         endif
-        call tfgetoption('Cutoff',ktastk(i),kx,irtc)
+        call tfgetoption('Cutoff',dtastk(i),kx,irtc)
         if(irtc /= 0)then
           return
         endif
@@ -604,7 +615,7 @@ c      endif
       call tfmakerulestk(itfcov,kcv)
       call tfmakerulestk(itfdm,kdm)
       kx=kxmakelist(isp2)
-c      call tfdebugprint(kx,'tffit-8',3)
+c     call tfdebugprint(kx,'tffit-8',3)
       isp=isp2-1
  9200 call tfree(kdp)
  9100 do i=1,nvar
@@ -617,7 +628,6 @@ c      call tfdebugprint(kx,'tffit-8',3)
       end
 
       subroutine tfcovmat(c,ca,m,n,ndim)
-      use tfstk, only:ktfenanq,rtfnan
       implicit none
       integer*4 ,intent(in):: n,ndim,m
       integer*4 i,j
@@ -625,7 +635,7 @@ c      call tfdebugprint(kx,'tffit-8',3)
       real*8 ,intent(out):: ca(n,n)
       real*8 s
       real*8, save:: rnan=0.d0
-c      write(*,*)'covmat ',n,m,ndim
+c     write(*,*)'covmat ',n,m,ndim
       if(rnan == 0.d0)then
         rnan=rtfnan
       endif
@@ -641,8 +651,6 @@ c      write(*,*)'covmat ',n,m,ndim
 
       subroutine tffit1(data,n,m,ke,symdv,nvar,sav,v0,
      $     kdl,vmin,vmax,d0,kdm,kcv,kci,eps,maxi,cut,irtc)
-      use tfstk
-      use findr
       use gammaf
       implicit none
       type (sad_symdef) ,intent(inout):: symdv
@@ -661,9 +669,9 @@ c      write(*,*)'covmat ',n,m,ndim
       real*8 ,intent(in):: eps,cut
       real*8 ,intent(out):: d0
       real*8 d00,d2,svi,db,dbest,
-     $     fact,d1,fact1,v(nvar),dg,d,fact2,tffsfmin,
+     $     fact,d1,fact1,v(nvar),dg,d,fact2,
      $     good,ajump,vmin(nvar),vmax(nvar),sigma
-      real*8 tinvgr,chin,x
+      real*8 chin,x
       real*8 ,parameter ::frac=1.d-7,factmin=1.d-4,factmin1=1.d-4,
      $     svmin=1.d-7,svdeps=1.d-4
       logical*4 newton,acalc
@@ -709,9 +717,9 @@ c      write(*,*)'covmat ',n,m,ndim
      $         kaxvec,.true.,0.d0,irtc)
           if(irtc == 0)then
             a(:,i)=df2
-c            do j=1,m
-c              a(j,i)=df2(j)
-c            enddo
+c     do j=1,m
+c     a(j,i)=df2(j)
+c     enddo
           elseif(irtc == -1)then
             svi=min(max(svmin,abs(v0(i))*frac),
      $           (vmax(i)-vmin(i))*factmin)
@@ -729,9 +737,9 @@ c            enddo
               return
             endif
             a(:,i)=(df2-df0)/svi
-c            do j=1,m
-c              a(j,i)=(df2(j)-df0(j))/svi
-c            enddo
+c     do j=1,m
+c     a(j,i)=(df2(j)-df0(j))/svi
+c     enddo
             if(db < d0)then
               d0=db
               v0(i)=v0(i)+svi
@@ -760,10 +768,10 @@ c            enddo
         endif
         dg=0.d0
         do i=1,m
-c          s=0.d0
-c          do j=1,nvar
-c            s=s+a0(i,j)*dv(j)
-c          enddo
+c     s=0.d0
+c     do j=1,nvar
+c     s=s+a0(i,j)*dv(j)
+c     enddo
           dg=dg+df0(i)*dot_product(a0(i,1:nvar),dv(1:nvar))
         enddo
         dg=dg*2.d0
@@ -782,12 +790,12 @@ c          enddo
           endif          
         endif
  2      v=min(vmax,max(vmin,v0+dv*fact))
-c 2      do i=1,nvar
-c          v(i)=min(vmax(i),max(vmin(i),v0(i)+dv(i)*fact))
-c        enddo
+c     2      do i=1,nvar
+c     v(i)=min(vmax(i),max(vmin(i),v0(i)+dv(i)*fact))
+c     enddo
         call tfevalfit(df0,d,data,n,m,ke,symdv,nvar,sav,v,
      $       kaxvec,.false.,cut,irtc)
-         if(irtc /= 0)then
+        if(irtc /= 0)then
           deallocate(a0,a,abest,df,df0,v00,w,cv,vbest,dv,df2)
           call tflocal1(kaxvec)
           return
@@ -817,7 +825,7 @@ c        enddo
           d1=d
           fact2=fact1
           fact1=fact
-          fact=tffsfmin(fact1,fact2,d1,d2,d0,dg)
+          fact=fmincube(fact1,fact2,d1,d2,d0,dg)
           if(newton)then
             if(fact >= factmin)then
               go to 2
@@ -829,9 +837,9 @@ c        enddo
               go to 2
             else
               v0=max(vmin,min(vmax,2.d0*v00-v0))
-c              do i=1,nvar
-c                v0(i)=max(vmin(i),min(vmax(i),2.d0*v00(i)-v0(i)))
-c              enddo
+c     do i=1,nvar
+c     v0(i)=max(vmin(i),min(vmax(i),2.d0*v00(i)-v0(i)))
+c     enddo
               go to 21
             endif
           endif
@@ -844,9 +852,9 @@ c              enddo
         do j=1,m
           if(abs(df(j)) > cut)then
             a0(j,:)=0.d0
-c            do i=1,nvar
-c              a0(j,i)=0.d0
-c            enddo
+c     do i=1,nvar
+c     a0(j,i)=0.d0
+c     enddo
           endif
         enddo
       endif
@@ -854,18 +862,18 @@ c            enddo
       if(n == 2)then
         sigma=sqrt(d0/max(1,m-nvar))
         do i=1,nvar
-c          wi=w(i)*sigma
-c          do j=1,nvar
-c            a0(i,j)=a0(i,j)*wi
-c          enddo
+c     wi=w(i)*sigma
+c     do j=1,nvar
+c     a0(i,j)=a0(i,j)*wi
+c     enddo
           a0(i,:)=a0(i,:)*w(i)*sigma
         enddo
       else
         do i=1,nvar
-c          wi=w(i)
-c          do j=1,nvar
-c            a0(i,j)=a0(i,j)*wi
-c          enddo
+c     wi=w(i)
+c     do j=1,nvar
+c     a0(i,j)=a0(i,j)*wi
+c     enddo
           a0(i,:)=a0(i,:)*w(i)
         enddo
       endif
@@ -885,8 +893,6 @@ c          enddo
 
       subroutine tfevalfit(df,r,a,n,m,ke,symdv,nvar,sav,v,
      $     kaxvec,deriv,cutoff,irtc)
-      use tfstk
-      use findr
       use eeval
       implicit none
       type (sad_symdef) ,intent(inout):: symdv
@@ -894,7 +900,7 @@ c          enddo
       type (sad_descriptor) k1,ke,kx
       integer*4 ,intent(out):: irtc
       integer*4 ,intent(in):: n,m,nvar
-      integer*4 i,itfuplevel,itfdownlevel,l,itfmessage
+      integer*4 i,l,itfmessage
       type (symv) sav(nvar)
       integer*8 kavvec,kaxvec
       real*8 ,intent(out):: df(m),r
@@ -1021,8 +1027,6 @@ c     call tfdebugprint(ke,'ke',1)
       end
 
       subroutine tfderiv(ke,nvar,sav,kdl,irtc)
-      use tfstk
-      use findr
       use eeval
       implicit none
       type (sad_descriptor) ,intent(in):: ke
@@ -1057,10 +1061,10 @@ c     call tfdebugprint(ke,'ke',1)
         dtastk(isp)=sad_descr(sav(i)%p%sym)
         ierr0=ierrorexp
         ierrorexp=1
-c        call tfdebugprint(ke,'tfderiv D',2)
-c        call tfdebugprint(dtastk(isp),'by ',2)
+c     call tfdebugprint(ke,'tfderiv D',2)
+c     call tfdebugprint(dtastk(isp),'by ',2)
         call tfdeval(isp0+1,iads,kd,1,.false.,euv,irtc)
-c        call tfdebugprint(kd,'==>',2)
+c     call tfdebugprint(kd,'==>',2)
         ierrorexp=ierr0
         if(irtc /= 0)then
           if(irtc > 0. and. ierrorprint /= 0)then
@@ -1091,7 +1095,7 @@ c        call tfdebugprint(kd,'==>',2)
       enddo
       irtc=0
       isp=isp0
-c      write(*,*)'tfderiv-end'
+c     write(*,*)'tfderiv-end'
       return
       end
 
@@ -1112,20 +1116,21 @@ c      write(*,*)'tfderiv-end'
       do while(abs(df) > 1.d-14)
         dfdx=-exp(-x0)*x0**(anh-1.d0)/gn
         x0=x0-df/dfdx
-c        write(*,*)'tinvgr ',x0,dfdx,df
+c     write(*,*)'tinvgr ',x0,dfdx,df
         df=gammaq(anh,x0)-c0
       enddo
       tinvgr=x0*2.d0
       return
       end
 
-      subroutine tfmakerulestk(k1,k2)
-      use tfstk, only:mrs=>tfmakerulestk_dd,sad_descriptor
-      implicit none
-      type (sad_descriptor) ,intent(in)::k1,k2
-c      call tfdebugprint(k1,'mkrs',1)
-c      write(*,*)k2%k
-c      call tfdebugprint(k2,'mkrs_f',1)
-      call mrs(k1,k2)
-      return
-      end
+c      subroutine tfmakerulestk(k1,k2)
+c      implicit none
+c      type (sad_descriptor) ,intent(in)::k1,k2
+c     call tfdebugprint(k1,'mkrs',1)
+c     write(*,*)k2%k
+c     call tfdebugprint(k2,'mkrs_f',1)
+c      call mrs(k1,k2)
+c      return
+c      end
+
+      end module

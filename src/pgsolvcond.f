@@ -1,12 +1,13 @@
       subroutine pgsolvcond(isp1,kx,irtc)
       use tfstk
+      use maloc,only:ktfmaloc
       use iso_c_binding
       implicit none
       logical*4 normalize,cond
-      type (sad_descriptor) kx
+      type (sad_descriptor) kx,kc,kd,k,kb
       type (sad_rlist) , pointer :: kl
       real*8, pointer:: a(:,:),b(:),c(:,:),d(:)
-      integer*8 ktfmaloc,k,kb,kap,kbp,kc,kcp,kd,kdp
+      integer*8 kap,kbp,kcp,kdp
       integer*4 isp1,irtc,narg,nb,mb,n,m,
      $     nc,mc,nd,md,nx,itfmessage
       real*8 eps
@@ -15,8 +16,8 @@
         irtc=itfmessage(9,'General::narg','"2, 3, 4, 5, or 7"')
         return
       endif
-      k=ktastk(isp1+1)
-      kb=ktastk(isp1+2)
+      k=dtastk(isp1+1)
+      kb=dtastk(isp1+2)
       eps=1.d-8
       cond=.false.
       normalize=.true.
@@ -38,8 +39,8 @@
       endif
 c      write(*,*)'pgsolvcond-1 ',nx,normalize,cond,eps
       if(cond)then
-        kc=ktastk(isp1+6)
-        kd=ktastk(isp1+7)
+        kc=dtastk(isp1+6)
+        kd=dtastk(isp1+7)
         kcp=ktfmaloc(kc,nc,mc,.false.,.false.,irtc)
         if(irtc .ne. 0)then
           return

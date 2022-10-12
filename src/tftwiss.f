@@ -362,6 +362,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       use tfstk
       use ffs
       use tffitcode
+      use repl, only:tfgetoption
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -397,7 +398,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       else
         if(narg .gt. 2)then
           if(narg == 3)then
-            call tfgetoption('Saved',ktastk(isp),kx,irtc)
+            call tfgetoption('Saved',dtastk(isp),kx,irtc)
             if(irtc /= 0)then
               return
             endif
@@ -533,7 +534,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       integer*4 ,intent(out):: isp0,irtc
       integer*4 ,intent(in):: narg
       integer*4 iv,nc,ifany1,i,itfmessage,j,ielmh
-      character*1024 name
+      character*32768 name
       logical*4 tmatch
       isp0=isp
       if(ktfrealq(k,iv) .and. narg == 2)then
@@ -683,7 +684,7 @@ c              k=ilist(ie,ifklp)
      $     gv(3,4),ogv(3,4),cod(6),vtwiss(ntwissfun),tfbzs
       character*(*) ,intent(in):: keyword
       character*64 name,key1
-      integer*4 lv,itfdownlevel
+      integer*4 lv
       logical*4 ,intent(in):: ref
       logical*4 over
 c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
@@ -951,7 +952,7 @@ c              enddo
       integer*4 ,intent(out):: irtc,isp0
       integer*4 nc,itfmessage,i
       real*8 r,v
-      character*(MAXPNAME+16) name
+      character*32768 name
       isp0=isp
       if(ktfrealq(k,v) .and. narg == 2)then
         i=floor(v)
@@ -999,7 +1000,7 @@ c              enddo
       real*8 ,intent(in):: fr
       real*8 r
       character*(*) ,intent(in):: name0
-      character*1024 name,name2
+      character*32768 name,name2
       character*(MAXPNAME+16) name1
       logical*4 exist,temat
       integer*4 nl

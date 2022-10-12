@@ -1,140 +1,3 @@
-      module ophash
-      use tfstk
-      implicit none
-      integer*4 nhash
-      parameter (nhash=4)
-      integer*4 iophash(nhash,0:63)
-      logical*4 , save :: opini=.true.
-      integer*8 ktfcode(0:ntfarg)
-      character*4, save :: opcode(0:mtfnopc) =(/
-     $     '    ','    ','    ','+   ','-   ',
-     $     '*   ','/   ','    ','^   ','>   ',
-
-     $     '>=  ','<=  ','<   ','==  ','<>  ',
-     $     '&&  ','||  ','~   ','=== ','<=> ',
-
-     $     '//  ','[   ',']   ','{   ','}   ',
-     $     ':=  ','=   ','    ','(   ',')   ',
-
-     $     ',   ',';   ','&   ',':   ','->  ',
-     $     ':>  ','/.  ','//. ','^=  ','^:= ',
-
-     $     '=.  ','?   ','?   ','#   ','##  ',
-     $     '.   ','|   ','/@  ','//@ ','@@  ',
-
-     $     '..  ','... ','    ','+=  ','-=  ',
-     $     '*=  ','/=  ','++  ','--  ','[[  ',
-
-     $     '@   ','::  ','/:  ','(*  ','*)  ',
-     $     '    ','    '/)
-      logical*4 :: constop(0:mtfnopc) = (/
-     $     .false.,.false.,.false.,.false.,.false.,
-     $     .false.,.false.,.false.,.false.,.false.,
-
-     $     .false.,.false.,.false.,.false.,.false.,
-     $     .false.,.false.,.false.,.false.,.false.,
-
-     $     .false.,.false.,.false.,.true. ,.false.,
-     $     .false.,.false.,.true., .false.,.false.,
-
-     $     .false.,.false.,.true. ,.true., .true.,
-     $     .true., .false.,.false.,.false.,.false.,
-
-     $     .false.,.true. ,.false.,.false.,.false.,
-     $     .false.,.false. ,.false.,.false.,.false.,
-c Alternatives is temporarily set .false. due to possible reduction.
-
-     $     .true. ,.true. ,.false.,.false.,.false.,
-     $     .false.,.false.,.false.,.false.,.false.,
-
-     $     .false.,.true., .true. ,.false.,.false.,
-     $     .true., .false.
-     $     /)
-
-      contains
-        subroutine tfopcodehash
-        integer*4 i,j,k
-        character*4 oper1
-        iophash=-1
-        LOOP_I: do i=0,mtfnopc
-          if(opcode(i) /= ' ')then
-            oper1=opcode(i)
-            j=ichar(oper1(1:1))+ichar(oper1(2:2))
-     $           +ichar(oper1(3:3))+ichar(oper1(4:4))
-            j=iand(j,63)
-            do k=1,nhash
-              if(iophash(k,j) < 0)then
-                iophash(k,j)=i
-                cycle LOOP_I
-              endif
-            enddo
-            write(*,*)'tfopcode hash implementation error. ',opcode(i)
-            stop
-          endif
-        enddo LOOP_I
-        opini=.false.
-        return
-        end subroutine
-
-      end module
-
-      module opdata
-      use tfstk
-      implicit none
-      integer*4 :: iprior(0:mtfnopc) = (/
-     $     9999,
-     $     10,  20,  50,  50,  40,  40,  15,  15,  100, 100,
-     $     100, 100, 100, 100, 160, 170, 150, 120, 120, 80,
-     $     6,   3000,9999,3000,250, 250, 7000,9999,8000,9000,
-     $     1000,220, 180, 190, 190, 200, 200, 250, 250, 900,
-     $     4,   3,   3,   3,   10,  175, 9,   9,   9,   172,
-     $     172, 130, 210, 210, 210, 210, 7,   7,   6,   5,
-     $     2,   240, 9999,9999,1,   9999/)
-c          null
-c          m    i    +    -    *    /    v    ^    >    >=
-c          <=   <    ==   <>   &&   ||   ~    ===  <=>  //
-c          [    ]    {    }    :=   =    C    (    )    ,
-c          ;    &    :    ->   :>   /.   //.  ^=   ^:=  =.
-c          ?    flg  #    ##   .    |    /@   //@  @@   ..
-c          ...  ineq +=   -=   *=   /=   ++   --   [[   @
-c          msgn /:   (*   *)   Hold z
-      logical*4, parameter :: T=.true.,F=.false.
-      logical*4 :: nullfirst(0:mtfnopc) = (/
-     $     T,
-     $     T,   T,   F,   F,   F,   F,   F,   F,   F,   F,
-     $     F,   F,   F,   F,   F,   F,   T,   F,   F,   F,
-     $     T,   T,   T,   T,   F,   F,   F,   T,   T,   T,
-     $     T,   F,   F,   F,   F,   F,   F,   F,   F,   F,
-     $     T,   T,   T,   T,   F,   F,   F,   F,   F,   F,
-     $     F,   F,   F,   F,   F,   F,   T,   T,   F,   F,
-     $     F,   F,   F,   F,   F,   F/)
-      logical*4 :: lastfirst(0:mtfnopc) = (/
-     $     F,
-     $     F,   F,   F,   F,   F,   F,   F,   T,   F,   F,
-     $     F,   F,   F,   F,   F,   F,   F,   F,   F,   F,
-     $     F,   F,   F,   F,   T,   T,   F,   F,   F,   F,
-     $     F,   F,   F,   T,   T,   F,   F,   F,   F,   F,
-     $     F,   F,   F,   F,   F,   F,   T,   T,   T,   F,
-     $     F,   F,   F,   F,   F,   F,   F,   F,   F,   F,
-     $     F,   F,   F,   F,   F,   F/)
-
-      end module
-
-      module tfform
-      use tfstk
-      type (sad_descriptor) ,save::iaxform,iaxpagewidth
-      data iaxform%k,iaxpagewidth%k /0,0/
-      type (sad_symbol), pointer, save :: symform,sympw
-      contains
-        subroutine tfforminit
-        implicit none
-        iaxform=kxsymbolz('System`$FORM',12)
-        iaxpagewidth=kxsymbolz('System`PageWidth',16)
-        call descr_sym(iaxform,symform)
-        call descr_sym(iaxpagewidth,sympw)
-        end subroutine
-      end module
-
       subroutine tfestk(isp0,iprior,lastfirst,irtc)
       use tfstk
       use ophash
@@ -301,7 +164,6 @@ c        write(*,*)'isp, iop: ',isp,iop
       integer*4 ,intent(in):: iop1
       integer*4 i,m1,m2,irtc
       logical*4 ,intent(in):: nextrel
-      logical*4 tfconstlistqo
 c      call tfdebugprint(k1,'einequal',1)
 c      call tfdebugprint(k2,'and',1)
 c      write(*,*)'with ',iop1,nextrel
@@ -458,13 +320,12 @@ c      include 'DEBUG.inc'
 
       subroutine tfcomposefull(isp1,kh,kx,irtc)
       use tfstk
-      use efun
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       type (sad_descriptor) ,intent(in):: kh
-      type (sad_descriptor) tfcomposefun,tfcomposeoper
+      type (sad_descriptor) tfcomposefun,tfcomposeoper,tfefunrefu
       integer*8 kah
       integer*4 i,isp0,iah
       if(isp /= isp1 .and. rlist(iaximmediate) /= 0.d0)then
@@ -522,7 +383,7 @@ c      include 'DEBUG.inc'
             go to 10
           endif
         enddo
-        kx=tfefunref(isp0+1,.true.,irtc)
+        kx=tfefunrefu(isp0+1,irtc)
         isp=isp0
         return
       endif
@@ -533,10 +394,11 @@ c      include 'DEBUG.inc'
 
       function  tfcomposeoper(isp1,iah,comp,isp0,irtc) result(kx)
       use tfstk
+      use tfcx,only:tfclassmember
       use ophash
       use eexpr
       implicit none
-      type (sad_descriptor) kx,tfpart,tfecmplxl
+      type (sad_descriptor) kx,tfpart
       integer*4 ,intent(in):: isp1,iah
       integer*4 ,intent(out):: irtc,isp0
       type (sad_dlist), pointer :: klx
@@ -824,14 +686,14 @@ c      include 'DEBUG.inc'
       recursive function tfcomposefun(isp1,iah,full,irtc)
      $     result(kx)
       use tfstk
-      use efun
+      use modul,only:tfmodule
+      use pmat,only:itfpmatc
       implicit none
-      type (sad_descriptor) kx,tfmodule
-      type (sad_descriptor) dh
+      type (sad_descriptor) kx,dh,tfefunrefd,tfefunrefu,tfefunreff
       integer*8 ka,kti,kai,i
       integer*4 ,intent(in):: isp1,iah
       integer*4 ,intent(out):: irtc
-      integer*4 narg,id,isp2,j,itfpmatc
+      integer*4 narg,id,isp2,j
       real*8 rimmediate0,v
       logical*4 ,intent(in):: full
       logical*4 re
@@ -995,16 +857,16 @@ c      include 'DEBUG.inc'
         rlist(iaximmediate)=-1.d0
         if(isp == isp1+1)then
           if(ktfrealq(ktastk(isp)))then
-            kx=tfefunref(isp1,.false.,irtc)
+            kx=tfefunrefd(isp1,irtc)
           elseif(tfconstq(ktastk(isp)))then
             if(ktflistq(ktastk(isp)))then
               if(ilist(2,ktfaddr(ktastk(isp))-1) <= 15)then
 c                call tfdebugprint(ktastk(isp),'composefun-a',1)
-                kx=tfefunref(isp1,.true.,irtc)
+                kx=tfefunrefu(isp1,irtc)
               endif
             else
 c              call tfdebugprint(ktastk(isp),'composefun-b',1)
-              kx=tfefunref(isp1,.true.,irtc)
+              kx=tfefunrefu(isp1,irtc)
             endif
           endif
         else
@@ -1021,7 +883,7 @@ c              call tfdebugprint(ktastk(i),'composefun-c-i',1)
               return
             endif
           enddo
-          kx=tfefunref(isp1,re,irtc)
+          kx=tfefunreff(isp1,re,irtc)
 c          call tfdebugprint(kx,'==>',1)
         endif
         rlist(iaximmediate)=rimmediate0
@@ -1047,7 +909,7 @@ c          call tfdebugprint(kx,'==>',1)
       use tfstk
       implicit none
       type (sad_descriptor) kx,tfeval
-      integer*4 irtc,istop,l,itfdownlevel
+      integer*4 irtc,istop,l
       character*(*) ,intent(in):: string
       levele=levele+1
       kx=tfeval(string,1,istop,.false.,irtc)

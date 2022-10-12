@@ -24,9 +24,8 @@
       use tfstk
       use ffs_flag
       use tmacro
-      use ffs, only:ffs_bound
       use sad_main
-      use ffs_pointer, only:compelc
+      use ffs_pointer, only:compelc,ffs_bound,tffsbound1
       use tspin
       use tracklim
       implicit none
@@ -40,7 +39,7 @@
       logical*4 ,intent(out):: normal
       integer*4 la,ls,nvar
       real*8 pgev00
-      integer*4 lv,itfdownlevel,irtc
+      integer*4 lv,irtc
       logical*4 sol,chg,tfinsol
       pgev00=pgev
       sol=tfinsol(lb)
@@ -242,19 +241,17 @@ c     endif
             sol=l < ke
             go to 1020
           endif
-          if(l == nextwake)then
-            if(lele /= icCAVI)then
-              fw=(abs(charge)*e*pbunch*anbunch/amass)/np0*.5d0
-              kdx=kytbl(kwDX,lele)
-              dx=merge(cmp%value(kdx),0.d0,kdx /= 0)
-              kdy=kytbl(kwDY,lele)
-              dy=merge(cmp%value(kdy),0.d0,kdy /= 0)
-              krot=kytbl(kwROT,lele)
-              dy=merge(cmp%value(krot),0.d0,krot /= 0)
-              call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $             dx,dy,rot,int(anbunch),
-     $             fw,nwak,p0,h0,.true.)
-            endif
+          if(l == nextwake .and. lele /= icCAVI .and. lele /= icMULT)then
+            fw=(abs(charge)*e*pbunch*anbunch/amass)/np0*.5d0
+            kdx=kytbl(kwDX,lele)
+            dx=merge(cmp%value(kdx),0.d0,kdx /= 0)
+            kdy=kytbl(kwDY,lele)
+            dy=merge(cmp%value(kdy),0.d0,kdy /= 0)
+            krot=kytbl(kwROT,lele)
+            dy=merge(cmp%value(krot),0.d0,krot /= 0)
+            call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $           dx,dy,rot,int(anbunch),
+     $           fw,nwak,p0,h0,.true.)
           endif
           if(wspac .or. pspac)then
             sspac=(pos(l)+pos(l+1))*.5d0
@@ -390,10 +387,10 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
             bz=0.d0
             if(seg)then
               call tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $             cmp,lsegp,bz,rtaper,n,kptbl)
+     $             cmp,lsegp,bz,rtaper,nwak,n,kptbl)
             else
               call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $             cmp,bz,rtaper,n,kptbl)
+     $             cmp,bz,rtaper,nwak,n,kptbl)
             endif
 
           case (icMARK)
@@ -441,6 +438,8 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
      $             cmp%value(ky_V11_CAVI),cmp%value(ky_V02_CAVI),
      $             cmp%value(ky_FRIN_CAVI) == 0.d0,
      $             cmp%ivalue(1,p_FRMD_CAVI),autophi)
+              nwak=nwak+1
+              nextwake=merge(0,iwakeelm(nwak),nwak .gt. nwakep)
             else
               call tcav(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      1             cmp%value(p_W_CAVI),cmp%value(ky_PHI_CAVI),ph,
@@ -549,12 +548,10 @@ c     print *,'tturn l sspac2',l,sspac2
           endif
           exit
         enddo
-        if(l == nextwake)then
-          if(lele /= icCAVI)then
-            call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $           dx,dy,rot,int(anbunch),
-     $           fw,nwak,p0,h0,.false.)
-          endif
+        if(l == nextwake .and. lele /= icCAVI)then
+          call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         dx,dy,rot,int(anbunch),
+     $         fw,nwak,p0,h0,.false.)
           nwak=nwak+1
           nextwake=merge(0,iwakeelm(nwak),nwak .gt. nwakep)
         endif
@@ -616,7 +613,7 @@ c     call tfmemcheckprint('tturn',1,.false.,irtc)
       end
 
       subroutine tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     cmp,lsegp,bz,rtaper,n,kptbl)
+     $     cmp,lsegp,bz,rtaper,nwak,n,kptbl)
       use kyparam
       use tfstk
       use ffs
@@ -627,7 +624,7 @@ c     call tfmemcheckprint('tturn',1,.false.,irtc)
       implicit none
       type (sad_comp) :: cmp
       integer*4 ,intent(inout):: np
-      integer*4 ,intent(in):: n
+      integer*4 ,intent(in):: n,nwak
       integer*4 ,intent(inout):: kptbl(np0,6)
       real*8 ,intent(inout):: x(np0),px(np0),y(np0),py(np0),z(np0),
      $     g(np0),dv(np0),sx(np0),sy(np0),sz(np0)
@@ -672,14 +669,14 @@ c     call tfmemcheckprint('tturn',1,.false.,irtc)
         enddo
         cmp%update=.false.
         call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $       cmp,bz,rtaper,n,kptbl)
+     $       cmp,bz,rtaper,nwak,n,kptbl)
       enddo
       cmp%value(1:nc)=rsave(1:nc)
       return
       end
 
       subroutine tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $     cmp,bz,rtaper,n,kptbl)
+     $     cmp,bz,rtaper,nwak,n,kptbl)
       use kyparam
       use tfstk
       use ffs
@@ -690,7 +687,7 @@ c     call tfmemcheckprint('tturn',1,.false.,irtc)
       implicit none
       type (sad_comp) :: cmp
       integer*4 ,intent(inout):: np
-      integer*4 ,intent(in):: n
+      integer*4 ,intent(in):: n,nwak
       integer*4 ,intent(inout):: kptbl(np0,6)
       real*8 ,intent(inout):: x(np0),px(np0),y(np0),py(np0),z(np0),
      $     g(np0),dv(np0),sx(np0),sy(np0),sz(np0)
@@ -738,7 +735,7 @@ c     call tfmemcheckprint('tturn',1,.false.,irtc)
      $       cmp%value(p_W_MULT),
      $       cmp%value(ky_PHI_MULT),ph,cmp%value(p_VNOMINAL_MULT),
      $       cmp%value(ky_RADI_MULT),rtaper,autophi,
-     $       cmp%ivalue(1,p_NM_MULT),cmp%ivalue(2,p_NM_MULT),
+     $       cmp%ivalue(1,p_NM_MULT),cmp%ivalue(2,p_NM_MULT),nwak,
      $       n,kptbl)
       else
         call tmulti(np,x,px,y,py,z,g,dv,sx,sy,sz,

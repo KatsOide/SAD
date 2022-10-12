@@ -13,9 +13,7 @@
       integer*8 kav
       integer*4 ,intent(in):: lfno
       integer*4 ,intent(out):: next
-      integer*4 ii,i,id,iv,ivi,kv,next1,lw1,j,lv,
-     $     nl,irtc,lw,iii,lenw,isp0,itfuplevel,itfdownlevel,
-     $     ivj
+      integer*4 ii,i,id,iv,ivi,kv,next1,lw1,j,lv,nl,irtc,lw,iii,lenw,isp0,ivj
       real*8 v,getva,va,vx
       character*(*) ,intent(in):: word
       character*128 word1

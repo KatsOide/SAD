@@ -251,7 +251,7 @@ c      enddo
       implicit none
       type (sad_descriptor) ,intent(in):: k
       integer*4 ,intent(in):: nline
-      integer*4 l,itfdownlevel,irtc
+      integer*4 l,irtc
       character*(*) ,intent(in):: pr1
       prolog=pr1
       ncprolog=min(len_trim(pr1)+1,len(prolog))
@@ -346,6 +346,7 @@ c      enddo
 
       subroutine tfdefinition(isp1,kx,irtc)
       use tfstk
+      use repl, only:tfgetoption
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_descriptor) ki,k
@@ -357,7 +358,7 @@ c      enddo
       integer*4 ,intent(out):: irtc
       integer*4 i,isp00,isp0,kk,iop,ispv,icmpl
       icmpl=0
-      call tfgetoption('Compiled',ktastk(isp),kx,irtc)
+      call tfgetoption('Compiled',dtastk(isp),kx,irtc)
       if(irtc == -1)then
         ispv=isp
       elseif(irtc /= 0)then
@@ -785,6 +786,7 @@ c          enddo
       use tfstk
       use tfrbuf
       use readopt
+      use repl,only:tfgetoptionstk
       implicit none
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
@@ -793,9 +795,9 @@ c          enddo
       character*64 tfgetstr
       integer*4 nopt
       parameter (nopt=3)
-      integer*8 kaopt(nopt)
       character*14 optname(nopt)
-      data kaopt/nopt*0/
+      type (sad_descriptor) kaopt(nopt)
+      data kaopt%k/nopt*0/
       data optname/
      $     'WordSeparators',
      $     'ReadNewRecord ',
@@ -959,6 +961,7 @@ c          enddo
 
       subroutine tfreadbyte(isp1,lfn,kx,mode,irtc)
       use tfstk
+      use repl,only:tfgetoptionstk
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1,lfn,mode
@@ -972,9 +975,9 @@ c          enddo
       logical*4 opt,little
       integer*4 nopt
       parameter (nopt=1)
-      integer*8 kaopt(nopt)
       character*9 optname(nopt)
-      data kaopt/nopt*0/
+      type (sad_descriptor) kaopt(nopt)
+      data kaopt%k/nopt*0/
       type (sad_descriptor), save :: itflittle,itfbig
       data itflittle%k,itfbig%k /0,0/
       data optname/

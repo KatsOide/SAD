@@ -20,13 +20,14 @@
      $     dp2,pr2,dvn,dzn,dp1r,p1r,p1,h1,dp2r,p2r,av,dpx,fw,
      $     alx,dpepe,xi,pxi,fw0,
      $     asinh,t,ph,dh,dpr,dpy,dp,dp1,pr1,pe,vcorr
-      logical*4 fringe,autophi
+      logical*4 fringe,autophi,wak
       if(w .eq. 0.d0)then
         wi=0.d0
       else
         wi=1.d0/w
       endif
       include 'inc/TENT.inc'
+      wak=(lwake .or. twake).and. nwak/=0
       phic=(phi+dphi)*charge
       v=vc/amass*abs(charge)
       v1a=v1/amass*abs(charge)
@@ -84,6 +85,16 @@ c      pe=sqrt((he-1.d0)*(he+1.d0))
       sv=0.d0
       do 110 n=1,ndiv
         wsn=ws(n)
+        if(wak)then
+          if(n .eq. 1)then
+            fw=fw0*wsn*.5d0
+          else
+            fw=fw0*(wsn+ws(n-1)*.5d0)
+          endif
+          call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         0.d0,0.d0,0.d0,int(anbunch),
+     $         fw,nwak,p0,h0,n .eq. 1)
+        endif
         if(al .ne. 0.d0)then
           if(n .eq. 1)then
             alx=al*wsn*.5d0
@@ -150,13 +161,13 @@ c          dpr=a/(1.d0+sqrt(1.d0+a))
           py(i)=(py(i)*p1r+dpy)/p2r
           z(i)=-t*p2r*p0/h2-dzn
 20      continue
-        if(lwake .or. twake)then
-          fw=fw0*wsn
-          call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $         0.d0,0.d0,0.d0,int(anbunch),
-     $         fw,nwak,p0,h0,.false.)
-        endif
 110   continue
+      if(wak)then
+        fw=fw0*wsn*.5d0
+        call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       0.d0,0.d0,0.d0,int(anbunch),
+     $       fw,nwak,p0,h0,.false.)
+      endif
 c      write(*,'(a,1p5g15.7)')'tcav-2 ',y(1),py(1),z(1),g(1),dv(1)
       if(al .ne. 0.d0)then
         alx=al*ws(ndiv)*.5d0

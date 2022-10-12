@@ -3,6 +3,8 @@
       use ffs
       use ffs_pointer
       use ffs_fit
+      use calc,only:tffssetutwiss
+      use cellm,only:qcell1
       use ffs_wake
       use tffitcode
       use iso_c_binding
@@ -61,7 +63,7 @@
             ii=min(1,abs(i))
             twiss(ibound%lb,ii,:)=utwiss(:,i,itp1)
             call qcell1(ibound,ii,optstat(i),i .ne. 0,.true.,0)
-            call tffssetutwiss(i,nlat,ibound,beg,
+            call tffssetutwiss(i,ibound,beg,
      $           ibound%lb .eq. fbound%lb,ibound%le .eq. fbound%le)
           enddo
         elseif(ibound%lb .eq. fbound%le)then
@@ -310,14 +312,14 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
       use tffitcode
       use ffs_wake
       use eeval
+      use maloc,only:ktfmalocp
       use iso_c_binding
       implicit none
       type (sad_dlist) ,pointer :: kwll,kwtl
       type (sad_descriptor) kx
       type (ffs_bound) fbound
-      integer*8 kal,kalj,ktfmalocp,kat,katj
-      integer*4 irtc,isp0,isp1,lfno,n,m,lenw,l,itfdownlevel,isp2,
-     $     i,j,k
+      integer*8 kal,kalj,kat,katj
+      integer*4 irtc,isp0,isp1,lfno,n,m,lenw,l,isp2,i,j,k
       character*(MAXPNAME+10) name
       integer*8 ifname,ifwfunl,ifwfunt
       save ifname,ifwfunl,ifwfunt

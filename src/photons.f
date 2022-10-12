@@ -844,7 +844,7 @@ c        s=abs(dcmplx(sps(1,2),abs(dcmplx(sps(2,2),sps(3,2)))))
         return
         end
 
-        subroutine srequpol2(srot,sps,params,demit,sdamp,rm1,equpol)
+        subroutine srequpol2(srot,sps,params,demit,sdamp,equpol)
         use temw,only:ipdampx,nparams,ipdampz,ipemx,ipemz,ipnup,
      $       ipnx,ipnz,r
         use macmath
@@ -852,12 +852,10 @@ c        s=abs(dcmplx(sps(1,2),abs(dcmplx(sps(2,2),sps(3,2)))))
         implicit none
         real*8 , intent(in)::srot(3,9),demit(21),sps(3,3),
      $       params(nparams),sdamp
-        real*8 , intent(out)::equpol(3),rm1(3,3)
+        real*8 , intent(out)::equpol(3)
         real*8 drot(3,6),emit1(3),amu(3),damp(3),ssprd,
      $       d1,d2,d3,d4,d5,d6,e1,e2,e3,e4,e5,e6,
-     $       c1,c2,c3,c4,c5,c6,smu,
-     $       dex1,dex2,dey1,dey2,dez1,dez2,
-     $       rm(3,3),epol(3,3),b(3),rmd
+     $       c1,c2,c3,c4,c5,c6,smu,dex1,dex2,dey1,dey2,dez1,dez2,rmd
         smu=params(ipnup)*m_2pi
         drot=matmul(transpose(sps),matmul(srot(:,4:9),r))
         c1=drot(1,1)

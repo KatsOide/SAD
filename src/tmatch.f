@@ -1,7 +1,7 @@
       logical*4 function tmatch(name,patt)
       implicit none
       integer*4 lenw
-      character*(*) name,patt
+      character*(*),intent(inout):: name,patt
       logical*4 tmatchl
       tmatch=tmatchl(name,lenw(name),patt,lenw(patt))
       return
@@ -11,8 +11,9 @@
      $     result(lx)
       use tfstk
       implicit none
-      integer*4 lp,ln,notchar1,ia,regexp,ir,ia1,ia2
-      character*(*) name,patt
+      character*(*) ,intent(inout):: name,patt
+      integer*4 ,intent(in):: lp,ln
+      integer*4 notchar1,ia,regexp,ir,ia1,ia2
       character en,ep
       logical*4 tmatchl1,tmatchl3
       integer*8 iafwild
@@ -39,7 +40,6 @@
       if(ia .gt. 0)then
         lx=tmatchl(name,ln,patt(1:ia-1),ia-1) .or.
      $       tmatchl(name,ln,patt(ia+1:lp),lp-ia)
-        return
       else
         ia1=index(patt(1:lp),'{')
         if(ia1 .le. 0)then
@@ -55,6 +55,7 @@
           lx=tmatchl1(name,ln,patt,lp)
         endif
       endif
+c      write(*,'(a,l2,4a)')'tmatchl ',lx,' ',name(1:ln),' ',patt(1:lp)
       return
       end
 

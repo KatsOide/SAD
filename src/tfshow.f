@@ -45,7 +45,7 @@
         m=0
         do i=mf,nfam
           do k=1,m
-            if(residual(jshow(k)) .lt. residual(i))then
+            if(resle(residual(jshow(k)),residual(i)))then
               do l=m,k,-1
                 jshow(l+1)=jshow(l)
               enddo
@@ -117,7 +117,7 @@
         endif
         do m=1,nn
           buf0((m-1)*lf+1:m*lf)=
-     $         autofg(residual(jshow(m)),form)
+     $         autofg(res2r(residual(jshow(m))),form)
         enddo
         vout(1:lfs+3)=' Res.'
         if(lfs .gt. 6)then
@@ -142,25 +142,26 @@
         icalc1(1,i)=flv%icalc(1,i)
         icalc1(2,i)=flv%icalc(2,i)
         icalc1(3,i)=flv%icalc(3,i)
-        if(flv%icalc(3,i) .eq. mfittrx)then
-          trx=.true.
-        endif
-        if(flv%icalc(3,i) .eq. mfittry)then
-          try=.true.
+        if(icalc1(1,i) == 1 .and. icalc1(2,i) == nlat)then
+          if(icalc1(3,i) == mfitbmagx)then
+            trx=.true.
+          elseif(icalc1(3,i) == mfitbmagy)then
+            try=.true.
+          endif
         endif
 3000  continue
       if(.not. stab)then
         if(.not. trx)then
           ncc=ncc+1
-          icalc1(1,ncc)=nlat
+          icalc1(1,ncc)=1
           icalc1(2,ncc)=nlat
-          icalc1(3,ncc)=mfittrx
+          icalc1(3,ncc)=mfitbmagx
         endif
         if(.not. try)then
           ncc=ncc+1
-          icalc1(1,ncc)=nlat
+          icalc1(1,ncc)=1
           icalc1(2,ncc)=nlat
-          icalc1(3,ncc)=mfittry
+          icalc1(3,ncc)=mfitbmagy
         endif
       endif
       do i=nqcol1+1,nqcol
@@ -196,7 +197,7 @@
           rlist(kax2+i-mf+1)=dble(merge(iuid(i),kfam(i),inicond))
           kax3i=ktavaloc(0,3)
           klist(kax3+i-mf+1)=ktflist+kax3i
-          rlist(kax3i+1)=residual(i)
+          rlist(kax3i+1)=res2r(residual(i))
           rlist(kax3i+2)=merge(1.d0,0.d0,optstat(i)%stabx)
           rlist(kax3i+3)=merge(1.d0,0.d0,optstat(i)%staby)
         enddo

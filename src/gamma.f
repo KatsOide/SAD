@@ -3971,13 +3971,13 @@ c            write(*,'(a,i5,1p10g12.4)')'hg1-2 ',s,a,c,x,u,f1
         return
       endif
       allocate(a(0:na))
-      call tfl2cm(kla,a(1:na),na,0,.true.,irtc)
+      call tfl2cmf(kla,a(1:na),na,irtc)
       if(irtc /= 0)then
         return
       endif
       a(0)=merge(cone,czero,veca)
       allocate(b(0:nb))
-      call tfl2cm(klb,b(1:nb),nb,0,.true.,irtc)
+      call tfl2cmf(klb,b(1:nb),nb,irtc)
       if(irtc /= 0)then
         return
       endif

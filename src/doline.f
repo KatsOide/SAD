@@ -5,6 +5,7 @@
       use macttyp
       use macfile
       use macmisc
+      use ffsa,only:tclrline
       use tfmem, only:tfree
       implicit none
       character*(MAXSTR) token

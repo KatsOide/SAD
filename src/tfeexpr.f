@@ -17,13 +17,13 @@
 c      call tfdebugprint(k1,'cmplxl',1)
 c      call tfdebugprint(k2,'and:',1)
 c      write(*,*)'with ',iopc1
-      if(iopc1 .eq. mtfnot)then
+      if(iopc1 == mtfnot)then
         if(ktfrealq(k2,v2))then
-          kx%k=merge(ktftrue,ktffalse,v2 .ne. 0.d0)
+          kx%k=merge(ktftrue,ktffalse,v2 /= 0.d0)
         elseif(tfreallistq(k2,klr2) .and. klr2%nl .gt. 0)then
           kx=kxavaloc(-1,klr2%nl,klr)
           klr%rbody(1:klr2%nl)=merge(1.d0,0.d0,
-     $             klr2%rbody(1:klr2%nl) .eq. 0.d0)
+     $             klr2%rbody(1:klr2%nl) == 0.d0)
         else
           kx=tfeexpr(k1,k2,iopc1)
         endif
@@ -32,7 +32,7 @@ c      write(*,*)'with ',iopc1
       if(ktfrealq(k1,v1))then
         if(tflistq(k2,kl2))then
           m2=kl2%nl
-          if(m2 .eq. 0)then
+          if(m2 == 0)then
             kx=dxnulll
             return
           endif
@@ -53,13 +53,13 @@ c              write(*,*)'tfecmplx-rl*2 '
             case (mtfrevpower)
               ir=int8(v1)
               klr%rbody(1:m2)=merge(merge(1.d0/klr2%rbody(1:m2),
-     $             klr2%rbody(1:m2)**ir,ir .eq. -1),
-     $             klr2%rbody(1:m2)**v1,dble(ir) .eq. v1)
+     $             klr2%rbody(1:m2)**ir,ir == -1),
+     $             klr2%rbody(1:m2)**v1,dble(ir) == v1)
             case (mtfpower)
               do concurrent (i=1:m2)
                 ir=int8(klr2%rbody(i))
-                klr%rbody(i)=merge(merge(1.d0/v1,v1**ir,ir .eq. -1),
-     $               v1**klr2%rbody(i),dble(ir) .eq. klr2%rbody(i))
+                klr%rbody(i)=merge(merge(1.d0/v1,v1**ir,ir == -1),
+     $               v1**klr2%rbody(i),dble(ir) == klr2%rbody(i))
               enddo
             case (mtfgreater)
               klr%rbody(1:m2)=merge(1.d0,0.d0,v1>klr2%rbody(1:m2))
@@ -71,10 +71,10 @@ c              write(*,*)'tfecmplx-rl*2 '
               klr%rbody(1:m2)=merge(1.d0,0.d0,v1<=klr2%rbody(1:m2))
             case (mtfand)
               klr%rbody(1:m2)=merge(1.d0,0.d0,
-     $             v1 .ne. 0.d0 .and. klr2%rbody(1:m2) .ne. 0.d0)
+     $             v1 /= 0.d0 .and. klr2%rbody(1:m2) /= 0.d0)
             case (mtfor)
               klr%rbody(1:m2)=merge(1.d0,0.d0,
-     $             v1 .ne. 0.d0 .or. klr2%rbody(1:m2) .ne. 0.d0)
+     $             v1 /= 0.d0 .or. klr2%rbody(1:m2) /= 0.d0)
             case (mtfequal)
               klr%rbody(1:m2)=merge(1.d0,0.d0,v1 == klr2%rbody(1:m2))
             case (mtfunequal)
@@ -121,8 +121,8 @@ c              write(*,*)'tfecmplx-rl*2 '
               go to 9000
             case (mtfrevpower)
               ix1=int8(v1)
-              if(dble(ix1) .eq. v1)then
-                if(ix1 .eq. -1)then
+              if(dble(ix1) == v1)then
+                if(ix1 == -1)then
                   do i=1,m2
                     k2i=kl2%dbody(i)
                     if(tfnumberq(k2i,cx2))then
@@ -161,10 +161,10 @@ c              write(*,*)'tfecmplx-rl*2 '
               do i=1,m2
                 k2i=kl2%dbody(i)
                 if(tfnumberq(k2i,cx2))then
-                  if(imag(cx2) .eq. 0.d0)then
+                  if(imag(cx2) == 0.d0)then
                     ix2=int8(dble(cx2))
-                    cx=merge(merge(1.d0/v1,v1**ix2,ix2 .eq. -1),
-     $                   v1**dble(cx2),ix2 .eq. dble(cx2))
+                    cx=merge(merge(1.d0/v1,v1**ix2,ix2 == -1),
+     $                   v1**dble(cx2),ix2 == dble(cx2))
                   else
                     cx=v1**cx2
                   endif
@@ -226,12 +226,12 @@ c              write(*,*)'tfecmplx-rl*2 '
               enddo
               go to 9000
             case (mtfand)
-              if(v1 .eq. 0.d0)then
+              if(v1 == 0.d0)then
                 klx%rbody(1:m2)=0.d0
               else
                 do i=1,m2
                   if(ktfrealq(k2i,v2i))then
-                    klx%rbody(i)=merge(1.d0,0.d0,v2i .ne. 0.d0)
+                    klx%rbody(i)=merge(1.d0,0.d0,v2i /= 0.d0)
                   else
                     klx%dbody(i)=tfecmplx1(k1,k2i,iopc1,c,d)
                   endif
@@ -239,13 +239,13 @@ c              write(*,*)'tfecmplx-rl*2 '
               endif
               go to 9000
             case (mtfor)
-              if(v1 .ne. 0.d0)then
+              if(v1 /= 0.d0)then
                 klx%rbody(1:m2)=1.d0
               else
                 do i=1,m2
                   k2i=kl2%dbody(i)
                   if(ktfrealq(k2i,v2i))then
-                    klx%rbody(i)=merge(1.d0,0.d0,v2i .ne. 0.d0)
+                    klx%rbody(i)=merge(1.d0,0.d0,v2i /= 0.d0)
                   else
                     klx%dbody(i)=tfecmplx1(k1,k2i,iopc1,c,d)
                   endif
@@ -326,7 +326,7 @@ c              write(*,*)'tfecmplx-rl*2 '
             kx=tfecmplxl(k2,k1,mtfrevpower+mtfpower-iopc1)
           case(mtfcomplex)
             kxi=tfeval1(dfromr(0.d0),k2,mtfcomplex,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               call tfreseterror
               kx=tfeexpr(k1,k2,mtfcomplex)
             else
@@ -340,7 +340,7 @@ c              write(*,*)'tfecmplx-rl*2 '
           return
         endif
         m1=kl1%nl
-        if(m1 .ne. kl2%nl)then
+        if(m1 /= kl2%nl)then
           kx=tfeexpr(k1,k2,iopc1)
           return
         endif
@@ -356,16 +356,16 @@ c              write(*,*)'tfecmplx-rl*2 '
             do concurrent (i=1:m1)
               ir=int8(klr1%rbody(i))
               klr%rbody(i)=merge(merge(1.d0/klr2%rbody(i),
-     $             klr2%rbody(i)**ir,ir .eq. -1),
-     $             klr2%rbody(i)**klr1%rbody(i),ir .eq. klr1%rbody(i))
+     $             klr2%rbody(i)**ir,ir == -1),
+     $             klr2%rbody(i)**klr1%rbody(i),ir == klr1%rbody(i))
             enddo
           case (mtfpower)
             do concurrent (i=1:m1)
               ir=int8(klr2%rbody(i))
               klr%rbody(i)=merge(merge(1.d0/klr1%rbody(i),
-     $             klr1%rbody(i)**ir,ir .eq. -1),
+     $             klr1%rbody(i)**ir,ir == -1),
      $             klr1%rbody(i)**klr2%rbody(i),
-     $             ir .eq. klr2%rbody(i))
+     $             ir == klr2%rbody(i))
             enddo
           case (mtfcomplex)
             d=.false.
@@ -460,10 +460,10 @@ c              write(*,*)'tfecmplx-rl*2 '
               k1i=kl1%dbody(i)
               k2i=kl2%dbody(i)
               if(tfnumberq(k1i,cx1) .and. tfnumberq(k2i,cx2))then
-                if(imag(cx1) .eq. 0.d0)then
+                if(imag(cx1) == 0.d0)then
                   ix1=int8(cx1)
-                  cx=merge(merge(1.d0/cx2,cx2**ix1,ix1 .eq. -1),
-     $                 cx2**dble(cx1),dble(ix1) .eq. dble(cx1))
+                  cx=merge(merge(1.d0/cx2,cx2**ix1,ix1 == -1),
+     $                 cx2**dble(cx1),dble(ix1) == dble(cx1))
                 else
                   cx=cx2**cx1
                 endif
@@ -645,21 +645,19 @@ c              write(*,*)'tfecmplx-rl*2 '
       integer*4 m,i,isp0
       if(tfnumberq(k))then
         if(ktfrealq(k))then
-          kx%k=merge(i00,k%k,mode .eq. 2)
+          kx=merge(dxzero,k,mode == 2)
         else
           call loc_sad(ktfaddrd(k),kl)
-          if(mode .eq. 1)then
-            kx=kl%dbody(1)
-          elseif(mode .eq. 2)then
-            kx=kl%dbody(2)
-          else
+          if(mode ==3)then
             kx=kxcalocv(-1,kl%rbody(1),-kl%rbody(2))
+          else
+            kx=kl%dbody(mode)
           endif
         endif
         irtc=0
         return
       elseif(tfreallistq(k,klr))then
-        if(mode .eq. 1 .or. mode .eq. 3)then
+        if(mode == 1 .or. mode == 3)then
           kx=k
         else
           kx=kxraaloc(-1,klr%nl)
@@ -672,7 +670,7 @@ c              write(*,*)'tfecmplx-rl*2 '
         do i=1,m
           isp=isp+1
           dtastk(isp)=tfcmplxf(kl%dbody(i),mode,iaf,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             dtastK(isp)=kl%dbody(i)
             irtc=0
           endif
@@ -704,44 +702,44 @@ c              write(*,*)'tfecmplx-rl*2 '
         x1=v1+v
       case (mtftimes)
         x1=v1*v
-c        if(abs(v) .eq. dinfinity .or. abs(v1) .eq. dinfinity)then
+c        if(abs(v) == dinfinity .or. abs(v1) == dinfinity)then
 c          x1=merge(dnotanumber,merge(dinfinity,-dinfinity,
 c     $         v .gt. 0.d0 .and. v1 .gt. 0.d0 .or.
 c     $         v .lt. 0.d0 .and. v1 .lt. 0.d0),
-c     $         v .eq. 0.d0 .or. v1 .eq. 0.d0)
+c     $         v == 0.d0 .or. v1 == 0.d0)
 c        else
 c          x1=v1*v
 c        endif
       case (mtfpower)
-        if(v .eq. -1.d0)then
-          x1=merge(0.d0,1.d0/v1,abs(v1) .eq. dinfinity)
-        elseif(v .eq. 2.d0)then
+        if(v == -1.d0)then
+          x1=merge(0.d0,1.d0/v1,abs(v1) == dinfinity)
+        elseif(v == 2.d0)then
           x1=v1**2
-        elseif(v .eq. .5d0)then
+        elseif(v == .5d0)then
           x1=sqrt(v1)
-        elseif(v .eq. 0.d0 .and. redmath%value%k .ne. 0)then
+        elseif(v == 0.d0 .and. redmath%value%k /= 0)then
           x1=1.d0
         else
           ix=int(v)
-          x1=merge(v1**ix,v1**v,ix .eq. v)
+          x1=merge(v1**ix,v1**v,ix == v)
         endif
       case (mtfrevpower)
-        if(v1 .eq. -1.d0)then
+        if(v1 == -1.d0)then
           x1=1.d0/v
-        elseif(v1 .eq. 2.d0)then
+        elseif(v1 == 2.d0)then
           x1=v**2
-        elseif(v1 .eq. .5d0)then
+        elseif(v1 == .5d0)then
           x1=sqrt(v)
-        elseif(v1 .eq. 0.d0 .and. redmath%value%k .ne. 0)then
+        elseif(v1 == 0.d0 .and. redmath%value%k /= 0)then
           x1=1.d0
         else
           ix=int(v1)
-          x1=merge(v**ix,v**v1,ix .eq. v1)
+          x1=merge(v**ix,v**v1,ix == v1)
         endif
       case (mtfequal)
-        x1=merge(1.d0,0.d0,v1 .eq. v)
+        x1=merge(1.d0,0.d0,v1 == v)
       case (mtfunequal)
-        x1=merge(1.d0,0.d0,v1 .ne. v)
+        x1=merge(1.d0,0.d0,v1 /= v)
       case (mtfgreater)
         x1=merge(1.d0,0.d0,v1 > v)
       case (mtfless)
@@ -751,11 +749,11 @@ c        endif
       case (mtfleq)
         x1=merge(1.d0,0.d0,v1 <= v)
       case (mtfnot)
-        x1=merge(1.d0,0.d0,v .eq. 0.d0)
+        x1=merge(1.d0,0.d0,v == 0.d0)
       case (mtfand)
-        x1=merge(1.d0,0.d0,v1 .ne. 0.d0 .and. v .ne. 0.d0)
+        x1=merge(1.d0,0.d0,v1 /= 0.d0 .and. v /= 0.d0)
       case (mtfor)
-        x1=merge(1.d0,0.d0,v1 .ne. 0.d0 .or. v .ne. 0.d0)
+        x1=merge(1.d0,0.d0,v1 /= 0.d0 .or. v /= 0.d0)
       case default
         write(*,*)'invop: ',iopc1
         irtc=itfmessage(999,'General::invop',' ')

@@ -2,6 +2,7 @@
       use tfstk
       use ffs
       use tffitcode
+      use ffsa,only:tfffs
       use readbuf, only:trbopenmap
       use tfrbuf
       use tfcsi
@@ -11,8 +12,7 @@
       type (sad_string), pointer :: str
       real*8 vx
       integer*4 , intent(in)::lfnb
-      integer*4 i,lfni1,nc,next,itype,lfno1,isp0,irtc,
-     $     itfdownlevel,itfpeeko
+      integer*4 i,lfni1,nc,next,itype,lfno1,isp0,irtc,itfpeeko
       integer*4 ,save:: lfni0=0
       logical*4 ,intent(out)::init,exist
       logical*4 termin,rew,app,abbrev,clo,ret

@@ -18,6 +18,7 @@
      $       kxmakestring(string,l,del,ii)
         use tfstk
         use strbuf
+        use convstr,only:Unicode2UTF8
         use ISO_C_BINDING
         implicit none
         type (sad_strbuf), pointer :: strb
@@ -30,7 +31,6 @@
         character*(*) ,intent(in):: string
         character ,intent(in):: del
         character ch
-        integer(4), external :: Unicode2UTF8
         call getstringbuf(strb,l,.true.)
         i=1
         do while(i .le. l)

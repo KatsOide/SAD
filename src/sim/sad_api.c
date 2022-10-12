@@ -167,7 +167,7 @@ integer8 ktadaloc(integer4 mode, integer4 nd) {
 
 integer8 ktfmaloc(integer8 k, integer4 *n, integer4 *m,
 		  logical4 vec, logical4 trans, integer4 *irtc) {
-  return ktfmaloc_(&k, n, m, &vec, &trans, irtc);
+  return __maloc_MOD_ktfmaloc(&k, n, m, &vec, &trans, irtc);
 }
 
 integer8 ktfmakelist(integer4 isp1) {
@@ -180,7 +180,7 @@ void tfsetlist(integer8 kx, integer8 iax, integer4 i) {
 
 void tfmakerulestk(integer8 ias, integer8 kx) {
   /*  fprintf(stderr,"mkrs_c: %d %f\n",kx); */
-  tfmakerulestk_(&ias,&kx);
+  __tfstk_MOD_tfmakerulestk_dd(&ias,&kx);
 }
 
 void tfevals(const char *buf,
@@ -203,11 +203,11 @@ void tfdeval(integer4 isp1, integer8 iad,
 }
 
 void tflocal(integer8 kx) {
-  tflocal_(&kx);
+  __tfstk_MOD_tflocalk(&kx);
 }
 
 void tflocal1(integer8 kx) {
-  tflocal1_(&kx);
+  __tfstk_MOD_tflocal1k(&kx);
 }
 
 /*

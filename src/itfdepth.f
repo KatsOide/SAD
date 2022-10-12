@@ -1,5 +1,51 @@
+      module level
+      use tfstk
+
+      contains
+      subroutine tflevelspec(k,n1,n2,irtc)
+      implicit none
+      type (sad_rlist), pointer :: kl
+      type (sad_descriptor) ,intent(in):: k
+      integer*4 ,intent(out):: n1,n2,irtc
+      integer*4 ivl,maxlevel,m,itfmessage
+      parameter (maxlevel=2**30)
+      real*8 vlmax,v
+      parameter (vlmax=1.d8)
+      if(ktfrealq(k,v))then
+        ivl=int(max(-vlmax,min(vlmax,v)))
+        n1=1
+        n2=ivl
+      elseif(.not. tfreallistq(k%k,kl))then
+        n1=0
+        n2=0
+        irtc=itfmessage(9,'General::wrongtype',
+     $       '"List of numbers for levelspec"')
+        return
+      else
+        m=kl%nl
+        if(m == 1)then
+          n1=int(max(-vlmax,min(vlmax,kl%rbody(1))))
+          n2=n1
+        elseif(m == 2)then
+          n1=int(max(-vlmax,min(vlmax,kl%rbody(1))))
+          n2=int(max(-vlmax,min(vlmax,kl%rbody(2))))
+        else
+          n1=0
+          n2=0
+          irtc=itfmessage(9,'General::wrongval',
+     $         '"n, {n}, or {n1, n2}","as level spec"')
+          return
+        endif
+      endif
+      irtc=0
+      return
+      end
+
+      end module
+
       recursive integer*4 function itfdepth(k) result(id)
       use tfstk
+      use level, only:tflevelspec
       implicit none
       type (sad_descriptor) ,intent(in):: k
       type (sad_dlist), pointer ::kl
@@ -20,12 +66,45 @@
       endif
       return
       end
-      
+
+      subroutine tflevel(k,kl,kx,irtc)
+      use tfstk
+      use level, only:tflevelspec
+      implicit none
+      type (sad_descriptor) ,intent(in):: k,kl
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) tflevelstk
+      integer*4 ,intent(out):: irtc
+      integer*4 n1,n2,isp1
+      real*8 rind(1)
+      call tflevelspec(kl,n1,n2,irtc)
+      if(irtc .ne. 0)then
+        return
+      endif
+      if(n2 >= 0 .and. n1 .gt. n2 .or.
+     $     n1 < 0 .and. n1 .gt. n2)then
+        kx=dxnulll
+        return
+      endif
+c      write(*,*)'tflevel ',n1,n2
+      isp1=isp
+      kx=tflevelstk(k,sad_descr(ktfoper+mtfnull),n1,n2,
+     $     0,0,rind,1,mstk,irtc)
+      if(isp .le. isp1)then
+        kx=dxnulll
+      else
+        kx=kxmakelist(isp1)
+      endif
+      isp=isp1
+      irtc=0
+      return
+      end
+
       recursive function tflevelstk(k,kf,
      $     n1,n2,mode,ind,rind,ihead,ispmax,irtc)
      $     result(kx)
       use tfstk
-      use efun
+      use pmat,only:itfpmatc
       implicit none
       type (sad_descriptor) kx
       type (sad_descriptor) ,intent(in):: k,kf
@@ -33,8 +112,7 @@
       type (sad_dlist), pointer :: klx,kl
       integer*4 ,intent(in):: mode,n1,n2,ispmax,ihead
       integer*4 ,intent(out):: irtc
-      integer*4 i,isp1,m,idi,ispf,itfdepth,id,ind,ind1,
-     $     itfpmatc
+      integer*4 i,isp1,m,idi,ispf,itfdepth,id,ind,ind1
       real*8 ,intent(out)::rind(ind)
       logical*4 stack,map,indf
       integer*4 ,parameter::maxlevel=100000000
@@ -227,7 +305,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
           isp=isp+1
           dtastk(isp)=kx
           if(match(mode))then
-            if(itfpmatc(kx%k,kf) >= 0)then
+            if(itfpmatc(kx,kf) >= 0)then
               if(mode == 5)then
                 if(ind == 0)then
                   dtastk(isp)=dxnulll
@@ -289,77 +367,5 @@ c            dtastk(isp)=merge(dxnulll,kxm2l(rind,0,ind,1,.false.),ind == 0)
       elseif(mode == 1)then
         isp=ispf-1  
       endif
-      return
-      end
-
-      subroutine tflevel(k,kl,kx,irtc)
-      use tfstk
-      implicit none
-      type (sad_descriptor) ,intent(in):: k,kl
-      type (sad_descriptor) ,intent(out):: kx
-      type (sad_descriptor) tflevelstk
-      integer*4 ,intent(out):: irtc
-      integer*4 n1,n2,isp1
-      real*8 rind(1)
-      call tflevelspec(kl,n1,n2,irtc)
-      if(irtc .ne. 0)then
-        return
-      endif
-      if(n2 >= 0 .and. n1 .gt. n2 .or.
-     $     n1 < 0 .and. n1 .gt. n2)then
-        kx=dxnulll
-        return
-      endif
-c      write(*,*)'tflevel ',n1,n2
-      isp1=isp
-      kx=tflevelstk(k,sad_descr(ktfoper+mtfnull),n1,n2,
-     $     0,0,rind,1,mstk,irtc)
-      if(isp .le. isp1)then
-        kx=dxnulll
-      else
-        kx=kxmakelist(isp1)
-      endif
-      isp=isp1
-      irtc=0
-      return
-      end
-
-      subroutine tflevelspec(k,n1,n2,irtc)
-      use tfstk
-      implicit none
-      type (sad_rlist), pointer :: kl
-      type (sad_descriptor) ,intent(in):: k
-      integer*4 ,intent(out):: n1,n2,irtc
-      integer*4 ivl,maxlevel,m,itfmessage
-      parameter (maxlevel=2**30)
-      real*8 vlmax,v
-      parameter (vlmax=1.d8)
-      if(ktfrealq(k,v))then
-        ivl=int(max(-vlmax,min(vlmax,v)))
-        n1=1
-        n2=ivl
-      elseif(.not. tfreallistq(k%k,kl))then
-        n1=0
-        n2=0
-        irtc=itfmessage(9,'General::wrongtype',
-     $       '"List of numbers for levelspec"')
-        return
-      else
-        m=kl%nl
-        if(m == 1)then
-          n1=int(max(-vlmax,min(vlmax,kl%rbody(1))))
-          n2=n1
-        elseif(m == 2)then
-          n1=int(max(-vlmax,min(vlmax,kl%rbody(1))))
-          n2=int(max(-vlmax,min(vlmax,kl%rbody(2))))
-        else
-          n1=0
-          n2=0
-          irtc=itfmessage(9,'General::wrongval',
-     $         '"n, {n}, or {n1, n2}","as level spec"')
-          return
-        endif
-      endif
-      irtc=0
       return
       end

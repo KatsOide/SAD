@@ -1,153 +1,8 @@
-      character*(*) function tfconvstr(k,nc,form)
+      module convstr
       use tfstk
-      implicit none
-      type (sad_descriptor) k
-      integer*4 nc
-      character*(*) form
-      character*(len(tfconvstr)) buff
-      call tfconvstrs(buff,k,nc,.false.,form)
-      nc=min(nc,len(tfconvstr))
-      tfconvstr=buff(1:nc)
-      return
-      end
 
-      subroutine tfconvstrs(buff,k,nc,str,form)
-      use tfstk
-      use strbuf
-      use eeval
-      implicit none
-      type (sad_descriptor) k
-      type (sad_strbuf), pointer :: strb
-      integer*4 nc,irtc,l,isp0
-      logical*4 str
-      character*(*) form,buff
-      l=len(buff)
-      isp0=isp
-      call getstringbuf(strb,-l,.true.)
-      call tfconvstrb(strb,k,nc,str,.false.,-1,form,irtc)
-      if(irtc /= 0)then
-        if(irtc .gt. 0 .and. ierrorprint /= 0)then
-          call tfreseterror
-        endif
-        nc=l+1
-      endif
-      if(nc .gt. l)then
-        nc=min(strb%nch,l)
-        buff(1:nc-6)=strb%str(1:nc-6)
-        buff(nc-5:nc)=', etc.'
-      else
-        buff(1:nc)=strb%str(1:nc)
-      endif
-      call tfreestringbuf(strb)
-      isp=isp0
-      return
-      end
-
-      subroutine tfstringreplace(isp1,kx,irtc)
-      use tfstk
-      use strbuf
-      use eeval
-      implicit none
-      type (sad_descriptor) kx,kr
-      type (sad_strbuf), pointer :: strb
-      type (sad_string), pointer :: str,strs,stri
-      integer*4 isp1,irtc,isp0,i,ir,ls,isp2,
-     $     j,imin,ii,nr,indexb,itfmessage
-      logical*4 full
-      if(isp /= isp1+2)then
-        irtc=itfmessage(9,'General::narg','"2"')
-        return
-      endif
-      if(.not. ktfstringq(dtastk(isp1+1),str))then
-        irtc=itfmessage(9,'General::wrongtype','"Character-string"')
-        return
-      endif
-      isp0=isp
-      call tfreplace(ktfoper+mtfnull,dtastk(isp1+2),kx,
-     $     .false.,.false.,.true.,irtc)
-      if(irtc /= 0)then
-        return
-      endif
-      if(isp == isp0)then
-        kx=dtastk(isp1+1)
-        irtc=0
-        return
-      endif
-      do i=isp0+1,isp,2
-        if(.not. ktfstringq(dtastk(i)))then
-          irtc=itfmessage(9,'General::wrongtype',
-     $         '"String -> String"')
-          return
-        endif
-      enddo
-      nullify(strb)
-      ir=1
-      ls=str%nch
-      isp2=isp
- 1    j=0
-      imin=ls+1
-      do i=isp0+1,isp2,2
-        call descr_sad(dtastk(i),stri)
-        ii=indexb(str%str,ls,stri%str,stri%nch,ir)
-        if(ii .gt. 0 .and. ii .lt. imin)then
-          imin=ii
-          j=i
-          itastk2(1,i)=stri%nch
-        endif
-      enddo
-      if(j /= 0)then
-        if(.not. associated(strb))then
-          call getstringbuf(strb,0,.true.)
-        endif
-        if(imin == ir+1)then
-          call putstringbufb1(strb,str%str(ir:ir))
-        elseif(imin .gt. ir)then
-          call putstringbufb(strb,str%str(ir:imin-1),imin-ir,full)
-        endif
-        if(.not. ktfstringq(dtastk(j+1)))then
-          kr=tfeevalref(dtastk(j+1),irtc)
-          if(irtc /= 0)then
-            go to 9000
-          endif
-          if(.not. ktfstringq(kr))then
-            irtc=itfmessage(9,'General::wrongtype',
-     $           '"List of (String -> String)"')
-            go to 9000
-          endif
-          dtastk(j+1)=kr
-        endif
-        call descr_sad(dtastk(j+1),strs)
-        nr=strs%nch
-        if(nr == 1)then
-          call putstringbufb1(strb,strs%str)
-        elseif(nr .gt. 0)then
-          call putstringbufb(strb,strs%str,nr,full)
-        endif
-        ir=imin+itastk2(1,j)
-        if(ir <= ls)then
-          go to 1
-        endif
-      endif
-      if(.not. associated(strb))then
-        kx=dtastk(isp1+1)
-      else
-        if(ls == ir)then
-          call putstringbufb1(strb,str%str(ir:ir))
-        elseif(ls .gt. ir)then
-          call putstringbufb(strb,str%str(ir:ls),ls-ir+1,full)
-        endif
-        kx=kxstringbuftostring(strb)
-      endif
-      isp=isp0
-      irtc=0
-      return
- 9000 call tfreestringbuf(strb)
-      isp=isp0
-      return
-      end
-
+      contains
       subroutine tfstringfill(isp1,kx,irtc)
-      use tfstk
       use strbuf
       implicit none
       type (sad_descriptor) kx
@@ -207,7 +62,6 @@
       end
 
       subroutine tfstringtrim(isp1,kx,irtc)
-      use tfstk
       use strbuf
       implicit none
       type (sad_descriptor) kx
@@ -243,66 +97,7 @@
       return
       end
 
-      subroutine tfstringjoin(isp1,kx,irtc)
-      use tfstk
-      use strbuf
-      implicit none
-      type (sad_descriptor) kx
-      type (sad_string), pointer :: ksi,ksx
-      type (sad_strbuf), pointer :: strb
-      integer*4 isp1,irtc,i,nc1,l,is,isp0
-      if(isp1+1 == isp)then
-        call tftostring(isp1,kx,.false.,irtc)
-        return
-      elseif(isp1 == isp)then
-        kx=dxnulls
-        irtc=0
-        return
-      endif
-      l=0
-      do i=isp1+1,isp
-        if(ktfstringq(dtastk(i),ksi))then
-          l=l+ksi%nch
-        else
-          l=0
-          go to 1
-        endif
-      enddo
-      if(l == 0)then
-        kx=dxnulls
-      else
-        kx=kxscopy(ktfaddr(ktastk(isp1+1)),l,ksx)
-        call loc_sad(ktfaddr(ktastk(isp1+1)),ksi)
-        is=ksi%nch
-        do i=isp1+2,isp
-          call loc_sad(ktfaddr(ktastk(i)),ksi)
-          if(ksi%nch /= 0)then
-            ksx%str(is+1:is+ksi%nch)=ksi%str(1:ksi%nch)
-            is=is+ksi%nch
-          endif
-        enddo
-      endif
-      irtc=0
-      return
- 1    isp0=isp
-      call getstringbuf(strb,l,.true.)
-      do i=isp1+1,isp0
-        call tfconvstrb(strb,dtastk(i),
-     $       nc1,.false.,.false.,-1,'*',irtc)
-        if(irtc /= 0)then
-          go to 9000
-        endif
-      enddo
-      kx=kxstringbuftostring(strb)
-      isp=isp0
-      return
- 9000 call tfreestringbuf(strb)
-      isp=isp0
-      return
-      end
-
       subroutine tfbaseform(isp1,kx,irtc)
-      use tfstk
       use strbuf
       implicit none
       type (sad_descriptor) kx
@@ -341,107 +136,7 @@
       isp=isp0
       return
       end
-
-      subroutine tftostring(isp1,kx,symb,irtc)
-      use tfstk
-      use tfcode
-      use strbuf
-      use eeval
-      use iso_c_binding
-      implicit none
-      type (sad_descriptor) k,kx,k1
-      type (sad_namtbl), pointer :: loc
-      type (sad_strbuf), pointer :: strb
-      type (sad_symbol), pointer :: sym
-      type (sad_string), pointer :: str
-      integer*8 ka,ic,icp
-      integer*4 isp1,irtc,nc1,narg,isp0,itfmessage,i
-      character*32 form
-      logical*4 infm,symb,hold,gens
-      type (sad_descriptor), save :: inputf,iholdf,igenf,istandf
-      data inputf%k /0/
-c      include 'DEBUG.inc'
-      infm=.false.
-      hold=symb
-      gens=.false.
-      narg=isp-isp1
-      form='*'
-      if(symb .and. narg /= 1)then
-        irtc=itfmessage(9,'General::narg','"1"')
-        return
-      else
-        if(narg .gt. 1)then
-          if(inputf%k == 0)then
-            inputf =kxsymbolz('InputForm',9)
-            iholdf =kxsymbolz('HoldForm',8)
-            igenf  =kxsymbolz('GenericSymbolForm',17)
-            istandf=kxsymbolz('StandardForm',12)
-          endif
-          do i=isp,isp1+2,-1
-            if(ktflistq(dtastk(i)))then
-              call tfgetoption('FormatType',dtastk(i),k1,irtc)
-            else
-              k1=dtastk(i)
-            endif
-            if(ktfsymbolq(k1))then
-              if(tfsamesymbolq(k1,inputf))then
-                infm=.true.
-              elseif(tfsamesymbolq(k1,iholdf))then
-                hold=.true.
-              elseif(tfsamesymbolq(k1,igenf))then
-                gens=.true.
-              elseif(tfsamesymbolq(k1,istandf))then
-                form=' '
-              endif
-            elseif(ktfstringq(k1,str))then
-              form=str%str(1:str%nch)
-            endif
-          enddo
-        endif
-      endif
-      if(hold)then
-        k=dtastk(isp1+1)
-        irtc=0
-      else
-        k=tfeevalref(dtastk(isp1+1),irtc)
-        if(irtc /= 0)then
-          return
-        endif
-      endif
-      if(ktfsymbolq(k,sym))then
-        if(gens .or. sym%gen <= 0
-     $       .or. sym%gen == maxgeneration)then
-          call sym_namtbl(sym,loc)
-          ic=loc%cont
-          do icp=itfcontextpath,
-     $         itfcontextpath+ilist(2,itfcontextpath-1)-1
-            if(klist(icp) == ic)then
-              kx=sad_descr(loc%str)
-              return
-            endif
-          enddo
-        endif
-      elseif(ktfoperq(k,ka))then
-        call loc_namtbl(klist(klist(ifunbase+ka)),loc)
-        kx=loc%str%alloc
-        return
-      elseif(symb)then
-        irtc=itfmessage(9,'General::wrongtype','"Symbol"')
-        return
-      elseif(ktfstringq(k) .and. .not. infm)then
-        kx=k
-        return
-      endif
-      isp0=isp
-      call getstringbuf(strb,0,.true.)
-      call tfconvstrb(strb,k,nc1,infm,gens,-1,form,irtc)
-      kx=kxstringbuftostring(strb)
-      isp=isp0
-      return
-      end
-
       subroutine tftoinputstring(isp1,kx,irtc)
-      use tfstk
       use tfcode
       use strbuf
       use iso_c_binding
@@ -486,7 +181,6 @@ c      include 'DEBUG.inc'
       end
 
       subroutine tffromcharactercode(isp1,kx,irtc)
-      use tfstk
       use strbuf
       implicit none
       type (sad_descriptor) kx
@@ -516,7 +210,6 @@ c      include 'DEBUG.inc'
       end
 
       subroutine tftocharactercode(isp1,kx,irtc)
-      use tfstk
       use strbuf
       implicit none
       type (sad_descriptor) kx
@@ -544,7 +237,6 @@ c      include 'DEBUG.inc'
       end
 
       subroutine tfstringmatchq(isp1,kx,irtc)
-      use tfstk
       use strbuf
       implicit none
       type (sad_descriptor) kx
@@ -575,7 +267,6 @@ c      include 'DEBUG.inc'
       end
 
       subroutine tfstringposition(isp1,kx,irtc)
-      use tfstk
       use strbuf
       implicit none
       type (sad_descriptor) kx,ki
@@ -671,7 +362,6 @@ c      include 'DEBUG.inc'
       end
 
       subroutine tftouppercase(isp1,kx,mode,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) kx
       type (sad_string), pointer :: str,strx
@@ -744,7 +434,6 @@ c      include 'DEBUG.inc'
       end
 
       subroutine tfconvround(strb,x)
-      use tfstk
       use strbuf
       implicit none
       type (sad_strbuf), pointer :: strb
@@ -765,7 +454,6 @@ c      include 'DEBUG.inc'
       end
 
       integer*8 function ktrsaloc(mode,x)
-      use tfstk
       implicit none
       integer*4 l,lenw,mode
       real*8 x
@@ -777,7 +465,6 @@ c      include 'DEBUG.inc'
       end
 
       subroutine tfdigitq(isp1,kx,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
@@ -802,7 +489,6 @@ c      include 'DEBUG.inc'
       end
 
       subroutine tfletterq(isp1,kx,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
@@ -869,5 +555,312 @@ c      include 'DEBUG.inc'
       else
         Unicode2UTF8 = 0
       endif
+      return
+      end
+
+      end module
+
+      character*(*) function tfconvstr(k,nc,form)
+      use tfstk
+      implicit none
+      type (sad_descriptor) k
+      integer*4 nc
+      character*(*) form
+      character*(len(tfconvstr)) buff
+      call tfconvstrs(buff,k,nc,.false.,form)
+      nc=min(nc,len(tfconvstr))
+      tfconvstr=buff(1:nc)
+      return
+      end
+
+      subroutine tfconvstrs(buff,k,nc,str,form)
+      use tfstk
+      use strbuf
+      use eeval
+      implicit none
+      type (sad_descriptor) k
+      type (sad_strbuf), pointer :: strb
+      integer*4 nc,irtc,l,isp0
+      logical*4 str
+      character*(*) form,buff
+      l=len(buff)
+      isp0=isp
+      call getstringbuf(strb,-l,.true.)
+      call tfconvstrb(strb,k,nc,str,.false.,-1,form,irtc)
+      if(irtc /= 0)then
+        if(irtc .gt. 0 .and. ierrorprint /= 0)then
+          call tfreseterror
+        endif
+        nc=l+1
+      endif
+      if(nc .gt. l)then
+        nc=min(strb%nch,l)
+        buff(1:nc-6)=strb%str(1:nc-6)
+        buff(nc-5:nc)=', etc.'
+      else
+        buff(1:nc)=strb%str(1:nc)
+      endif
+      call tfreestringbuf(strb)
+      isp=isp0
+      return
+      end
+
+      subroutine tfstringreplace(isp1,kx,irtc)
+      use tfstk
+      use strbuf
+      use eeval
+      implicit none
+      type (sad_descriptor) kx,kr
+      type (sad_strbuf), pointer :: strb
+      type (sad_string), pointer :: str,strs,stri
+      integer*4 isp1,irtc,isp0,i,ir,ls,isp2,
+     $     j,imin,ii,nr,indexb,itfmessage
+      logical*4 full
+      if(isp /= isp1+2)then
+        irtc=itfmessage(9,'General::narg','"2"')
+        return
+      endif
+      if(.not. ktfstringq(dtastk(isp1+1),str))then
+        irtc=itfmessage(9,'General::wrongtype','"Character-string"')
+        return
+      endif
+      isp0=isp
+      call tfreplace(dxnullo,dtastk(isp1+2),kx,
+     $     .false.,.false.,.true.,irtc)
+      if(irtc /= 0)then
+        return
+      endif
+      if(isp == isp0)then
+        kx=dtastk(isp1+1)
+        irtc=0
+        return
+      endif
+      do i=isp0+1,isp,2
+        if(.not. ktfstringq(dtastk(i)))then
+          irtc=itfmessage(9,'General::wrongtype',
+     $         '"String -> String"')
+          return
+        endif
+      enddo
+      nullify(strb)
+      ir=1
+      ls=str%nch
+      isp2=isp
+ 1    j=0
+      imin=ls+1
+      do i=isp0+1,isp2,2
+        call descr_sad(dtastk(i),stri)
+        ii=indexb(str%str,ls,stri%str,stri%nch,ir)
+        if(ii .gt. 0 .and. ii .lt. imin)then
+          imin=ii
+          j=i
+          itastk2(1,i)=stri%nch
+        endif
+      enddo
+      if(j /= 0)then
+        if(.not. associated(strb))then
+          call getstringbuf(strb,0,.true.)
+        endif
+        if(imin == ir+1)then
+          call putstringbufb1(strb,str%str(ir:ir))
+        elseif(imin .gt. ir)then
+          call putstringbufb(strb,str%str(ir:imin-1),imin-ir,full)
+        endif
+        if(.not. ktfstringq(dtastk(j+1)))then
+          kr=tfeevalref(dtastk(j+1),irtc)
+          if(irtc /= 0)then
+            go to 9000
+          endif
+          if(.not. ktfstringq(kr))then
+            irtc=itfmessage(9,'General::wrongtype',
+     $           '"List of (String -> String)"')
+            go to 9000
+          endif
+          dtastk(j+1)=kr
+        endif
+        call descr_sad(dtastk(j+1),strs)
+        nr=strs%nch
+        if(nr == 1)then
+          call putstringbufb1(strb,strs%str)
+        elseif(nr .gt. 0)then
+          call putstringbufb(strb,strs%str,nr,full)
+        endif
+        ir=imin+itastk2(1,j)
+        if(ir <= ls)then
+          go to 1
+        endif
+      endif
+      if(.not. associated(strb))then
+        kx=dtastk(isp1+1)
+      else
+        if(ls == ir)then
+          call putstringbufb1(strb,str%str(ir:ir))
+        elseif(ls .gt. ir)then
+          call putstringbufb(strb,str%str(ir:ls),ls-ir+1,full)
+        endif
+        kx=kxstringbuftostring(strb)
+      endif
+      isp=isp0
+      irtc=0
+      return
+ 9000 call tfreestringbuf(strb)
+      isp=isp0
+      return
+      end
+
+      subroutine tftostring(isp1,kx,symb,irtc)
+      use tfstk
+      use tfcode
+      use strbuf
+      use eeval
+      use repl, only:tfgetoption
+      use iso_c_binding
+      implicit none
+      type (sad_descriptor) k,kx,k1
+      type (sad_namtbl), pointer :: loc
+      type (sad_strbuf), pointer :: strb
+      type (sad_symbol), pointer :: sym
+      type (sad_string), pointer :: str
+      integer*8 ka,ic,icp
+      integer*4 isp1,irtc,nc1,narg,isp0,itfmessage,i
+      character*32 form
+      logical*4 infm,symb,hold,gens
+      type (sad_descriptor), save :: inputf,iholdf,igenf,istandf
+      data inputf%k /0/
+c      include 'DEBUG.inc'
+      infm=.false.
+      hold=symb
+      gens=.false.
+      narg=isp-isp1
+      form='*'
+      if(symb .and. narg /= 1)then
+        irtc=itfmessage(9,'General::narg','"1"')
+        return
+      else
+        if(narg .gt. 1)then
+          if(inputf%k == 0)then
+            inputf =kxsymbolz('InputForm',9)
+            iholdf =kxsymbolz('HoldForm',8)
+            igenf  =kxsymbolz('GenericSymbolForm',17)
+            istandf=kxsymbolz('StandardForm',12)
+          endif
+          do i=isp,isp1+2,-1
+            if(ktflistq(dtastk(i)))then
+              call tfgetoption('FormatType',dtastk(i),k1,irtc)
+            else
+              k1=dtastk(i)
+            endif
+            if(ktfsymbolq(k1))then
+              if(tfsamesymbolq(k1,inputf))then
+                infm=.true.
+              elseif(tfsamesymbolq(k1,iholdf))then
+                hold=.true.
+              elseif(tfsamesymbolq(k1,igenf))then
+                gens=.true.
+              elseif(tfsamesymbolq(k1,istandf))then
+                form=' '
+              endif
+            elseif(ktfstringq(k1,str))then
+              form=str%str(1:str%nch)
+            endif
+          enddo
+        endif
+      endif
+      if(hold)then
+        k=dtastk(isp1+1)
+        irtc=0
+      else
+        k=tfeevalref(dtastk(isp1+1),irtc)
+        if(irtc /= 0)then
+          return
+        endif
+      endif
+      if(ktfsymbolq(k,sym))then
+        if(gens .or. sym%gen <= 0
+     $       .or. sym%gen == maxgeneration)then
+          call sym_namtbl(sym,loc)
+          ic=loc%cont
+          do icp=itfcontextpath,
+     $         itfcontextpath+ilist(2,itfcontextpath-1)-1
+            if(klist(icp) == ic)then
+              kx=sad_descr(loc%str)
+              return
+            endif
+          enddo
+        endif
+      elseif(ktfoperq(k,ka))then
+        call loc_namtbl(klist(klist(ifunbase+ka)),loc)
+        kx=loc%str%alloc
+        return
+      elseif(symb)then
+        irtc=itfmessage(9,'General::wrongtype','"Symbol"')
+        return
+      elseif(ktfstringq(k) .and. .not. infm)then
+        kx=k
+        return
+      endif
+      isp0=isp
+      call getstringbuf(strb,0,.true.)
+      call tfconvstrb(strb,k,nc1,infm,gens,-1,form,irtc)
+      kx=kxstringbuftostring(strb)
+      isp=isp0
+      return
+      end
+
+      subroutine tfstringjoin(isp1,kx,irtc)
+      use convstr
+      use strbuf
+      implicit none
+      type (sad_descriptor) kx
+      type (sad_string), pointer :: ksi,ksx
+      type (sad_strbuf), pointer :: strb
+      integer*4 isp1,irtc,i,nc1,l,is,isp0
+      if(isp1+1 == isp)then
+        call tftostring(isp1,kx,.false.,irtc)
+        return
+      elseif(isp1 == isp)then
+        kx=dxnulls
+        irtc=0
+        return
+      endif
+      l=0
+      do i=isp1+1,isp
+        if(ktfstringq(dtastk(i),ksi))then
+          l=l+ksi%nch
+        else
+          l=0
+          go to 1
+        endif
+      enddo
+      if(l == 0)then
+        kx=dxnulls
+      else
+        kx=kxscopy(ktfaddr(ktastk(isp1+1)),l,ksx)
+        call loc_sad(ktfaddr(ktastk(isp1+1)),ksi)
+        is=ksi%nch
+        do i=isp1+2,isp
+          call loc_sad(ktfaddr(ktastk(i)),ksi)
+          if(ksi%nch /= 0)then
+            ksx%str(is+1:is+ksi%nch)=ksi%str(1:ksi%nch)
+            is=is+ksi%nch
+          endif
+        enddo
+      endif
+      irtc=0
+      return
+ 1    isp0=isp
+      call getstringbuf(strb,l,.true.)
+      do i=isp1+1,isp0
+        call tfconvstrb(strb,dtastk(i),
+     $       nc1,.false.,.false.,-1,'*',irtc)
+        if(irtc /= 0)then
+          go to 9000
+        endif
+      enddo
+      kx=kxstringbuftostring(strb)
+      isp=isp0
+      return
+ 9000 call tfreestringbuf(strb)
+      isp=isp0
       return
       end
