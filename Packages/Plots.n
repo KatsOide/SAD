@@ -174,8 +174,15 @@ With[{CP$def={
     g
     ]];
 
+BinR[Automatic,l_]:=MinMax[l];
+BinR[{Automatic,Automatic},l_]:=MinMax[l];
+BinR[{Automatic,x0_Real},l_]:={Min[l],x0};
+BinR[{x0_Real,Automatic},l_]:={x0,Max[l]};
+BinR[{x0_Real,x1_Real},l_]:={x0,x1};
+
 With[{def={PlotStyle->ColumnPlot,Orientation->Vertical,
   Bins:>Max[5,Min[100,Sqrt[Max[Length/@l]]]],
+  BinRange->Automatic,
   Dashing->{{1},{0.75,0.25},{0.4, 0.15},{0.2,0.1},{0.1,0.08},
   {0.8,0.08, 0.08, 0.08},{0.4,0.08,0.08,0.08}},
   Legend->Null,
@@ -184,18 +191,19 @@ With[{def={PlotStyle->ColumnPlot,Orientation->Vertical,
   HistoPlot[l_,opt___]:=HistoPlot[{l},opt];
   HistoPlot[l:{{_,_},___},opt___]:=HistoPlot[{l},opt];
   HistoPlot[l:{_List,___},opt___]:=Module[{min,max,
-      {nc,ps,leg}={Bins,PlotStyle,Legend}/.{opt}/.def,
+      {nc,ps,leg,br}={Bins,PlotStyle,Legend,BinRange}/.{opt}/.def,
       dc,col,hist,x,histall,ll=Length[l],da,pc,or},
     nc=Round[nc];
     If[Head[l[[1,1]]]===List,
-      {min,max}=BinRange/.{opt}/.BinRange->MinMax[l[[,,1]]];
+      {min,max}=BinR[br,l[[,,1]]];
       dc=(max-min)/nc*fact;
       histall=(
         col=Select[Thread[{Floor[(#[[,1]]-min)/dc]+1,#[[,2]]}],(1<=First[#]<=nc)&];
         hist=Table[0,{nc}];
         Scan[(hist[[First[#]]]+=Second[#])&,col];
         hist)&/@l,
-      {min,max}=BinRange/.{opt}/.BinRange->MinMax[l];
+      {min,max}=BinR[br,l];
+      Print["HP ",{br,min,max}];
       dc=(max-min)/nc*fact;
       histall=(
         col=Select[Floor[(#-min)/dc]+1,(1<=#<=nc)&];

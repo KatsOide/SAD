@@ -1,6 +1,6 @@
       module wakez
-        real*8 dzwr
         real*8 ,parameter :: dzlim=1.d-5
+        real*8 ::dzwr=0.d0
 
         contains
         subroutine txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -13,11 +13,11 @@
         integer*4 ,intent(in):: np,nb,nwak
         real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),
      $       dv(np),sx(np),sy(np),sz(np)
-        real*8 ,intent(in):: dx,dy,theta
+        real*8 ,intent(in):: dx,dy,theta,fw,p0,h0
         logical*4 ,intent(in):: init
-        integer*4 ns,i,n,k,l,m,l1,lwl,lwt
+        integer*4 ns,i,n,k,l,m,l1,lwl,lwt,ns1
         real*8 ,dimension(:), allocatable:: xs,ys,zs,wx,wy,wz,ws
-        real*8 dz,w,zk,dzk,pa,pb,h1,fw,dwx,dwy,dwz,p0,h0,fwp,
+        real*8 dz,w,zk,dzk,pa,pb,h1,dwx,dwy,dwz,fwp,
      $       cost,sint,xi,pxi,pmin,zmin,zw0l,zw0t
         parameter (pmin=1.d-10,zmin=-1.d30)
         call twxiwp(nwak)
@@ -38,6 +38,7 @@
         if(init)then
           call twxalloc(np)
         endif
+c        write(*,'(a,l2,i5,1p8g14.6)')'txwake ',init,nwak,p0,z(itab(np)),z(itab(1)),z(itab(np))-z(itab(1))-dzwr,dzlim*dzwr
         if(init .or.
      $       abs(z(itab(np))-z(itab(1))-dzwr) >= dzlim*dzwr)then
           do i=1,np
@@ -51,8 +52,9 @@
           dzwr=z(itab(np))-z(itab(1))
         endif
         fwp=fw/p0
-        ns=izs(np)
-        allocate(ws(ns),xs(ns),ys(ns),zs(ns),wx(ns),wy(ns),wz(ns))
+        ns1=izs(np)
+        ns=ns1+1
+        allocate(ws(0:ns),xs(0:ns),ys(0:ns),zs(0:ns),wx(0:ns),wy(0:ns),wz(0:ns))
         ws=0.d0
         xs=0.d0
         ys=0.d0
@@ -68,11 +70,13 @@
           ys(n)=ys(n)+y(k)
           zs(n)=zs(n)+z(k)
         enddo
-        do n=1,ns
+        do n=1,ns1
           if(ws(n) /= 0.d0)then
             zs(n)=zs(n)/ws(n)
           endif
         enddo
+        zs(0)=z(itab(1))-dzwr/np
+        zs(ns)=z(itab(np))+dzwr/np
         if(lwl > 0)then
           zw0l=min(0.d0,wakel(1,1))
         else
@@ -83,8 +87,8 @@
         else
           zw0t=1.d300
         endif
-        do n=1,ns
-          do m=1,ns
+        do n=0,ns
+          do m=0,ns
             dz=zs(m)-zs(n)
             if(dz >= zw0l)then
               do l=1,lwl
@@ -124,14 +128,13 @@
           zk=z(k)
           dzk=zk-zs(n)
           if(dzk < 0.d0)then
-            if(n /= 1)then
-              n=n-1
-              dzk=zk-zs(n)
-            endif
-          elseif(n == ns)then
             n=n-1
             dzk=zk-zs(n)
           endif
+c          elseif(n == ns)then
+c            n=n-1
+c            dzk=zk-zs(n)
+c          endif
           w=dzk/(zs(n+1)-zs(n))
           dwx=(1.d0-w)*wx(n)+w*wx(n+1)
           dwy=(1.d0-w)*wy(n)+w*wy(n+1)

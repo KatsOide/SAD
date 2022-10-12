@@ -534,7 +534,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       integer*4 ,intent(out):: isp0,irtc
       integer*4 ,intent(in):: narg
       integer*4 iv,nc,ifany1,i,itfmessage,j,ielmh
-      character*1024 name
+      character*32768 name
       logical*4 tmatch
       isp0=isp
       if(ktfrealq(k,iv) .and. narg == 2)then
@@ -952,7 +952,7 @@ c              enddo
       integer*4 ,intent(out):: irtc,isp0
       integer*4 nc,itfmessage,i
       real*8 r,v
-      character*(MAXPNAME+16) name
+      character*32768 name
       isp0=isp
       if(ktfrealq(k,v) .and. narg == 2)then
         i=floor(v)
@@ -1000,7 +1000,7 @@ c              enddo
       real*8 ,intent(in):: fr
       real*8 r
       character*(*) ,intent(in):: name0
-      character*1024 name,name2
+      character*32768 name,name2
       character*(MAXPNAME+16) name1
       logical*4 exist,temat
       integer*4 nl

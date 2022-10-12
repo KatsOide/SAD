@@ -424,7 +424,7 @@ c      endif
       real*8 chid
       integer*4 stat,sev,type,nc
       real*8 t
-      integer*4 isp0,isp2,irtc,i,l,itfdownlevel
+      integer*4 isp0,isp2,irtc,i,l
       
       type (sad_descriptor) iaepicsvaluecb
       data iaepicsvaluecb%k /0/

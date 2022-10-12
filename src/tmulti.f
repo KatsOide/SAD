@@ -271,7 +271,7 @@ c      write(*,'(a,1p10g12.4)')'tmulti-9 ',x(1),px(1),y(1),py(1),z(1),g(1)
      $     eps0,krad,fringe,f1in,f2in,f1out,f2out,
      $     mfring,fb1,fb2,dofr,
      $     vc,w,phirf,dphirf,vnominal,
-     $     radius,rtaper,autophi,ndiv0,nmmax,
+     $     radius,rtaper,autophi,ndiv0,nmmax,nwak,
      $     kturn,kptbl)
       use tfstk
       use ffs_flag
@@ -280,6 +280,7 @@ c      write(*,'(a,1p10g12.4)')'tmulti-9 ',x(1),px(1),y(1),py(1),z(1),g(1)
       use kradlib
       use sol,only:tsolrot
       use photontable,only:tsetpcvt,pcvt
+      use wakez,only:txwake
       use mathfun
       use multa, only:fact,aninv
       use kyparam, only:nmult
@@ -296,18 +297,18 @@ c      use ffs_pointer, only:inext,iprev
      $     eps0,f1in,f2in,f1out,f2out,fb1,fb2,w,
      $     vc,phirf,dphirf,vnominal,radius,rtaper
       complex*16 ,intent(in):: ak(0:nmult),akr0(0:nmult)
-      integer*4 ,intent(in):: mfring,kturn,nmmax,ndiv0
+      integer*4 ,intent(in):: mfring,kturn,nmmax,ndiv0,nwak
       integer*4 ,intent(inout):: kptbl(np0,6)
       logical*4 ,intent(in):: fringe,autophi,krad
       logical*1 ,intent(in):: dofr(0:nmult)
-      logical*4 spac1,nzleng
+      logical*4 spac1,nzleng,wak
       integer*4 i,m,n,ndiv,ibsi
       real*8 bxs,bys,bzs,b,a,epsr,wi,v,phis,r,wl,
      $     r1,we,phic,dphis,offset,offset1,
      $     tlim,akr1,ak1,al1,p,ea,pxf,pyf,sv,asinh,ws1,wm,
      $     h2,p2,dp2,pr2,dvn,dzn,dp1r,p1r,p1,h1,t,ph,dh,dpr,dp2r,p2r,
      $     alx,dp2p2,dp,dp1,pr1,
-     $     he,vcorr,v20a,v02a,v1a,v11a,av,dpx,dpy,pe,ah
+     $     he,vcorr,v20a,v02a,v1a,v11a,av,dpx,dpy,pe,ah,fw0,fw
       real*8 ws(ndivmax+1)
       complex*16 akr(0:nmult),akrm(0:nmult),cx,cx1,ak01,b0
       if(phia /= 0.d0)then
@@ -321,6 +322,12 @@ c      use ffs_pointer, only:inext,iprev
       endif
       dphis=0.d0
       b0=0.d0
+      wak=(lwake .or. twake).and. nwak/=0
+      if(wak)then
+        fw0=(abs(charge)*e*pbunch*anbunch/amass)/np0
+      else
+        fw0=0.d0
+      endif
       nzleng=al /= 0.d0
       spac1=.false.
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
@@ -437,6 +444,16 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
       sv=0.d0
       ibsi=1
       do m=1,ndiv
+        if(wak)then
+          if(m .eq. 1)then
+            fw=fw0*ws(1)*.5d0
+          else
+            fw=fw0*(ws(m)+ws(m-1)*.5d0)
+          endif
+          call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $         0.d0,0.d0,0.d0,int(anbunch),
+     $         fw,nwak,p0,h0,m .eq. 1)
+        endif
         akrm(0:nmmax)=akr(0:nmmax)*ws(m)
         if(nzleng)then
           call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -526,6 +543,12 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
           py(i)=(py(i)*p1r+dpy)/p2r
         enddo
       enddo
+      if(wak)then
+        fw=fw0*ws(ndiv)*.5d0
+        call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
+     $       0.d0,0.d0,0.d0,int(anbunch),
+     $       fw,nwak,p0,h0,.false.)
+      endif
       if(nzleng)then
         call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al1,ak1,bzs,dble(ak01),imag(ak01),2,eps0)
