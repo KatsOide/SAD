@@ -214,4 +214,32 @@ c          endif
         return
         end subroutine
 
+        logical*4 function ewak(l,nextwake,lele,cmp,nwak,nwak1) result(a)
+        use sad_main
+        use maccode
+        use kyparam
+        implicit none
+        integer*4 ,intent(in):: l,nextwake,lele,nwak
+        type (sad_comp),intent(in):: cmp
+        integer*4 ,intent(out):: nwak1
+        if(l /= nextwake .or. nwak == 0)then
+          a=.false.
+          nwak1=0
+        elseif(lele == icCAVI)then
+          a=.false.
+          nwak1=nwak
+        elseif(lele == icMULT)then
+          nwak1=nwak
+          if(cmp%value(ky_VOLT_MULT)+cmp%value(ky_DVOLT_MULT) == 0.d0)then
+            a=.true.
+          else
+            a=.false.
+          endif
+        else
+          a=.true.
+          nwak1=nwak
+        endif
+        return
+        end function
+
       end module

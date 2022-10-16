@@ -169,9 +169,9 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
      $     g(np0),dv(np0), sx(np0),sy(np0),sz(np0)
       real*8 bz,al,ak0,ak1,tgauss,ph,harmf,sspac0,sspac,fw,
      $     dx,dy,rot,sspac1,sspac2,ak,rtaper,cod(6)
-      integer*4 l,lele,i,ke,irtc,nextwake,nwak
+      integer*4 l,lele,i,ke,irtc,nextwake,nwak,nwak1
       integer*8 iwplc,iwptc
-      logical*4 sol,out,autophi,seg,krad,wspaccheck
+      logical*4 sol,out,autophi,seg,krad,wspaccheck,aewak
       if(np .le. 0)then
         return
       endif
@@ -225,9 +225,6 @@ c      isb=ilist(2,iwakepold+6)
         endif
         call compelc(l,cmp)
         lele=idtype(cmp%id)
-c     if(l > 3410)then
-c     write(*,'(a,2i5)')'tturn ',l,lele
-c     endif
         l_track=l
         do
           if(sol)then
@@ -241,7 +238,9 @@ c     endif
             sol=l < ke
             go to 1020
           endif
-          if(l == nextwake .and. lele /= icCAVI .and. lele /= icMULT)then
+c          if(l == nextwake .and. lele /= icCAVI .and. lele /= icMULT)then
+          aewak=ewak(l,nextwake,lele,cmp,nwak,nwak1)
+          if(aewak)then
             fw=(abs(charge)*e*pbunch*anbunch/amass)/np0*.5d0
             kdx=kytbl(kwDX,lele)
             dx=merge(cmp%value(kdx),0.d0,kdx /= 0)
@@ -251,21 +250,14 @@ c     endif
             dy=merge(cmp%value(krot),0.d0,krot /= 0)
             call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           dx,dy,rot,int(anbunch),
-     $           fw,nwak,p0,h0,.true.)
+     $           fw,nwak1,p0,h0,.true.)
           endif
           if(wspac .or. pspac)then
             sspac=(pos(l)+pos(l+1))*.5d0
             if(sspac /= sspac0 .and. wspac)then
-c     if(abs(px(1))+abs(py(1)) .gt. 0.01d0)then
-c     write(*,*)'tturn1-wspac ',l,np,px(1),py(1),g(1)
-c     endif
               cod=twiss(l,0,mfitdx:mfitddp)
               call twspac(np,x,px,y,py,z,g,dv,sx,sy,sz,sspac-sspac0,
      $             cod,beamsize(:,l),l)
-c     if(abs(px(1))+abs(py(1)) .gt. 0.01d0)then
-c     write(*,*)'tturn1-wspac ',l,np,px(1),py(1),g(1)
-c     endif
-c     write(*,*)'twspac-end'
             endif
             sspac0=sspac
           endif
@@ -387,10 +379,14 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
             bz=0.d0
             if(seg)then
               call tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $             cmp,lsegp,bz,rtaper,nwak,n,kptbl)
+     $             cmp,lsegp,bz,rtaper,nwak1,n,kptbl)
             else
               call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $             cmp,bz,rtaper,nwak,n,kptbl)
+     $             cmp,bz,rtaper,nwak1,n,kptbl)
+            endif
+            if(.not. aewak .and. nwak1 /= 0)then
+              nwak=nwak+1
+              nextwake=merge(0,iwakeelm(nwak),nwak .gt. nwakep)
             endif
 
           case (icMARK)
@@ -428,10 +424,10 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
             if(autophi)then
               ph=ph+gettwiss(mfitdz,l)*cmp%value(p_W_CAVI)
             endif
-            if(l == nextwake)then
+            if(nwak1 /= 0)then
               call tcav(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      1             cmp%value(p_W_CAVI),cmp%value(ky_PHI_CAVI),ph,
-     $             cmp%value(p_VNOMINAL_CAVI),nwak,
+     $             cmp%value(p_VNOMINAL_CAVI),nwak1,
      1             cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
      $             cmp%value(ky_ROT_CAVI),
      $             cmp%value(ky_V1_CAVI),cmp%value(ky_V20_CAVI),
@@ -548,7 +544,7 @@ c     print *,'tturn l sspac2',l,sspac2
           endif
           exit
         enddo
-        if(l == nextwake .and. lele /= icCAVI)then
+        if(aewak)then
           call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         dx,dy,rot,int(anbunch),
      $         fw,nwak,p0,h0,.false.)

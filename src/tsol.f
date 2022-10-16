@@ -533,8 +533,8 @@ c          call tmultr(trans1,trans2,6)
       real*8 tfbzs,fw,bzs,al,theta,phi,phix,phiy,
      $     bz1,dx,dy,rot,rtaper,ph
       real*8 ,allocatable,dimension(:)::bzph
-      integer*4 i,l,lt,kdx,kdy,krot,kb,irtc,kbz
-      logical*4 seg,autophi,krad
+      integer*4 i,l,lt,kdx,kdy,krot,kb,irtc,kbz,nwak1
+      logical*4 seg,autophi,krad,aewak
       logical*1,save::dofr(0:1)=[.false.,.false.]
       real*8 ,save::dummy(256)=0.d0
       kb=merge(k,k+1,insol)
@@ -612,7 +612,8 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           call tffserrorhandle(l,irtc)
           return
         endif
-        if(l == nextwake .and. lt /= icMULT)then
+        aewak=ewak(l,nextwake,lt,cmp,nwak,nwak1)
+        if(aewak)then
           fw=(abs(charge)*e*pbunch*anbunch/amass)/np0*.5d0
           kdx=kytbl(kwDX,lt)
           dx=merge(cmp%value(kdx),0.d0,kdx /= 0)
@@ -622,7 +623,7 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           rot=merge(cmp%value(krot),0.d0,krot /= 0)
           call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         dx,dy,rot,int(anbunch),
-     $         fw,nwak,p0,h0,.true.)
+     $         fw,nwak1,p0,h0,.true.)
         endif
         select case (lt)
         case (icDRFT)
@@ -687,11 +688,16 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           endif
           if(seg)then
             call tmultiseg(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $           cmp,lsegp,bzs,rtaper,n,kptbl)
+     $           cmp,lsegp,bzs,rtaper,nwak1,n,kptbl)
           else
             call tmulti1(np,x,px,y,py,z,g,dv,sx,sy,sz,
-     $           cmp,bzs,rtaper,n,kptbl)
+     $           cmp,bzs,rtaper,nwak1,n,kptbl)
           endif
+          if(.not. aewak .and. nwak1 /= 0)then
+            nwak=nwak+1
+            nextwake=merge(0,iwakeelm(nwak),nwak .gt. nwakep)
+          endif
+
         case(icCAVI)
           if(.not. cmp%update)then
             call tpara(cmp)
@@ -715,10 +721,12 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
      $         cmp%value(ky_VOLT_CAVI)+cmp%value(ky_DVOLT_CAVI),
      $         cmp%value(p_W_CAVI),
      $         cmp%value(ky_PHI_CAVI),ph,cmp%value(p_VNOMINAL_CAVI),
-     $         0.d0,1.d0,autophi,1,0,nwak,
+     $         0.d0,1.d0,autophi,1,0,nwak1,
      $         n,kptbl)
-          nwak=nwak+1
-          nextwake=merge(0,iwakeelm(nwak),nwak .gt. nwakep)
+          if(.not. aewak .and. nwak1 /= 0)then
+            nwak=nwak+1
+            nextwake=merge(0,iwakeelm(nwak),nwak .gt. nwakep)
+          endif
           
         case (icSOL)
           bz1=merge(0.d0,tfbzs(l,kbz),l == ke)
@@ -783,10 +791,10 @@ c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
           endif
         end select
 
-        if(l == nextwake .and. l /= icMULT .and. l /= ke)then
+        if(aewak)then
           call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         dx,dy,rot,int(anbunch),
-     $         fw,nwak,p0,h0,.false.)
+     $         fw,nwak1,p0,h0,.false.)
           nwak=nwak+1
           nextwake=merge(0,iwakeelm(nwak),nwak .gt. nwakep)
         endif
