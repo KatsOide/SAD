@@ -2,7 +2,7 @@
      $     np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak0,phi,
      $     psi1,psi2,bz,
      1     dx,dy,theta,dtheta,dchi2,alg,phig,
-     $     eps0,krad,fb1,fb2,mfring,fringe)
+     $     eps0,krad,fb1,fb2,mfring,fringe,rtaper)
       use ffs_flag, only:ndivrad,calpol,photons
       use tmacro
       use multa
@@ -15,6 +15,7 @@
       real*8 ,parameter ::ampmax=0.05d0,eps00=0.005d0
       integer*4 np,mfring,i,n,mfr,ndiv,nmmax,m,m1,k,nmmin
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),dv(np),sx(np),sy(np),sz(np)
+      real*8 ,intent(in):: rtaper
       real*8 
      $     al,phi,psi1,psi2,bz,dx,dy,theta,eps0,fb1,fb2,
      $     dtheta,pr,cost,sint,rho0,rhob,dchi2,alg,phig,
@@ -45,7 +46,8 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
         eps=eps00*eps0
       endif
       nmmax=0
-      ak=ak0
+      ak=ak0*rtaper
+      ak(0)=ak(0)+(rtaper-1.d0)*phi
       ak0r=dble(ak(0))
       ak1r=dble(ak(1))
       ak(0)=dcmplx(0.d0,imag(ak(0)))
@@ -241,7 +243,7 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
       subroutine tmultae(trans,cod,beam,srot,al,ak0,
      $     phi,psi1,psi2,apsi1,apsi2,bz,
      1     dx,dy,theta,dtheta,dchi2,alg,phig,
-     $     eps0,enarad,fringe,fb1,fb2,mfring,l)
+     $     eps0,enarad,fringe,fb1,fb2,mfring,rtaper,l)
       use tfstk
       use tmacro
       use multa
@@ -253,7 +255,7 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
       real*8 ampmax,eps00
       parameter (ampmax=0.05d0,eps00=0.005d0,ndivmax=2000)
       integer*4 mfring,n,mfr,ndiv,nmmax,m,m1,k,nmmin,l
-      real*8 ,intent(in):: dchi2,alg,phig
+      real*8 ,intent(in):: dchi2,alg,phig,rtaper
       real*8 trans(6,12),cod(6),beam(42),trans1(6,6),srot(3,9),
      $     al,phi,psi1,psi2,bz,dx,dy,theta,eps0,fb1,fb2,
      $     dphix,dphiy,dtheta,rho0,
@@ -287,7 +289,8 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
       else
         eps=eps00*eps0
       endif
-      ak=ak0
+      ak=ak0*rtaper
+      ak(0)=ak(0)+phi*(rtaper-1.d0)
       ak0r=dble(ak(0))
       ak1r=dble(ak(1))
       ak(0)=dcmplx(0.d0,imag(ak(0)))

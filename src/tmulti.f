@@ -43,7 +43,7 @@ c      type (tzparams) tzs(np),tzs1(np)
      $       al,ak,phia,
      $       psi1,psi2,bz,
      1       dx,dy,theta,dtheta,chi2,alg,phig,
-     $       eps0,krad,fb1,fb2,mfring,fringe)
+     $       eps0,krad,fb1,fb2,mfring,fringe,rtaper)
         return
       endif
 c      write(*,'(a,1p10g12.4)')'tmulti ',al,ak(1),chi1,chi2,alg,phig
@@ -317,7 +317,7 @@ c      use ffs_pointer, only:inext,iprev
      $       al,ak,phia,
      $       psi1,psi2,bz,
      1       dx,dy,theta,dtheta,chi2,alg,phig,
-     $       eps0,krad,fb1,fb2,mfring,fringe)
+     $       eps0,krad,fb1,fb2,mfring,fringe,rtaper)
         return
       endif
       dphis=0.d0

@@ -41,7 +41,7 @@
         call tmultae(trans,cod,beam,srot,al,ak,
      $       phia,psi1,psi2,apsi1,apsi2,bz,
      1       dx,dy,theta,dtheta,chi2,alg,phig,
-     $       eps0,enarad,fringe,fb1,fb2,mfring,l)
+     $       eps0,enarad,fringe,fb1,fb2,mfring,rtaper,l)
         return
       endif
       code=cod

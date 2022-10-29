@@ -69,7 +69,7 @@ With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
         Return[]],
       {ld,dr}={{},{{0,1},{0,1}}}];
     ({sc,pg,eg,pj,of,in,pr,pl}={Scale,Prolog,Epilog,PlotJoined,DisplayFunction,
-      Initialize,PlotRegion,Plot}/.(op00=op));
+      Initialize,PlotRegion,Plot}/.op);
     sc=Flatten[{Linear,sc}][[{-2,-1}]];
     gopt=Override[Scale->sc,
       Cases[op,r,1],DataRange->dr];
@@ -129,8 +129,7 @@ With[{
       If[ini && df===CanvasDrawer,
         The$CanvasObject@AllGraphics={gl,opt}];
       {pr0,prg}={PlotRange,PlotRegion}/.opt;
-      pr000=pr0;
-      prl00=prl=PRM1$$/@(Prepend[(PlotRange/.Second[#]/.def0)&/@gl,pr0]/.Default:>Null[]);
+      prl=PRM1$$/@(Prepend[(PlotRange/.Second[#]/.def0)&/@gl,pr0]/.Default:>Null[]);
       pr=If[prl==={},
         {{Automatic,Automatic},{Automatic,Automatic}},
         First[prl]];
