@@ -563,7 +563,7 @@ c     $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
         elseif(phib == 0.d0)then
           call tquad(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,0.d0,
      1         dx,dy,theta+dtheta,theta+dtheta,krad,.true.,
-     1         fringe,0.d0,0.d0,0,eps,.true.)
+     1         fringe,0.d0,0.d0,0.d0,0.d0,0,eps,.true.)
         else
           akm=0.d0
           akm(0)=ak0
@@ -575,7 +575,7 @@ c     $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
           call tmulti(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         al,akm,akr0,0.d0,0.d0,0.d0,0.d0,
      $         dx,dy,0.d0,0.d0,0.d0,theta+dtheta,0.d0,
-     $         theta2,
+     $         theta2,alg,phig,
      $         eps,krad,fringe,
      $         0.d0,0.d0,0.d0,0.d0,
      $         mfring,fb10,fb20,dofr,
@@ -599,8 +599,7 @@ c     $     y(1)-y(2),py(1)-py(2),z(1)-z(2),g(1)-g(2)
         call tbdrift(np,x,px,y,py,z,dv,sx,sz,al,phi0)
         go to 9000
       elseif(al == 0.d0)then
-        call tbthin(np,x,px,y,py,z,g,sx,sy,sz,phib,phi0,dx,dy,
-     1              dtheta,cost,sint,dchi2)
+        call tbthin(np,x,px,y,py,z,g,sx,sy,sz,phib,phi0)
         go to 9000
       endif
       rhob=al/phib
@@ -718,26 +717,15 @@ c      endif
       return
       end
 
-      subroutine tbthin(np,x,px,y,py,z,g,sx,sy,sz,phib,phi0,dx,dy,
-     1                 dtheta,cost,sint,dchi2)
-      use tbendcom, only:tbrot,tbshift
+      subroutine tbthin(np,x,px,y,py,z,g,sx,sy,sz,phib,phi0)
       implicit none
       integer*4 ,intent(in):: np
       integer*4 i
-      real*8 ,intent(in):: phib,phi0,dx,dy,cost,sint,dtheta,dchi2
-      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
-     $     g(np),sx(np),sy(np),sz(np)
-      call tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,.true.)
-      if(dtheta .ne. 0.d0 .or. dchi2 /= 0.d0)then
-        call tbrot(np,x,px,y,py,z,sx,sy,sz,0.d0,.5d0*phi0,dtheta,dchi2,.true.)
-      endif
+      real*8 ,intent(in):: phib,phi0
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),sx(np),sy(np),sz(np)
       do concurrent (i=1:np)
         px(i)=px(i)+phi0-phib/(1.d0+g(i))
         z(i)=z(i)-x(i)*phi0
       enddo
-      if(dtheta .ne. 0.d0 .or. dchi2 /= 0.d0)then
-        call tbrot(np,x,px,y,py,z,sx,sy,sz,0.d0,-.5d0*phi0,dtheta,dchi2,.false.)
-      endif
-      call tbshift(np,x,px,y,py,z,-dx,-dy,-phi0,cost,-sint,.false.)
       return
       end

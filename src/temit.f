@@ -262,6 +262,7 @@ c          endif
       complex*16 dceig(6),cc(6),ceig(6)
       logical*4 ,intent(in):: calem
       logical*4 ,intent(out):: stab
+c      write(*,'(a,1p4G15.7)')'tecalc-0 ',beam(1),beam(3),beam(6),beam(10)
       rx=trans(:,1:6)
       if(.not. rfsw)then
         rx(6,1:5)=0.d0
@@ -285,9 +286,6 @@ c          endif
         r=tsymp(r)
         ri=tinv6(r)
       endif
-c      tw=tfetwiss(ri,codin,.true.)
-c      write(*,'(a,1p6g15.7)')'temit-etwiss-ent ',
-c     $       tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
       dceig=ceig-ceig0
       dc=sum(abs(dceig))
       cc(1:5:2)=ceig(1:5:2)
@@ -434,6 +432,7 @@ c     enddo
             ab(i)=1.d0
           endif
         enddo
+c        write(*,'(a,1p5G15.7)')'tecalc-3 ',btr(1,1),btr(1,3),btr(3,3),beam(1),beam(3)
         call tsolva(btr,beam,emitn,21,21,21,1d-8)
         do i=1,5,2
           k1=iaidx(i,i)
@@ -600,15 +599,16 @@ c      write(*,'(1p10g12.4)')spt
         iret=3
         return
       else
+c        write(*,'(a,1p5G15.7)')'intraconv-1 ',eemx,eemy,eemz,emz0,coumin
         emmin=(eemx+eemy)*coumin
         eemx=max(emmin,eemx)
         eemy=max(emmin,eemy)
         eemz=max(emz0*0.1d0,eemz)
         if(eemx .le. 0.d0 .or. eemy .le. 0.d0 .or. eemz .le. 0.d0)then
-          write(lfno,'(2a,/,a,1p3g15.7/)')
+          write(lfno,'(2a,/,a,1p3g15.7,a,i5/)')
      $         ' Negative emittance, ',
      $         'No intrabeam/space charge calculation:',
-     $         'eem(x,y,z) =',eemx,eemy,eemz
+     $         'eem(x,y,z) =',eemx,eemy,eemz,', iter =',it
           it=itmax+1
         else
           eemx=min(emxmax,max(emxmin,eemx))
@@ -623,7 +623,7 @@ c      write(*,'(1p10g12.4)')spt
               write(*,*)
      $     '     EMITX          EMITY          EMITZ           conv'
             endif
-            write(*,'(1p4G15.7)')eemx,eemy,eemz,de
+c            write(*,'(1p4G15.7)')eemx,eemy,eemz,de
           endif
         endif
       endif

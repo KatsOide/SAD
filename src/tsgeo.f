@@ -295,7 +295,7 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         call tmulte(trans,cod,beam,srot,i,al,
      $       dummy,
      $       bzs*dir,
-     $       0.d0,0.d0,0.d0,0.d0,
+     $       0.d0,0.d0,0.d0,0.d0,0.d0,
      1       cmp%value(ky_DX_CAVI),cmp%value(ky_DY_CAVI),
      $       0.d0,0.d0,0.d0,
      $       cmp%value(ky_ROT_CAVI),

@@ -169,8 +169,7 @@
               call tfreplist(lar,iv,sad_descr(lari),eval1)
               eval=eval .or. eval1
             endif
-            call tfpartrstk(lari,isp1+1,isp2,
-     $           list,last,write,eval1,err,irtc)
+            call tfpartrstk(lari,isp1+1,isp2,list,last,write,eval1,err,irtc)
             eval=eval .or. eval1
           else
             go to 9040
@@ -270,7 +269,7 @@
             if(write)then
               ka=sad_loc(lar%head)
               ktastk(isp+1:isp+ma)=ka
-              itastk(1,isp+1:isp+ma)=[(i,i=1,ma)]
+              itastk2(1,isp+1:isp+ma)=[(i,i=1,ma)]
               isp=isp+ma
 c              do i=1,ma
 c                isp=isp+1

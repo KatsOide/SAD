@@ -345,7 +345,6 @@
           endif
         endif
         if(ktfsymbolq(ki,symi))then
-c          write(*,*)'dsethead ',symi%loc,symi%gen
           if(symi%loc .eq. sym%loc
      $         .and. max(0,symi%gen) .eq. max(0,sym%gen))then
             kh=ki0
@@ -387,8 +386,7 @@ c          write(*,*)'dsethead ',symi%loc,symi%gen
       call tfgetllstk(kln,2,-1)
       isp2=isp
       listl=>tfclonelist(listl)
-      call tfpartrstk(listl,isp1,isp2,list,
-     $     .false.,.true.,eval,.true.,irtc)
+      call tfpartrstk(listl,isp1,isp2,list,.false.,.true.,eval,.true.,irtc)
       if(irtc .ne. 0)then
         return
       endif
@@ -1258,7 +1256,6 @@ c      include 'DEBUG.inc'
       case (mtfslot,mtfslotseq)
         if(ktfrealq(ky,vy))then
           ks=int8(vy)
-c          write(*,*)'tfeexpr-slot ',vy,ks
           if(dble(ks) .ne. vy) then
             go to 5000
           endif

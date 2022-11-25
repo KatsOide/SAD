@@ -819,7 +819,7 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       implicit none
       type (ffs_bound) fbound
       real*8 conv,cx,sx,ax,bx,cy,sy,ay,by,r0,dcod(6)
-      integer*4 , parameter :: itmax=30
+      integer*4 , parameter :: itmax=10
       real*8 , parameter :: conv0=1.d-19,conv1=1.d-10,
      $     factmin=1.d-3,orbmax=1.d10,trmax=1.d10
       integer*4 ,intent(in)::  idp

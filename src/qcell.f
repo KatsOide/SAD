@@ -4,6 +4,8 @@
       use ffs_pointer
       use ffs_fit, only:ffs_stat
       use tffitcode
+      integer*4 ,parameter ::nmmax=4
+      integer*4 nmes
 
       contains
       subroutine qcell(idp,optstat,fam)
@@ -42,7 +44,7 @@
      $     dpsix,dpsiy,cosx,sinx,cosy,siny,
      $     x11,x22,y11,y22
       integer*4 ie1,l,nm,lx
-      logical*4 stab,codfnd,pri,nanq
+      logical*4 stab,codfnd,nanq
       real*8 trans(4,5),cod(6),
      $     tm11,tm12,tm13,tm14,tm15,
      $     tm21,tm22,tm23,tm24,tm25,
@@ -61,18 +63,18 @@
         call qcell6d(fbound,idp,optstat,lfno)
         return
       endif
-      pri=.false.
       if(cell)then
         codfnd=fam
         cod=twiss(fbound%lb,idp,mfitdx:mfitddp)
         call qcod(idp,fbound,trans,cod,codfnd,optstat%over)
         if(optstat%over)then
-          if(lfno > 0)then
+          if(lfno > 0 .and. nmes < nmmax)then
+            nmes=nmes+1
             if(.not. codfnd)then
               write(lfno,*)
-     $             '*****qcod---> Overflow & closed orbit not found'
+     $             '*****qcod---> Overflow & closed orbit not found ',nmes
             else
-              write(lfno,*)'*****qcod---> Overflow'
+              write(lfno,*)'*****qcod---> Overflow ',nmes
             endif
           endif
           optstat%stabx=.false.
@@ -82,9 +84,9 @@
           if(orbitcal)then
             twiss(fbound%lb,idp,mfitdx:mfitddp)=cod
           endif
-        elseif(lfno > 0)then
-          write(lfno,*)'*****qcod---> Closed orbit not found'
-          pri=.true.
+        elseif(lfno > 0 .and. nmes < nmmax)then
+          nmes=nmes+1
+          write(lfno,*)'*****qcod---> Closed orbit not found ',nmes
         endif
         if(.not. calopt)then
           if(codfnd)then
@@ -296,9 +298,9 @@ c     (Note) Disperdion is defined in 2*2 world
       endif
       ie1=fbound%le
       if(optstat%over)then
-        if(lfno > 0)then
+        if(lfno > 0 .and. nmes < nmmax)then
+          nmes=nmes+1
           write(lfno,'(a,2i8,1pg15.7)')'***qtwiss---> Overflow (fb) ',fbound%lb,fbound%le,fbound%fb
-          pri=.true.
         endif
         optstat%stabx=.false.
         optstat%staby=.false.
@@ -308,9 +310,9 @@ c     (Note) Disperdion is defined in 2*2 world
         call qtwissfrac1(ftwiss,trans,cod,idp,fbound%le,0.d0,fbound%fe,
      $       .false.,.true.,optstat%over)
         if(optstat%over)then
-          if(lfno > 0)then
+          if(lfno > 0 .and. nmes < nmmax)then
+            nmes=nmes+1
             write(lfno,'(a,2i8,1pg15.7)')'***qtwiss---> Overflow (fe) ',fbound%lb,fbound%le,fbound%fe
-            pri=.true.
           endif
           optstat%stabx=.false.
           optstat%staby=.false.
@@ -403,9 +405,6 @@ c     (Note) Disperdion is defined in 2*2 world
         optstat%staby=optstat%staby .and. stab .and. (codfnd .or. fam)
       endif
       optstat%tracez=0.d0
-c      if(pri)then
-c        lfno=0
-c      endif
       return
       end
 
