@@ -41,7 +41,7 @@ c      parameter (eeuler=7.98221278918726d0,a=5.5077d0,b=1.1274d0)
       real*8 ,intent(out):: bmi(21)
       real*8 ,intent(in):: al,al1
       real*8 pl(3,3),r(3,3),eig(3),xx(3,3),xxs(3,3),bint,e1,e2,e3
-      real*8 xp(3,3),transw(6,6),bmi0(21),
+      real*8 xp(3,3),transw(6,6),
      $     pxi,pyi,s,pr,pzi,alx,ale,alz,hi,a,b,d,vol,
      $     bm,ptrans,extrans,eytrans,eztrans,tf,aez,aex0,aey0,
      $     aez0,aexz,aeyz,f1,f2,f3,bn,bmax,bmin,ci,pvol,vol1,
@@ -118,7 +118,6 @@ c     real*8  vmin/0.d0/
      $       +pzi*trans2(1:6,5))/pr
         trans2(1:6,6)=pr/pzi*trans2(1:6,6)
         trans1=matmul(trans2,trans1)
-        bmi0=bmi
         call tmulbs(bmi,trans1,.false.)
         xx(1,1)=bmi(ia(1,1))
         xx(2,1)=bmi(ia(3,1))
@@ -221,17 +220,20 @@ c        call eigs33(pl,r,eig)
      1       vol/pi/(ptrans*p0/h0*c)/pbunch
      $       /max(taurdx,taurdy,taurdz)))
      1       )
-        ci=cintrb*al*log(max(1.d-300,2.d0*bmax/bmin))/vol1/pvol/h0**4
         bmi=0.d0
-        bmi(ia(2,2))=ci*pl(1,1)
-        bmi(ia(4,2))=ci*pl(2,1)
-        bmi(ia(6,2))=ci*pl(3,1)
-        bmi(ia(4,4))=ci*pl(2,2)
-        bmi(ia(6,4))=ci*pl(3,2)
-        bmi(ia(6,6))=ci*pl(3,3)
-        call tmulbs(bmi,tinv6(trans1),.false.)
-        beam(1:21)=bmi+beam(1:21)
-        call tmulbs(bmi,tinv6(trans(:,1:6)),.false.)
+        if(bmax > bmin)then
+          ci=cintrb*al*log(max(1.d-300,2.d0*bmax/bmin))/vol1/pvol/h0**4
+          bmi(ia(2,2))=ci*pl(1,1)
+          bmi(ia(4,2))=ci*pl(2,1)
+          bmi(ia(6,2))=ci*pl(3,1)
+          bmi(ia(4,4))=ci*pl(2,2)
+          bmi(ia(6,4))=ci*pl(3,2)
+          bmi(ia(6,6))=ci*pl(3,3)
+          trans2=tinv6(trans1)
+          call tmulbs(bmi,trans2,.false.)
+          beam(1:21)=bmi+beam(1:21)
+          call tmulbs(bmi,tinv6(trans(:,1:6)),.false.)
+        endif
       endif
       return
       end

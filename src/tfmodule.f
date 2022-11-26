@@ -15,7 +15,7 @@
       logical*4 ,intent(in):: module,eval
       logical*4 rep
       kx=dxnullo
-      if(isp .ne. isp1+2)then
+      if(isp /= isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
@@ -28,7 +28,7 @@
       endif
       isp0=isp
       call tfmlocalv(lvlist,module,eval,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         if(eval)then
           go to 9200
         else
@@ -47,7 +47,7 @@
       elseif(module)then
         call tfreplacesymbolstk(dtastk(isp0),isp0,(isp2-isp0)/2,ke,
      $     .false.,rep,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           isp=isp2
           go to 9200
         endif
@@ -62,7 +62,7 @@ c          call tfdebugprint(kx,'tfmodule-1',1)
         endif
         isp=isp2
       elseif(rep)then
-        if(isp2 .gt. isp0)then
+        if(isp2 > isp0)then
           kxl1=tfredefslist(isp0,isp2,lvlist)
 c          call tfdebugprint(kxl1,'==>',2)
         else
@@ -103,14 +103,14 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       integer*4 i,kk,irtc,isp0
       logical*4 ,intent(in):: del,unset
       if(unset)then
-        if(def%upval .ne. 0)then
+        if(def%upval /= 0)then
           isp0=isp
           isp=isp+1
           ktastk(isp)=ktfoper+mtfunset
           isp=isp+1
           dtastk(isp)=sad_descr(def%sym)
           kx=tfefunrefu(isp0+1,irtc)
-          if(irtc .ne. 0 .and. ierrorprint .ne. 0)then
+          if(irtc /= 0 .and. ierrorprint /= 0)then
             call tfreseterror
           endif
           isp=isp0
@@ -119,13 +119,13 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       ka1=def%upval
       def%upval=0
       do kk=1,2
-        do while(ka1 .ne. 0)
+        do while(ka1 /= 0)
           call loc_defhash(ka1,dhash)
           ka10=dhash%next
           if(dhash%gen .eq. maxgeneration)then
             do i=0,dhash%nhash
               kadi=dhash%dhash(i)%k
-              do while(kadi .ne. 0)
+              do while(kadi /= 0)
                 kadi0=klist(kadi)
                 call tfcleardaloc(kadi)
                 call tfree(kadi)
@@ -145,7 +145,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       if(del)then
         kp0=def%prev
         kp1=def%next
-        if(kp1 .ne. 0)then
+        if(kp1 /= 0)then
           call loc1_symdef(kp1,def1)
           def1%prev=kp0
           if(max(0,def1%sym%gen) .eq. max(0,def%sym%gen) .and.
@@ -189,7 +189,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       integer*4 m,mi,lgi,ii,i,itfmessage,lg,isps
       integer*4 ,intent(out):: irtc
       logical*4 ,intent(in):: module,eval
-      if(list%head%k .ne. ktfoper+mtflist)then
+      if(list%head%k /= ktfoper+mtflist)then
         irtc=itfmessage(9,'General::wrongtype','"List"')
         return
       endif
@@ -216,11 +216,11 @@ c        write(*,*)'mlocalv-1'
             dtastk(isp-1)=ki
             dtastk(isp  )=kxnaloc1(lg,symi%loc)
           elseif(ktflistq(ki,kli))then
-            if(kli%head%k .ne. ktfoper+mtfset .and.
-     $           kli%head%k .ne. ktfoper+mtfsetdelayed)then
+            if(kli%head%k /= ktfoper+mtfset .and.
+     $           kli%head%k /= ktfoper+mtfsetdelayed)then
               go to 100
             endif
-            if(kli%nl .ne. 2)then
+            if(kli%nl /= 2)then
               go to 100
             endif
             ki1=kli%dbody(1)
@@ -229,13 +229,13 @@ c        write(*,*)'mlocalv-1'
               if(ktflistq(ki2,kli2))then
                 isps=isp
                 ki2=tfleval(kli2,.true.,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   go to 200
                 endif
               elseif(ktfsymbolq(ki2) .or. ktfpatq(ki2))then
                 isps=isp
                 ki2=tfeevalref(ki2,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   go to 200
                 endif
               endif
@@ -244,7 +244,7 @@ c        write(*,*)'mlocalv-1'
               if(kli1%head%k .eq. ktfoper+mtflist)then
                 mi=kli1%nl
                 if(tflistq(ki2,kli2))then
-                  if(kli2%nl .ne. mi)then
+                  if(kli2%nl /= mi)then
                     irtc=itfmessage(9,'General::equalleng',
      $                   'lhs and rhs of Set')
                     return
@@ -305,11 +305,11 @@ c        write(*,*)'mlocalv-1'
             dtastk(isp-1)=ki
             dtastk(isp  )=dxsycopy(symi)
           elseif(ktflistq(ki,kli))then
-            if(kli%head%k .ne. ktfoper+mtfset .and.
-     $           kli%head%k .ne. ktfoper+mtfsetdelayed)then
+            if(kli%head%k /= ktfoper+mtfset .and.
+     $           kli%head%k /= ktfoper+mtfsetdelayed)then
               go to 100
             endif
-            if(kli%nl .ne. 2)then
+            if(kli%nl /= 2)then
               go to 100
             endif
             ki1=kli%dbody(1)
@@ -416,7 +416,7 @@ c        write(*,*)'mlocalv-1'
       integer*4 isp2,i,itfmessage,lg0,n
       logical*4 rep,symbol
       logical*4 ,intent(in):: eval
-      if(isp .ne. isp1+2)then
+      if(isp /= isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
@@ -427,7 +427,7 @@ c        write(*,*)'mlocalv-1'
       irtc=0
       isp2=isp
       lg0=lgeneration
-      if(list%nl .gt. 0)then
+      if(list%nl > 0)then
         symbol=.true.
         do i=1,list%nl
           isp=isp+2
@@ -477,7 +477,7 @@ c        write(*,*)'mlocalv-1'
             else
               kxi=tfeevalref(ki,irtc)
             endif
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               isp=isp2
               return
             endif
@@ -498,12 +498,12 @@ c        write(*,*)'mlocalv-1'
      $           isp2,list%nl,.true.,rep,irtc)
             call tfresetrule(isp2,list%nl)
           endif
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             isp=isp2
             return
           endif
         else
-          if(isp .gt. isp2)then
+          if(isp > isp2)then
             n=(isp-isp2)/2;
             isp=isp+1
             call tfreplacesymbolstk(dtastk(isp1+1),isp2,n,dtastk(isp),
@@ -577,7 +577,7 @@ c        write(*,*)'mlocalv-1'
         rep=rep .or. rep1
         kd=tfredefsymbol(isp1,isp2,pat%default,rep1)
         rep=rep .or. rep1
-        if(pat%sym%loc .ne. 0)then
+        if(pat%sym%loc /= 0)then
           ks=pat%sym%alloc
           kas=ktfaddr(ks)
           do i=isp1,isp2-1,2

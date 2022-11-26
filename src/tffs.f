@@ -1345,7 +1345,7 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
             cmp%lvalue(n+1,p_DOFR_MULT)=
      $           merge(merge(.true.,
      $           hypot(cmp%value(ky_K0_MULT+n*2),
-     $           cmp%value(ky_K0_MULT+n*2))/al*ampmaxm**(n+1)*aninv(n+1)
+     $           cmp%value(ky_SK0_MULT+n*2))/al*ampmaxm**(n+1)*aninv(n+1)
      $           > eps,n <= 2),.false.,
      $           cmp%value(ky_K0_MULT+n*2) /= 0.d0
      $           .or. cmp%value(ky_SK0_MULT+n*2) /= 0.d0)

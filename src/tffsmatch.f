@@ -10,7 +10,7 @@
       use ffs_flag
       use ffs_fit
       use tffitcode
-      use cellm,only:qcell
+      use cellm,only:qcell,nmes,nmmax
       use dfun
       use tfshare
       use findr,only:fmincube
@@ -67,6 +67,7 @@ c     begin initialize for preventing compiler warning
       endif
       allocate(dval(flv%nvar),df0(maxcond),df1(maxcond),df2(maxcond),
      $     ddf1(maxcond),ddf2(maxcond),residuala1(-ndimmax:ndimmax))
+      nmes=0
       nderiv0=rlist(inumderiv) /= 0.d0
       nvara=0
       aitm1=0
@@ -113,6 +114,8 @@ c     end   initialize for preventing compiler warning
         aitm1=flv%itmax*alit
         aitm2=flv%itmax
         nvara=nvar
+      else
+        iter=flv%itmax
       endif
       chgini=.true.
       if(cell)then
@@ -125,10 +128,11 @@ c     end   initialize for preventing compiler warning
         do 200: do kkk=1,1
           call tftclupdate(int(rlist(intffs)))
           dp01=rlist(latt(1)+mfitddp)
-c          write(*,'(a,i5,3l2,i5,1p8g12.4)')'tffsmatch ',iter,chgmod,newton,wcal,r%nstab,r%r
           wcal=chgmod
+c          write(*,'(a,i5,7l2,i5,1p8g12.4)')'tffsmatch-0 ',iter,chgmod,newton,wcal,zcal,chgini,inicond,parallel,r%nstab,r%r,r0%r
           call tffscalc(flv%kdp,df,flv%iqcol,flv%lfp,nqcol,nqcol1,ibegin,
      $         r,residual,zcal,wcal,parallel,lout,error)
+c          write(*,'(a,i5,7l2,i5,1p8g12.4)')'tffsmatch-1 ',iter,chgmod,newton,wcal,zcal,chgini,inicond,parallel,r%nstab,r%r,r0%r
           if(error)then
             if(irtc == 20001)then
               exit do9000
@@ -186,9 +190,11 @@ c            chgini=.true.
                 if(cell)then
                   call twmov(1,twisss,1,0,.true.)
                 endif
+c                write(*,'(a,1p10g12.4)')'tffsmatch-chmod ',r%r,r0%r,r00%r
               else
                 imprv=resle(r,r0)
                 if(imprv)then
+c                  write(*,'(a,1p10g12.4)')'tffsmatch-imprv ',r%r,r0%r,r00%r
                   if(resle(r,r00,rtol1))then
                     lout=lfno
                     if(outt)then
@@ -202,6 +208,7 @@ c            chgini=.true.
                     else
                       write(lfno,9701)iter,res2r(r),'  (DESCEND) ',fact,nvara
                     endif
+                    nmes=0
                     r00=r
                   endif
                   aimprv=fuzz(log10((ra-r%r)/ra),aimp1,aimp2)
@@ -221,6 +228,7 @@ c            chgini=.true.
                   r0=r
                 else
                   aimprv=0.d0
+                  crate=(r0%r-r%r)/r0%r
                 endif
                 alate=fuzz(dble(iter),aitm1,aitm2)
                 smallf=1.d0-fuzz(log10(fact),flim1,flim2)
@@ -300,8 +308,8 @@ c            chgini=.true.
                 endif
               enddo
 c              write(*,'(a,2l2,2i5)')'tffsmatch ',nderiv,cell,nstab,nvar*nfam*nlat
-              nderiv=nderiv .or.
-     $             cell .and. r%nstab > 0
+c              nderiv=nderiv .or.
+c     $             cell .and. r%nstab > 0
 c     $             .and. dble(nvar*nfam*nlat) < aloadmax
               npa=min(nvar,nparallel)
               chgini=(r%nstab == 0) .or. nderiv
@@ -318,6 +326,8 @@ c     $             .and. dble(nvar*nfam*nlat) < aloadmax
                   enddo
                   if(ipr > 0)then
                     ip=ip+1
+                  else
+                    nmes=nmmax
                   endif
                 else
                   ip=1
@@ -382,6 +392,7 @@ c     $             .and. dble(nvar*nfam*nlat) < aloadmax
                     if(ipr > 0)then
                       ip=ip+1
                     else
+                      nmes=nmmax
                       call tsetintm(-1.d0)
                     endif
                   else
@@ -492,6 +503,7 @@ c     $             .and. dble(nvar*nfam*nlat) < aloadmax
         call tmunmapp(ifqu)
       endif
       call tclrfpe
+      nmes=0
       return
       end associate
       end
