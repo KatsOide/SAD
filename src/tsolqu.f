@@ -72,9 +72,9 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
             z(i) =z(i)-(3.d0+dpz)*ap/2.d0/(2.d0+dpz)*r
      $           -0.25d0*(
      $           w1*(xi**2*xs1-yi**2*xsh2)
-     $           +(ap-dv(i))*aln0
+     $           +ap*aln0
      $           +u1*px(i)+xi*pxi*dc1
-     $           +v1*py(i)+yi*pyi*dch2)
+     $           +v1*py(i)+yi*pyi*dch2)-dv(i)*aln0
           enddo
           ap=px(i)**2+py(i)**2
           dpz=sqrt1(-ap)
