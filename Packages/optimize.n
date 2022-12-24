@@ -91,7 +91,8 @@ Simplex=Class[{},{},{CurrentSimplex,Status="Stop",
             $FORM='10.6';
             Write[lo,Drop[p,{nc+1,Length[p0]-nc}][[,1]]]]];
           If[(p[[-1,1]]-p[[1,1]])/(1e-100+Abs[p[[-1,1]]]+Abs[p[[1,1]]]) < tol,
-            Break[]],{n}]],];
+            Break[]],
+          {n}]],];
     Status="Stop";
     CurrentSimplex];
 

@@ -5404,8 +5404,10 @@ c     $       confhgrr1(1.d0,2.d0-a,x,.true.)
      $       +(1.d0-x*(1.d0-3.d0*x*(1.d0-5.d0*x*(1.d0
      $       -7.d0*x*(1.d0-9.d0*x)))))*exp(-.5d0/x)/z/m_sqrtpi
       else
-        f1=1.d0-2.d0*z/m_sqrtpi*confhg1((.5d0,0.d0),(1.5d0,0.d0),
-     $       zeroim(-z**2),.false.)
+        x=z**2
+        f1=chguaa((.5d0,0.d0),x,.true.)/exp(x)/m_sqrtpi
+c        f1=1.d0-2.d0*z/m_sqrtpi*confhg1((.5d0,0.d0),(1.5d0,0.d0),
+c     $       zeroim(-z**2),.false.)
       endif
       return
       end function
