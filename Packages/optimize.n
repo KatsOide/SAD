@@ -8,13 +8,13 @@ BeginPackage[Optimize`,Global`]
 
 Begin[Optimize`];
 
-Simplex=Class[{},{},{CurrentSimplex,Status="Stop",
+Simplex=Class[{},{},{CurrentSimplex,Status="Stop",prolog=Identity,
   limit,n,lo,tol,per,minq,exp,cont,quick,exl,cl,rr={1,-1},wexp},
 
   Amoebar[p_,f_,r_,kr_]:=Module[
     {pr,fr,tp=Take[p[[,2]],rr]},
     tp=Plus@@(wexp*tp);
-    pr=MapThread[Restrict,{(1-r)*tp+p[[kr,2]]*r,limit[[1]],limit[[2]]}];
+    pr=prolog[MapThread[Restrict,{(1-r)*tp+p[[kr,2]]*r,limit[[1]],limit[[2]]}]];
     fr=f[pr];
 (*    Print["Amoebr ",{fr,pr[[{1,-1}]]}]; *)
     {pr,fr,
@@ -70,13 +70,13 @@ Simplex=Class[{},{},{CurrentSimplex,Status="Stop",
       MaxIteration:>Max[100,10*Length[p0]],
       ExtendLevel->1,ContractLevel->1,ReflectRange->{1,-1},
       Output->6,MinimumSize->0,ExpansionRatio->2,TryReflect->1,
-      WeightExponent->0,
+      WeightExponent->0,Prolog->Identity,
       Tolerance->1e-6,Persistence->1,QuickShrink->0},
       lo,p=Sort[p0],nc=Floor[(PageWidth-3)/22],we,lrr},
-    {limit,n,lo,tol,per,minq,exp,cont,quick,exl,cl,rr,we}=
+    {limit,n,lo,tol,per,minq,exp,cont,quick,exl,cl,rr,we,prolog}=
       {VariableRange,MaxIteration,Output,
         Tolerance,Persistence,MinimumSize,ExpansionRatio,TryReflect,QuickShrink,
-        ExtendLevel,ContractLevel,ReflectRange,WeightExponent}/.{opt}/.def;
+        ExtendLevel,ContractLevel,ReflectRange,WeightExponent,Prolog}/.{opt}/.def;
     Write[lo,"DownhillSimplex {limit, Option}: ",{limit,opt}];
     lrr=Length[Take[p,rr]];
     wexp=Exp[-(we/lrr)*Range[lrr]];

@@ -12,7 +12,7 @@ SetAttributes[{Graphics,AspectRatio,PlotRange,
   Orientation,Line,Point,Rectangle,Circle,Polygon,Hook,Linear,Bar,Text,
   TextSize,TextRotate,TextAlign,Scaled,GridLines,WindowScaled,CanvasScaled,
   RectScaled,AboveTags,BelowTags,Right,Left,Above,Below,
-  TextCases,TextPosition,Prolog,Epilog,Vertical,Alignment,Legend,
+  TextCases,TextPosition,Vertical,Alignment,Legend,
   LegendRaise,LegendBG,
   Scale,Weight,FrameClick,InfoBind,TickFont,RemoveOverlap,FrameColor,
   FontScale,TickFontScale,FrameFontScale,LegendFontScale,TitleFontScale,
@@ -24,7 +24,7 @@ Graphics$Options=AspectRatio|FrameLabel|PlotRange|GridLines|Alignment|DataRange|
       TitleFontScale|FrameColor|TickColor|LegendBG|LegendRaise|BelowFrame;
 
 Plot$DefaultColor={"dodger blue","tomato2","forest green","dark goldenrod",
-      "royal blue","orange3","blue violet"};
+      "royal blue","orange3","blue violet","lime green","hot pink","yellow4"};
 
 With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
   AspectRatio->Automatic,PlotJoined->False,StepRatio->1,

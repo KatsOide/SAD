@@ -84,7 +84,7 @@
       ls=merge(mod(ls-1,nlat-1)+1,nlat-mod(1-ls,nlat-1),ls > 0)
       ld=merge(mod(ld-2,nlat-1)+2,nlat+1-mod(2-ld,nlat-1),
      $     ld > 1)
-      if(ld .le. ls)then
+      if(ld <= ls)then
         mt=mt+1
       endif
       kp=kl%dbody(2)
@@ -99,12 +99,12 @@
         go to 9000
       endif
       if(calpol)then
-        if(.not. (mc >= 9 .and. mc .le. 11))then
+        if(.not. (mc >= 9 .and. mc <= 11))then
           go to 9000
         endif
         mcf=9
       else
-        if(.not. (mc >= 7 .and. mc .le. 9))then
+        if(.not. (mc >= 7 .and. mc <= 9))then
           go to 9000
         endif
         mcf=7
@@ -156,7 +156,7 @@ c      call omp_set_num_threads(1)
 c        write(*,*)'tftrack ',nparallel,npz,npparamin,
 c     $       ne,npnlatmin
         ne=ld-ls
-        if(ne .le. 0)then
+        if(ne <= 0)then
           ne=ne+nlat
         endif
         npara=min(npara,npz/npparamin+1,ne*npz/npnlatmin+1)
@@ -243,7 +243,7 @@ c      call tclrparaall
           if(npr >= 0)then
             call tftclupdate(7)
           endif
-          if(npa .le. 0)then
+          if(npa <= 0)then
             nt=nt+mt-1
             mt=0
             exit
@@ -257,7 +257,7 @@ c      call tclrparaall
           mt=mt-1
         enddo
         normal=.true.
-        if(ld .le. ls)then
+        if(ld <= ls)then
           normal=.false.
         elseif(mt >= 1 .and. npa > 0)then
           call tturn0(npa,ls,ld,
@@ -452,7 +452,7 @@ c      return
         do i=1,np
           k=iptbl(iptbl(i,1),4)
           rlist(kaj(mcf+1)+i)=merge(dble(k),0.d0,
-     $         (-nlati .le. k) .and. (k .le. nlati))
+     $         (-nlati <= k) .and. (k <= nlati))
           rlist(kaj(mcf+2)+i)=merge(dble(iptbl(iptbl(i,1),5)),
      $         dble(tend+1),k /= 0)
         enddo
@@ -528,7 +528,7 @@ c     Load particle lost turn from zx(#,9)
 c     Compact dead particles into list-tail
       i=1
       npa=np
-      do while(i .le. npa)
+      do while(i <= npa)
          if(iptbl(i,4) /= 0)then
 c           Search avlive particle from tail: (i, npa]
             do while((i < npa) .and. (iptbl(npa,4) /= 0))
