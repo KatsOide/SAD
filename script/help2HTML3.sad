@@ -3,7 +3,7 @@ FFS;
  EquAlign[t_,_]:="::<"//t//">::";
 
  Help2HTML=Class[{},{},{help,nlabel=0,Labels,col=96,
-   lt,ltt,form="svg",svg,outf,pw="16 cm"},
+   lt,ltt,form="pdf",svg,outf,pw="20 cm",ew="700"},
 
    Constructor[]:=(
      SetDirectory[DocumentsDirectory];
@@ -12,8 +12,8 @@ FFS;
      Labels[s_]:=s;
      Labels[""]="";
      outf[_]=Undefined;
-     lt=LaTeX[style->"align",pt->11,margins->"'3 3 3 0'",dpi->120];
-     ltt=LaTeX[style->"text",pt->11,margins->"'3 3 3 0'",dpi->120]
+     lt=LaTeX[style->"align",pt->11,margins->"'3 3 3 0'",pw->pw,dpi->120];
+     ltt=LaTeX[style->"text",pt->11,margins->"'3 3 3 0'",pw->pw,dpi->120]
      );
 
      SelfIndent[in_]:=Module[{f=StringToStream[in],r,ind,tab,con,w,p,ps,r1},
@@ -92,7 +92,7 @@ FFS;
              Exit[]]
            ];
          s[1,Max[p0,0]]//
-           "<img  class=\"eqs\" SRC=\""//equ//"\" />"//
+           "<img class=\"eqs\" width=\""//ew//"\" SRC=\""//equ//"\" />"//
              ReplaceLaTeX[s[p2,-1]]
          ]];
 

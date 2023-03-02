@@ -66,9 +66,10 @@ LaTeX=Class[{},{eqn=0,pre0="\
             "svg",
             System["pdf2svg "//pdf//" "//out//" > /dev/null"];
             System["svgcleaner --quiet "//out//" "//out//" > /dev/null"],
+            "pdf",,
             _,
             System["convert -density "//dpi//" "//pdf//" "//out//" > /dev/null"]];
-          System["rm "//fn//" "//fn//".tex "//fn//".log "//fn//".aux "//pdf]
+          System["rm "//fn//" "//fn//".tex "//fn//".log "//fn//".aux "//If[form<=>"pdf",pdf,""]]
           ];
         SetDirectory[dir];
         out]]];
