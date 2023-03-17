@@ -1960,7 +1960,7 @@ CanvasGraphics=Class[{},
 
   With[{txdef={PlotColor->"black",TextFont->DefaultFont,TextSize->1}},
     Canvas$Legend[n_, r_] := Module[
-      {pc,pl,size,sym,ptc,dash,thick,pj,pbc,pbc1,leg,cmd,x0,dx,dy,y,
+      {pc,pl,size,sym,ptc,dash,thick,pj,pbc,pbc1,leg,cmd,x0,dx,dy,y,bar,
         d1=5,d2=-1,d3=1,legtag,legtagfr,bdf,begin=CanvasLastID,
         x1,x2,y1,y2,ls="legend"//n,lsfr,w,h,rb,tx,txfont,txsize,txcol,zr,legr,p,
         l=LegendList[[n]],wy=(-Subtract@@WindowList[[n,2]])*DPI},
@@ -1978,23 +1978,30 @@ CanvasGraphics=Class[{},
           {PlotColor,Plot,PointSize,PointSymbol,
             PointColor,Dashing,Thickness,PlotJoined,
             PointBorderColor,Legend}/.First[#];
-        sym=sym/.{Bar->"BX","BA"->"BX"};
-        dash=DashCanonical[Switch[dash,
-          1,{1},
-          _Real,{dash,dash/3},
-          _,dash]];
-        cmd={Fill->pc,legtag,If[thick<>0,Width->thick,Null[]]};
-        If [pj<=>False,
+        sym=sym/.{"BA"->"BX"};
+        bar=(sym===Bar);
+        dash=If[bar,
+          1,
+          DashCanonical[Switch[dash,
+            1,{1},
+            _Real,{dash,dash/3},
+            _,dash]]];
+        cmd={Fill->If[bar,ptc,pc],legtag,If[thick<>0,Width->thick,Null[]]};
+        If[pj<=>False,
           bdf=CanvasClipLine[{{x0,x0+dx},{y,y}},{{0,0},{w,h}},{1}];
           If[dash==={1},
             CanvasWidget[Create$Line]={bdf,cmd},
             CanvasWidget[Create$Line]={bdf,Dash->TclArg[Round[dash*DPI]],cmd}]
           ];
-        If [pl,
-          pbc1=If[Not[StringQ[pbc]],ptc,pbc];
-          size*=PlotSymbolSize;
-          Canvas$Symbol[ls,{x0+dx/2,y},sym,size,ptc,pbc1];
-          ];
+!        Print[{r,bar,size,ptc,bdf,cmd}];
+        If[bar,
+          bdf=CanvasClipLine[{{x0,x0+dx},{y,y}},{{0,0},{w,h}},{1}];
+          CanvasWidget[Create$Line]={bdf,cmd,Width->size},
+          If[pl,
+            pbc1=If[Not[StringQ[pbc]],ptc,pbc];
+            size*=PlotSymbolSize;
+            Canvas$Symbol[ls,{x0+dx/2,y},sym,size,ptc,pbc1];
+            ]];
         tx=Second[#];
         Switch[tx,
           _String,

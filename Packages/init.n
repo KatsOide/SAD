@@ -7,7 +7,7 @@ SetAttributes[{Real,String,BuiltinFunction,
   Word,Expression,WordSeparators,ReadNewRecord,
   NullWords,EndOfFile,$Failed,FormatType,
   InputForm,HoldForm,GenericSymbolForm,
-  Automatic,Default,
+  Automatic,Default,Prolog,Epilog,
   None,Undefined},
   Constant];
 
@@ -613,9 +613,9 @@ AutoLoad[CheckEntryList,PackagesDirectory//"CheckEntryList.n"];
 AutoLoad[CursorEntry,CaCursorEntry,PackagesDirectory//"CursorEntry.n"];
 AutoLoad[SI$StartInspect,PackagesDirectory//"SADInspect.n"];
 AutoLoad[Speak,PackagesDirectory//"Speak.n"];
-AutoLoad[Fit,PolynomialFit,FindRoot,FitGaussian,FitEmit,CreateBin,
+AutoLoad[Fit,PolynomialFit,FindRoot,FitGaussian,FitEmit,CreateBin,PoissonError,
   PackagesDirectory//"Fit.n"];
-AutoLoad[Rational,Nemerator,Denominator,FromRational,
+AutoLoad[Rational,ReducedRational,Nemerator,Denominator,FromRational,
   ContinuedFraction,FromContinuedFraction,PackagesDirectory//"rational.n"];
 AutoLoad[help,HELP,Help,PackagesDirectory//"help.n"];
 AutoLoad[Help$Messages,PackagesDirectory//"HelpMessages.n"];

@@ -1,6 +1,6 @@
---- generic/tkButton.h.orig	Sun Nov 27 11:35:51 2005
-+++ generic/tkButton.h	Fri Feb 23 13:38:52 2007
-@@ -152,6 +152,12 @@
+--- generic/tkButton.h,orig	2023-02-12 06:05:27
++++ generic/tkButton.h	2020-07-06 22:42:25
+@@ -145,6 +145,12 @@
  				 * borders. */
      Tk_Font tkfont;		/* Value of -font option: specifies font to
  				 * use for display text. */
@@ -13,8 +13,8 @@
      XColor *normalFg;		/* Value of -font option: specifies foreground
  				 * color in normal mode. */
      XColor *activeFg;		/* Value of -activeforeground option:
-@@ -163,10 +169,31 @@
-     GC normalTextGC;		/* GC for drawing text in normal mode.  Also
+@@ -156,10 +162,31 @@
+     GC normalTextGC;		/* GC for drawing text in normal mode. Also
  				 * used to copy from off-screen pixmap onto
  				 * screen. */
 +    GC normalAltTextGC;		/* GC for drawing alttext in normal mode.
@@ -45,7 +45,7 @@
      GC stippleGC;		/* Used to produce disabled stipple effect for
  				 * images when disabled. */
      Pixmap gray;		/* Pixmap for displaying disabled text if
-@@ -261,6 +288,8 @@
+@@ -255,6 +282,8 @@
  				 * invocataions of the button command. */
      int flags;			/* Various flags; see below for
  				 * definitions. */
@@ -54,7 +54,7 @@
  } TkButton;
  
  /*
-@@ -316,6 +345,16 @@
+@@ -318,5 +347,15 @@
  MODULE_SCOPE void	TkpDisplayButton(ClientData clientData);
  #endif
  MODULE_SCOPE int	TkInvokeButton(TkButton *butPtr);
@@ -69,5 +69,4 @@
 +					GC scriptGc, GC altScriptGc,
 +					int bmeas);
  
- # undef TCL_STORAGE_CLASS
- # define TCL_STORAGE_CLASS DLLIMPORT
+ #endif /* _TKBUTTON */

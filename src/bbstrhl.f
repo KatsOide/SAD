@@ -18,8 +18,8 @@
       colb%v_cen(1:5)=blist(73:77)
       colb%cod(1:6)=blist(78:83)
       colb%Luminosity=blist(84)
-      colb%bstrl=int(blist(85)+0.1)
-      colb%nslice=int(blist(99)+0.1)
+      colb%bstrl=int(blist(85)+0.1d0)
+      colb%nslice=int(blist(99)+0.1d0)
       colb%zslice(1:nslimax*2)=blist(100:99+nslimax*2)
 
       return
@@ -78,7 +78,8 @@
       real*8 x(np),px(np),y(np),py(np),z(np),g(np),dv(np),
      $     spx(np),spy(np),spz(np)
       real*8 p_in(70),blist(nblist)
-      real*8 sqrpi
+c      real*8 sqrpi
+      real*8 ,parameter :: sqrpi=m_sqrtpi
       integer*4 np,iturn,idummy,bstrhl,nbsemit,ns1,ns2,nsli,nss
 c      integer*4 n,i,is,j,jl,jm,ju,iseed,irtc
       integer*4 n,i,is,j,jl,jm,ju,irtc
@@ -100,6 +101,7 @@ c      integer*4 n,i,is,j,jl,jm,ju,iseed,irtc
       call setcolb(blist,colb)
 
       bstrhl=colb%bstrl
+c      write(*,'(a,2i8)')'beambeam ',l_track,bstrhl
 
 c      write(*,'(A,2I6,1P,3E12.3)') 'Welcome to beambeam',
 c     &     iturn,colb%nslice,colb%ce,colb%gamma
@@ -114,7 +116,7 @@ c     &     iturn,colb%nslice,colb%ce,colb%gamma
 !     blist=>colb
 !     begin initialize for preventing compiler warning
 
-      sqrpi=sqrt(pi)
+c      sqrpi=sqrt(pi)
 !     end   initialize for preventing compiler warning
       nsli=colb%nslice
       if(nsli .le. 0) return
@@ -151,7 +153,7 @@ c     &     iturn,colb%nslice,colb%ce,colb%gamma
       sigz=p_in(27)
 
       gamp=colb%gamma
-      cnbs=5.*sqrt(3.)*finest*gamp/6.
+      cnbs=5.*sqrt(3.d0)*finest*gamp/6.
       cpbs=2*re*gamp*gamp*gamp/3
       cubs=1.5d0*hbar*cveloc*gamp*gamp/am_e
 
@@ -368,7 +370,7 @@ c       write(*,*) ' In loop ',is
                dp2bs=sqrt(cp2bs*rhoi*rhoi2*dsz)
 !     write(*,'(I6,1P,3E12.4)') i,rnbs,dpzbs,dp2bs
                ucE=cubs*rhoi
-!               write(*,'(2I3,1P,6E12.4)') is,i,rhoi,ucE,dsz,rnbs,fx0,fy0
+c               write(*,'(2I3,1P,6E12.4)') is,i,rhoi,ucE,dsz,rnbs,fx0,fy0
 
                if(rnbs.gt.0.5) then
                   write(*,*) 'Nbs is too large',rnbs
@@ -381,6 +383,7 @@ c               xx=tran(iseed)
 !           if(xx.gt.prb) then
 !  Binomial generator
                if(xx.lt.rnbs) then
+cc                 write(*,'(a,2i8,1p10g12.4)')'bstrhl ',l_track,is,i,xx,rnbs
 !   Quantum excitation model using 2nd order momemnt
 !              g(i)=g(i)-(dpzbs+tgauss(iseed)*dp2bs*sqrt(rnbs))/rnbs
 !!!!!              g(i)=g(i)-dpzbs/rnbs  !  both gave the same result
@@ -579,7 +582,8 @@ c      type (sad_descriptor) kv
       
       rne=p_in(ky_NP_BEAM)
       nsli=int(p_in(ky_SLI_BEAM))
-      colb%bstrl=p_in(53)
+c      colb%bstrl=p_in(53)
+      colb%bstrl=int(p_in(53))
             
       colb%nslice=nsli
       if(nsli .le. 0) then
@@ -708,7 +712,8 @@ c         colb%nslice=1
 !     &            (blist(i_cod+i),i=0,4)
       if(colb%bstrl.gt.0) then 
          gamp=colb%gamma
-         cnbs=5.*sqrt(3.)*finest*gamp/6.
+c         cnbs=5.*sqrt(3.d0)*finest*gamp/6.
+         cnbs=5.*sqrt(3.d0)*finest*gamp/6.
          cpbs=2*re*gamp*gamp*gamp/3
          cubs=1.5d0*hbar*cveloc*gamp*gamp/am_e
          write(*,'(A,1P,4E12.4)') 'beamstrahlung ',gamp,cnbs,cpbs,cubs
