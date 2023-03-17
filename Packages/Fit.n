@@ -215,5 +215,8 @@ FitEmit[x_,px_]:=Module[{
   {{xm,pxm,(sr-1/sr)/2,beta,em},
     {cx[[2]],cpx[[2]],(sr+1/sr) Sqrt[dsigx1^2+dsigpx1^2]/4,beta demr,demr*em}}];
 
+PoissonError[n_]:={n,(1/2 Erf[1/Sqrt[2]] (E/n)^n Factorial[n])};
+PoissonError[0]=(-(1/2) Log[1 - Erf[1/Sqrt[2]]])*{1,1};
+
 SetAttributes[{FindRoot,FindRoot$$,FRN$Eval,FR$Newton,FRN$D},{HoldAll,Constant}];
-SetAttributes[{FRN$Reduction,FitGaussian,FitEmit,CreateBin},Constant];
+SetAttributes[{FRN$Reduction,FitGaussian,FitEmit,CreateBin,PoissonError},Constant];

@@ -1993,7 +1993,7 @@ CanvasGraphics=Class[{},
             CanvasWidget[Create$Line]={bdf,cmd},
             CanvasWidget[Create$Line]={bdf,Dash->TclArg[Round[dash*DPI]],cmd}]
           ];
-        Print[{r,bar,size,ptc,bdf,cmd}];
+!        Print[{r,bar,size,ptc,bdf,cmd}];
         If[bar,
           bdf=CanvasClipLine[{{x0,x0+dx},{y,y}},{{0,0},{w,h}},{1}];
           CanvasWidget[Create$Line]={bdf,cmd,Width->size},

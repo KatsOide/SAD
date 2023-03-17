@@ -549,9 +549,11 @@ c          call tmultr(trans1,trans2,6)
       enddo
       write(*,*)' ???-TRACK-?Missing end of solenoid ',
      $     pname(idelc(k))(1:lpnamec(k))
-      allocate(bzph(np))
       ke=nlat
  20   bzs=tfbzs(k,kbz)
+      if(krad)then
+        allocate(bzph(np))
+      endif
       if(.not. insol)then
         call compelc(k,cmp)
         if(.not. cmp%update)then

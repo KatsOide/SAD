@@ -167,7 +167,9 @@ c        call tbfrie(trans,cod,beam, rhob,0.d0,.false.)
         call tblfre(trans,cod,beam,dxfr2,dyfr2,dyfra2)
       endif
       if(krad)then
+c        write(*,'(a,1p10g12.3)')'tsteee-1 ',alr,beam(1),beam(3),beam(6),beam(10),beam(15),beam(21)
         call tradke(trans,cod,beam,srot,alr,0.d0,0.d0)
+c        write(*,'(a,1p10g12.3)')'tsteee-2 ',alr,beam(1),beam(3),beam(6),beam(10),beam(15),beam(21)
       endif
       call tchge(trans,cod,beam,srot,
      $     dx,dy,0.d0,theta,0.d0,0.d0,0.d0,0.d0,.false.)
