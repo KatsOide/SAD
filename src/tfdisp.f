@@ -50,9 +50,9 @@
       integer*4 i
       character*(len(s)) autofg
       s=autofg(v,form)
-      if(v .eq. 0.d0)then
+      if(v == 0.d0)then
         i=index(s,'.')
-        if(i /= 0 .and. i .lt. len(s)-1)then
+        if(i /= 0 .and. i < len(s)-1)then
           s(i+2:)=' '
         endif
       endif
@@ -66,7 +66,7 @@
       implicit none
       type (sad_comp) ,intent(in):: cmp
       integer*4 , intent(in)::id
-      if(kytbl(kwL,id) .eq. 0)then
+      if(kytbl(kwL,id) == 0)then
         tfvl=0.d0
       else
         tfvl=tfvcmp(cmp,kytbl(kwL,id))
@@ -125,7 +125,7 @@ c     end   initialize for preventing compiler warning
 270   call getwdl2(word,wordp)
 c      write(*,*)'tfdisp ',word,wordp
       if(word(1:3) /= '***' .and.
-     1   ifany(word,'|<{*%',1) .gt. 0)then
+     1   ifany(word,'|<{*%',1) > 0)then
         seldis=.true.
         word1=wordp
         go to 270
@@ -161,7 +161,7 @@ c      write(*,*)'tfdisp ',word,wordp
       elseif(abbrev(word,'D_UMPOPTICS','_'))then
         mdisp=moded
         go to 270
-      elseif(word .eq. 'Z')then
+      elseif(word == 'Z')then
         mdisp=modez
         go to 270
       elseif(abbrev(word,'E_XTREMUM','_'))then
@@ -190,10 +190,10 @@ c      write(*,*)'tfdisp ',word,wordp
       else
         idisp2=idisp1
       endif
-250   if(idisp1 .eq. idisp2)then
+250   if(idisp1 == idisp2)then
         id3=nlat
         idstep=max(nlat-idisp2,1)
-      elseif(idisp2 .lt. idisp1)then
+      elseif(idisp2 < idisp1)then
         id3=idisp2+nlat
         idstep=1
       else
@@ -254,7 +254,7 @@ c      write(*,*)'tfdisp ',word,wordp
       end select
       if(dref)then
         call tdrefheader(header,mdisp)
-      elseif(icolm .eq. -1)then
+      elseif(icolm == -1)then
         call trefheader(header,mdisp)
       endif
       do 200 l1=idisp1,id3,idstep
@@ -269,8 +269,8 @@ c      write(*,*)'tfdisp ',word,wordp
           by2=twiss(min(l+1,nlat),icolm,mfitby)
           if(bx1 .ge. bx0 .and. bx1 .ge. bx2 .or.
      1       by1 .ge. by0 .and. by1 .ge. by2 .or.
-     1       bx1 .le. bx0 .and. bx1 .le. bx2 .or.
-     1       by1 .le. by0 .and. by1 .le. by2)then
+     1       bx1 <= bx0 .and. bx1 <= bx2 .or.
+     1       by1 <= by0 .and. by1 <= by2)then
             bx0=bx1
             by0=by1
             bx1=bx2
@@ -283,32 +283,32 @@ c      write(*,*)'tfdisp ',word,wordp
             go to 200
           endif
         endif
-        if(l .eq. nlat)then
+        if(l == nlat)then
           id=icMARK
         else
           id=idtypec(l)
         endif
         call compelc(l,cmp)
-        if(iele1(icomp((l))) .gt. 0 .and.
+        if(iele1(icomp((l))) > 0 .and.
      $       id /= icMARK .and. id /= 34)then
-          if(nelvx(iele1(icomp(l)))%ival .gt. 0)then
+          if(nelvx(iele1(icomp(l)))%ival > 0)then
             call tdtrimz(vout,
      $           tfvcmp(cmp,nelvx(iele1(icomp(l)))%ival),'10.7')
           else
             vout=' 0'
           endif
-        elseif(id .eq. icSOL)then
+        elseif(id == icSOL)then
           call tdtrimz(vout,cmp%value(ky_BZ_SOL),'10.7')
         else
           vout=' 0'
         endif
-        if(mod(lines,nlc) .eq. 0 .and. lines /= 0
-     $       .and. lfni .eq. 5 .and. lfno .eq. 6 .and.
+        if(mod(lines,nlc) == 0 .and. lines /= 0
+     $       .and. lfni == 5 .and. lfno == 6 .and.
      $       .not. range)then
           write(lfno,'(a,$)')'(c_ontinue, q_uit, a_ll)? '
           nc=itfgetbuf(lfni,ans,len(ans),irtc)
 c          read(lfni,'(a)')ans
-          if(irtc .eq. 0 .and. nc .gt. 0)then
+          if(irtc == 0 .and. nc > 0)then
             call small(ans(1:1))
             select case (ans(1:1))
             case ('a')
@@ -320,13 +320,13 @@ c          read(lfni,'(a)')ans
             end select
           endif
         endif
-        if(mdisp .eq. modeg .or. mdisp .eq. modeog)then
-          if(mdisp .eq. modeg)then
+        if(mdisp == modeg .or. mdisp == modeog)then
+          if(mdisp == modeg)then
             hc=' '
           else
             hc='O'
           endif
-          if(mod(lines,nlc) .eq. 0)then
+          if(mod(lines,nlc) == 0)then
             write(lfno,9022)hc,hc,hc,hc,hc,hc
 9022        format(
      1           ' Element             ',a,
@@ -346,8 +346,8 @@ c          read(lfni,'(a)')ans
             buff(59:69)=' 0'
           endif
 c          write(*,*)'tfdisp ',mdisp,modeg,l,tfinsol(l)
-c          if(mdisp .eq. modeg .or. tfinsol(l))then
-          if(mdisp .eq. modeg)then
+c          if(mdisp == modeg .or. tfinsol(l))then
+          if(mdisp == modeg)then
             do i=0,2
               call tdtrimz(buff(1+i*12:12+i*12),
      1             geo(i+1,4,l)/scale(mfitgx+i),'12.6')
@@ -365,15 +365,14 @@ c          if(mdisp .eq. modeg .or. tfinsol(l))then
           endif
           dir=' '
           if(l /= nlat)then
-            if(direlc(l) .le. 0.d0)then
+            if(direlc(l) <= 0.d0)then
               dir='-'
             endif
           endif
-          write(lfno,9024)dir,name(1:max(18,lname)),buff(1:105),
-     $         mod(l-1,10000)+1
+          write(lfno,9024)dir,name(1:max(18,lname)),buff(1:105),mod(l-1,10000)+1
 9024      format(a,a,a,1x,i5)
-        elseif(mdisp .eq. moded)then
-          if(l .eq. idisp1)then
+        elseif(mdisp == moded)then
+          if(l == idisp1)then
             buff(1:15)=' '
             do i=1,ntwissfun
               call tdtrimz(buff((i-1)*12+16:i*12+15),scale(i),'12.8')
@@ -397,7 +396,7 @@ c$$$          enddo
 c$$$          buff((26-1)*12+16:26*12+15)=vout
           write(lfno,'(a)')buff(1:blen)
         else
-          if(mod(lines,nlc) .eq. 0)then
+          if(mod(lines,nlc) == 0)then
             write(lfno,'(a)')header
           endif
           select case (mdisp)
@@ -415,7 +414,7 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             buff(33:40)=tdispv(mfitgmx,l,icolm,dref,'8.5',
      $           tfvl(cmp,id))
           case (modeb)
-            if(ifsize .eq. 0)then
+            if(ifsize == 0)then
               call tfsize(.true.)
             endif
             sigpp=beamsize(21,l)
@@ -438,11 +437,11 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             buff(33:40)=tdispv(mfitepx,l,icolm,dref,'8.5')
           end select
           if(l /= nlat .and.
-     $         direlc(l) .le. 0.d0)then
+     $         direlc(l) <= 0.d0)then
             bname(1:max(10,lname+2))=' -'//name(1:lname)
             lname=max(10,lname+2)
           else
-            if(lname .le. 8)then
+            if(lname <= 8)then
               bname(1:10)='  '//name(1:lname)
               lname=10
             else
@@ -536,7 +535,7 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
             buff(96:103)=tdispv(mfitny,l,icolm,dref,'8.5')
             buff(104:111)=tdispv(mfitey,l,icolm,dref,'8.5')
             buff(112:119)=tdispv(mfitepy,l,icolm,dref,'8.5')
-            if(mdisp .eq. modea)then
+            if(mdisp == modea)then
               buff(120:126)=tdispv(mfitdz,l,icolm,dref,'7.4')
             else
               buff(120:126)=tdispv(mfitdetr,l,icolm,dref,'7.4')
@@ -558,7 +557,7 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
       integer*4 n,i,l,nsq,i1,ls
       character*(*) str
       l=len(str)
-      if(n .le. 0)then
+      if(n <= 0)then
         ls=l
         return
       endif
@@ -566,8 +565,8 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
       i1=1
       do i=2,l
         i1=i1+1
-        if(str(i-1:i-1) .eq. ' ' .and.
-     $       str(i:i) .eq. ' ' .and. nsq .lt. n)then
+        if(str(i-1:i-1) == ' ' .and.
+     $       str(i:i) == ' ' .and. nsq < n)then
           nsq=nsq+1
           i1=i1-1
         endif
@@ -585,7 +584,7 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
       implicit none
       character*131 ,intent(out):: header
       integer*4 ,intent(in):: mode
-      if(mode .eq. modeb)then
+      if(mode == modeb)then
         return
       endif
       header(3:3)='d'
@@ -623,7 +622,7 @@ c$$$          buff((26-1)*12+16:26*12+15)=vout
       implicit none
       character*131 ,intent(out):: header
       integer*4 ,intent(in):: mode
-      if(mode .eq. modeb)then
+      if(mode == modeb)then
         return
       endif
       header(6:6)='R'

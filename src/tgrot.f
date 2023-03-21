@@ -161,7 +161,7 @@
       return
       end function
 
-      real*8 function  tforbitgeo(geo,cod) result(og)
+      real*8 function tforbitgeo(geo,cod) result(og)
       use mathfun,only:asinz
       implicit none
       dimension og(3,4)
