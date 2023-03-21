@@ -1185,7 +1185,7 @@ c        write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6)
         return
       endif
       f1=merge(1.d0,0.d0,rx1 == 0.d0)
-      f2=merge(1.d0,0.d0,rx2 == 0.d0)
+      f2=merge(1.d0,0.d0,rx2 == 1.d0)
       lt=idtype(cmp%id)
       select case (lt)
 
@@ -1446,7 +1446,7 @@ c     $     cmp%value(ky_K0_BEND)
       do i=i1,i2,is
         if(i1 == i2)then
           f1=merge(1.d0,0.d0,rx1 == 0.d0)
-          f2=merge(1.d0,0.d0,rx2 == 0.d0)
+          f2=merge(1.d0,0.d0,rx2 == 1.d0)
           r1=rx1
           r2=rx2
         elseif(i == i1)then
@@ -1456,7 +1456,7 @@ c     $     cmp%value(ky_K0_BEND)
         elseif(i == i2)then
           r1=0.d0
           r2=rx2
-          f2=merge(1.d0,0.d0,rx2 == 0.d0)
+          f2=merge(1.d0,0.d0,rx2 == 1.d0)
         else
           r1=0.d0
           r2=1.d0

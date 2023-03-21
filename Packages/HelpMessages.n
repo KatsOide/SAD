@@ -1535,11 +1535,7 @@ Here PQFC represents the center of QF.\n\n\
      MARK PQFC = (OFFSET =  1.5);\n\
 Here PQFC represents the center of QF, too (consider why). The value of OFFSET is interpreted taking the direction of the LINE into account, i.e., a MARK in a line A represents the same location in a line -A.\n\n\
 Restrictions:\n\
-(1) Function TrackParticles does not take OFFSET into account if the start\n\
-    or stop location is in the midst of a beam line and a Mark with nonzero\n\
-    OFFSET, in the current version. Tracking for entire beam line or\n\
-    MEASURE(MEA) command supports OFFSET.\n\
-(2) The outputs by DISPLAY(DISP) outside of the narrowed region by OFFSET are\n\
+(1) The outputs by DISPLAY(DISP) outside of the narrowed region by OFFSET are\n\
     meaningless.",
         "",
         {}}}}
