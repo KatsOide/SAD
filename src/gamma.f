@@ -3961,6 +3961,9 @@ c            write(*,'(a,i5,1p10g12.4)')'hg1-2 ',s,a,c,x,u,f1
       integer*4 na,nb,m
       logical*4 cmplm,realm,veca,vecb
       irtc=-1
+      if(.not. tfnumberq(dtastk(isp)))then
+        return
+      endif
       kx=dxnullo
       call tfmatrixmaybeq(dtastk(isp1+1),cmplm,realm,veca,na,m,kla)
       if(m /= 0)then

@@ -86,7 +86,7 @@
       z1=gv(1,3)
       z2=gv(2,3)
       z3=gv(3,3)
-      if(phi .eq. 0.d0)then
+      if(phi == 0.d0)then
         rho=0.d0
         gx0=gv(1,4)+z1*al
         gy0=gv(2,4)+z2*al
@@ -107,7 +107,7 @@
         z3=-sp0*x3+cp0*gv(3,3)
         x3= cp0*x3+sp0*gv(3,3)
       endif
-      chi=merge(0.d0,2.d0*atan2(x3,-y3),x3 .eq. 0.d0)
+      chi=merge(0.d0,2.d0*atan2(x3,-y3),x3 == 0.d0)
       return
       end associate
       end subroutine
@@ -127,12 +127,12 @@
       real*8 ,parameter :: frmin=1.d-12
       associate(l=>pcvt%l,cost=>pcvt%cost,sint=>pcvt%sint,al=>pcvt%al,
      $     fr0=>pcvt%fr0)
-      fr=merge(fr0,fr0+ds/al,al .eq. 0.d0)
+      fr=merge(fr0,fr0+ds/al,al == 0.d0)
       gv=tfgeofrac(l,fr,irtc)
       if(irtc /= 0)then
         return
       endif
-      call radangle(h1,rho*p1/p0,dpr,thu,thv,xi30,xi2)
+      callradangle1(h1,rho*p1/p0,dp,thu,thv,xi30,xi2)
       pp=hypot(ppx,ppy)
       ppx1=ppx/pp
       ppy1=ppy/pp
@@ -149,7 +149,7 @@ c      cod=[xi,pxir,yi,pyir,0.d0,0.d0]
       s2=2.d0*c1*s1
       xi3=s2*xi30
       xi1=c2*xi30
-      if(ilp .eq. 0)then
+      if(ilp == 0)then
         itp=itp+1
         kphtable(itp)=ktaloc(10*lt)
         ilp=1
@@ -187,7 +187,7 @@ c      cod=[xi,pxir,yi,pyir,0.d0,0.d0]
      $     z1=>pp%geo1(1,3),z2=>pp%geo1(2,3),z3=>pp%geo1(3,3),
      $     gx0=>pp%geo1(1,4),gy0=>pp%geo1(2,4),gz0=>pp%geo1(3,4),
      $     rho=>pp%rho,chi=>pp%chi,geo1=>pp%geo1)
-      call radangle(h1,rho*p1/p0,dpr,thu,thv,xi30,xi2)
+      callradangle1(h1,rho*p1/p0,dp,thu,thv,xi30,xi2)
       pxir=pxi+thu
       pyir=pyi+thv
       pzi=1.d0+pxy2dpz(pxir,pyir)
@@ -217,7 +217,7 @@ c      cod=[xi,pxir,yi,pyir,0.d0,0.d0]
       xi3a=cos(chi)*xi3+sin(chi)*xi1
       xi1=-sin(chi)*xi3+cos(chi)*xi1
       xi3=xi3a
-      if(ilp .eq. 0)then
+      if(ilp == 0)then
         itp=itp+1
         kphtable(itp)=ktaloc(10*lt)
         ilp=1
@@ -265,11 +265,11 @@ c      cod=[xi,pxir,yi,pyir,0.d0,0.d0]
       integer*4 nph,i
       real*8 dp
       integer*8 ,save ::kphlist=0
-      if(kphlist .eq. 0)then
+      if(kphlist == 0)then
         kphlist=ktfsymbolz('`PhotonList',11)-4
       endif
       call tflocal(klist(kphlist))
-      if(itp .le. 0)then
+      if(itp <= 0)then
         dlist(kphlist)=dxnulll
       else
         nph=(itp-1)*lt+max(ilp-1,0)
@@ -346,7 +346,7 @@ c      write(*,*)'with ',itp,ilp
       pcvt%dtheta=dtheta
       pcvt%phi0=phi0
       pcvt%al=al
-      if(phi0 .eq. 0.d0)then
+      if(phi0 == 0.d0)then
         pcvt%cost=cos(theta+dtheta)
         pcvt%sint=sin(theta+dtheta)
       else
