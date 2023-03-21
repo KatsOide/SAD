@@ -1,0 +1,1 @@
+driver.o: driver.c ../Common/mtdriver.c core.c framework/feature.h framework/random_driver.h
