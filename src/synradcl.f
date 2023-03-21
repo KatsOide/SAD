@@ -272,8 +272,8 @@ C   Return 0 if X<0.
       P1=tran()
       V=2*SQRT(2D0)*SIN(ASIN(5*P1/(4*SQRT(2D0)))/3)
       X=1.5D0*UPSILON*U*V**3
-      PHI=2*PI*tran()
       TH=SQRT(MAX(0D0,1-V**2))/(V*GAM)
+      PHI=2*PI*tran()
       THY=TH*SIN(PHI)
 C          TH*COS(PHI) can be x-angle
       thx=th*cos(phi)
@@ -283,5 +283,44 @@ C          TH*COS(PHI) can be x-angle
       R=-THYG/THYG2*BK1323(Z)
       XI2=2*R/(1+R**2)
       XI3=(1-R**2)/(1+R**2)
+      RETURN
+      END
+
+c  Modified version of radangle, Mar. 19, 2023, by KO.
+c  To avoid too large emission angle
+c
+      subroutine radangle1(GAM,RHO,U,THX,THY,XI3,XI2)
+c U: photon energy, normalized by beam energy
+c
+      use tmacro
+      implicit none
+      real*8 , intent(in) :: GAM,RHO,U
+      real*8 , intent(out)::THX,THY,XI3,XI2
+      real*8 COMPTON,UPSILON,V,X,THYG,THYG2,Z,R,BK1323,a,sigg,tgauss
+      real*8 ,parameter :: c0=-.462627729148672d0,c1=-.4883575801292511d0,c2=-.020021831341729676d0
+      COMPTON=rclassic/rcratio
+      UPSILON=COMPTON*GAM**2/RHO
+c      P1=tran()
+c      V=2*SQRT(2D0)*SIN(ASIN(5*P1/(4*SQRT(2D0)))/3)
+c      TH=SQRT(MAX(0D0,1-V**2))/(V*GAM)
+c      PHI=2*PI*tran()
+c      THY=TH*SIN(PHI)
+C          TH*COS(PHI) can be x-angle
+      a=log(U/UPSILON/1.5d0)
+      sigg=exp(c0+a*(c1+a*c2))
+      THYG=sigg*tgauss()
+      THY=THYG/GAM
+      THX=sigg*tgauss()/GAM
+c      write(*,'(a,1p10g12.4)')'radangle1 ',GAM,RHO,U,THX,THY,a,sigg,UPSILON
+      THYG2=SQRT(1+THYG**2)
+      V=1.d0/sqrt(1.d0+(THX*GAM)**2+THYG**2)
+      X=1.5D0*UPSILON*U*V**3
+      Z=X/(3*UPSILON)*THYG2**3
+      R=-THYG/THYG2*BK1323(Z)
+      XI2=2*R/(1+R**2)
+      XI3=(1-R**2)/(1+R**2)
+c      If(abs(a) .lt. 0.01d0)then
+c        write(*,'(a,1p10g12.4)')'radangle1 ',a,sigg,THY,THX
+c      endif
       RETURN
       END
