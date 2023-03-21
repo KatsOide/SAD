@@ -1951,7 +1951,7 @@ c     DOUBLE specific math intrinsic function
 c     from Fortran77    77   77   77
       intrinsic dabs,dsqrt,dexp,dlog
 c     from Fortran77   77   77    77    77    77     77
-      intrinsic dsin,dcos,dtan,dasin,dacos,datan,datan2
+      intrinsic dsin,dcos,dtan,dasin,dacos,datan
 c     from Fortran 77    77    77
       intrinsic dsinh,dcosh,dtanh
 c     from Fortran 08    08  <-- somehow cannot pass as an argument @ gfortran 5
@@ -2176,7 +2176,7 @@ c            write(*,*)'irtc: ',irtc
           kx=tfeintf(datan,tcatan,k,
      $         .true.,-dinfinity,dinfinity,irtc)
         elseif(narg == 2)then
-          kx=tfeintf2(datan2,tcatan2,dtastk(isp-1),k,.true.,irtc)
+          kx=tfeintf2(tatan2,tcatan2,dtastk(isp-1),k,.true.,irtc)
         else
           go to 6812
         endif
