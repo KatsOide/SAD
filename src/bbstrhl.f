@@ -716,7 +716,7 @@ c         cnbs=5.*sqrt(3.d0)*finest*gamp/6.
          cnbs=5.*sqrt(3.d0)*finest*gamp/6.
          cpbs=2*re*gamp*gamp*gamp/3
          cubs=1.5d0*hbar*cveloc*gamp*gamp/am_e
-         write(*,'(A,1P,4E12.4)') 'beamstrahlung ',gamp,cnbs,cpbs,cubs
+c         write(*,'(A,1P,4E12.4)') 'beamstrahlung ',gamp,cnbs,cpbs,cubs
          if(photons) then
             call tsetphotongeo(0.d0,0.d0,0.d0,.true.)
          endif

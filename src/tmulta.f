@@ -105,7 +105,7 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
           bsi=0.d0
         endif
         if(photons)then
-          call tsetpcvt(l_track,dx,dy,theta,dtheta,phi,al)
+          call tsetpcvt(l_track,dx,dy,theta,dtheta,phi,phig,al)
         endif
       endif
       do n=1,ndiv

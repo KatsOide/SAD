@@ -80,7 +80,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
             zr0=z
             ndiv=max(ndiv,ndivrad(abs(akr(0)),akr1,bz,eps0))
             if(photons)then
-              call tsetpcvt(l_track,dx,dy,theta2,0.d0,0.d0,al)
+              call tsetpcvt(l_track,dx,dy,theta2,0.d0,0.d0,phig,al)
             endif
           endif
           ndiv=min(ndivmax,ndiv)
@@ -360,7 +360,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
           zr0=z
           ndiv=max(ndiv,ndivrad(abs(akr(0)),akr1,bz,eps0))
           if(photons)then
-            call tsetpcvt(l_track,dx,dy,theta2,0.d0,0.d0,al)
+            call tsetpcvt(l_track,dx,dy,theta2,0.d0,0.d0,phig,al)
           endif
         endif
         ndiv=min(ndivmax,ndiv)
