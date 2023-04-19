@@ -197,19 +197,25 @@ With[{def={Dashing->{{1},{0.8,0.2},{0.4, 0.15},{0.2,0.1},{0.1,0.07},
     g]]];
 
 PR$Auto[x_,g_]:=x;
-PR$Auto[{min_Real,Automatic},g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
-  {min,Max[pr1[[,2,2]]]}];
-PR$Auto[{Automatic,max_Real},g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
-  {Min[pr1[[,2,1]]],max}];
-PR$Auto[Automatic|{Automatic,Automatic},g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
-  {Min[pr1[[,2,1]]],Max[pr1[[,2,2]]]}];
+PR$PRmax[pr1_,Automatic]:=Max[pr1[[,2,2]]];
+PR$PRmax[pr1_,All]:=Max[pr1[[,2,4]]];
+PR$PRmin[pr1_,Automatic]:=Min[pr1[[,2,1]]];
+PR$PRmin[pr1_,All]:=Min[pr1[[,2,3]]];
+PR$Auto[{min_Real,t:(All|Automatic)},g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
+  {min,PR$PRmax[pr1,t]}];
+PR$Auto[{t:(All|Automatic),max_Real},g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
+  {PR$PRmin[pr1,t],max}];
+PR$Auto[t:(All|Automatic),g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
+  {PR$PRmin[pr1,t],PR$PRmax[pr1,t]}];
+PR$Auto[{t1:All|Automatic,t2:All|Automatic},g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
+  {PR$PRmin[pr1,t1],PR$PRmax[pr1,t2]}];
 PR$Auto[{x_List,y_},g_]:={x,PR$Auto[y,g]};
 PR$Auto[{x_,y_List},g_]:={x,PR$Auto[y,g]};
 
 PlotInterpolate[fin_,{y_,xmin_,xmax_},min0_,maxdiv_,maxb_]:=Module[
   {f,fs,s,dl,dl0,dl1,la,cos,a,yw,ar,dx,xl,yl,x0,x1,x2,cosm,cosm1=-1,la0=0,
     costh=1-maxb^2/2,min=min0,fh=Extract[Hold[fin],{1},Head],ny,ys,ymin,ymax,ya,
-    dxmin=Abs[(xmax-xmin)/maxdiv]},
+    y0,y1,ym,dxmin=Abs[(xmax-xmin)/maxdiv]},
   If[Head[fh]===SplineData,
     min=Max[min,Length[fh[[1,1]]]]];
   fs = With[{y = #}, {#, Check[fin, 0]}]&;
@@ -246,6 +252,8 @@ PlotInterpolate[fin_,{y_,xmin_,xmax_},min0_,maxdiv_,maxb_]:=Module[
       s=False]];
   ny=Length[yl];
   ys=Sort[yl];
+  {y0,y1}=ys[[{1,-1}]];
+  ym=(y0+y1)/2;
   {ymin,ymax}=ys[[{1+(ny-1)*0.05,ny*0.95}]];
   ya=(ymin+ymax)/2;
   If[ya-ys[[1]]<(ya-ymin)*1.2,
@@ -254,7 +262,7 @@ PlotInterpolate[fin_,{y_,xmin_,xmax_},min0_,maxdiv_,maxb_]:=Module[
   If[ys[[-1]]-ya<(ymax-ya)*1.2,
     ymax=ys[[-1]];
     ya=(ymin+ymax)/2];
-  {Thread[{xl,yl}],{ya+(ymin-ya)*1.2,ya+(ymax-ya)*1.2}}];
+  {Thread[{xl,yl}],{ya+(ymin-ya)*1.2,ya+(ymax-ya)*1.2,ym+(y0-ym)*1.05,ym+(y1-ym)*1.05}}];
 
 SetAttributes[Plot,HoldAll];
 SetAttributes[PlotInterpolate,HoldFirst];

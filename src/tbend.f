@@ -615,7 +615,7 @@ c     $     y(1)-y(2),py(1)-py(2),z(1)-z(2),g(1)-g(2)
       if(krad)then
         if(ini)then
           if(photons .and. iniph == 0)then
-            call tsetpcvt(l_track,dx,dy,theta,dtheta,phi0,al)
+            call tsetpcvt(l_track,dx,dy,theta,dtheta,phi0,phig,al)
           endif
           pxr0=px
           pyr0=py

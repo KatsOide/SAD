@@ -118,6 +118,7 @@
      $     ath1=0.5d0,ath2=0.5d0,cth=59.d0,ztlim=18.d0,
      $     dz0=-.5d0*log(m_2pi),zt0=-0.5d0,zt2=m_pi**2/6.d0,
      $     mm_pi=-m_pi,epso=5.d-17**2/4.d0,cezlim=18.d0,
+     $     hguzm=28.d0,
      $     ggamma=4.7421875d0,
      $     gc0=0.99999999999999709182d0,
      $     gc1=57.156235665862923517d0,
@@ -5055,6 +5056,10 @@ c      f1=exp(-x1)*hguaa(1.d0-a,x1)-exp(-x2)*hguaa(1.d0-a,x2)
       complex*16 lx,u,ab1,x,df
       real*8 k,k1,rb,ra,rab1
       integer*4 n,i,no
+      if(abs(x0) > hguzm)then
+        f1=1.d0/x0**a
+        return
+      endif
       if(a == b)then
         f1=chguaa(a,x0,.true.)
         return
@@ -5537,8 +5542,10 @@ c      write(*,'(a,1p10g12.4)')'cierf-3 ',x,f1
       complex*16 ,intent(in):: n,z0
       complex*16 z
       z=zeroim(z0)
-      f=.5d0*m_pi/csinp(n)*((2.d0/z)**n*confhg0(1.d0-n,.25d0*z**2)
-     $     -(.5d0*z)**n*confhg0(1.d0+n,.25d0*z**2))
+c      f=Sqrt[Pi]*(2Pi)^n*Exp[-z]*HypergeometricU[n+1/2,2*n+1,2 z]
+      f=m_sqrtpi*(2.d0*z)**n/exp(z)*chgu(n+.5d0,2.d0*n+1.d0,2.d0*z)
+c      f=.5d0*m_pi/csinp(n)*((2.d0/z)**n*confhg0(1.d0-n,.25d0*z**2)
+c     $     -(.5d0*z)**n*confhg0(1.d0+n,.25d0*z**2))
       return
       end
       

@@ -1,0 +1,3 @@
+tfTclArg.o: tfTclArg.f inc/TFSF.inc
+tfTkInter_.o: tfTkInter_.c sim/TFCBK.h sim/TFCODE.h sim/TFSTK.h sim/sad_api.h sim/sad_f2c.h sim/sad_memory.h sim/sad_tcltk.h sim/sad_xlib.h
+tfcanvasclip.o: tfcanvasclip.f inc/TFSF.inc

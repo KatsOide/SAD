@@ -58,7 +58,7 @@ c     drift in the parallel solenoid
         cphi0=1.d0
         sphi0=0.d0
         if(rfluct .and. photons)then
-          call tsetpcvt(l_track,0.d0,0.d0,0.d0,0.d0,0.d0,al)
+          call tsetpcvt(l_track,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,al)
         endif
       endif
       do i=1,np
@@ -397,7 +397,7 @@ c        write(*,'(a,1p10g12.4)')'tsoldz ',dpldpx*phix*xsinphi,sinphi,dpz0dpx*ph
             bsi=0.d0
           endif
           if(rfluct .and. photons)then
-            call tsetpcvt(l_track,0.d0,0.d0,0.d0,0.d0,0.d0,al)
+            call tsetpcvt(l_track,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,al)
           endif
         endif
         b=norm2([ak0x,ak0y,bz*al])
