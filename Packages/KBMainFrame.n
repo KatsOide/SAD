@@ -946,8 +946,10 @@ KBFMakePDF[s$_,l$_:Null] := Module[{l,ld,s,n,fn,fns,lid,tn,
   lid = Map[(If[Head[#]===Widget,WidgetInfo[#,ID],#[$Frame$WindowID]])&,l];
   Scan[If[~RealQ[#],Print["can't get window id."]; Return[]]&,lid];
   ld=Table[
-    KBFRaise[l[[i]]];
-    Update[WindowTasks,IdleTasks];
+!    KBFRaise[l[[i]]];
+!    Update[WindowTasks,IdleTasks];
+    l[[i]][Raise];
+    TkSense[1];
     fn = StandardForm[tn//"_xwd_"//i//".xwd"];
     System[StringJoin[KBF$xwd," -id ",lid[[i]]," -out ",fn]];
     " "//fn,

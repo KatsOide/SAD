@@ -194,6 +194,7 @@ c
  2    lfn1=merge(merge(lfno,merge(0,lfno,igetgl('$LOG$') == 0),
      $     lfni /= 5),0,lfnb==1)
       call csrst(lfn1)
+      kffs=dxnullo
  10   continue
       if(iffserr /= 0)then
         if(lfnb > 1)then

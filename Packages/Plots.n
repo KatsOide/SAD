@@ -384,11 +384,12 @@ CP$ColorScale[cs_,cf_,cfs_,pr_,ar_,ncs_,opt___]:=
         DisplayFunction->Identity,
         AspectRatio->1/ncs,
         FrameTicks->{None,None,None,True},
-        FrameLabel->{"",""},
         FrameColor->"white",
         BelowFrame->False,
         TickSize->-0.1,
-        MeshRange->{Default,pr},opt],Position->Right[]]];
+        MeshRange->{Default,pr},
+        opt,
+        FrameLabel->{"",""}],Position->Right[]]];
 
 CP$PlotRangeG[Automatic]={Automatic,Automatic};
 CP$PlotRangeG[pr:{_Real|Automatic,_Real|Automatic}]:={Automatic,pr};
@@ -416,16 +417,17 @@ With[{def={PlotRange->Automatic,MeshRange->Default,
   ColorFunctionScaling->True,
   ColorScale->True,
   Smoothing->0,
+  FrameLabel->{"","","",""},
   DisplayFunction->Default,
   AspectRatio->1,ContourColorFunction->Automatic,
   Contours->10,Prolog->{},Epilog->{},BelowFrame->True},
   ncs=16},
 
   ListContourPlot[l0_,opt___]:=Module[{
-    gr,op,gs,prg,l=l0,
-    {pr,mr,lc,cf,cfs,cs,df,nc,ar,sm,bf}={PlotRange,MeshRange,ContourColorFunction,
+    gr,op,gs:=Null[],prg,l=l0,
+    {pr,mr,lc,cf,cfs,cs,df,nc,ar,sm,bf,fl}={PlotRange,MeshRange,ContourColorFunction,
       ColorFunction,ColorFunctionScaling,ColorScale,
-      DisplayFunction,Contours,AspectRatio,Smoothing,BelowFrame}/.{opt}/.def},
+      DisplayFunction,Contours,AspectRatio,Smoothing,BelowFrame,FrameLabel}/.{opt}/.def},
     Do[l=LDP$Smooth[l],{sm}];
     Block[{nx,ny,mesh},
       {nx,ny}=Dimensions[l];
@@ -450,9 +452,12 @@ With[{def={PlotRange->Automatic,MeshRange->Default,
         lc=Null,
         Automatic,
         lc=CP$ContourColor[cf[#]]&];
-      gs=CP$ColorScale[cs,cf,cfs,pr,ar,ncs,opt];
+      If[cs,
+        fl=Take[Join[fl,{"","","",""}],4];
+        gs=CP$ColorScale[cs,cf,cfs,pr,ar,ncs,FrameLabel->{"","","",fl[[4]]},opt];
+        fl=Take[fl,3]];
       op=Override[AspectRatio->ar,PlotRange->prg,
-        DataRange->Thread[{mesh[{1,1}],mesh[{nx,ny}]}],opt,def];
+        DataRange->Thread[{mesh[{1,1}],mesh[{nx,ny}]}],FrameLabel->fl,opt,def];
       gr=Graphics[Flatten[{Prolog/.op,CP$FindContour[l,pr,nc,cf,cfs,lc,bf],gs,Epilog/.op}],op];
       ];
     If[df===Default,Show[gr,op]];
@@ -464,15 +469,16 @@ With[{def={PlotRange->Automatic,MeshRange->Default,
   ColorFunctionScaling->True,
   Smoothing->1,BelowFrame->True,
   ColorScale->True,
+  FrameLabel->{"","","",""},
   AspectRatio->1,Mesh->False,MeshColor->Automatic,Prolog->{},Epilog->{}},
   ncs=16},
 
   ListDensityPlot[l0_,opt___]:=Module[{l=l0,
-    gr,op,l1,g,gs,prg,
-    {pr,mr,cf,cfs,df,ar,ms,mc,cs,sm,bf}={PlotRange,MeshRange,
+    gr,op,l1,g,gs:=Null[],prg,
+    {pr,mr,cf,cfs,df,ar,ms,mc,cs,sm,bf,fl}={PlotRange,MeshRange,
       ColorFunction,ColorFunctionScaling,
       DisplayFunction,AspectRatio,Mesh,MeshColor,
-      ColorScale,Smoothing,BelowFrame}/.opt/.def},
+      ColorScale,Smoothing,BelowFrame,FrameLabel}/.{opt}/.def},
     Do[l=LDP$Smooth[l],{sm}];
     Block[{nx,ny,mesh},
       {nx,ny}=Dimensions[l];
@@ -510,9 +516,12 @@ With[{def={PlotRange->Automatic,MeshRange->Default,
           Rectangle[mesh[{i,j}],mesh[{i+1,j+1}],FillColor->cf[l1[[i,j]]],
             PlotColor->cf[l1[[i,j]]],BelowFrame->bf],
           {i,nx},{j,ny}]];
-      gs=CP$ColorScale[cs,cf,cfs,pr,ar,ncs,opt];
+      If[cs,
+        fl=Take[Join[fl,{"","","",""}],4];
+        gs=CP$ColorScale[cs,cf,cfs,pr,ar,ncs,FrameLabel->{"","","",fl[[4]]},opt];
+        fl=Take[fl,3]];
       op=Override[AspectRatio->ar,PlotRange->prg,
-        DataRange->Thread[{mesh[{1,1}],mesh[{nx,ny}+1]}],opt,def]
+        DataRange->Thread[{mesh[{1,1}],mesh[{nx,ny}+1]}],FrameLabel->fl,opt,def]
       ];
     g=Graphics[Flatten[{Prolog/.op,g,gs,Epilog/.op}],op];
     If[df===Default,Show[g,op]];
@@ -769,6 +778,7 @@ DP$Mesh1[x_,_]:=Module[{d=(Drop[x,-1]+Rest[x])/2},
 DP$Mesh1[{x1_,x2_},n_]:=(x1+(Range[0,n]-0.5)*(x2-x1)/(n-1));
 DP$Mesh1[{x1_,x1_},1]:={x1-0.5,x1+0.5};
 
+With[{y=1-x},CP$Color[ReverseBlue][x_]:=RGBColor[Restrict[y*3-2,0,1],Restrict[y*3-1,0,1],Restrict[y*3-0,0,1]]];
 CP$Color[Blue][x_]  :=RGBColor[Restrict[x*3-2,0,1],Restrict[x*3-1,0,1],Restrict[x*3-0,0,1]];
 CP$Color[Green][x_] :=RGBColor[Restrict[x*3-1,0,1],Restrict[x*3-0,0,1],Restrict[x*3-2,0,1]];
 CP$Color[Pink][x_]  :=RGBColor[Restrict[x*3-0,0,1],Restrict[x*3-2,0,1],Restrict[x*3-1,0,1]];

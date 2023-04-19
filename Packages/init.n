@@ -7,7 +7,7 @@ SetAttributes[{Real,String,BuiltinFunction,
   Word,Expression,WordSeparators,ReadNewRecord,
   NullWords,EndOfFile,$Failed,FormatType,
   InputForm,HoldForm,GenericSymbolForm,
-  Automatic,Default,Prolog,Epilog,
+  Automatic,Default,Prolog,Epilog,All,
   None,Undefined},
   Constant];
 
