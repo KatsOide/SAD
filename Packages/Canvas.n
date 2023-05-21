@@ -362,6 +362,7 @@ CanvasGraphics=Class[{},
     InfoBind->True,
     GridLines->{None,None},
     Alignment->Automatic,
+!    MergeLegend->False,
     TickSize->Automatic,
     TickFont->Default,
     Literal[LegendBG]->Null,
@@ -790,11 +791,26 @@ CanvasGraphics=Class[{},
       If[pl, CanvasDrawerPoints[sym, ptag, ptc, pc, size, pbc, bt]];
       CanvasDrawerErrorBar[ebl * 0.1 * DPI, ebth, ebc, bt];
       If[leg<=>False,
-        AppendTo[LegendList[[Canvas$Frame]],
-          {op,leg}]];
+        AppendLegend[{op,leg}]];
       Canvas$Range=canvr;
       ]];
   Primitive[Line[{},___]]:=Null;
+
+  AppendLegend[l:{op_,leg_}]:=(
+    If[LegendList[[Canvas$Frame]] <=>{},
+      Module[{{op1,leg1}=LegendList[[Canvas$Frame,-1]],opm},
+        If[leg==leg1,
+          opm=If[~(Plot/.#),
+            DeleteCases[#,(PointColor|PointBorderColor)->_,1],#,#]&/@{op,op1};
+          opm=If[~(PlotJoined/.#),
+            DeleteCases[#,(PlotColor|Thickness)->_,1],#,#]&/@opm;
+          LegendList[[Canvas$Frame,-1,1]]=
+            Override[
+              Plot->(Plot/.op)||(Plot/.op1),
+              PlotJoined->(PlotJoined/.op)||(PlotJoined/.op1),Join@@opm];
+          Return[]]]];
+    AppendTo[LegendList[[Canvas$Frame]],l]
+    );
 
   With[{CanvasW=Extract[CanvasWidget,{1},Unevaluated$]},
     CanvasDrawerErrorBar[ebl_, ebt_Real, pc_, bt_]:=If[Length[bt]>2,
@@ -1781,8 +1797,7 @@ CanvasGraphics=Class[{},
       CanvasDrawerPoints[sym, tag, ptc, pc, size, pbc, bt];
       CanvasDrawerErrorBar[ebl * 0.1 * DPI, ebth, ebc, bt];
       If[leg<=>False,
-        AppendTo[LegendList[[Canvas$Frame]],
-          {op,leg}]]
+        AppendLegend[{op,leg}]];
       ]];
 
   Primitive[Point[{},___]]:=Null;
@@ -1973,6 +1988,7 @@ CanvasGraphics=Class[{},
       {x0,y} = {r[[2,1]]-200,r[[1,2]] + 30 + d3 +1};
       dx = 40;
       d2=Round[Min[d2,wy/20]];
+      l00=l;
       Scan[(
         {pc,pl,size,sym,ptc,dash,thick,pj,pbc,leg}=
           {PlotColor,Plot,PointSize,PointSymbol,
@@ -1993,7 +2009,6 @@ CanvasGraphics=Class[{},
             CanvasWidget[Create$Line]={bdf,cmd},
             CanvasWidget[Create$Line]={bdf,Dash->TclArg[Round[dash*DPI]],cmd}]
           ];
-!        Print[{r,bar,size,ptc,bdf,cmd}];
         If[bar,
           bdf=CanvasClipLine[{{x0,x0+dx},{y,y}},{{0,0},{w,h}},{1}];
           CanvasWidget[Create$Line]={bdf,cmd,Width->size},

@@ -361,8 +361,8 @@ With[{def={Weight->None,TextSize->1,FunctionLabel->Default,
               Null[]]}]],
           g3:=Null[]]];*)
        {s,If[rf,
-          Show[g1,g,FrameLabel->fl,If[leg<=>False,gl,Null[]],Null@@opt],
-          Show[g,g1,FrameLabel->fl,If[leg<=>False,gl,Null[]],Null@@opt]]}
+          Show[g1,g,FrameLabel->fl,Null@@opt],
+          Show[g,g1,FrameLabel->fl,Null@@opt]]}
       ]];
 
 SetAttributes[FitPlot,HoldRest];
