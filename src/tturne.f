@@ -817,10 +817,10 @@ c      call tfmemcheckprint('tturne-end1',0,.true.,irtc)
         endif
         twiss(l,idp,1:ntwissfun)=twi
       endif
-c      write(*,'(a,2i5,1p6g15.7)')'setetwiss-end ',l,l0,
-c     $     twi(mfitnx)/m_2pi,toln
       if(irad .ge. 12 .and. beamplt)then
+c        write(*,'(a,i5,i12)')'setetwiss ',l,ifsize
         beamsize(:,l)=beam(1:21)+beam(22:42)
+c        write(*,'(a,2i5,1p6g15.7)')'setetwiss-end ',l,l0,twi(mfitnx)/m_2pi,toln
       endif
       return
       end

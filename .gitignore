@@ -17,7 +17,8 @@ src/sim/CVS/Entries
 Packages/CVS/Entries
 src/CVS/Entries
 src/inc/CVS/Entries
-src/gdtoa
+src/gdtoa/*.*
+src/gdtoa/test/*.*
 src/.DS_Store
 mk/CVS/Entries
 Packages/#Canvas.n#

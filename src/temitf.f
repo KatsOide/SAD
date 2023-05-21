@@ -5,6 +5,7 @@
       use ffs_flag, only:trpt,wspac,intra
       use temw, only:tfinibeam,tfetwiss,iaez,beamplt
       use maccbk, only:i00
+      use iso_c_binding
       implicit none
       integer*4 nparam,ntitle
       parameter (nparam=59,ntitle=26)
@@ -60,6 +61,11 @@ c     $       tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
         beamin=tfinibeam(1)
       endif
       beamplt=wspac .or. intra
+      if(beamplt .and. ifsize .eq. 0)then
+        ifsize=ktaloc(nlat*21)
+        call c_f_pointer(c_loc(rlist(ifsize)),beamsize,[21,nlat])
+        modesize=0
+      endif
       cod=codin
       call temit(trans,cod,beam,ctrb,
      1     .not. trpt,iaez,plot,param(1,0),stab,lfno)
