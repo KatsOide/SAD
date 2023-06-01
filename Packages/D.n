@@ -109,6 +109,9 @@ Derivative[0,1][BesselJ]=(BesselJ[#-1,#2]-BesselJ[#+1,#2])/2&;
 Derivative[0,1][BesselY]=(BesselY[#-1,#2]-BesselY[#+1,#2])/2&;
 Derivative[0,1][BesselI]=(BesselI[#-1,#2]+BesselI[#+1,#2])/2&;
 Derivative[0,1][BesselK]=-(BesselK[#-1,#2]+BesselK[#+1,#2])/2&;
+Derivative[0,1][Hypergeometric0F1]=Hypergeometric0F1[#+1,#2]/#&
+Derivative[0,0,1][Hypergeometric1F1]=(# Hypergeometric1F1[#+1,#2+1,#3]/#2)&
+Derivative[0,0,0,1][Hypergeometric2F1]=(# #2 Hypergeometric0F1[#+1,#2+1,#3+1,#4]/#3)&
 
 Derivative[1][Derivative[n_][f_]]:=Derivative[n+1][f];
 Derivative[n__][Derivative[m__][f]]:=Derivative[##][f]&@@({n}+{m});
@@ -319,11 +322,17 @@ HermiteH[n_, z_] := With[{z2=z^2},
 FresnelS[z_]:=( ((Pi z^3)/6) HypergeometricPFQ[{3/4}, {3/2, 7/4}, -((Pi^2 z^4)/16)] );
 FresnelC[z_]:=(  z HypergeometricPFQ[{1/4}, {1/2, 5/4}, -((Pi^2 z^4)/16)] );
 
+AiryAi[z_]:=Hypergeometric0F1[2/3,z^3/9]/Gamma[2/3]/3^(2/3)-z*Hypergeometric0F1[4/3,z^3/9]/Gamma[1/3]/3^(1/3);
+AiryBi[z_]:=Hypergeometric0F1[2/3,z^3/9]/Gamma[2/3]/3^(1/6)+z*Hypergeometric0F1[4/3,z^3/9]/Gamma[1/3]*3^(1/6);
+AiryAiPrime[x_]:=Block[{z},D[AiryAi[z],z]/.z->x];
+AiryBiPrime[x_]:=Block[{z},D[AiryBi[z],z]/.z->x];
+
 Protect[ReduceExpression,D$,XSCheckDerivative,LegendreP,
   Integrate,Integrate$a,Spline,SplineData,SplineIntegrate,
   SplineIntegrate1,SplineIntegrate2,SplineIntegrateAll,NIntegrate,
   Binomial,Multinomial,
   InverseErfc,HarmonicNumber,Factorial2,ExpIntegralE,ExpIntegarlEi,
   LogIntegral,SinIntegral,CosIntegral,SinhIntegral,CoshIntegral,
-  WhittakerM,WhittakerW,HermiteH,FresnelS,FresnelC
+  WhittakerM,WhittakerW,HermiteH,FresnelS,FresnelC,
+  AiryAiPrime,AiryBiPrime
   ];
