@@ -1,4 +1,4 @@
-(* Canvas 8/11/2019 *)
+(* Canvas 6/28/2023 *)
 
 SetAttributes[{OutLine,Outline,UseBG,Permanent,Redraw},Constant];
 
@@ -45,7 +45,8 @@ CanvasGraphics=Class[{},
     $DefaultCanvasAspectRatio=13/10,
     EPS=1e-300,
     CanvasObject,
-    TkAngle=Times@@(Tk$Version>={8,6}),RotSym=`Angle},
+    TkAngle=Times@@(Tk$Version>={8,6}),RotSym=`Angle,
+    LTfs=1.6,LTfmin=5},
 
   {DPI=72,
     Canvas$PlotRange={{0,1},{0,1}},
@@ -105,6 +106,8 @@ CanvasGraphics=Class[{},
     Legends={},
     TickLabels={},
     FrameTag="F$0",
+    lt=Null,
+    ltsym=0,
 
     Canvas$Symbol,
     CanvasWidget,
@@ -142,7 +145,8 @@ CanvasGraphics=Class[{},
         CanvasLastID:=TkCanvasLastItem[p$]];
       RawWindowAspectRatio=StandardAspectRatio[];
       RotSym=If[TkAngle,`Angle,`Rotation,`Rotation];
-      SetCanvas$Scale[Automatic]
+      SetCanvas$Scale[Automatic];
+      If[$HaveLaTeX,lt=LaTeX[`style->"standalone",`pt->12,`pw->"20 cm",`margins->"'0 1 0 1'",`dpi->600]]
       ),
 
     Constructor[Widget[c_,__]]:=(
@@ -293,10 +297,28 @@ CanvasGraphics=Class[{},
     {FrameRange1[s,r1,r1,b2],FrameRange1[s,Automatic,Max[b2,r1],r1]};
   FrameRange[s_,{r1_,r2_},{__}]:={FrameRange1[s,r1,r1,r2],FrameRange1[s,r2,r2,r1]};
 
+  GetResize[font_]:=(GetResize[font]=StandardForm[
+    Module[{s=Max[Round[GetFontSize[font]*LTfs],LTfmin]},
+      s//"%"]]);
+
+  With[{def={`Angle->0,`Font->DefaultFont,`UseBG->True}},
+    DrawText[text_,pos_,opt___]:=If[$HaveLaTeX && StringLength[text]>2 && text[1,2]=="\\@",
+      Module[{{op1,op2}=SwitchCases[{opt},{(Rule|RuleDelayed)[`Angle|`Font|`Justify|`UseBG|`Fill,_],_}],
+        rot,font,a,op={},sz},
+        Print["DTopts: ",{op1,op2}];
+        {rot,font,bg}={`Angle,`Font,`UseBG}/.op1/.def;
+        If[rot,op={`Rotate->-rot}];
+        AppendTo[op,Resize->GetResize[font]];
+        AppendTo[op,`UseBG->bg];
+        a=LTImg[text[3,-1],Null@@op,Null@@op2];
+        The$Canvas[Create$Image]={Null@@pos,Image->a,Null@@op2}],
+      CanvasWidget[Create$Text]={pos,Text->text,opt}]];
+
   With[{tag="dummytag"},
     CanvasTextSize[t_,font_]:=Module[{bb},
-      CanvasWidget[Create$Text]={{0,0},Anchor->"nw",
-        Text->t,Tags->tag,Font->font,Fill->CanvasWidget[BG]};
+      DrawText[t,{0,0},Tags->tag,Font->font];
+!      CanvasWidget[Create$Text]={{0,0},Anchor->"nw",
+!        Text->t,Tags->tag,Font->font,Fill->CanvasWidget[BG]};
       bb=CanvasWidget[BBox[tag]];
       CanvasWidget[Delete]=tag;
       CanvasTextSize[t,font]={bb[[3]]-bb[[1]],bb[[4]]-bb[[2]]}]];
@@ -385,7 +407,7 @@ CanvasGraphics=Class[{},
       {tag,fl,pl,fr,wc,align,pr,fclk,dr,ft,frt,ftc,tkc,ts,ib,tkf,ful,rmo,
         LegendBG,
         FontScale,TickFontScale,FrameFontScale,LegendFontScale,TitleFontScale}=
-        {Tags,FrameLabel,PlotLabel,Frame,Background,Alignment,
+          {Tags,FrameLabel,PlotLabel,Frame,Background,Alignment,
           PlotRegion,FrameClick,DataRange,FrameTicks,FrameThickness,
           FrameColor,TickColor,TickSize,
           InfoBind,TickFont,FrameUnitLabel,RemoveOverlap,
@@ -677,15 +699,18 @@ CanvasGraphics=Class[{},
   TitleRotate["TOP HIGH"]:={Anchor->"s",Tags->"PL"//Canvas$Frame};
   TitleRotate[_]:={Anchor->"c"};
 
-  EffectiveStringLength[s_,m_]:=(EffectiveStringLength[s,m]=Module[{p=StringPosition[s,"\n"],s1,l,q,d},
-    s1=If[p==={},
-      s,
-      l=StringLength[s]+1;
-      p=Join[{{0,0}},p,{{l,l}}];
-      d=Join[{{0,0}},Difference[p]];
-      q=Position[d,{Max[d],_},1,1][[1,1]];
-      s[p[[q-1,1]]+1,p[[q,1]]-1]];
-    Max[StringLength[s1]-Length[StringPosition[s1,"`"]]*2,m]]);
+  EffectiveStringLength[s_,m_]:=(EffectiveStringLength[s,m]=
+    If[$HaveLaTeX,
+      Round[CanvasTextSize[s,DefaultFont][[1]]/GetFontSize[DefaultFont]],
+      Module[{p=StringPosition[s,"\n"],s1,l,q,d},
+        s1=If[p==={},
+          s,
+          l=StringLength[s]+1;
+          p=Join[{{0,0}},p,{{l,l}}];
+          d=Join[{{0,0}},Difference[p]];
+          q=Position[d,{Max[d],_},1,1][[1,1]];
+          s[p[[q-1,1]]+1,p[[q,1]]-1]];
+        Max[StringLength[s1]-Length[StringPosition[s1,"`"]]*2,m]]]);
   NLines[t_]:=(NLines[t]=Length[StringPosition[t,"\n"]]+1);
 
   FFont[x_,_]:=x;
@@ -734,14 +759,15 @@ CanvasGraphics=Class[{},
       Sleep[0.3];
       {pos,w,anc}=TitlePosition[p]];
     sz=DefaultSize[t,w,size,pos,anc];
-    CanvasWidget[Create$Text]={pos,Text->t,
+!    CanvasWidget[Create$Text]={pos,Text->t,
+    DrawText[t,pos,
       Anchor->anc,
       Justify->"center",
       Tags->TitleTag[p],
       Font->TextFont[sz,DefaultFont,
         If[sz<10,Null[],"bold"]],
       Null@@TitleRotate[p],
-      UseBG->False}];
+      UseBG->False]];
   MakeTitle[Text[{t_String,___},opt:((_Rule|_RuleDelayed)...)],size_,p_]:=Module[
     {{pos,w,anc}=TitlePosition[p]},
     While[~RealQ[w],
@@ -1032,11 +1058,12 @@ CanvasGraphics=Class[{},
     CanvasWidget[Lower] = {t};
     CanvasWidget[Create$Rectangle] = Join[{0,0,1,1},
       {Fill->"lemonchiffon",Tags->"infobg"}];
-    CanvasWidget[Create$Text] = Join[x-{0,10},
-      {Text->InfoLabel[x,axes,offset,scale],Anchor->"s",Tags->"infolabel"}];
-	{co,dx}=InfoBBox[];
-	If[dx<=>0,CanvasWidget[Move]={"infolabel",dx,0}];
-	CanvasWidget[Coords]={"infobg",co}];
+!    CanvasWidget[Create$Text] = Join[
+    DrawText[InfoLabel[x,axes,offset,scale],x-{0,10},
+      Anchor->"s",Tags->"infolabel"];
+    {co,dx}=InfoBBox[];
+    If[dx<=>0,CanvasWidget[Move]={"infolabel",dx,0}];
+    CanvasWidget[Coords]={"infobg",co}];
   CanvasInfoUpdate[fr_]:=Module[{x={X,Y}/.$Event,
     {axes,scale,offset}=GraphicsList[[fr,1,2,{2,6,7}]],co,dx},
     CanvasWidget[ItemConfigure] =
@@ -1715,8 +1742,9 @@ CanvasGraphics=Class[{},
         && Canvas$Window[[2,1]]<=Second[z]<=Canvas$Window[[2,2]]),
         ,
         Return[]];
-      CanvasWidget[Create$Text] = {WindowCoord[z],
-        Fill->pc,Text->First[body],
+!      CanvasWidget[Create$Text] = {WindowCoord[z],
+      DrawText[First[body],WindowCoord[z],
+        Fill->pc,
         Font->TextFont[Null@@font,Round[15*size*StandardScale]],
         rot=Mod[Switch[rota,
           _Real,rota,
@@ -1730,7 +1758,7 @@ CanvasGraphics=Class[{},
         If[tj<=>Null,Justify->tj,Switch[just,_String,Justify->just,_,Null[]]],
         Anchor->Switch[anch,
           _String,anch,
-          _,AnchorString[ToLowerCase[al]]]}
+          _,AnchorString[ToLowerCase[al]]]]
       ]];
 
   TextCoord[z_,1]:=
@@ -2020,17 +2048,17 @@ CanvasGraphics=Class[{},
         tx=Second[#];
         Switch[tx,
           _String,
-          CanvasWidget[Create$Text] = {{x0+dx+d1,y},
-            Text->tx,Anchor->"w",
+          DrawText[tx,{x0+dx+d1,y},
+            Anchor->"w",
             Font->TextFont[DefaultFont,
               Round[LegendFontScale*Min[15*StandardScale,(wy-d2*2-3)/(Length[l]+1)/1.7]]],
-              legtag},
+              legtag],
           _List,
           {txfont,txsize,txcol}={TextFont,TextSize,PlotColor}/.Rest[tx]/.txdef;
-          CanvasWidget[Create$Text] = {{x0+dx+d1,y},
-            Text->First[tx],Anchor->"w",Fill->txcol,
+          DrawText[First[tx],{x0+dx+d1,y},
+            Anchor->"w",Fill->txcol,
             Font->TextFont[Null@@txfont,DefaultFont,Round[15*txsize*StandardScale*LegendFontScale]],
-            legtag}
+            legtag]
           ];
         y += (CanvasWidget[BBox[ls]][[4]] - y)*2;
         )&,l];
@@ -2162,6 +2190,13 @@ CanvasGraphics=Class[{},
 
   SetPermanent[s$_,True] := ToExpression["Permanent["//s$//"]"];
   SetPermanent[s$_,_] := s$;
+
+  LTImg[text_,opt___]:=(LTImg[text,opt]=
+    Module[{f},
+      f=lt@Typeset[text,opt];
+      CreateImage[Image[The$Canvas,PhotoImage[f,File->f,Format->"png"]]];
+      f]);
+
   ];
 
 CanvasGraphics@CanvasObject[_]=Null;

@@ -1,0 +1,22 @@
+{
+Hold[{$LTPDF:=$LTPDF,$LTPDF["$\\varDelta p_y$"]:="tmp__00061309.vYZPDJ.pdf",
+  $LTPDF["$R_3$ (km$^{-1}$)"]:="tmp__00019989.28ovzw.pdf",$LTPDF["det$R$"]:="tmp__00021395.kLX74w.pdf",
+  $LTPDF["$\\varepsilon_y$\\,(pm)"]:="tmp__00026241.j0Moaz.pdf",$LTPDF["$\\varDelta x(0)$"]:="tmp__00061309.VcnKJZ.pdf",
+  $LTPDF["$\\varepsilon_{y,{\\rm lattice}}$\\,(pm)"]:="tmp__00026241.bMVdKU.pdf",
+  $LTPDF["Lifetime\\,(sec)"]:="tmp__00026241.XD5gZH.pdf",$LTPDF["$\\sqrt{\\beta_x}$"]:="tmp__00011811.EBlXRM.pdf",
+  $LTPDF["$\\sqrt{\\beta_y}$"]:="tmp__00011811.IrWsKm.pdf",$LTPDF["$\\varDelta x(\\pi/4)$"]:="tmp__00044521.6RbvZK.pdf",
+  $LTPDF["$R_1$, \\@$R_4$"]:="tmp__00019989.GTxOQH.pdf",$LTPDF["$\\varDelta x(\\pi/2)$"]:="tmp__00061309.MZvzkW.pdf",
+  $LTPDF["$\\varDelta x(3\\pi/4)$"]:="tmp__00044521.HiM7WF.pdf",$LTPDF["$\\varDelta x/\\sigma_x$"]:="tmp__00061309.kBOSEE.pdf",
+  $LTPDF["$R_2$ (am)"]:="tmp__00019989.FUKLMG.pdf",
+  $LTPDF["$\\sqrt{\\beta_x}$, \\@$\\sqrt{\\beta_y}$ ($\\sqrt{\\rm m}$)"]:="tmp__00011811.oSQQeY.pdf",
+  $LTPDF["$\\eta_x$"]:="tmp__00011811.oQKL05.pdf",
+  $LTPDF["$\\varDelta\\varepsilon/\\sigma_\\varepsilon$"]:="tmp__00061309.pE7U6u.pdf",
+  $LTPDF["$\\eta_y$"]:="tmp__00011811.WVyS5o.pdf",$LTPDF["$\\eta_x$, \\@$\\eta_y$ (mm)"]:="tmp__00012373.a6cIif.pdf",
+  $LTPDF["$\\eta_x$, \\@$\\eta_y$ (am)"]:="tmp__00011811.UKRJ2f.pdf",$LTPDF["$R_4$"]:="tmp__00019989.AJikiD.pdf",
+  $LTPDF["$R_1$"]:="tmp__00019989.WKLCwy.pdf",$LTPDF["$R_2$"]:="tmp__00019989.0XwYqs.pdf",
+  $LTPDF["$R_3$"]:="tmp__00019989.xZm6qt.pdf",$LTPDF["$\\varepsilon_{y,{\\rm bb}}$\\,(pm)"]:="tmp__00026241.QUxNue.pdf",
+  $LTPDF["$\\varDelta y(\\psi)/\\sigma_y$"]:="tmp__00061309.FJFpRd.pdf",
+  $LTPDF["$\\varDelta x(\\psi)/\\sigma_x$"]:="tmp__00061309.TQZieZ.pdf",$LTPDF["$\\varDelta y$"]:="tmp__00061309.hvIgEA.pdf",
+  $LTPDF[__]:=""}],
+Hold[{$LTPNG:=$LTPNG,$LTPNG[__]:=""}]
+}

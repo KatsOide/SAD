@@ -268,7 +268,7 @@ Object=Class[{None},{},{Options={}},
     AllParents[]:=Class`AllParents[c]];
   Print[x__:This]:=Literal[Print][x];
   Short[x_:This]:=Literal[Short][x,3];
-  Constructor$[]:=(SetAttributes[{Print,Short},HoldAll]);
+  Constructor$[]:=(SetAttributes[{Print},HoldAll]);
   Destructor$[]:=With[
     {x=First[This],
       s=Class`MemberObject2[First[This]]},
