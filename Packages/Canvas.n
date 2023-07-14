@@ -46,7 +46,7 @@ CanvasGraphics=Class[{},
     EPS=1e-300,
     CanvasObject,
     TkAngle=Times@@(Tk$Version>={8,6}),RotSym=`Angle,
-    LTfs=1.6,LTfmin=5},
+    LTfs=1.7,LTfmin=5},
 
   {DPI=72,
     Canvas$PlotRange={{0,1},{0,1}},
@@ -297,6 +297,12 @@ CanvasGraphics=Class[{},
     {FrameRange1[s,r1,r1,b2],FrameRange1[s,Automatic,Max[b2,r1],r1]};
   FrameRange[s_,{r1_,r2_},{__}]:={FrameRange1[s,r1,r1,r2],FrameRange1[s,r2,r2,r1]};
 
+  LTImg[text_,opt___]:=(LTImg[text,opt]=
+    Module[{f},
+      f=lt@Typeset[text,opt];
+      CreateImage[Image[The$Canvas,PhotoImage[f,File->f,Format->"png"]]];
+      f]);
+
   GetResize[font_]:=(GetResize[font]=StandardForm[
     Module[{s=Max[Round[GetFontSize[font]*LTfs],LTfmin]},
       s//"%"]]);
@@ -305,7 +311,7 @@ CanvasGraphics=Class[{},
     DrawText[text_,pos_,opt___]:=If[$HaveLaTeX && StringLength[text]>2 && text[1,2]=="\\@",
       Module[{{op1,op2}=SwitchCases[{opt},{(Rule|RuleDelayed)[`Angle|`Font|`Justify|`UseBG|`Fill,_],_}],
         rot,font,a,op={},sz},
-        Print["DTopts: ",{op1,op2}];
+!        Print["DTopts: ",{op1,op2}];
         {rot,font,bg}={`Angle,`Font,`UseBG}/.op1/.def;
         If[rot,op={`Rotate->-rot}];
         AppendTo[op,Resize->GetResize[font]];
@@ -2190,12 +2196,6 @@ CanvasGraphics=Class[{},
 
   SetPermanent[s$_,True] := ToExpression["Permanent["//s$//"]"];
   SetPermanent[s$_,_] := s$;
-
-  LTImg[text_,opt___]:=(LTImg[text,opt]=
-    Module[{f},
-      f=lt@Typeset[text,opt];
-      CreateImage[Image[The$Canvas,PhotoImage[f,File->f,Format->"png"]]];
-      f]);
 
   ];
 

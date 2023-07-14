@@ -1,6 +1,6 @@
       character*(*) function autofg(x,form1)
       use tfcbk
-      use tfstk, only:ktfenanq
+      use tfstk, only:ktfenanq,sad_descriptor,ktfrealq
       implicit none
       character*(*) form1
       character*16 form
@@ -11,10 +11,11 @@
       character*32 ovfl
       parameter (ovfl='$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
       logical*4 tzero,math,canv
-      integer*4 idot,lf1,notspace,lenw,lc2,
+      integer*4 idot,lf1,notspace,lenw,lc2,irtc,
      $     lf,lc,lc1,lm,i,li1,is,iexp,ifromstr,isign
-      real*8 x,ax
-      logical*4 shift
+      real*8 x,ax,xl
+      logical*4 shift,lat
+      type (sad_descriptor) kx
       if(form1 .eq. ' ' .or. form1 .eq. 'S')then
         autofg=autos1(x)
         return
@@ -225,8 +226,21 @@
       elseif(canv)then
         i=index(autofg,'E')
         if(i .gt. 0)then
-          autofg=autofg(1:i-1)//'x10`u'//
-     $         autofg(i+1:len_trim(autofg))//'`n'
+          call tfevals('`$HaveLaTeX',kx,irtc)
+          if(irtc /= 0)then
+            lat=.false.
+          elseif(ktfrealq(kx,xl))then
+            lat=xl /= 0.d0
+          else
+            lat = .false.
+          endif
+          if(lat)then
+            autofg=autofg(1:i-1)//'\\times10^{'//
+     $           autofg(i+1:len_trim(autofg))//'}'
+          else
+            autofg=autofg(1:i-1)//'x10`u'//
+     $           autofg(i+1:len_trim(autofg))//'`n'
+          endif
         endif
       elseif(tzero)then
         do i=1,len(autofg)

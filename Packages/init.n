@@ -660,7 +660,7 @@ AutoLoad[NISTACK$OBJ,NISTACK$FIXSEED,PackagesDirectory//"NISTACK.n"];
 AutoLoad[LifeTrack,PackagesDirectory//"LifeTrack.n"];
 AutoLoad[CSR,CSRStability,PackagesDirectory//"CSR.n"];
 AutoLoad[WAKECOMMAND,PackagesDirectory//"WAKECOMMAND.n"];
-$HaveLaTeX=Module[{f=OpenRead["!whereis pdflatex"]},
+`$HaveLaTeX=Module[{f=OpenRead["!whereis pdflatex"]},
   {Read[f,{Word,Word}][[2]],Close[f]}[[1]]<=>EndOfFile &&
     (f=OpenRead["!whereis convert"];
       {Read[f,{Word,Word}][[2]],Close[f]}[[1]]<=>EndOfFile)];
