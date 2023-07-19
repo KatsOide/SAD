@@ -34,7 +34,7 @@ void idate_(integer4 tarray[3]) {
    Returns the current time encoded as an integer (in the manner of the
    UNIX function `time(3)').  This value is suitable for passing to
    `CTIME', `GMTIME', and `LTIME'. */
-integer4 time_() {
+integer4 time_(void) {
   return time(NULL);
 }
 

@@ -421,6 +421,8 @@ CanvasGraphics=Class[{},
           Literal[FontScale],Literal[TickFontScale],
           Literal[FrameFontScale],Literal[LegendFontScale],
           Literal[TitleFontScale]}/.op;
+      FrameFontScale=ExpandFP[FrameFontScale];
+      TickFontScale=ExpandFP[TickFontScale];
       If[w,
         If[ini,
           Canvas$Initialize=init;
@@ -559,6 +561,12 @@ CanvasGraphics=Class[{},
     Max[r1[[3]],r2[[3]]],
     Max[r1[[4]],r2[[4]]]};
 
+  ExpandFP[x_Real]:={x,x,x,x};
+  ExpandFP[{x_Real}]:={x,1,1,1};
+  ExpandFP[{x_Real,y_Real}]:={x,y,1,1};
+  ExpandFP[{x_Real,y_Real,z_Real}]:={x,y,z,1};
+  ExpandFP[x_]:=x;
+  
   Remove$Overlap[""]=Null;
   Remove$Overlap[t_]:=Module[{p=CanvasWidget[Find$WithTag[t]],
     r1={Infinity,Infinity,-Infinity,-Infinity},r2},

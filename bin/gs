@@ -2,7 +2,7 @@
         
 JOB_DIR=$(pwd)
 SAD_ROOTPATH="$(cd "$(dirname "$0")";cd ..; pwd)"
-#echo $SAD_ROOTPATH
+echo $SAD_ROOTPATH
 export SAD_ROOTPATH
 cd $JOB_DIR
 

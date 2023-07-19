@@ -16,7 +16,7 @@
 
 #include "sim/unix_memory_.c"
 
-integer4 getpagesize_() {
+integer4 getpagesize_(void) {
   return sysconf(_SC_PAGESIZE);
 }
 
