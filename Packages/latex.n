@@ -16,7 +16,7 @@ LaTeX=Class[{},{eqn=0,pre0="\
 \\definecolor{red}{rgb}{1,0,0}\n\
 \\thispagestyle{empty}\n"},
 
-  {style="align",pt=11,margins="'3 3 3 0'",dpi=150,
+  {style="align",pt=11,margins="'3 3 3 0'",dpi=150,maxtext=50,
     tw="22 cm",pw="23 cm", th="40 cm", ph="45 cm",
     ldir=Environment["SAD_ROOTPATH"]//"/Documents/LaTeX/",wdir=False},
 
@@ -85,10 +85,10 @@ LaTeX=Class[{},{eqn=0,pre0="\
             {If[System["pdflatex -interaction nonstopmode "//fn//" "//pdf//" > /dev/null"],
               If[style <=> "standalone",
                 System["pdfcrop --margins "//margins//" "//pdf//" "//pdf//" > /dev/null"]];
-!              System["rm "//fn//" "//fn//".tex "//fn//".log "//fn//".aux "];
-              If[wdir,
+              If[wdir && StringLength[text] < maxtext && text[1,5] <=> "{\\tt ",
                 System["mv "//pdf//" "//(fn1=ldir//pdf)];
                 `$LTPDF[text]=pdf;
+                Put[{?`$LTPDF,?`$LTPNG},ldir//"LTData.sad"]; 
                 fn1,
                 "/tmp/"//pdf],
               Null],
