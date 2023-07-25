@@ -890,8 +890,9 @@ c        geo0(:,1:3)=tfchitogeo(-chi0*scale(mfitchi1:mfitchi3))
         go to 10
       elseif(word == 'DRAW')then
         call tfsetparam
-        call tfevalb('CANVASDRAW[]',kx,irtc)
+        call tfevalb('System`CANVASDRAW[]',kx,irtc)
 c        call tfdebugprint(kx,'CANVASDRAW[]',1)
+c        write(*,'(i8)')irtc
         if(irtc /= 0 .or. ktfnonstringq(kx%k))then
 c          title=Tfgetstrv('TITLE')
 c          case=Tfgetstrv('CASE')

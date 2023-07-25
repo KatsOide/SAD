@@ -90,14 +90,15 @@ sy(np),sarg(np),flag(np),prm(nprm);\n"];
     Loadm[src_String,opt___]:=(Loadm[src]=Loadm[src,___]=
         fort@Compile[preamble[LANG]//src,opt]));
 
-  InitMap[npz1_,da1_:0]:=(
+  InitMap[npz1_,da1_:0]:=If[MemberQ[Element["TYPE"],33],
     da=da1;
     temp=TemporaryName[];
     npz=npz1;
     size=npz*9+128+3;
     {map,fd}=MapFile[temp,size];
     If[Debug,Print["InitMap ",{temp,map,fd,npz,size}]];
-    {map,fd});
+    {map,fd},
+    0];
  
   ResetMap[]:=If[temp<=>Null,
     If[Debug,Print["ResetMap ",{temp,npz,map,fd,size}]];

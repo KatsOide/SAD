@@ -571,7 +571,7 @@ AutoLoad[CaOpenMonitor,PackagesDirectory//"CaSad2.n"];
 AutoLoad[CaMonitor,PackagesDirectory//"CaSad2c.n"];
 AutoLoad[EPICSDB,PackagesDirectory//"CEPICSRecord.n"];
 
-$DisplayFunction=If[Environment["DISPLAY"]<=>"",CanvasDrawer,Identity,Identiy];
+$DisplayFunction=If[Environment["DISPLAY"]<=>"",System`CanvasDrawer,Identity,Identiy];
 
 ! Check[`f=OpenRead["!command -v tdr"];
 !   Close[`f];
@@ -685,4 +685,5 @@ CompiledMap/:(`ExternalMap["TRACK",`n_,_,_]:=
               `ExtMap$@`CompiledMap$[n1,`nt,`x,mod,`prm,single][[1]]]];
           ]]);
 
+! On[General::newsym];
 ! End of File

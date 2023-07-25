@@ -337,7 +337,9 @@ c      endif
         enddo
         exit
       enddo loop_1
-      call tfevals('`ExtMap$@ResetMap[]',kxm,irtc)
+      if(.not. ktfrealq(kxm))then
+        call tfevals('`ExtMap$@ResetMap[]',kxm,irtc)
+      endif
       if(iprid .eq. 0)then
 c        write(*,*)'trackd-stop ',npr1
 c        stop
@@ -357,7 +359,7 @@ c      write(*,*)'trackd-wait ',npr,n1p,n2p,np0
                 do k=1,npr-1
                   if(ipr(k) .ne. 0)then
                     call tkill(ipr(k))
-                    write(*,*)'???trackd-wait timeout-kill: ',k
+                    write(*,'(a,i5,i10)')'???trackd-wait timeout-kill: ',k,ipr(k)
                   endif
                 enddo
                 exit loop_j

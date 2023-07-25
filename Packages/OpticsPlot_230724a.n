@@ -4,10 +4,10 @@ PkgConfig$DefaultList["OpticsPlot"->{
   "PlotDivision"->80,
   }];
 
-System`ListPlot;
-System`CanvasDrawer;
+ListPlot;
+CanvasDrawer;
 `Draw$Option;
-OP$XRange;
+`OP$XRange;
 
 SetAttributes[
   {Attometer,Femtometer,FrameHeight,Graph,InfoLabel,InvKilometer,InvMeter,Kilometer,Lattice,LatticeRegion,ListCoordinate,
@@ -15,16 +15,7 @@ SetAttributes[
     SqrtMeter,SquareMeter,SquareMicrometer,SquareMilimeter,Unit},
   Constant];
 
-Twiss$Functions={"AX","BX","NX","AY","BY","NY","EX","EPX","EY","EPY",
-  "R1","R2","R3","R4","DETR","DX","DPX","DY","DPY","DZ","DDP",
-  "AZ","BZ","NZ","ZX","ZPX","ZY","ZPY",
-  "PEX","PEPX","PEY","PEPY","PZX","PZPX","PZY","PZPY",
-  "GMX","GMY","GMZ"};
-RTwiss$Functions=("R"//#)&/@Twiss$Functions;
-DTwiss$Functions=("D"//#)&/@Twiss$Functions;
-XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"}];
-
-BeginPackage[`OPlot`,`Global`,`System`];
+BeginPackage[`OPlot`,`Global`];
 
 Begin[`OPlot`];
 
@@ -56,7 +47,7 @@ Begin[`OPlot`];
         Null[]};
       {pr,rg,init,fh,il,lr,plb,gr,lat}={Region,PlotRegion,Initialize,FrameHeight,
         InfoLabel,LatticeRegion,PlotLabel,GridLines,Lattice}/.op;
-!      Print["OP-0 ",{op,{pr,rg,init,fh,il,lr,plb,gr,lat}}];
+      Print["OP-0 ",{op,{pr,rg,init,fh,il,lr,plb,gr,lat}}];
       If[f==={},Return[Graphics[{}]]];
       If[Head[pr]<=>List,pr={1,pr}];
       pr=LINE["POSITION",pr]/.{0->1,{}->LINE["LENGTH"]};
@@ -64,7 +55,7 @@ Begin[`OPlot`];
       {ss,slabel}=If[lpr>=10000,{0.001,"km"},{1,"m"}];
       If[fh===Automatic,fh=Table[1,{nf}]/nf];
       If[Head[fh]<=>List||Length[fh]<>nf,
-        Message[`OpticsPlot::`frameheight]];
+        Message[OpticsPlot::frameheight]];
       If[lr===Automatic,lr={-0.15,0.08}];
       yh=Plus@@fh+lr[[2]]+0.02;
       yh1=yh-First[fh];
@@ -93,16 +84,16 @@ Begin[`OPlot`];
         {i,nf}];
       If[lat,
         If[il, g=MapAt[With[{slot=#}, Append[slot, Graphics[Hook[
-	  Command:>((OP$XRange=If[#===System`CanvasDrawer && RealQ[`Canvas$Frame],
+	  Command:>((`OP$XRange=If[#===`CanvasDrawer && RealQ[`Canvas$Frame],
      The$CanvasObject@GraphicsList[[`Canvas$Frame,1,2,4,1]],
      Null])&)]]]]&,
 	  g, {1,3}]];
         AppendTo[g,
           Rectangle[{0,lr[[1]]},{1,lr[[2]]},
             LatticePlot[pr,ss,PlotRegion->rg,opt],
-	    If[il, Graphics[Hook[Command:>(If[#===System`CanvasDrawer &&
+	    If[il, Graphics[Hook[Command:>(If[#===CanvasDrawer &&
        RealQ[Canvas$Frame], OPBind[Canvas$Frame]]&)]], Null[]]]]];
-      `g00=g=Graphics[g,Override[Background->None,Initialize->init,FrameLabel->fl,opt]];
+      g=Graphics[g,Override[Background->None,Initialize->init,FrameLabel->fl,opt]];
       If[(DisplayFunction/.op)===Default,
         Show[g,Override[Initialize->init,opt]]];
       g
@@ -110,7 +101,7 @@ Begin[`OPlot`];
 
   OpticsPlot[f_,opt___]:=OpticsPlot[{f},opt___];
 
-  OP$XRange=Null;
+  `OP$XRange=Null;
   OP$Bind[_,_]=True;
   OP$Element[s_]:=If[s<LINE["S","^^^"],
     With[{s1=s+OP$Circ},
@@ -194,7 +185,7 @@ Begin[`OPlot`];
         ];
       KBF$MoveCBForInfoLabel[t]]];
 
-  With[{tdr:=TopDrawer,cdr:=System`CanvasDrawer},
+  With[{tdr:=TopDrawer,cdr:=CanvasDrawer},
     SetAttributes[PlotColorDefault,HoldAll];
     PlotColorDefault[tdr]={"black"};
     PlotColorDefault[cdr]=
@@ -236,14 +227,14 @@ Begin[`OPlot`];
       l=If[f1==={},{OpticsList1$[pr,{},FrameLabel->fly,Null@@fopt]},
         Apply[OpticsList1$[pr,##,FrameLabel->fly,Null@@fopt]&,frame,{1}]];
       unit=l[[1,1,2]];
-!      Print["Unit? ",l[[,1]]];
+      Print["Unit? ",l[[,1]]];
       Scan[If[#[[1,2]]<=>unit,
         Message[`OpticsPlot::`units,Evaluate[#[[1,2]]],Evaluate[unit]]]&,l];
+!    Print["OP1$-l: ",{l,unit}];
       l=Cases[l,{{_,unit,_,_,_},_,_},1];
       v=l[[,3]];
       opv=l[[,2]];
       {min,max}=MinMax[#[[,2]]&/@v];
-!    Print["OP1$-minmax: ",{min,max,v,l}];
       am=Switch[pra,
         {_Real, _Real},     Max[Abs[pra]],
         {Automatic, _Real}, Max[Abs[min], Abs[pra[[2]]]],
@@ -404,7 +395,7 @@ Begin[`OPlot`];
       fun:=LINE[f,#]&,
       True,
       If[RealQ[f],
-        Message[`OpticsPlot::`wronglist];Return[{{0,0},{1,1}}],
+        Message[OpticsPlot::wronglist];Return[{{0,0},{1,1}}],
         fun:=f]
       ];
     {Table[
@@ -442,7 +433,7 @@ Begin[`OPlot`];
           LatticeNames[{pr1,pr2},n,0,leng/100/w,yoff,tag,nf,ss]]},
         {l}];
       With[{s1,leng,ss}, Graphics[#,{DataRange->{{s1,s1+leng}*ss,{-1,1}},
-        PlotRange:>With[{XRange=OP$XRange}, OP$XRange=.;
+        PlotRange:>With[{XRange=`OP$XRange}, `OP$XRange=.;
 	  {If[Head[XRange]===List, XRange, ss*{s1-0.001, s1+leng+0.001}],{-1,1}}],
         Frame->False,Background->Null,RemoveOverlap->ro},opt]&/@l]]];
 
@@ -600,6 +591,14 @@ Begin[`OPlot`];
       unit
       ];
 
+  Twiss$Functions={"AX","BX","NX","AY","BY","NY","EX","EPX","EY","EPY",
+    "R1","R2","R3","R4","DETR","DX","DPX","DY","DPY","DZ","DDP",
+    "AZ","BZ","NZ","ZX","ZPX","ZY","ZPY",
+    "PEX","PEPX","PEY","PEPY","PZX","PZPX","PZY","PZPY",
+    "GMX","GMY","GMZ"};
+  RTwiss$Functions=("R"//#)&/@Twiss$Functions;
+  DTwiss$Functions=("D"//#)&/@Twiss$Functions;
+  XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"}];
 
   Twiss$Positive["BX"|"BY"|"BZ"|"GMX"|"GMY"|"GMZ"|
     "SIGX"|"SIGY"|"SIGZ"|"SIGXX"|"SIGYY"|"SIGZZ"|
@@ -1040,11 +1039,8 @@ OpticsPlot::wronglist=
   "List data must be {{x1, y1, (dy1)}, ..}";
 
 OPlot$=OPlot[];
-System`OpticsPlot=OPlot$@OpticsPlot;
-System`Twiss$Label=OPlot$@Twiss$Label;
-System`LatticePlot=OPlot$@LatticePlot;
-System`BeamPlot=OPlot$@BeamPlot;
-System`OP$S2Position=OPlot$@OP$S2Position;
+OpticsPlot=OPlot@OpticsPlot;
+Twiss$Label=OPlot@Twiss$Label;
 
 Protect[OpticsPlot,OpticsPlot1$,
   Twiss$Functions,

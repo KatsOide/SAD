@@ -295,7 +295,9 @@ c        write(*,*)'tftrack-afterwait ',npz,npa,ipn,zx(npz,3),zx(npa,3)
         kaxl=ktfresetparticles(zx0,iptbl,npz,nlat,nend,mc)
       endif
       call tmunmapp(kz)
-      call tfevals('`ExtMap$@ResetMap[]',kx,irtc)
+      if(.not. ktfrealq(kx))then
+        call tfevals('`ExtMap$@ResetMap[]',kx,irtc)
+      endif
       if(photons)then
         call tphotonlist()
       endif
