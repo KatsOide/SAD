@@ -39,7 +39,7 @@
       isp2=isp
       rep=.false.
       ke=dtastk(isp0)
-      if(isp2 .eq. isp0)then
+      if(isp2 == isp0)then
         if(.not. eval)then
           kx=dtastk(isp0)
           return
@@ -122,7 +122,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
         do while(ka1 /= 0)
           call loc_defhash(ka1,dhash)
           ka10=dhash%next
-          if(dhash%gen .eq. maxgeneration)then
+          if(dhash%gen == maxgeneration)then
             do i=0,dhash%nhash
               kadi=dhash%dhash(i)%k
               do while(kadi /= 0)
@@ -148,8 +148,8 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
         if(kp1 /= 0)then
           call loc1_symdef(kp1,def1)
           def1%prev=kp0
-          if(max(0,def1%sym%gen) .eq. max(0,def%sym%gen) .and.
-     $         def1%sym%override .eq. 0)then
+          if(max(0,def1%sym%gen) == max(0,def%sym%gen) .and.
+     $         def1%sym%override == 0)then
             def1%sym%override=-2
           endif
         endif
@@ -194,7 +194,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
         return
       endif
       m=list%nl
-      if(m .eq. 0)then
+      if(m == 0)then
         irtc=0
         return
       endif
@@ -225,7 +225,7 @@ c        write(*,*)'mlocalv-1'
             endif
             ki1=kli%dbody(1)
             ki2=kli%dbody(2)
-            if(kli%head%k .eq. ktfoper+mtfset)then
+            if(kli%head%k == ktfoper+mtfset)then
               if(ktflistq(ki2,kli2))then
                 isps=isp
                 ki2=tfleval(kli2,.true.,irtc)
@@ -241,7 +241,7 @@ c        write(*,*)'mlocalv-1'
               endif
             endif
             if(ktflistq(ki1,kli1))then
-              if(kli1%head%k .eq. ktfoper+mtflist)then
+              if(kli1%head%k == ktfoper+mtflist)then
                 mi=kli1%nl
                 if(tflistq(ki2,kli2))then
                   if(kli2%nl /= mi)then
@@ -358,7 +358,7 @@ c        write(*,*)'mlocalv-1'
       integer*4 ,intent(in):: isp1,isp2
       integer*4 i,isp0,m,j
       m=lvlist%nl
-      if(m .eq. 0)then
+      if(m == 0)then
         kx=sad_descr(lvlist)
         return
       endif
@@ -433,8 +433,8 @@ c        write(*,*)'mlocalv-1'
           isp=isp+2
           ki=list%dbody(i)
           if(ktflistq(ki,listi))then
-            if(listi%head%k .eq. ktfoper+mtfset .or.
-     $           listi%head%k .eq. ktfoper+mtfsetdelayed)then
+            if(listi%head%k == ktfoper+mtfset .or.
+     $           listi%head%k == ktfoper+mtfsetdelayed)then
               k1=listi%dbody(1)
               dtastk(isp-1)=k1
               if(eval)then
@@ -444,7 +444,7 @@ c        write(*,*)'mlocalv-1'
                   ivstk2(2,isp-1)=0
                 endif
                 symbol=symbol .and. ktfsymbolq(k1)
-                if(listi%head%k .eq. ktfoper+mtfsetdelayed)then
+                if(listi%head%k == ktfoper+mtfsetdelayed)then
                   dtastk(isp)=listi%dbody(2)
                   cycle
                 else
@@ -581,8 +581,8 @@ c        write(*,*)'mlocalv-1'
           ks=pat%sym%alloc
           kas=ktfaddr(ks)
           do i=isp1,isp2-1,2
-            if(ilist(2,ktastk(i+1)-1) .eq. pat%sym%gen .and.
-     $           klist(ktastk(i+1)) .eq. klist(kas))then
+            if(ilist(2,ktastk(i+1)-1) == pat%sym%gen .and.
+     $           klist(ktastk(i+1)) == klist(kas))then
               kx=kxpcopyss(k1,k2,k_descr(ktfsymbol+ktastk(i)),kd)
               rep=.true.
               return
@@ -596,8 +596,8 @@ c        write(*,*)'mlocalv-1'
         endif
       elseif(ktfsymbolq(k,sym))then
         do i=isp1,isp2-1,2
-          if(ilist(2,ktastk(i+1)-1) .eq. sym%gen .and.
-     $         klist(ktastk(i+1)) .eq. sym%loc)then
+          if(ilist(2,ktastk(i+1)-1) == sym%gen .and.
+     $         klist(ktastk(i+1)) == sym%loc)then
             kx%k=ktfsymbol+ktastk(i)
             rep=.true.
             return

@@ -27,7 +27,7 @@
   General::missop="Missing Opearator at beginning of line `1`";
   General::mmap="Shared Memory Allocation Error";
   General::narg="Number of arguments is expected to be `1`";
-  General::newsym=$Off["Symbol `1` is new"];
+  General::newsym=$Off["New symbol `1` "];
   General::nindex="Too many indices";
   General::parallel="Error in parallel processing";
   General::protect="Protected symbol `1`";

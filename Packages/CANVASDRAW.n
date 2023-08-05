@@ -3,7 +3,11 @@
 TkWait;
 System`OpticsPlot;
 
-FFSCanvasDraw=Class[{},{},{},
+BeginPackage[`FFSCanvasDraw`,`Global`,`System`];
+
+Begin[`FFSCanvasDraw`];
+
+`FFSCanvasDraw=Class[{},{},{},
 
   Draw[]:=If[$DisplayFunction<=>System`CanvasDrawer,
     1,
@@ -78,6 +82,10 @@ FFSCanvasDraw=Class[{},{},{},
       {w[1,p-1],w[p,-1]}]];
 
   ];
+
+End[];
+
+EndPackage[];
 
 FFS$CD=FFSCanvasDraw[];
 If[~ListQ[Draw$Option],Draw$Option={}];

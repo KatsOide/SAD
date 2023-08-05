@@ -3,7 +3,7 @@ SetAttributes[{Constant,HoldFirst,HoldAll,HoldRest,HoldNone},Constant];
 HoldPattern=Literal;
 SetAttributes[{Literal,HoldPattern},{HoldAll,Constant}];
 
-SetAttributes[{Real,String,BuiltinFunction,
+SetAttributes[{Real,String,BuiltinFunction,Heads,Dummy,
   Word,Expression,WordSeparators,ReadNewRecord,
   NullWords,EndOfFile,$Failed,FormatType,
   InputForm,HoldForm,GenericSymbolForm,
@@ -22,6 +22,8 @@ SetAttributes[{True,False,I,NaN,INF,Infinity,Pi,E,EulerGamma,
 GoldenRatio=(1+Sqrt[5])/2;
 Degree=Pi/180;
 SetAttributes[{GoldenRatio,Degree}, Constant];
+
+`a;`b;`c;`d;`e;`f;`g;`h;`i;`j;`k;`m;`n;`s;`t;`u;`v;`susp;`cal;`go;
 
 (* Option flags for DynamicLink[] *)
 DYNL$LAZY=1;
@@ -684,6 +686,6 @@ CompiledMap/:(`ExternalMap["TRACK",`n_,_,_]:=
             `ExternalMap["TRACK",n1,`nt_,`x_]:=
               `ExtMap$@`CompiledMap$[n1,`nt,`x,mod,`prm,single][[1]]]];
           ]]);
-
+$MessageCount[Hold[General::newsym]]=-1e8;
 ! On[General::newsym];
 ! End of File

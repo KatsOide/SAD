@@ -1,15 +1,18 @@
       module tfmessage
       use tfstk
+      logical*4 newsym
+      data newsym/.true./
 
       contains
-      type (sad_descriptor) function kxmessagename(mess)
+      type (sad_descriptor) function kxmessagename(mess,comp)
       implicit none
       type (sad_descriptor) k1
       type (sad_symdef), pointer :: symd
       integer*4 i,l,isp1
       character*(*) ,intent(in):: mess
+      logical*4 ,optional,intent(in)::comp
       i=index(mess,'::')
-      if(i .le. 0)then
+      if(i <= 0)then
         write(*,*)'itfmessagename implementation error: ',mess
         call abort
       endif
@@ -24,10 +27,37 @@
       l=len(mess)
       isp=isp1+2
       dtastk(isp)=kxsymbolz(mess(i+2:l),l-i-1)
-      kxmessagename=kxcomposev(isp1)
-      isp=isp1-1
+      if(.not. present(comp) .or. comp)then
+        kxmessagename=kxcomposev(isp1)
+        isp=isp1-1
+      else
+        kxmessagename%k=0
+      endif
       return
       end function 
+
+      logical*4 function tfnewsym(ini) result(r)
+      use dset
+      implicit none
+      logical*4 ,intent(in):: ini
+      type (sad_descriptor) km,kx
+      type (sad_symdef) ,pointer ::symd
+      integer*4 isp0,irtc
+      logical*4 ev
+      logical*4 ,save::init=.false.
+      integer*8,save :: ka=0
+      if(ini)then
+        isp0=isp
+        km=kxmessagename('General::newsym',.false.)
+        call loc_symdef(klist(ifunbase+mtfmessagename),symd)
+        call tfdeval(isp0+1,dfromk(ksad_loc(symd%sym%loc)),kx,1,.true.,ev,irtc)
+        ka=ktfaddr(kx)
+        isp=isp0
+        init=.true.
+      endif
+      r=newsym .and. init .and. ktfstringq(dlist(ka))
+      return
+      end function
 
       end module
 
@@ -50,7 +80,7 @@
         itfmessage=-1
         return
       endif
-      if(mn%k .eq. 0)then
+      if(mn%k == 0)then
         mn=kxsymbolz('MessageString',13)
       endif
       iter=.true.
@@ -63,8 +93,8 @@
       dm=dtfcopy1(kxmessagename(mess(:l)))
       call descr_sad(dm,klm)
       ks=tfleval(klm,.true.,irtc)
-      if(irtc .ne. 0)then
-        if(irtc .gt. 0)then
+      if(irtc /= 0)then
+        if(irtc > 0)then
           call tfaddmessage(' ',0,icslfno())
         endif
         itfmessage=-1
@@ -108,20 +138,20 @@ c     tfstringliststk destroy `string' to decode backslash escape
       l=len_trim(string)
 c      write(*,*)'tfstringliststk ',l,' ',string(1:l)
       is=1
-      do while(is .le. l)
+      do while(is <= l)
 c     Search '"' from string(is:l) with backslash escape
         is1=is
-        do while(is .le. l .and. string(is1:is1) .ne. '"')
-           if(string(is1:is1) .eq. '\\') then
+        do while(is <= l .and. string(is1:is1) /= '"')
+           if(string(is1:is1) == '\\') then
               string(is1:l-1)=string(is1+1:l)
               l=l-1
            endif
            is1=is1+1
         enddo
-        if(is1 .gt. l) then
+        if(is1 > l) then
            is1=0
         endif
-        if(is1 .le. 0)then
+        if(is1 <= 0)then
           isp=isp+1
           dtastk(isp)=kxsalocb(-1,string(is:),l-is+1)
           return
@@ -129,18 +159,18 @@ c     Search '"' from string(is:l) with backslash escape
         is=is1+1
 c     Search '"' from string(is+1:l) with backslash escape
         in=is
-        do while(in .le. l .and. string(in:in) .ne. '"')
-           if(string(in:in) .eq. '\\') then
+        do while(in <= l .and. string(in:in) /= '"')
+           if(string(in:in) == '\\') then
               string(in:l-1)=string(in+1:l)
               l=l-1
            endif
            in=in+1
         enddo
         in=in-is
-        if(in .gt. l) then
+        if(in > l) then
            in=0
         endif
-        if(in .le. 0)then
+        if(in <= 0)then
           isp=isp+1
           dtastk(isp)=kxsalocb(-1,string(is:),l-is+1)
           return
@@ -192,9 +222,9 @@ c     Search '"' from string(is+1:l) with backslash escape
       implicit none
       type (sad_descriptor) ,intent(in):: kx
       integer*4 ,intent(in):: irtc
-      if(ierrorprint .ne. 0)then
+      if(ierrorprint /= 0)then
         ierrorf=kx%k
-        if(irtc .gt. 0)then
+        if(irtc > 0)then
           if(tflistq(kerror))then
             call tfaddmessage(' ',0,icslfno())
           endif
@@ -211,9 +241,9 @@ c     Search '"' from string(is+1:l) with backslash escape
       type (sad_descriptor) ,intent(in):: kx
       character*(*) ,intent(in):: str
       integer*4 ,intent(in):: irtc
-      if(ierrorprint .ne. 0)then
+      if(ierrorprint /= 0)then
         ierrorf=kx%k
-        if(irtc .gt. 0)then
+        if(irtc > 0)then
           if(tflistq(kerror))then
             call tfaddmessage(str(1:len_trim(str)),
      $           len_trim(str),icslfno())
@@ -244,7 +274,7 @@ c     Search '"' from string(is+1:l) with backslash escape
       iter=.true.
       ltr0=ltrace
       ltrace=0
-      if(kxaddmess%k .eq. 0)then
+      if(kxaddmess%k == 0)then
         kxaddmess=kxsymbolz('Add$Message',11)
       endif
       isp1=isp+1
@@ -255,7 +285,7 @@ c      call tfdebugprint(kerror,'addmessage',1)
       kx=tfefunrefd(isp1,irtc)
 c      call tfdebugprint(kx,'addmessage',1)
       isp=isp1-1
-      if(irtc .eq. 0)then
+      if(irtc == 0)then
         if(ktflistq(kx))then
           call tfemes(kx,str,ip,lfno)
         else
@@ -281,7 +311,7 @@ c      call tfdebugprint(kx,'addmessage',1)
       integer*4 ls,ifchar,is,i,lb,nc,itfgetrecl,nc1
       character*10 autofg
       character*512 buff,tfconvstr,tfgetstr
-      if(ktfaddr(k) .eq. 0 .or. ierrorprint .eq. 0)then
+      if(ktfaddr(k) == 0 .or. ierrorprint == 0)then
         ierrorf=0
         return
       elseif(tflistq(k,kl))then
@@ -295,9 +325,9 @@ c      call tfdebugprint(kx,'addmessage',1)
       endif
       ierrorprint=0
       lb=min(len_trim(buff),len(buff)-1)
-      if(ierrorf .ne. 0)then
+      if(ierrorf /= 0)then
         buff(lb+1:)=' in '//tfconvstr(ierrorf,nc,'*')
-        if(lb+nc+4 .gt. len(buff))then
+        if(lb+nc+4 > len(buff))then
           buff(len(buff)-3:)=' ...'
         endif
         lb=min(lb+nc+4,len(buff))
@@ -307,36 +337,36 @@ c      call tfdebugprint(kx,'addmessage',1)
       endif
       call tftruncprint(buff(1:lb),itfgetrecl()-1,' ,})]'//char(10),
      $     .false.,lfno)
-      if(lfno .ne. 6 .and. lfno .ne. 0)then
+      if(lfno /= 6 .and. lfno /= 0)then
         call tftruncprint(buff(1:lb),itfgetrecl()-1,' ,})]'//char(10),
      $       .false.,6)
       endif
-      if(ip .gt. 0)then
+      if(ip > 0)then
         do i=ip-2,1,-1
-          if(string(i:i) .eq. char(10))then
+          if(string(i:i) == char(10))then
             is=i+1
             go to 1
           endif
         enddo
         is=max(1,ip-32)
  1      ls=ifchar(string(1:ip),char(10),is)-1
-        if(ls .le. 0)then
+        if(ls <= 0)then
           ls=len_trim(string(1:ip))-1
         endif
         if(ls .ge. is)then
           write(lfno,'(a)')string(is:ls)
-          if(lfno .ne. 6)then
+          if(lfno /= 6)then
             write(6,'(a)')string(is:ls)
           endif
-          if(ierrorf .eq. 0)then
+          if(ierrorf == 0)then
             ls=ip-is
-            if(ls .le. 0)then
+            if(ls <= 0)then
               ls=1
             endif
             buff(1:ls)=' '
             buff(ls:ls)='^'
             write(lfno,'(a)')buff(1:ls)
-            if(lfno .ne. 6)then
+            if(lfno /= 6)then
               write(6,'(a)')buff(1:ls)
             endif
           endif
@@ -352,11 +382,11 @@ c      call tfdebugprint(kx,'addmessage',1)
       subroutine tfreseterror
       use tfstk
       implicit none
-      if(kerror .ne. 0)then
+      if(kerror /= 0)then
         call tflocal(kerror)
         kerror=0
       endif
-      if(ierrorprint .ne. 0)then
+      if(ierrorprint /= 0)then
         ierrorprint=0
       endif
       return

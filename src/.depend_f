@@ -84,7 +84,7 @@ initb1.o: initb1.f tfstk.o toplvl.o
 initbl.o: initbl.f tfstk.o toplvl.o
 initdainterface.o: initdainterface.f tffs.o tfstk.o
 italoc.o: italoc.f tfstk.o
-itfaloc.o: itfaloc.f tfstk.o toplvl.o
+itfaloc.o: itfaloc.f itfmessage.o tfstk.o toplvl.o
 itfcopy.o: itfcopy.f tfdset.o tfefun.o tfstk.o
 itfdepth.o: itfdepth.f itfpmat.o tfstk.o
 itfgetbuf.o: itfgetbuf.f
@@ -92,7 +92,7 @@ itfgetbuf_PPC.o: itfgetbuf_PPC.f
 itfgetbuf_f90.o: itfgetbuf_f90.f
 itfgeto.o: itfgeto.f tfstk.o toplvl.o
 itfmaloc.o: itfmaloc.f tfstk.o toplvl.o
-itfmessage.o: itfmessage.f tfeeval.o tfstk.o tfstrbuf.o toplvl.o
+itfmessage.o: itfmessage.f tfdset.o tfeeval.o tfstk.o tfstrbuf.o toplvl.o
 itfopenread.o: itfopenread.f toplvl.o
 itfopenread_G77.o: itfopenread_G77.f tfstk.o toplvl.o
 itfpmat.o: itfpmat.f tfeeval.o tfstk.o toplvl.o
@@ -328,7 +328,7 @@ tfgetr.o: tfgetr.f
 tfgetv.o: tfgetv.f tffs.o tfstk.o toplvl.o
 tfif.o: tfif.f
 tfinit.o: tfinit.f initb1.o tffs.o tfstk.o toplvl.o
-tfinitn.o: tfinitn.f MAIN.o tfefun.o tfstk.o toplvl.o
+tfinitn.o: tfinitn.f MAIN.o itfmessage.o tfefun.o tfstk.o toplvl.o
 tfkwrd.o: tfkwrd.f tfstk.o toplvl.o
 tflag.o: tflag.f tffs.o tfstk.o
 tflifetrack.o: tflifetrack.f tfstk.o
@@ -339,7 +339,7 @@ tfltra.o: tfltra.f tffs.o tfstk.o
 tfmap.o: tfmap.f itfdepth.o itfpmat.o tfeeval.o tfreplace.o tfstk.o
 tfmat.o: tfmat.f tffs.o tfstk.o
 tfmemcheck.o: tfmemcheck.f tfstk.o
-tfmodule.o: tfmodule.f tfdset.o tfeeval.o tfreplace.o tfstk.o
+tfmodule.o: tfmodule.f itfmessage.o tfdset.o tfeeval.o tfreplace.o tfstk.o
 tfojit.o: tfojit.f tffs.o
 tfoptics.o: tfoptics.f qcell.o tffs.o tfstk.o toplvl.o
 tfpart.o: tfpart.f tfeeval.o tfstk.o

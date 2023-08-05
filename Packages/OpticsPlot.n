@@ -12,7 +12,7 @@ OP$XRange;
 SetAttributes[
   {Attometer,Femtometer,FrameHeight,Graph,InfoLabel,InvKilometer,InvMeter,Kilometer,Lattice,LatticeRegion,ListCoordinate,
     Meter,Micron,Microradian,Milimeter,Miliradian,NameFilter,Nanometer,Percent,Pi2,Picometer,PPB,PPM,Radian,Ratio,RemoveOperlap,
-    SqrtMeter,SquareMeter,SquareMicrometer,SquareMilimeter,Unit},
+    SqrtMeter,SquareMeter,SquareMicrometer,SquareMilimeter,Unit,Region,Initialize,FrameHeight,InfoLabel,InfoBind},
   Constant];
 
 Twiss$Functions={"AX","BX","NX","AY","BY","NY","EX","EPX","EY","EPY",

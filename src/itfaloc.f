@@ -6,7 +6,7 @@
       integer*8 k1,itfroot
       k1=ktaloc(nw+2)
       ilist(2,k1-1)=0
-      if(mode .eq. 0)then
+      if(mode == 0)then
         klist(k1)=ktype
       else
         itfroot=itflocal+levele
@@ -26,7 +26,7 @@
       integer*8 ktalocr,k1,itfroot
       k1=ktalocr(nw+2)
       ilist(2,k1-1)=0
-      if(mode .eq. 0)then
+      if(mode == 0)then
         klist(k1)=ktype
       else
         itfroot=itflocal+levele
@@ -54,11 +54,11 @@
       i=klist(itfroot)
       i1=i
       i0=i
-      do while(i .ne. itfroot)
+      do while(i /= itfroot)
         call loc_namtbl(i,loc)
-        if(nc .eq. loc%str%nch)then
-          if(loc%str%str(1:nc) .eq. name)then
-            if(i .ne. i1)then
+        if(nc == loc%str%nch)then
+          if(loc%str%str(1:nc) == name)then
+            if(i /= i1)then
               klist(i0)=loc%next
               loc%next=klist(itfroot)
               klist(itfroot)=i
@@ -105,7 +105,7 @@
         ktalocr=ktaloc(n)
         return
       endif
- 1    if(nresv .eq. 0)then
+ 1    if(nresv == 0)then
         kresv=ktaloc(nsize)
         nresv=nsize
       endif
@@ -142,18 +142,18 @@
       integer*4 ,intent(in):: l
       integer*4 i
       i=index(name(1:l), '`')
-      if(i .le. 0)then
-        if(icont .eq. 0)then
+      if(i <= 0)then
+        if(icont == 0)then
           k1=ktsydefc(name,l,itfcontext,.false.)
-          if(k1 .ne. 0)then
+          if(k1 /= 0)then
             kres=k1
             return
           else
             do j=itfcontextpath,itfcontextpath
      $           +ilist(2,itfcontextpath-1)-1
-              if(klist(j) .ne. itfcontext)then
+              if(klist(j) /= itfcontext)then
                 k1=ktsydefc(name,l,klist(j),.false.)
-                if(k1 .ne. 0)then
+                if(k1 /= 0)then
                   kres=k1
                   return
                 endif
@@ -164,7 +164,7 @@
         else
           kres=ktsydefc(name,l,icont,.true.)
         endif
-      elseif(i .eq. 1)then
+      elseif(i == 1)then
         if(l == 1)then
           kres=ktsydefc('`',1,itfcontroot,.true.)
         else
@@ -172,10 +172,10 @@
         endif
       else
         ic=ktsydefc(name(1:i),i,
-     $       merge(itfcontroot,icont,icont .eq. 0),.true.)
+     $       merge(itfcontroot,icont,icont == 0),.true.)
         call loc_sad(ic,contd)
         ic1=contd%value%k
-        if(contd%sym%gen .ne. -3)then
+        if(contd%sym%gen /= -3)then
           call tflocal(ic1)
           ic1=ktcontaloc(ic)
         else
@@ -197,7 +197,7 @@
       integer*8 ,intent(in):: ic
       integer*8 itf,i,ktavalocr
       ktcontaloc=ktavalocr(0,nsymhash+1)
-      if(ic .ne. 0)then
+      if(ic /= 0)then
         call loc_symdef(ic,contd)
         contd%value%k=ktflist+ktcontaloc
         contd%sym%gen=-3
@@ -228,9 +228,9 @@
       is=index(string(:ls),'$')
       if(is .gt. 0)then
         do1: do i=leng-1,is,-1
-          if(string(i:i) .eq. '$')then
+          if(string(i:i) == '$')then
             do j=i+1,leng
-              if(string(j:j) .lt. '0' .or.
+              if(string(j:j) < '0' .or.
      $           string(j:j) .gt. '9')then
                 lg=0
                 exit do1
@@ -243,7 +243,7 @@
         enddo do1
       endif
       loc=ktlookupc(string,ls,icont,cre)
-      if(loc .ne. 0)then
+      if(loc /= 0)then
         call tfsydefg(loc,kx,lg)
         ktsydefc=ktfaddrd(kx)
       else
@@ -255,6 +255,7 @@
       subroutine tfsydefg(locp,kx,ig0)
       use tfstk
       use tfcode
+      use tfmessage,only:tfnewsym
       use mackw
       implicit none
       type (sad_descriptor) ,intent(out):: kx
@@ -265,29 +266,29 @@
       integer*4 nc,idx
       character*(MAXPNAME) name
       integer*4 ,intent(in):: ig0
-      integer*4 ig,ig1
+      integer*4 ig,ig1,itfmessagestr,irtc
       integer*4 hsrchz1
       call loc_namtbl(locp,loc)
       kas1=loc%symdef
       ig=max(0,ig0)
-      do while(kas1 .ne. 0)
+      do while(kas1 /= 0)
         ig1=max(0,ilist(2,kas1+7))
 c        call tfdebugprint(ktfsymbol+kas1+8,'sydefg',1)
 c        write(*,*)ig,ig1,kas1,klist(loc+1)
-        if(ig .eq. ig1)then
+        if(ig == ig1)then
           kx%k=ktfsymbol+kas1+8
           return
-        elseif(ig .lt. ig1)then
+        elseif(ig < ig1)then
           kas1=klist(kas1)
         else
           kx=kxnaloc1(ig,locp)
           return
         endif
       enddo
-      if(kas1 .le. 0)then
+      if(kas1 <= 0)then
         nc=loc%str%nch
-        if(nc .le. MAXPNAME)then
-          if(nc .le. 0)then
+        if(nc <= MAXPNAME)then
+          if(nc <= 0)then
             write(*,*)'tfsydef ',loc
             call abort
           else
@@ -295,7 +296,7 @@ c        write(*,*)ig,ig1,kas1,klist(loc+1)
 c            write(*,*)'tfsydefg ',name(1:nc)
             idx=hsrchz1(name(1:nc))
 c            write(*,*)' : ',idx
-            if(idx .ne. 0 .and. idtype(idx) .eq. icGLR)then
+            if(idx /= 0 .and. idtype(idx) == icGLR)then
               kx=kxnaloc1(ig,locp)
               call descr_sad(kx,symd)
               symd%value%k=ktfref+idval(idx)
@@ -304,6 +305,12 @@ c            write(*,*)' : ',idx
           endif
         endif
         kx=kxnaloc1(ig,locp)
+        if(tfnewsym(.false.))then
+c          call tfdebugprint(loc%cont,'context:',1)
+c          write(*,"(a,a)")'General::newsym new symbol ',loc%str%str(1:loc%str%nch)
+          irtc=itfmessagestr(9,'General::newsym',loc%str%str(1:loc%str%nch))
+          call tferrorhandle(dlist(loc%cont),irtc)
+        endif
       else
         kx%k=ktfsymbol+kas1+8
       endif
@@ -317,16 +324,16 @@ c            write(*,*)' : ',idx
       integer*4 i,ih
       character ,intent(in):: name(nc)
       ih=ichar(name(1))
-      if(nc .eq. 2)then
+      if(nc == 2)then
         ih=ih+ichar(name(2))
-      elseif(nc .eq. 3)then
+      elseif(nc == 3)then
         ih=ih+ichar(name(2))+ichar(name(3))
-      elseif(nc .eq. 4)then
+      elseif(nc == 4)then
         ih=ih+ichar(name(2))+ichar(name(3))+ichar(name(4))
-      elseif(nc .eq. 5)then
+      elseif(nc == 5)then
         ih=ih+ichar(name(2))+ichar(name(3))+ichar(name(4))
      $       +ichar(name(5))
-      elseif(nc .eq. 6)then
+      elseif(nc == 6)then
         ih=ih+ichar(name(2))+ichar(name(3))+ichar(name(4))
      $       +ichar(name(5))+ichar(name(6))
       else
@@ -346,7 +353,7 @@ c            write(*,*)' : ',idx
       k1=ktalocr(nd+3)
       ilist(1,k1-1)=0
       ilist(2,k1-1)=kconstarg
-      if(mode .eq. 0)then
+      if(mode == 0)then
         klist(k1)=ktflist
       else
         itfroot=itflocal+levele

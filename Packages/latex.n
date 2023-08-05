@@ -106,8 +106,8 @@ LaTeX=Class[{},{eqn=0,pre0="\
           System["pdf2svg "//pdf//" "//out//" > /dev/null"];
           System["svgcleaner --quiet "//out//" "//out//" > /dev/null"],
           _,
-          System["convert -quiet -density "//dpi//" -quality 100 "//s//
-            " -sharpen 0x2 -sharpen 0x3 -morphology Erode Disk:2.0 "//pdf//" "//out//" > /dev/null"]];
+          System["convert -quiet -density "//dpi//" -quality 100 "//pdf//s//
+            " -sharpen 0x2 -sharpen 0x3 -morphology Erode Disk:2.0 "//out//" > /dev/null"]];
         System["rm "//fn];
         out
         ]);

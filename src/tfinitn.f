@@ -4,6 +4,7 @@
       use tfcsi
       use macphys
       use version
+      use tfmessage,only:tfnewsym
       use context,only:tfassigncont
       implicit none
       type (sad_symdef), pointer :: contd
@@ -15,6 +16,7 @@
       integer*8 ktfsymbolc,ktrvaloc,ktcontaloc,
      $     iaxsys,loc,ktcvaloc,kax,k1,k2,i
       integer*4 lpw,lenw,ifromstr
+      logical*4 news
       call tfinfinit
       kinfinity=transfer(dinfinity,i00)
       kminfinity=transfer(-dinfinity,i00)
@@ -195,7 +197,7 @@ c      write(*,*)'tfinitn 1 '
       write(*,*) '*** Run time Environment:     '//
      $     pkg(1:lpkg)//'init.'//env(1:lenv)//'.n ***'
       call tfgetf(pkg(1:lpkg)//'init.'//env(1:lenv)//'.n')
-c      write(*,*)'tfinitn-9 ',itfcontroot
+      news=tfnewsym(.true.)
       return
       end
 
