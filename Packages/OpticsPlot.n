@@ -46,7 +46,7 @@ Begin[`OPlot`];
     RemoveOverlap->"L$NAME"}},
 
     OpticsPlot[f_List,opt___]:=Module[
-      {nf=Length[f],g,pr,rg,dx,init,fl,fh,yh,yh1,i1,lr,plb,
+      {nf=Length[f],g,pr,rg,dx,init,fl,fh,il,yh,yh1,i1,lr,plb,
         op=Override[opt,def],lpr,ss,slabel,gr,lat},
       op = op/.{
 !      Rule[sRegion->{s1_Real, s2_Real}, Region->OP$S2Position[s1,s2]],
@@ -102,7 +102,7 @@ Begin[`OPlot`];
             LatticePlot[pr,ss,PlotRegion->rg,opt],
 	    If[il, Graphics[Hook[Command:>(If[#===System`CanvasDrawer &&
        RealQ[Canvas$Frame], OPBind[Canvas$Frame]]&)]], Null[]]]]];
-      `g00=g=Graphics[g,Override[Background->None,Initialize->init,FrameLabel->fl,opt]];
+      g=Graphics[g,Override[Background->None,Initialize->init,FrameLabel->fl,opt]];
       If[(DisplayFunction/.op)===Default,
         Show[g,Override[Initialize->init,opt]]];
       g
@@ -261,8 +261,7 @@ Begin[`OPlot`];
         leg=l[[,1,1]]];
       If[fly===Automatic,
         If[$HaveLaTeX && Length[leg] > 1,
-          leg00=leg;
-          pu00=pu=StringPosition[#,"_"]&/@leg;
+          pu=StringPosition[#,"_"]&/@leg;
           If[pu[[1]] <=> {} && SameQ@@(ll=StringLength/@leg) && SameQ@@pu &&
             (pu1=pu[[1,1,1]];SameQ@@({#[1,pu1-1] ,#[pu1+2,-1]}&/@leg)),
             fly=leg[[1]][1,pu1]//"{"//(StringJoin@@((#[pu1+1]//",")&/@leg))[1,-2]//"}"//leg[[1]][pu1+2,-1]]];

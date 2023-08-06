@@ -4,7 +4,7 @@
       use tfcsi
       use macphys
       use version
-      use tfmessage,only:tfnewsym
+      use tfmessage,only:tfnewsym,tfnewset
       use context,only:tfassigncont
       implicit none
       type (sad_symdef), pointer :: contd
@@ -198,6 +198,7 @@ c      write(*,*)'tfinitn 1 '
      $     pkg(1:lpkg)//'init.'//env(1:lenv)//'.n ***'
       call tfgetf(pkg(1:lpkg)//'init.'//env(1:lenv)//'.n')
       news=tfnewsym(.true.)
+      news=tfnewset(.true.)
       return
       end
 

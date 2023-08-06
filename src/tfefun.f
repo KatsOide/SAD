@@ -1681,6 +1681,7 @@ c      call tfdebugprint(kx,': ',1)
       function tfset1(k10,k20,mopc,irtc) result(kx)
       use tfstk
       use eexpr,only:tfsetpart,tftagset
+      use tfmessage,only:tfnewset
       use mackw
       implicit none
       type (sad_descriptor) k1,k2,kx,ks,ka,tfearray
@@ -1688,10 +1689,11 @@ c      call tfdebugprint(kx,': ',1)
       type (sad_dlist),pointer :: list,kls1,kla,kls
       type (sad_symbol), pointer ::sym
       type (sad_symdef),pointer :: symd
+      type (sad_namtbl), pointer :: loc
       integer*8 ka1,kaa,kas,kar
       integer*4 ,intent(out):: irtc
       integer*4 ,intent(in):: mopc
-      integer*4 itfmessage,itfmessageexp,i
+      integer*4 itfmessage,itfmessageexp,itfmessagestr,i
       irtc=0
       k1=k10
       k2=k20
@@ -1774,6 +1776,15 @@ c      call tfdebugprint(kx,': ',1)
           ks=dtfcopy(k2)
           kx=ks
         endif
+        if(symd%value%k == kfromd(sad_descr(symd%sym)) .and. tfnewset(.false.)
+     $       .and. symd%sym%gen <= 0)then
+          call loc_namtbl(symd%sym%loc,loc)
+          if(loc%kind ==0)then
+            irtc=itfmessagestr(9,'General::newset',loc%str%str(1:loc%str%nch))
+            call tferrorhandle(dlist(loc%cont),irtc)
+            irtc=0
+          endif
+        endif
         call tflocald(symd%value)
         symd%value=ks
       elseif(ktfrefq(k1,ka1))then
@@ -1782,8 +1793,7 @@ c        if(ka1 > 0 .and. ktfrealq(k2))then
           call tflocald(dlist(ka1))
           dlist(ka1)=dtfcopy(k2)
         else
-          irtc=itfmessage(999,'General::invset',
-     $         '"Illegal Memory Location"')
+          irtc=itfmessage(999,'General::invset','"Illegal Memory Location"')
           return
         endif
       else

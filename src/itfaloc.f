@@ -306,8 +306,6 @@ c            write(*,*)' : ',idx
         endif
         kx=kxnaloc1(ig,locp)
         if(tfnewsym(.false.))then
-c          call tfdebugprint(loc%cont,'context:',1)
-c          write(*,"(a,a)")'General::newsym new symbol ',loc%str%str(1:loc%str%nch)
           irtc=itfmessagestr(9,'General::newsym',loc%str%str(1:loc%str%nch))
           call tferrorhandle(dlist(loc%cont),irtc)
         endif

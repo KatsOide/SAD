@@ -1,7 +1,7 @@
       module tfmessage
       use tfstk
-      logical*4 newsym
-      data newsym/.true./
+      logical*4 newsym,newset
+      data newsym,newset/.true.,.true./
 
       contains
       type (sad_descriptor) function kxmessagename(mess,comp)
@@ -56,6 +56,29 @@
         init=.true.
       endif
       r=newsym .and. init .and. ktfstringq(dlist(ka))
+      return
+      end function
+
+      logical*4 function tfnewset(ini) result(r)
+      use dset
+      implicit none
+      logical*4 ,intent(in):: ini
+      type (sad_descriptor) km,kx
+      type (sad_symdef) ,pointer ::symd
+      integer*4 isp0,irtc
+      logical*4 ev
+      logical*4 ,save::init=.false.
+      integer*8,save :: ka=0
+      if(ini)then
+        isp0=isp
+        km=kxmessagename('General::newset',.false.)
+        call loc_symdef(klist(ifunbase+mtfmessagename),symd)
+        call tfdeval(isp0+1,dfromk(ksad_loc(symd%sym%loc)),kx,1,.true.,ev,irtc)
+        ka=ktfaddr(kx)
+        isp=isp0
+        init=.true.
+      endif
+      r=newset .and. init .and. ktfstringq(dlist(ka))
       return
       end function
 

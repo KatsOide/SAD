@@ -946,7 +946,7 @@ c size limitation due to gfortran 7 on macOS ???
 
       type sad_namtbl
       sequence
-      integer*4 len,dummy
+      integer*4 len,kind
       integer*8 next,symdef,cont
       type (sad_string) str
       end type
@@ -3925,6 +3925,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
           def%sym%ref=2
           def%sym%gen=lg
           def%sym%loc=locp
+          loc%kind=0
           loc%symdef=kp
           loc%str%ref=loc%str%ref+1
 c          write(*,'(a,i12,2i5,a)')'kxnaloc ',kp,n,loc%str%nch,loc%str%str(1:loc%str%nch)
@@ -3962,6 +3963,13 @@ c          write(*,'(a,i12,2i5,a)')'kxnaloc ',kp,n,loc%str%nch,loc%str%str(1:loc
           def%sym%loc=locp
         endif
         kxnaloc=sad_descr(def%sym)
+        return
+        end function
+
+        integer*8 function kfromd(d)
+        implicit none
+        type (sad_descriptor) , intent(in)::d
+        kfromd=d%k
         return
         end function
 

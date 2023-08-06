@@ -136,6 +136,7 @@
       isp=isp0
       return
       end
+
       subroutine tftoinputstring(isp1,kx,irtc)
       use tfcode
       use strbuf

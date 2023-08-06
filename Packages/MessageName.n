@@ -28,6 +28,7 @@
   General::mmap="Shared Memory Allocation Error";
   General::narg="Number of arguments is expected to be `1`";
   General::newsym=$Off["New symbol `1` "];
+  General::newset=$Off["Set to new symbol `1` "];
   General::nindex="Too many indices";
   General::parallel="Error in parallel processing";
   General::protect="Protected symbol `1`";

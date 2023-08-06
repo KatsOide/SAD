@@ -310,7 +310,7 @@ CanvasGraphics=Class[{},
   With[{def={`Angle->0,`Font->DefaultFont,`UseBG->True}},
     DrawText[text_,pos_,opt___]:=If[$HaveLaTeX && StringLength[text]>2 && text[1,2]=="\\@",
       Module[{{op1,op2}=SwitchCases[{opt},{(Rule|RuleDelayed)[`Angle|`Font|`Justify|`UseBG|`Fill,_],_}],
-        rot,font,a,op={},sz},
+        rot,font,bg,a,op={},sz},
 !        Print["DTopts: ",{op1,op2}];
         {rot,font,bg}={`Angle,`Font,`UseBG}/.op1/.def;
         If[rot,op={`Rotate->-rot}];
@@ -409,7 +409,7 @@ CanvasGraphics=Class[{},
     CanvasDrawer[opt_,list_,init_,w_,rect_,last_,ini_]:=StandardForm[Module[
       {fl,pl,ft,wsx,wsy,wsfx,wsfy,det,wc,fr,tag,t1,t2,addtag,enc,glist,ws,
         pr,id,l1,align,up,ts,frid,fclk,dr,plr,sca,gr,ib,tkf,frt,frt1,rmo,
-        op=Override[opt,def],wfr,ftc,tkc},
+        op=Override[opt,def],wfr,ftc,tkc,ful},
       {tag,fl,pl,fr,wc,align,pr,fclk,dr,ft,frt,ftc,tkc,ts,ib,tkf,ful,rmo,
         LegendBG,
         FontScale,TickFontScale,FrameFontScale,LegendFontScale,TitleFontScale}=
@@ -740,8 +740,7 @@ CanvasGraphics=Class[{},
         If[bl<=>{} && bl[[1]]<pos[[1]] && bl[[2]]<=pos[[2]]<=bl[[4]],
           fl=Max[fl,bl[[3]]]],
         {i,0,Canvas$Frame}];
-    fl01=fl;fs01=FontScale*FScale[FrameFontScale,2];w01=w;
-    dsn01=Round[FontScale*FScale[FrameFontScale,2]
+    Round[FontScale*FScale[FrameFontScale,2]
       *Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,pos[[1]]-fl-1,size*1.3]]]];
   DefaultSize[t_,w_,size_,pos_,"w"]:=Module[{fl=CanvasWidget[Width],bl},
       Do[bl=CanvasWidget[BBox[{"LF$Y1"//i,"FL$Y1"//i,"F$Y1"//i}]];
@@ -805,7 +804,7 @@ CanvasGraphics=Class[{},
 
     Primitive[Line[body_,opt___]]:=Module[
       {pc,pl,pj,sr,size,sym,ebl,ptc,dash,ltag,ptag,thick,pbc,leg,arr,clip,canvr=Canvas$Range,
-        bt=Thread[body],op=Override[opt,def],cmd,ebth},
+        bt=Thread[body],op=Override[opt,def],cmd,ebth,ebc,arrs},
       {pc,pl,pj,sr,size,sym,ebl,ptc,dash,ltag,ptag,thick,pbc,leg,ebth,ebc,arr,arrs,clip}=
         {PlotColor,Plot,PlotJoined,StepRatio,PointSize,PointSymbol,
 	  ErrorBarTickSize,PointColor,Dashing,LineTags,PointTags,Thickness,
@@ -2030,7 +2029,6 @@ CanvasGraphics=Class[{},
       {x0,y} = {r[[2,1]]-200,r[[1,2]] + 30 + d3 +1};
       dx = 40;
       d2=Round[Min[d2,wy/20]];
-      l00=l;
       Scan[(
         {pc,pl,size,sym,ptc,dash,thick,pj,pbc,leg}=
           {PlotColor,Plot,PointSize,PointSymbol,
