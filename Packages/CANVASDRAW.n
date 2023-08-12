@@ -90,3 +90,5 @@ EndPackage[];
 FFS$CD=FFSCanvasDraw[];
 If[~ListQ[Draw$Option],Draw$Option={}];
 System`CANVASDRAW=FFS$CD@Draw;
+
+!Print[{?System`OpticsPlot,?OpticsPlot,$ContextPath}];

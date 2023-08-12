@@ -3525,26 +3525,26 @@ c        k=kfromr(x)
         return
         end function
 
-      subroutine tflocalk(k)
-      implicit none
-      type (sad_object), pointer :: obj
-      integer*8 ,intent(in):: k
-      integer*8 ka,itfroot
-      if(ktfobjq(k))then
-        ka=ktfaddr(k)
-        call loc_obj(ka,obj)
-        obj%ref=obj%ref-1
-        if(obj%ref <= 0)then
-          obj%ref=0
-          if(ktfaddr(obj%alloc) == 0)then
-            itfroot=itflocal+levele
-            obj%alloc%k=obj%alloc%k+ktfaddr(klist(itfroot))
-            klist(itfroot)=ka-2
+        subroutine tflocalk(k)
+        implicit none
+        type (sad_object), pointer :: obj
+        integer*8 ,intent(in):: k
+        integer*8 ka,itfroot
+        if(ktfobjq(k))then
+          ka=ktfaddr(k)
+          call loc_obj(ka,obj)
+          obj%ref=obj%ref-1
+          if(obj%ref <= 0)then
+            obj%ref=0
+            if(ktfaddr(obj%alloc) == 0)then
+              itfroot=itflocal+levele
+              obj%alloc%k=obj%alloc%k+ktfaddr(klist(itfroot))
+              klist(itfroot)=ka-2
+            endif
           endif
         endif
-      endif
-      return
-      end
+        return
+        end
 
         subroutine tflocald(k)
         implicit none
@@ -3565,24 +3565,24 @@ c        k=kfromr(x)
         return
         end subroutine 
 
-      subroutine tflocal1k(k)
-      implicit none
-      type (sad_object), pointer :: obj
-      integer*8 ,intent(in):: k
-      integer*8 ka,itfroot
-      ka=ktfaddr(k)
-      call loc_obj(ka,obj)
-      obj%ref=obj%ref-1
-      if(obj%ref <= 0)then
-        obj%ref=0
-        if(ktfaddr(obj%alloc) == 0)then
-          itfroot=itflocal+levele
-          obj%alloc%k=obj%alloc%k+ktfaddr(klist(itfroot))
-          klist(itfroot)=ka-2
+        subroutine tflocal1k(k)
+        implicit none
+        type (sad_object), pointer :: obj
+        integer*8 ,intent(in):: k
+        integer*8 ka,itfroot
+        ka=ktfaddr(k)
+        call loc_obj(ka,obj)
+        obj%ref=obj%ref-1
+        if(obj%ref <= 0)then
+          obj%ref=0
+          if(ktfaddr(obj%alloc) == 0)then
+            itfroot=itflocal+levele
+            obj%alloc%k=obj%alloc%k+ktfaddr(klist(itfroot))
+            klist(itfroot)=ka-2
+          endif
         endif
-      endif
-      return
-      end
+        return
+        end
 
         subroutine tflocal1d(k)
         implicit none
@@ -3784,6 +3784,17 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         return
         end function
 
+        integer*8 function ktcvaloc(name,x,y)
+        implicit none
+        integer*4 lenw
+        real*8 ,intent(in):: x,y
+        character*(*) ,intent(in):: name
+        ktcvaloc=ktfsymbolz(name,lenw(name))-4
+        call tflocal(klist(ktcvaloc))
+        dlist(ktcvaloc)=kxcalocv(0,x,y)
+        return
+        end function
+      
         type (sad_descriptor) function kxsalocb(mode,string,leng,str)
         implicit none
         type (sad_string), pointer, optional, intent(out) :: str
@@ -4064,6 +4075,17 @@ c          write(*,'(a,i12,2i5,a)')'kxnaloc ',kp,n,loc%str%nch,loc%str%str(1:loc
         return
         end
 
+        subroutine tfpadstr(string,kp,leng)
+        implicit none
+        integer*8 ,intent(in):: kp
+        integer*4 ,intent(in):: leng
+        character ,intent(in):: string(leng)
+        klist(leng/8+kp)=0
+c     Terminate string buffer by NULL character
+        call tmovb(string,jlist(1,kp),leng)
+        return
+        end subroutine
+
         integer*8 function ktsalocb(mode,string,leng)
         integer*8 ktfaloc,l
         integer*4 , intent(in)::leng,mode
@@ -4092,6 +4114,14 @@ c          write(*,'(a,i12,2i5,a)')'kxnaloc ',kp,n,loc%str%nch,loc%str%str(1:loc
         return
         end function
       
+        integer*8 function ktsalocbi(mode,string,i,leng)
+        implicit none
+        integer*4 ,intent(in):: mode,i,leng
+        character ,intent(in):: string(i+leng-1)
+        ktsalocbi=ktsalocb(mode,string(i),leng)
+        return
+        end
+
         integer*8 function ktsalocbb(mode,leng)
         implicit none
         integer*8 ktfaloc,l
@@ -4123,6 +4153,27 @@ c          write(*,'(a,i12,2i5,a)')'kxnaloc ',kp,n,loc%str%nch,loc%str%str(1:loc
         kl%head%k=ktfoper+mtfcomplex
         kl%rbody(1)=x
         kl%rbody(2)=y
+        return
+        end function
+
+        integer*8 function ktcalocm(n)
+        implicit none
+        type(sad_dlist), pointer :: kl
+        integer*4 ,intent(in):: n
+        integer*4 i
+        integer*8 k
+        k=ktaloc(n*6-1)+2
+        do i=1,n
+          call loc_sad(k+(i-1)*6,kl)
+          kl%lenp=int2(0)
+          kl%lena=int2(0)
+          kl%attr=0
+          kl%alloc%k=ktflist
+          kl%ref=1
+          kl%nl=2
+          kl%head%k=ktfoper+mtfcomplex
+        enddo
+        ktcalocm=k
         return
         end function
 
@@ -4566,7 +4617,6 @@ c        type (sad_symbol), pointer, intent(out) :: symx
         m=list%nl
         if(iand(list%attr,lnoseqlist) /= 0)then
           ktastk(isp+1:isp+m)=list%body(1:m)
-c     call tmov(klist(ka+1),ktastk(isp+1),m)
           isp=isp+m
           return
         endif

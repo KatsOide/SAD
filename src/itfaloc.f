@@ -101,7 +101,7 @@
       parameter (nsize=2**18-1)
       save kresv
       data kresv,nresv /0,0/
-      if(n .gt. nsize-5)then
+      if(n > nsize-5)then
         ktalocr=ktaloc(n)
         return
       endif
@@ -109,7 +109,7 @@
         kresv=ktaloc(nsize)
         nresv=nsize
       endif
-      if(n .gt. nresv-5)then
+      if(n > nresv-5)then
         ilist(1,kresv-1)=nresv+1
         call tfree(kresv)
         nresv=0
@@ -226,12 +226,12 @@
       lg=0
       ls=leng
       is=index(string(:ls),'$')
-      if(is .gt. 0)then
+      if(is > 0)then
         do1: do i=leng-1,is,-1
           if(string(i:i) == '$')then
             do j=i+1,leng
               if(string(j:j) < '0' .or.
-     $           string(j:j) .gt. '9')then
+     $           string(j:j) > '9')then
                 lg=0
                 exit do1
               endif
@@ -364,28 +364,6 @@ c            write(*,*)' : ',idx
       ktavalocr=k1+2
       return
       end
-
-      integer*8 function ktcalocm(n)
-      use tfstk
-      implicit none
-      type(sad_dlist), pointer :: kl
-      integer*4 ,intent(in):: n
-      integer*4 i
-      integer*8 k
-      k=ktaloc(n*6-1)+2
-      do i=1,n
-        call loc_sad(k+(i-1)*6,kl)
-        kl%lenp=int2(0)
-        kl%lena=int2(0)
-        kl%attr=0
-        kl%alloc%k=ktflist
-        kl%ref=1
-        kl%nl=2
-        kl%head%k=ktfoper+mtfcomplex
-      enddo
-      ktcalocm=k
-      return
-      end
       
       integer*8 function ktrvaloc(name,x)
       use tfstk
@@ -396,18 +374,6 @@ c            write(*,*)' : ',idx
       ktrvaloc=ktfsymbolz(name,lenw(name))-4
       call tflocal(klist(ktrvaloc))
       rlist(ktrvaloc)=x
-      return
-      end
-      
-      integer*8 function ktcvaloc(name,x,y)
-      use tfstk
-      implicit none
-      integer*4 lenw
-      real*8 ,intent(in):: x,y
-      character*(*) ,intent(in):: name
-      ktcvaloc=ktfsymbolz(name,lenw(name))-4
-      call tflocal(klist(ktcvaloc))
-      dlist(ktcvaloc)=kxcalocv(0,x,y)
       return
       end
       
@@ -425,24 +391,12 @@ c            write(*,*)' : ',idx
       return
       end
       
-      integer*8 function ktsalocbi(mode,string,i,leng)
-      use tfstk
+      integer*8 function ktsalocbi(mode,string,i,n)
+      use tfstk, kf => ktsalocbi
       implicit none
-      integer*4 ,intent(in):: mode,i,leng
-      character ,intent(in):: string(i+leng-1)
-      ktsalocbi=ktsalocb(mode,string(i),leng)
-      return
-      end
-
-      subroutine tfpadstr(string,kp,leng)
-      use tfstk
-      implicit none
-      integer*8 ,intent(in):: kp
-      integer*4 ,intent(in):: leng
-      character ,intent(in):: string(leng)
-      klist(leng/8+kp)=0
-c     Terminate string buffer by NULL character
-      call tmovb(string,jlist(1,kp),leng)
+      integer*4 ,intent(in):: mode,n,i
+      character,intent(in):: string(n)
+      ktsalocbi=kf(mode,string,i,n)
       return
       end
 

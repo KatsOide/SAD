@@ -10,7 +10,7 @@ System`CanvasDrawer;
 OP$XRange;
 
 SetAttributes[
-  {Attometer,Femtometer,FrameHeight,Graph,InfoLabel,InvKilometer,InvMeter,Kilometer,Lattice,LatticeRegion,ListCoordinate,
+  {Attometer,Femtometer,FrameHeight,Graph,InvKilometer,InvMeter,Kilometer,Lattice,LatticeRegion,ListCoordinate,
     Meter,Micron,Microradian,Milimeter,Miliradian,NameFilter,Nanometer,Percent,Pi2,Picometer,PPB,PPM,Radian,Ratio,RemoveOperlap,
     SqrtMeter,SquareMeter,SquareMicrometer,SquareMilimeter,Unit,Region,Initialize,FrameHeight,InfoLabel,InfoBind},
   Constant];
@@ -24,9 +24,9 @@ RTwiss$Functions=("R"//#)&/@Twiss$Functions;
 DTwiss$Functions=("D"//#)&/@Twiss$Functions;
 XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"}];
 
-BeginPackage[`OPlot`,`Global`,`System`];
+!BeginPackage[`OPlot`,`Global`,`System`];
 
-Begin[`OPlot`];
+!Begin[`OPlot`];
 
 `OPlot=Class[{},{},{},
 
@@ -93,15 +93,15 @@ Begin[`OPlot`];
         {i,nf}];
       If[lat,
         If[il, g=MapAt[With[{slot=#}, Append[slot, Graphics[Hook[
-	  Command:>((OP$XRange=If[#===System`CanvasDrawer && RealQ[`Canvas$Frame],
-     The$CanvasObject@GraphicsList[[`Canvas$Frame,1,2,4,1]],
+	  Command:>((OP$XRange=If[#===System`CanvasDrawer && RealQ[The$CanvasObject@Canvas$Frame],
+     `The$CanvasObject@GraphicsList[[`The$CanvasObject@Canvas$Frame,1,2,4,1]],
      Null])&)]]]]&,
 	  g, {1,3}]];
         AppendTo[g,
           Rectangle[{0,lr[[1]]},{1,lr[[2]]},
             LatticePlot[pr,ss,PlotRegion->rg,opt],
 	    If[il, Graphics[Hook[Command:>(If[#===System`CanvasDrawer &&
-       RealQ[Canvas$Frame], OPBind[Canvas$Frame]]&)]], Null[]]]]];
+       RealQ[`The$CanvasObject@Canvas$Frame], OPBind[`The$CanvasObject@Canvas$Frame]]&)]], Null[]]]]];
       g=Graphics[g,Override[Background->None,Initialize->init,FrameLabel->fl,opt]];
       If[(DisplayFunction/.op)===Default,
         Show[g,Override[Initialize->init,opt]]];
@@ -142,25 +142,25 @@ Begin[`OPlot`];
      pos + (s - LINE["S", pos]) / LINE["L", pos]]]]}]];
 
   OPBind[frid_]:=Module[{xs,ys,xo,yo,minmax},
-    {xs,ys,xo,yo}=Flatten[The$CanvasObject@GraphicsList[[frid,1,2,{6,7}]]];
-    minmax=The$CanvasObject@GraphicsList[[frid,1,2,4,1]];
+    {xs,ys,xo,yo}=Flatten[`The$CanvasObject@GraphicsList[[frid,1,2,{6,7}]]];
+    minmax=`The$CanvasObject@GraphicsList[[frid,1,2,4,1]];
     OP$Circ=LINE["S","$$$"]-LINE["S","^^^"];
-    With[{The$Canvas,frid,xo,yo,xs,ys,minmax,xmargin=2/xs},
-      OP$S[The$Canvas,frid,x_]:=(x-xo)/xs;
-      OP$Y[The$Canvas,frid,y_]:=(y-yo)/ys;
-      OP$InRange[The$Canvas,frid,x_]:=
+    With[{`The$Canvas,frid,xo,yo,xs,ys,minmax,xmargin=2/xs},
+      OP$S[`The$Canvas,frid,x_]:=(x-xo)/xs;
+      OP$Y[`The$Canvas,frid,y_]:=(y-yo)/ys;
+      OP$InRange[`The$Canvas,frid,x_]:=
         ((minmax[[1]] - xmargin =< x) && (x =< minmax[[2]] + xmargin))];
-    If[OP$Bind[The$Canvas,frid],
-      OP$Bind[The$Canvas,frid]=False;
-      With[{The$Canvas,frid},
-        Bind[The$Canvas,"<Button-1>", OP$InfoLabel[The$Canvas,frid],Add->True];
-        Bind[The$Canvas,"<ButtonRelease-1>",
-	  (Bind[The$Canvas,"<Leave>"]; Bind[The$Canvas,"<Motion>"];
+    If[OP$Bind[`The$Canvas,frid],
+      OP$Bind[`The$Canvas,frid]=False;
+      With[{`The$Canvas,frid},
+        Bind[`The$Canvas,"<Button-1>", OP$InfoLabel[`The$Canvas,frid],Add->True];
+        Bind[`The$Canvas,"<ButtonRelease-1>",
+	  (Bind[`The$Canvas,"<Leave>"]; Bind[`The$Canvas,"<Motion>"];
      After[0.3,KBF$WithdrawInfoLabel[False]]),Add->True]]]];
 
   OP$InfoLabel[canvas_Widget,frid_Real,bind_:True]:=Module[{
-    l=OP$Element[OP$S[canvas,frid,X/.$Event]],
-    s=OP$S[canvas,frid,X/.$Event],y=OP$Y[canvas,frid,Y/.$Event],p,tt,te,t},
+    l=OP$Element[OP$S[canvas,frid,X/.`$Event]],
+    s=OP$S[canvas,frid,X/.`$Event],y=OP$Y[canvas,frid,Y/.`$Event],p,tt,te,t},
     If[l<=>{} && y<1.2 && OP$InRange[canvas,frid,s],
       If[bind,
         Bind[canvas,"<Leave>", (Bind[canvas,"<Leave>"];
@@ -1028,9 +1028,9 @@ Begin[`OPlot`];
 
   ];
 
-End[];
+!End[];
 
-EndPackage[];
+!EndPackage[];
 
 OpticsPlot::units="Different units in one window: `1` `2`";
 OpticsPlot::frameheight=
@@ -1039,18 +1039,14 @@ OpticsPlot::wronglist=
   "List data must be {{x1, y1, (dy1)}, ..}";
 
 OPlot$=OPlot[];
-System`OpticsPlot=OPlot$@OpticsPlot;
-System`Twiss$Label=OPlot$@Twiss$Label;
-System`LatticePlot=OPlot$@LatticePlot;
-System`BeamPlot=OPlot$@BeamPlot;
+`OpticsPlot=System`OpticsPlot=OPlot$@OpticsPlot;
+`Twiss$Label=System`Twiss$Label=OPlot$@Twiss$Label;
+`LatticePlot=System`LatticePlot=OPlot$@LatticePlot;
+`BeamPlot=System`BeamPlot=OPlot$@BeamPlot;
 System`OP$S2Position=OPlot$@OP$S2Position;
 
-Protect[OpticsPlot,OpticsPlot1$,
-  Twiss$Functions,
-  RTwiss$Functions,
-  DTwiss$Functions,
-  XTwiss$Functions,
-  Twiss$Unit$Label,Unit$Factor,LINE$Funtions,
-  Element$Height,LINE$FunctionsQ,
-  BeamPlot,
-  OpticsList1$,OpticsList,LatticePlot,LatticePlot1$,LatticeNames];
+Protect[System`OpticsPlott,
+  System`Twiss$Label,
+  System`LatticePlot,
+  System`BeamPlot,
+  System`OP$S2Position];

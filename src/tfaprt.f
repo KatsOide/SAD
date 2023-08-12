@@ -5,7 +5,7 @@
       use tffitcode
       use sad_main,only:iaidx
       implicit none
-      integer*4 lfno,i,i1,it,nl,ifany,lene
+      integer*4 lfno,i,i1,it,nl,ifany
       real*8 a,al,bpole,ak,bpole1,brho1,s,sigx,sigy,
      $     sigx0,sigx1,sigy0,sigy1,sigxp,sigyp,theta,v,
      $     getva,sigxy0,sigxy1
@@ -49,7 +49,7 @@ c     end   initialize for preventing compiler warning
             call trim(aout)
             write(lfno,'(a)')
      1      'SigXent SigYent CoXYent Element  SigXext SigYext CoXYext'
-     1            //' SigXpk  SigYpk  a@'//aout(1:lene(aout))//'T'
+     1            //' SigXpk  SigYpk  a@'//aout(1:len_trim(aout))//'T'
             write(lfno,'(a)')
      1      ' micron  micron                   micron  micron        '
      1            //'  micron  micron   mm'

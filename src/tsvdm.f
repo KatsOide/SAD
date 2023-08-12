@@ -27,7 +27,7 @@ c
       logical*4 inv
       mn=min(n,m)
       n1=min(ndimb,n)
-      if(mn*n1*max(n1,m) > nmax)then
+      if(mn**2 > nmax/max(n,m))then
         write(*,*)' TSVDM Too large matrix. ',n,m
         return
       endif

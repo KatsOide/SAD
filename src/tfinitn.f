@@ -13,8 +13,7 @@
       character(len=1024) :: pkg
       character(len=64) :: env
       integer :: lpkg, lenv
-      integer*8 ktfsymbolc,ktrvaloc,ktcontaloc,
-     $     iaxsys,loc,ktcvaloc,kax,k1,k2,i
+      integer*8 ktfsymbolc,ktrvaloc,ktcontaloc,iaxsys,loc,kax,k1,k2,i
       integer*4 lpw,lenw,ifromstr
       logical*4 news
       call tfinfinit

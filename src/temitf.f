@@ -9,7 +9,7 @@
       implicit none
       integer*4 nparam,ntitle
       parameter (nparam=59,ntitle=26)
-      integer*4 lfno,i,in,lfnos,in1,lu,j,indexs,lene
+      integer*4 lfno,i,in,lfnos,in1,lu,j,indexs
       real*8 scale(nparam),cod(6),dps,dpsa,ddl,rgetgl1,v
       real*8 sx(-2:2),sy(-2:2),stbl(4,nparam)
       real*8 trans(6,12),beam(21,2),ctrb(21,21),param(nparam,-2:2)
@@ -109,7 +109,7 @@ c     $       tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
           in1=indexs(title(i),',',in+1)
           unit=title(i)(in+1:in1-1)
           call trim(unit)
-          lu=max(lene(unit),1)
+          lu=max(len_trim(unit),1)
           buff(73:78)=' '
           buff(79-lu:78)=unit
           do 130 j=0,4
@@ -141,7 +141,7 @@ c     $       tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
             in1=indexs(title(i),',',in+1)
             unit=title(i)(in+1:in1-1)
             call trim(unit)
-            lu=max(lene(unit),1)
+            lu=max(len_trim(unit),1)
             buff(73:78)=' '
             buff(79-lu:78)=unit
             write(lfno,'(a)')buff(1:78)

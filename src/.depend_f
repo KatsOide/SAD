@@ -300,7 +300,7 @@ tfearray.o: tfearray.f
 tfecmplx.o: tfecmplx.f tfstk.o
 tfeeval.o: tfeeval.f tffuns.o tfstk.o toplvl.o
 tfeexpr.o: tfeexpr.f tfefun.o tfstk.o
-tfefun.o: tfefun.f gamma.o tfconvstr.o tfdot.o tfdset.o tfecmplx.o tfeeval.o tfeval1.o tffindroot.o tffuns.o tfloor.o tfmodule.o tfpart.o tfreplace.o tfsameq.o tfsolvemember.o tfstk.o tftable.o tftake.o toplvl.o
+tfefun.o: tfefun.f gamma.o itfmessage.o tfconvstr.o tfdot.o tfdset.o tfecmplx.o tfeeval.o tfeval1.o tffindroot.o tffuns.o tfloor.o tfmodule.o tfpart.o tfreplace.o tfsameq.o tfsolvemember.o tfstk.o tftable.o tftake.o toplvl.o
 tfefun1.o: tfefun1.f tffs.o tffsa.o tfstk.o
 tfefun2.o: tfefun2.f tfstk.o
 tfefun3ep.o: tfefun3ep.f tfeeval.o tfefun.o tfstk.o
@@ -339,7 +339,7 @@ tfltra.o: tfltra.f tffs.o tfstk.o
 tfmap.o: tfmap.f itfdepth.o itfpmat.o tfeeval.o tfreplace.o tfstk.o
 tfmat.o: tfmat.f tffs.o tfstk.o
 tfmemcheck.o: tfmemcheck.f tfstk.o
-tfmodule.o: tfmodule.f itfmessage.o tfdset.o tfeeval.o tfreplace.o tfstk.o
+tfmodule.o: tfmodule.f tfdset.o tfeeval.o tfreplace.o tfstk.o
 tfojit.o: tfojit.f tffs.o
 tfoptics.o: tfoptics.f qcell.o tffs.o tfstk.o toplvl.o
 tfpart.o: tfpart.f tfeeval.o tfstk.o

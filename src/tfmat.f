@@ -4,7 +4,7 @@
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 lfno,lenw,idp,l1,ielme,l2,i,j,lene
+      integer*4 lfno,lenw,idp,l1,ielme,l2,i,j
       real*8 r
       real*8 trans(4,5),trans6(6,6)
       character*(*) word,wordp
@@ -38,7 +38,7 @@
       r=merge(1.d0,sqrt(gammab(l1)/gammab(l2)),symp)
       call elname(l1,name1)
       call elname(l2,name2)
-      write(lfno,*)title(1:lene(title))//' transfer matrix from '//
+      write(lfno,*)title(1:len_trim(title))//' transfer matrix from '//
      1             name1(1:lenw(name1)),' to ',name2(1:lenw(name2))
       if(calc6d)then
         call tftmat6(trans6,l1,l2)

@@ -82,6 +82,7 @@ LaTeX=Class[{},{eqn=0,pre0="\
             Write[f,text,"\n"];
             Write[f,Postamble[style]];
             Close[f];
+!            Print["pdflatex -interaction nonstopmode "//fn//" "//pdf//" > /dev/null"];
             {If[System["pdflatex -interaction nonstopmode "//fn//" "//pdf//" > /dev/null"],
               If[style <=> "standalone",
                 System["pdfcrop --margins "//margins//" "//pdf//" "//pdf//" > /dev/null"]];
@@ -106,6 +107,8 @@ LaTeX=Class[{},{eqn=0,pre0="\
           System["pdf2svg "//pdf//" "//out//" > /dev/null"];
           System["svgcleaner --quiet "//out//" "//out//" > /dev/null"],
           _,
+!          Print["convert -quiet -density "//dpi//" -quality 100 "//pdf//s//
+!            " -sharpen 0x2 -sharpen 0x3 -morphology Erode Disk:2.0 "//out//" > /dev/null"];
           System["convert -quiet -density "//dpi//" -quality 100 "//pdf//s//
             " -sharpen 0x2 -sharpen 0x3 -morphology Erode Disk:2.0 "//out//" > /dev/null"]];
         System["rm "//fn];

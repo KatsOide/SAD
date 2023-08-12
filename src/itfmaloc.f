@@ -421,7 +421,7 @@ c            enddo
       implicit none
       type (sad_dlist), pointer :: klx,klxi
       type (sad_rlist), pointer :: klj,kl
-      integer*8 kax,kaxi,ktcalocm,kai,kc,kaj
+      integer*8 kax,kaxi,kai,kc,kaj
       integer*4,intent(in):: n,m,nd
       integer*4 i,j
       logical*4 ,intent(in)::trans,conj

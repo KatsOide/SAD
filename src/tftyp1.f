@@ -12,7 +12,7 @@
       type (sad_dlist), pointer :: klv
       type (sad_strbuf), pointer :: strb
       integer*8 lp
-      integer*4 ioff,kx,l,kp,lt,lfno,lv,lene,lenw,lpw,irtc,nc,j,j1
+      integer*4 ioff,kx,l,kp,lt,lfno,lv,lenw,lpw,irtc,nc,j,j1
       real*8 v,coeff
       character*32 autos1
       character*132 vout
@@ -86,12 +86,12 @@
         if(real)then
           v=v*coeff
           vout=kw(1:lenw(kw))//' ='
-     $         //autos1(v)//unit(1:lene(unit))
+     $         //autos1(v)//unit(1:len_trim(unit))
           call trim(vout)
           if(v .ne. 0.d0 .or. ioff .eq. ival(kx))then
 c            if(abs(v) .gt. 1.d10 .and. index(vout,'.') .le. 0
 c     $           .and. v .ne. dinfinity)then
-c              lv=lene(vout)
+c              lv=len_trim(vout)
 c              vout(lv+1:lv+1)='.'
 c            endif
             if(start)then

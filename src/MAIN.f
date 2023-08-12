@@ -1,8 +1,8 @@
       module version
         character*19, parameter ::
 c                     /'1234567890123456789'/
-     $     versionid  ='1.3.0.5k64         ',
-     $     versiondate='8/6/2023 15:00:00  '
+     $     versionid  ='1.3.0.7k64         ',
+     $     versiondate='8/13/2023 10:00:00 '
 
         character*25 builtdate
         character*30 startdat
@@ -39,7 +39,6 @@ c
       character*8 d
       character*12 tim
       character*9 day
-      integer lene
 
       call datetime(d,tim)
       if(d(7:7) .eq. ' ')then
@@ -48,7 +47,7 @@ c
 
       call tday(day)
       dat=tim(1:2)//":"//tim(3:4)//":"//
-     $     tim(5:6)//' '//day(1:lene(day))//' '//
+     $     tim(5:6)//' '//day(1:len_trim(day))//' '//
      $     d(5:6)//"/"//d(7:8)//"/"//d(1:4)
       return
       end

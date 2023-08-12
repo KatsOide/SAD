@@ -51,7 +51,7 @@ c     end   initialize for preventing compiler warning
 
       nfail=4
       mn=min(n,m)
-      if(mn*n*max(n,m) > nmax)then
+      if(mn**2 > nmax/max(n,m))then
         write(*,*)' TSVD Too large matrix. ',n,m
         return
       endif

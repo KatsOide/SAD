@@ -4,7 +4,7 @@
       use ffs
       use tffitcode
       implicit none
-      integer*4 i,nfc,mfpnta,mfpnta1,l,lene,j
+      integer*4 i,nfc,mfpnta,mfpnta1,l,j
       character*8 nlist(mfit1),name1
       character*(*) ,intent(out):: word
       integer*4 kfit(*),ndp(*),ifitp(*),ifitp1(*)
@@ -23,7 +23,7 @@
         endif
         exist=.false.
         do i=1,mfit1
-          l=lene(nlist(i))
+          l=len_trim(nlist(i))
           name1=nlist(i)
           name1(l+1:l+1)='M'
           if(tmatch(nlist(i),word) .or. tmatch(name1,word))then
