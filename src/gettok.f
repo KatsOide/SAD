@@ -27,7 +27,7 @@ c     for ungettok
       save inbuf,btoken,bslen,btype,bival,brval
 
 c macro functions
-      issign(chr)=(chr .eq. '+') .or. (chr .eq. '-')
+      issign(chr)=(chr == '+') .or. (chr == '-')
       isdgt(chr)=(LGE(chr,'0') .and. LLE(chr,'9'))
       isalph(chr)= ( (LGE(chr,'A') .and. LLE(chr,'Z'))  .or.
      $      (LGE(chr,'a') .and. LLE(chr,'z')) )
@@ -52,7 +52,7 @@ c skip spaces
         call mygetchr(curc,iost,*999)
       enddo
 c skip comment
-      if (curc .eq. '!' ) then
+      if (curc == '!' ) then
         call myfflush
         go to 1000
       endif
@@ -66,7 +66,7 @@ c
         fltnum=0
       else if ( issign(curc) ) then
          type=ttypDM
-      else if (curc .eq. '.') then
+      else if (curc == '.') then
          call mycurchr(nc,iost)
          if ( isdgt(nc)) then
             type=ttypNM
@@ -75,11 +75,11 @@ c
             type=ttypDM
          endif
 c     for quoted string. april 27,'87 by N.Y.
-      else if (curc .eq. '''') then
+      else if (curc == '''') then
         type=ttypST
         quot=''''
         slen=0
-      else if (token(1:1) .eq. '"') then
+      else if (token(1:1) == '"') then
         type=ttypST
         quot='"'
         slen=0
@@ -88,9 +88,9 @@ c     for quoted string. april 27,'87 by N.Y.
       endif
 c main routine of gettok
       call mycurchr(curc,iost)
-      if (type .eq. ttypID)then
+      if (type == ttypID)then
  100    continue
-        if( index(char(0)//DELIMS, curc) .eq. 0) then
+        if( index(char(0)//DELIMS, curc) == 0) then
            call mygetchr(curc,iost,*900)
            slen=slen+1
            token(slen:slen)=curc
@@ -98,7 +98,7 @@ c main routine of gettok
            go to 100
         endif
         go to 900
-      else if (type .eq. ttypNM) then
+      else if (type == ttypNM) then
  200     continue
          if( isdgt(curc) ) then
            call mygetchr(curc,iost,*900)
@@ -111,7 +111,7 @@ c main routine of gettok
            go to 200
          endif
          if (fltnum .lt. 2)  then
-           if ((fltnum .eq. 0) .and. (curc .eq. '.')) then
+           if ((fltnum == 0) .and. (curc == '.')) then
              fltnum=1
              call mygetchr(curc,iost,*900)
              slen=slen+1
@@ -144,12 +144,12 @@ c          ival=int(rval)
            ik=slen
            rval=atof(token,ik)
          endif
-      else if (type .eq. ttypST) then
+      else if (type == ttypST) then
  300  continue
-        if(curc .eq. quot) then
+        if(curc == quot) then
            call mygetchr(curc,iost,*910)
            call mycurchr(curc,iost)
-           if(curc .eq. quot) then
+           if(curc == quot) then
               call mygetchr(curc,iost,*910)
               slen=slen+1
               if(slen .gt. LLEN)then
@@ -218,7 +218,7 @@ c
 c
       if (pbuf .le. 0) then
          call filbuf(iost)
-         if (iost .eq. ttypEF) then
+         if (iost == ttypEF) then
             chr=char(255)
             return 1
          endif

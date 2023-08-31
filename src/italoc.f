@@ -114,7 +114,7 @@ c      write(*,*)'talocp ',ip1,ip1+na
       j=klist(icsep)
       j1=icsep
       do while(j .ne. icsep)
-        if(j+4 .eq. ip1)then
+        if(j+4 == ip1)then
           klist(j1)=klist(j)
           ip1=j
           na=na+4

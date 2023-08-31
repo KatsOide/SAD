@@ -29,7 +29,7 @@
         if(word(1:1) .ne. "^")then
           call tfevalb(word,kx,irtc)
           ierrorprint=iep
-          if(irtc .eq. 0 .and. ktfrealq(kx,v))then
+          if(irtc == 0 .and. ktfrealq(kx,v))then
             iv=int(merge(v+0.499,nlat+1+v+0.5d0,v .ge. 0.d0))
             iv=max(1,min(nlat,iv))
             exist=.true.
@@ -130,13 +130,13 @@
         ioff=0
         frac=0.d0
       endif
-      if(name .eq. '$$$' .or. name .eq. '***')then
+      if(name == '$$$' .or. name == '***')then
         i=nlat
-      elseif(name .eq. '^^^')then
+      elseif(name == '^^^')then
         i=1
       else
         i=ielmh(name,iord)
-        if(i .eq. 0)then
+        if(i == 0)then
           if(lfn .ne. 0 .and. idot .gt. 0)then
             call termes(lfn,'?Undefined location ',word(1:lw))
           endif
@@ -205,10 +205,10 @@ c     *        >0: found
       if(j .ne. 0)then
         do i=j,j+ilist(1,ielmhash+k+1)-1
           ielmh=ilist(1,i)
-          if(name1 .eq. pnamec(ielmh))then
-            if(ilist(ielmh,ifmult) .eq. iord)return
+          if(name1 == pnamec(ielmh))then
+            if(ilist(ielmh,ifmult) == iord)return
             if(iord .ne. 0)cycle
-            if(nelvx(ilist(ielmh,ifele1))%klp .eq. ielmh)return
+            if(nelvx(ilist(ielmh,ifele1))%klp == ielmh)return
 c     Note: ilist(i, ifmult) == 0 if ilist(ilist(i, ifele1), ifklp) == i
 c     *     by tfinit(), tfinimult() initialization
           endif
@@ -262,7 +262,7 @@ c     *     by tfinit(), tfinimult() initialization
       character ,intent(in):: name(nc)
       ih=0
       do i=1,nc
-        if(name(i) .eq. ' ')then
+        if(name(i) == ' ')then
           exit
         endif          
         ih=ih+ichar(name(i))

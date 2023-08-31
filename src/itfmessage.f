@@ -327,13 +327,14 @@ c      call tfdebugprint(kx,'addmessage',1)
       subroutine tfemes(k,string,ip,lfno)
       use tfstk
       implicit none
+      integer*4 ,parameter :: lstr=512,lenbuf=2**23
       type (sad_descriptor) ,intent(in):: k
       type (sad_dlist), pointer :: kl
       character*(*) ,intent(in):: string
       integer*4 ,intent(in):: ip,lfno
       integer*4 ls,ifchar,is,i,lb,nc,itfgetrecl,nc1
       character*10 autofg
-      character*512 buff,tfconvstr,tfgetstr
+      character*(lstr) tfgetstr,buff
       if(ktfaddr(k) == 0 .or. ierrorprint == 0)then
         ierrorf=0
         return
@@ -347,13 +348,12 @@ c      call tfdebugprint(kx,'addmessage',1)
         buff='???Unexpected error: '//autofg(dble(k%k),'S10')
       endif
       ierrorprint=0
-      lb=min(len_trim(buff),len(buff)-1)
+      lb=min(len_trim(buff),lstr-1)
       if(ierrorf /= 0)then
-        buff(lb+1:)=' in '//tfconvstr(ierrorf,nc,'*')
-        if(lb+nc+4 > len(buff))then
-          buff(len(buff)-3:)=' ...'
-        endif
-        lb=min(lb+nc+4,len(buff))
+        buff(lb+1:lb+4)=' in '
+        call tfconvstrs0(buff(lb+5:),lenbuf,ierrorf,nc,.true.,' ')
+c        str1=tfconvstr(ierrorf,nc,'*')
+        lb=min(lb+nc+4,lstr)
       else
         lb=lb+1
         buff(lb:lb)=':'

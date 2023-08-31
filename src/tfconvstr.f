@@ -36,7 +36,7 @@
       m=min(n1,na)
       call getstringbuf(strb,na,.true.)
       n2=str2%nch
-      if(n .gt. 0)then
+      if(n > 0)then
         call putstringbufb(strb,str1%str(1:1),m,full)
         do while(m .lt. na)
           call putstringbufb(strb,str2%str,min(n2,na-m),full)
@@ -45,7 +45,7 @@
       else
         if(m .lt. na)then
           n=mod(na-m,n2)
-          if(n .gt. 0)then
+          if(n > 0)then
             call putstringbufb(strb,str2%str(1+(n2-n):n2),n,full)
             na=na-n
           endif
@@ -113,7 +113,7 @@
         return
       endif
       base=aint(rtastk(isp))
-      if(base .lt. 2.d0 .or. base .gt. 62.d0)then
+      if(base .lt. 2.d0 .or. base > 62.d0)then
         irtc=itfmessage(9,'General::wrongval',
      $       '"Base","between 2 and 62"')
         return
@@ -228,7 +228,7 @@
       endif
       m=str%nch
       kx=kxavaloc(-1,m,klr)
-      if(m .gt. 0)then
+      if(m > 0)then
         do concurrent (i=1:m)
           klr%rbody(i)=iachar(str%str(i:i))
         enddo
@@ -256,9 +256,9 @@
       nc=stra%nch
       irtc=0
       kx%k=0
-      if(nc .gt. 0)then
+      if(nc > 0)then
         nc1=strp%nch
-        if(nc1 .gt. 0)then
+        if(nc1 > 0)then
           if(tmatchl(stra%str,nc,strp%str,nc1))then
             kx%k=ktftrue
           endif
@@ -276,7 +276,7 @@
       type (sad_string), pointer :: str,strp,stri
       integer*4 isp1,irtc,nc,nc1,i,j,
      $     i1,ip,isp0,l,itfmessage,indexb
-      if(isp == isp1+1 .or. isp .gt. isp1+3)then
+      if(isp == isp1+1 .or. isp > isp1+3)then
         irtc=itfmessage(9,'General::narg','"2 or 3"')
         return
       elseif(.not. ktfstringq(dtastk(isp1+1),str))then
@@ -297,9 +297,9 @@
       isp0=isp
       if(ktfstringq(dtastk(isp1+2), strp))then
         nc1=strp%nch
-        if(nc1 .gt. 0)then
+        if(nc1 > 0)then
           i1=1
-          do while(i1 .gt. 0 .and. i1 <= nc
+          do while(i1 > 0 .and. i1 <= nc
      $         .and. isp .lt. isp0+l)
             ip=indexb(str%str,nc,strp%str,nc1,i1)
             if(ip <= 0)then
@@ -320,9 +320,9 @@
             return
           endif
           nc1=stri%nch
-          if(nc1 .gt. 0)then
+          if(nc1 > 0)then
             i1=1
-            do while(i1 .gt. 0 .and. i1 <= nc)
+            do while(i1 > 0 .and. i1 <= nc)
               if(isp >= isp0+l)then
                 go to 100
               endif
@@ -480,7 +480,7 @@ c      include 'DEBUG.inc'
       irtc=0
       do i=1,str%nch
         if(str%istr(i) .lt. ichar('0') .or.
-     $       str%istr(i) .gt. ichar('9'))then
+     $       str%istr(i) > ichar('9'))then
           kx%k=0
           return
         endif
@@ -504,9 +504,9 @@ c      include 'DEBUG.inc'
       irtc=0
       do i=1,str%nch
         if(str%istr(i) .lt. ichar('A') .or.
-     $       str%istr(i) .gt. ichar('Z') .and.
+     $       str%istr(i) > ichar('Z') .and.
      $       str%istr(i) .lt. ichar('a') .or.
-     $       str%istr(i) .gt. ichar('z'))then
+     $       str%istr(i) > ichar('z'))then
           kx%k=0
           return
         endif
@@ -564,9 +564,9 @@ c      include 'DEBUG.inc'
       character*(*) function tfconvstr(k,nc,form)
       use tfstk
       implicit none
-      type (sad_descriptor) k
-      integer*4 nc
-      character*(*) form
+      type (sad_descriptor) ,intent(in):: k
+      integer*4 ,intent(out):: nc
+      character*(*) ,intent(in):: form
       character*(len(tfconvstr)) buff
       call tfconvstrs(buff,k,nc,.false.,form)
       nc=min(nc,len(tfconvstr))
@@ -579,25 +579,47 @@ c      include 'DEBUG.inc'
       use strbuf
       use eeval
       implicit none
-      type (sad_descriptor) k
+      type (sad_descriptor) ,intent(in):: k
+      integer*4 ,intent(out):: nc
+      logical*4 ,intent(in):: str
+      character*(*) ,intent(in):: form
+      character*(*) ,intent(out):: buff
+      call tfconvstrs0(buff,len(buff),k,nc,str,form)
+      return
+      end
+
+      subroutine tfconvstrs0(buff,l,k,nc,str,form)
+      use tfstk
+      use strbuf
+      use eeval
+      implicit none
+      type (sad_descriptor) ,intent(in):: k
       type (sad_strbuf), pointer :: strb
-      integer*4 nc,irtc,l,isp0
-      logical*4 str
-      character*(*) form,buff
-      l=len(buff)
+      integer*4 ,intent(in):: l
+      integer*4 ,intent(out):: nc
+      character*(*) ,intent(in):: form
+      character*(*) ,intent(out):: buff
+      logical*4 ,intent(in):: str
+      integer*4 irtc,isp0,lh,lb,lx
       isp0=isp
+      lb=len(buff)
       call getstringbuf(strb,-l,.true.)
       call tfconvstrb(strb,k,nc,str,.false.,-1,form,irtc)
       if(irtc /= 0)then
-        if(irtc .gt. 0 .and. ierrorprint /= 0)then
+        if(irtc > 0 .and. ierrorprint /= 0)then
           call tfreseterror
         endif
         nc=l+1
       endif
-      if(nc .gt. l)then
-        nc=min(strb%nch,l)
-        buff(1:nc-6)=strb%str(1:nc-6)
-        buff(nc-5:nc)=', etc.'
+      if(nc > lb)then
+        lh=lb/2+index(strb%str(lb/2+1:nc),',')
+        buff(:lh)=strb%str(:lh)
+        buff(lh+1:lh+5)=' ... '
+        lx=max(index(strb%str(nc-(lb-lh-6):nc),','),1)
+        lb=lb-lx+1
+        buff(lh+6:lb)=strb%str(nc-(lb-lh-6):nc)
+c        write(*,*)'convstrs ',l,lb,lh,nc,strb%str(lh-3:lh+3),' ',strb%str(nc-(lb-lh-6)-3:nc-(lb-lh-6)+3)
+        nc=lb
       else
         buff(1:nc)=strb%str(1:nc)
       endif
@@ -652,7 +674,7 @@ c      include 'DEBUG.inc'
       do i=isp0+1,isp2,2
         call descr_sad(dtastk(i),stri)
         ii=indexb(str%str,ls,stri%str,stri%nch,ir)
-        if(ii .gt. 0 .and. ii .lt. imin)then
+        if(ii > 0 .and. ii .lt. imin)then
           imin=ii
           j=i
           itastk2(1,i)=stri%nch
@@ -664,7 +686,7 @@ c      include 'DEBUG.inc'
         endif
         if(imin == ir+1)then
           call putstringbufb1(strb,str%str(ir:ir))
-        elseif(imin .gt. ir)then
+        elseif(imin > ir)then
           call putstringbufb(strb,str%str(ir:imin-1),imin-ir,full)
         endif
         if(.not. ktfstringq(dtastk(j+1)))then
@@ -683,7 +705,7 @@ c      include 'DEBUG.inc'
         nr=strs%nch
         if(nr == 1)then
           call putstringbufb1(strb,strs%str)
-        elseif(nr .gt. 0)then
+        elseif(nr > 0)then
           call putstringbufb(strb,strs%str,nr,full)
         endif
         ir=imin+itastk2(1,j)
@@ -696,7 +718,7 @@ c      include 'DEBUG.inc'
       else
         if(ls == ir)then
           call putstringbufb1(strb,str%str(ir:ir))
-        elseif(ls .gt. ir)then
+        elseif(ls > ir)then
           call putstringbufb(strb,str%str(ir:ls),ls-ir+1,full)
         endif
         kx=kxstringbuftostring(strb)
@@ -738,7 +760,7 @@ c      include 'DEBUG.inc'
         irtc=itfmessage(9,'General::narg','"1"')
         return
       else
-        if(narg .gt. 1)then
+        if(narg > 1)then
           if(inputf%k == 0)then
             inputf =kxsymbolz('InputForm',9)
             iholdf =kxsymbolz('HoldForm',8)

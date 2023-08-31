@@ -146,7 +146,7 @@ c          enddo
       complex*16, intent(out):: c(n,max(m,1))
       real*8 x
       logical*4 trans
-      if(m .eq. 0)then
+      if(m == 0)then
         do j=1,n
           kij=kl%body(j)
           if(ktfrealq(kij,x))then
@@ -320,8 +320,8 @@ c            enddo
               else
                 kaj=ktfaddr(kj)
                 if(ktfreallistq(kj,klj) .and.
-     $               klj%head%k .eq. ktfoper+mtfcomplex
-     $               .and. klj%nl .eq. 2)then
+     $               klj%head%k == ktfoper+mtfcomplex
+     $               .and. klj%nl == 2)then
                   rlist(ip0+j*2  )=klj%rbody(1)
                   rlist(ip0+j*2+1)=klj%rbody(2)
                 else
@@ -353,8 +353,8 @@ c            enddo
               else
                 kaj=ktfaddr(kj)
                 if(ktfreallistq(kj,klj)  .and.
-     $               klj%head%k .eq. ktfoper+mtfcomplex
-     $               .and. klj%nl .eq. 2)then
+     $               klj%head%k == ktfoper+mtfcomplex
+     $               .and. klj%nl == 2)then
                   rlist(ip0  )=rlist(kaj+1)
                   rlist(ip0+1)=rlist(kaj+2)
                 else
@@ -430,18 +430,18 @@ c            enddo
       complex*16, intent(in):: a(nd,m)
       imag_sign=merge(-1.d0,1.d0,conj)
       kc=0
-      if(n .eq. 0)then
+      if(n == 0)then
         kax=ktaaloc(-1,m,klx)
         c=.false.
         do i=1,m
-          if(imag(a(1,i)) .eq. 0.d0)then
+          if(imag(a(1,i)) == 0.d0)then
             klx%rbody(i)=dble(a(1,i))
             if(kc .ne. 0)then
               kai=kc+(i-1)*6
               call tflocal1(kai)
             endif
           else
-            if(kc .eq. 0)then
+            if(kc == 0)then
               kc=ktcalocm(m-i+1)-(i-1)*6
             endif
             kai=kc+(i-1)*6
@@ -463,14 +463,14 @@ c     $           imag_sign*imag(a(1,i)))
             kc=0
             c=.false.
             do j=1,n
-              if(imag(a(j,i)) .eq. 0.d0)then
+              if(imag(a(j,i)) == 0.d0)then
                 klxi%rbody(j)=dble(a(j,i))
                 if(kc .ne. 0)then
                   kaj=kc+(j-1)*6
                   call tflocal1(kaj)
                 endif
               else
-                if(kc .eq. 0)then
+                if(kc == 0)then
                   kc=ktcalocm(n-j+1)-(j-1)*6
                 endif
                 kaj=kc+(j-1)*6
@@ -492,14 +492,14 @@ c     $           imag_sign*imag(a(1,i)))
             kc=0
             c=.false.
             do j=1,m
-              if(imag(a(i,j)) .eq. 0.d0)then
+              if(imag(a(i,j)) == 0.d0)then
                 klxi%rbody(j)=dble(a(i,j))
                 if(kc .ne. 0)then
                   kaj=kc+(j-1)*6
                   call tflocal1(kaj)
                 endif
               else
-                if(kc .eq. 0)then
+                if(kc == 0)then
                   kc=ktcalocm(m-j+1)-(j-1)*6
                 endif
                 kaj=kc+(j-1)*6

@@ -417,7 +417,7 @@ tquade.o: tquade.f photons.o tffs.o tfstk.o toplvl.o tsol.o
 tquads.o: tquads.f photons.o tffs.o tfloor.o tfstk.o toplvl.o tsol.o
 tquase.o: tquase.f photons.o tffs.o tfstk.o toplvl.o tsol.o
 track.o: track.f temit.o tffs.o tffsa.o tfstk.o toplvl.o
-tracka.o: tracka.f tfeeval.o tffs.o tfstk.o toplvl.o
+tracka.o: tracka.f tfeeval.o tffs.o tfstk.o toplvl.o trackd.o
 trackb.o: trackb.f tffs.o tffsa.o tfstk.o
 trackd.o: trackd.f tffs.o tfstk.o tftrack.o toplvl.o
 tracke.o: tracke.f tffs.o tffsa.o tfstk.o

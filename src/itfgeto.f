@@ -20,7 +20,7 @@ c        write(*,'(a,10i12)')'with ',lfni,irtc,ipoint,lrecl,m,
 c     $       kerror,ktfaddr(kerror)
 c      endif
       ipoint=m
-      if(irtc .eq. 0)then
+      if(irtc == 0)then
         itfgeto=0
       elseif(irtc .gt. 0 .and. kerror .ne. 0)then
         itfgeto=merge(-3,-2,rlist(ktfaddr(kerror)+1) .ge. 1000.d0)
@@ -99,7 +99,7 @@ c      endif
       type (sad_descriptor) ,intent(in):: k
       type (sad_string), pointer :: str
       integer*4 ,intent(out):: nc
-      if(ktfaddr(k) .eq. 0)then
+      if(ktfaddr(k) == 0)then
         tfgetstr=' '
         nc=0
       else

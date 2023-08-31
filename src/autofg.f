@@ -16,17 +16,17 @@
       real*8 x,ax,xl
       logical*4 shift,lat
       type (sad_descriptor) kx
-      if(form1 .eq. ' ' .or. form1 .eq. 'S')then
+      if(form1 == ' ' .or. form1 == 'S')then
         autofg=autos1(x)
         return
-      elseif(form1(1:1) .eq. 'F' .or. form1(1:1) .eq. 'G')then
+      elseif(form1(1:1) == 'F' .or. form1(1:1) == 'G')then
         form='('//form1(:lenw(form1))//')'
         write(autofg,form)x
-        if(autofg(1:1) .eq. '*')then
+        if(autofg(1:1) == '*')then
           autofg(1:len_trim(autofg))=ovfl
         endif
         return
-      elseif(form1(1:1) .eq. 'E')then
+      elseif(form1(1:1) == 'E')then
         form='(1PD'//form1(2:lenw(form1))//')'
         write(autofg,form)x
         return
@@ -34,15 +34,15 @@
       buff=' '
       expstr=' '
       is=len(buf1)
-      math=form1(1:1) .eq. 'M'
-      canv=form1(1:1) .eq. 'C'
-      tzero=form1(1:1) .eq. 'S' .or. math .or. canv
+      math=form1(1:1) == 'M'
+      canv=form1(1:1) == 'C'
+      tzero=form1(1:1) == 'S' .or. math .or. canv
       if(tzero)then
         form=form1(2:)
       else
         form=form1
       endif
-      if(form .eq. ' ')then
+      if(form == ' ')then
         tzero=.true.
         lc=18
         lf=15
@@ -61,10 +61,10 @@
           autofg(lc-2:)='NaN'
         endif
         return
-      elseif(x .eq. 0.d0)then
+      elseif(x == 0.d0)then
         if(tzero)then
           autofg='0'
-        elseif(lf .eq. 0)then
+        elseif(lf == 0)then
           autofg(:lc-1)=' '
           autofg(lc:)='0'
         else
@@ -73,7 +73,7 @@
           autofg(lc+1:)=' '
         endif
         return
-      elseif(x .eq. dinfinity)then
+      elseif(x == dinfinity)then
         if(tzero)then
           autofg='INF'
         else
@@ -81,7 +81,7 @@
           autofg(lc-2:)='INF'
         endif
         return
-      elseif(x .eq. -dinfinity)then
+      elseif(x == -dinfinity)then
         if(tzero)then
           autofg='-INF'
         else
@@ -142,17 +142,17 @@
         lf1=min(lf,lc1-1)
         li1=lc1-lf1-1
         is=lc1
-        if(iexp .eq. lc1)then
+        if(iexp == lc1)then
           buf1=buff(2:lc1+1)
         elseif(iexp .ge. li1)then
-          if(lf .eq. 0)then
+          if(lf == 0)then
             buf1=buff(2:iexp+1)
           else
             buf1=buff(2:iexp+1)//'.'//buff(iexp+2:lc1)
           endif
         elseif(iexp .ge. 1)then
           buf1(1:li1-iexp)=' '
-          if(lf .eq. 0)then
+          if(lf == 0)then
             buf1(li1-iexp+1:)=buff(2:iexp+1)
           else
             buf1(li1-iexp+1:)=buff(2:iexp+1)//'.'//
@@ -161,7 +161,7 @@
         else
           buf1(1:li1)=' '
           buf1(li1+1:li1+1)='.'
-          if(iexp .eq. 0)then
+          if(iexp == 0)then
             buf1(li1+2:)=buff(2:lf1+1)
           else
             buf1(li1+2:li1-iexp+1)=zero
@@ -176,10 +176,10 @@
         endif
         call strfromi(iexp-1,expstr(2:))
         expstr(1:1)='E'
-        if(lm .eq. 0)then
+        if(lm == 0)then
           buf1=buff(2:2)//expstr
           is=1
-        elseif(lm .eq. 1)then
+        elseif(lm == 1)then
           buf1=buff(2:2)//'.'//expstr
           is=2
         else
@@ -190,7 +190,7 @@
  1000 if(tzero)then
         if(index(buf1,'.') .gt. 0)then
           do i=is,2,-1
-            if(buf1(i:i) .eq. '.')then
+            if(buf1(i:i) == '.')then
               buf1(i:)=expstr
               go to 20
             elseif(buf1(i:i) .ne. ' ' .and.
@@ -285,7 +285,7 @@ c      parameter (ich0=ichar('0'))
      $     '70','71','72','73','74','75','76','77','78','79',
      $     '80','81','82','83','84','85','86','87','88','89',
      $     '90','91','92','93','94','95','96','97','98','99']
-      if(n .eq. 0)then
+      if(n == 0)then
         string='0'
         leng=1
         return
@@ -300,7 +300,7 @@ c      parameter (ich0=ichar('0'))
         l=l-2
         n1=n2
       enddo
-      if(string(l+1:l+1) .eq. '0')then
+      if(string(l+1:l+1) == '0')then
         l=l+1
       endif
       if(n .lt. 0)then
@@ -338,7 +338,7 @@ c      parameter (ich0=ichar('0'))
      $           -1,     0,      1,     2,
      $           4,      8,      16,    32,
      $           64,     128,    256/
-      if(x .eq. 0.d0)then
+      if(x == 0.d0)then
         string=zero
         isign=0
         iexp=0
@@ -347,7 +347,7 @@ c      parameter (ich0=ichar('0'))
       a=abs(x)
       if(a .lt. 2.d0**31)then
         ai=aint(x)
-        if(ai .eq. x)then
+        if(ai == x)then
           ix=int(x)
           call strfromifixed(ix,string(1:10))
           do i=1,10
@@ -402,7 +402,7 @@ c      parameter (ich0=ichar('0'))
         endif
       endif
       call strfromifixed(iam,string(1:9))
-      if(iaf .eq. 0)then
+      if(iaf == 0)then
         string(10:18)=zero
       else
         call strfromifixed(iaf,string(10:18))
@@ -425,7 +425,7 @@ c      parameter (icharzero=ichar('0'))
       parameter (zero='0000000000000000000000000000000')
       n1=n
       do i=len(string),1,-1
-        if(n1 .eq. 0)then
+        if(n1 == 0)then
           string(:i)=zero
           return
         endif
@@ -463,7 +463,7 @@ c      parameter (icharzero=ichar('0'))
           j=j-1
         endif
       enddo
-      if(string(1:1) .eq. '1')then
+      if(string(1:1) == '1')then
         shift=.true.
         do i=icol,2,-1
           string(i:i)=string(i-1:i-1)
@@ -481,9 +481,9 @@ c      parameter (icharzero=ichar('0'))
       n=0
       is=1
       do i=i1,len(string)
-        if(string(i:i) .eq. '-')then
+        if(string(i:i) == '-')then
           is=-1
-        elseif(string(i:i) .eq. '+')then
+        elseif(string(i:i) == '+')then
         else
           k=ichar(string(i:i))-ichar('0')
           if(k .lt. 0 .or. k .gt. 9)then
@@ -506,9 +506,9 @@ c      parameter (icharzero=ichar('0'))
       n=0
       is=1
       do i=i1,l
-        if(string(i:i) .eq. '-')then
+        if(string(i:i) == '-')then
           is=-1
-        elseif(string(i:i) .eq. '+')then
+        elseif(string(i:i) == '+')then
         else
           k=ichar(string(i:i))-ichar('0')
           if(k .lt. 0 .or. k .gt. 9)then
@@ -542,9 +542,9 @@ c      write(*,*)'autos1 ',s1(1:l)
       s1(ic:l)=s1(ic+1:l)
       l=l-1
       do i=ic-1,1,-1
-        if(s1(i:i) .eq. '.')then
+        if(s1(i:i) == '.')then
           cycle
-        elseif(s1(i:i) .eq. '-')then
+        elseif(s1(i:i) == '-')then
           s1='-1'//s1(i+1:l)
           return
         elseif(ichar(s1(i:i)) .le. ichar('8'))then

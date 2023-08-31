@@ -1,21 +1,51 @@
+      module trackdlib
+      integer*4 ,parameter ::n1p0=256,n2p=51,maxturn=2**29,
+     $     maxpara=256,nw=16,nkptbl = 6, minnp=16,limw=600
+      real*8, parameter :: big=1.d300
+      character*15 ,parameter ::vname='`ResultOfDAPERT'
+      character ,parameter ::label(3)=['X','Y','Z']
+
+      contains
+      subroutine tmap(x1,idir)
+      use temw, only: rn=>r, ri
+      implicit none
+      real*8 ,intent(inout):: x1(6)
+      integer*4 idir
+      if(idir >= 0)then
+        x1=matmul(ri,x1)
+      else
+        x1=matmul(rn,x1)
+      endif
+      return
+      end subroutine
+
+      subroutine tmapm(np,x,idir)
+      use temw, only: rn=>r, ri
+      implicit none
+      integer*4 ,intent(in):: np,idir
+      real*8 ,intent(inout):: x(6,np)
+      if(idir >= 0)then
+        x=matmul(ri,x)
+      else
+        x=matmul(rn,x)
+      endif
+      return
+      end subroutine
+
+      end module
+
 c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
-      subroutine trackd(range,r1,n1,nturn,
-     $     trval,phi,dampr,dampenough,ivar1,ivar2,lfno)
+      subroutine trackd(range,r1,n1,nturn,trval,phi,dampr,dampenough,ivar1,ivar2,lfno)
+      use trackdlib
       use tfstk
       use ffs_flag
-      use tmacro,only:np0,codin,dvfs,omega0,taurdx,taurdy,taurdz,
-     $     nparallel,tsetintm
+      use tmacro,only:np0,codin,dvfs,omega0,taurdx,taurdy,taurdz,nparallel,tsetintm,nlat
       use ffs_pointer, only:idelc
       use tftr
       use tfshare
       use macmath
       use iso_c_binding
       implicit none
-      integer*4 ,parameter ::n1p0=256,n2p=51,maxturn=2**29,
-     $     maxpara=256,nw=16,nkptbl = 6, minnp=16,limw=600
-      real*8, parameter :: big=1.d300
-      character*15 ,parameter ::vname='`ResultOfDAPERT'
-      character ,parameter ::label(3)=['X','Y','Z']
       integer*4 ,intent(in):: ivar1,ivar2,lfno,n1,nturn
       real*8 ,intent(in):: dampr,dampenough,range(3,3),r1(n1)
       type (sad_descriptor) kv,kxm
@@ -34,14 +64,13 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
      $     emx,emz,rgetgl1,cx,cy,cz,sx,sy,sz,dampx,dampy,dampz,t0,
      $     trval,phi(3),a1i(n1p0)
       character*12 autos
-      logical*4 damp,ini,remain,pol0
+      logical*4 damp,ini,remain,pol0,normal
       character rad62a
-c      write(*,'(a,1p10g12.4)')'trackd-1 ',codin
 c     begin initialize for preventing compiler warning
       ipr=0
 c     end   initialize for preventing compiler warning
       iwtime=-1
-      damp=dampr .ne. 0.d0
+      damp=dampr /= 0.d0
 c      write(*,*)'trackd ',damp
       if(damp)then
         t0=m_2_pi/omega0
@@ -61,7 +90,7 @@ c      write(*,*)'trackd0 ',damp,dampx,t0,omega0,taurdx
       call tsetdvfs
       trval=0.d0
       nscore=0
-      muls=merge((nturn/6200+1)*100,10,nturn .gt. 600)
+      muls=merge((nturn/6200+1)*100,10,nturn > 600)
 c      write(*,*)'trackd-muls: ',nturn,muls,nturn/6200
       a2min=range(1,1)
       a2max=range(2,1)
@@ -69,14 +98,14 @@ c      write(*,*)'trackd-muls: ',nturn,muls,nturn/6200
       a3max=range(2,2)
       a1min=minval(r1(1:2))
       a1max=maxval(r1(1:2))
-      if(a1max .eq. a1min)then
+      if(a1max == a1min)then
         a1min=0.d0
       endif
       a2step=(a2max-a2min)/(n2p-1)
       a3step=(a3max-a3min)/(n2p-1)
-      if(n1 .eq. 0)then
+      if(n1 == 0)then
         a1step=abs(r1(3))
-        if(a1step .eq. 0.d0 .or. a1min .eq. a1max)then
+        if(a1step == 0.d0 .or. a1min == a1max)then
           n1p=1
         else
           n1p=min(n1p0,int(max(2.d0,(a1max-a1min)/a1step+1.1d0)))
@@ -128,15 +157,15 @@ c      lp0=latt(1)+kytbl(kwmax,idtype(idelc(1)))+1
       npara=min(nparallel,nprmax,np0/minnp)
       npr=0
       ipn=0
-      if(npara .gt. 1)then
+      if(npara > 1)then
         kseed=0
-        do while(npr .lt. npara-1)
+        do while(npr < npara-1)
           npri=npr
           iprid=itffork()
-          if(iprid .eq. 0)then
+          if(iprid == 0)then
             call tsetintm(-1.d0)
             call tfaddseed(kseed,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               write(*,*)'addseed-error ',irtc
               call exit_without_hooks(0)
             endif
@@ -171,28 +200,28 @@ c      lp0=latt(1)+kytbl(kwmax,idtype(idelc(1)))+1
       kzx(2,1:npmax)=0
       n=1
       jzout=1
+      cx=cos(phi(1))
+      sx=sin(phi(1))
+      cy=cos(phi(2))
+      sy=sin(phi(2))
+      cz=cos(phi(3))
+      sz=sin(phi(3))
       loop_1: do
         np1=npmax
         iw=nw
         remain=.true.
-        cx=cos(phi(1))
-        sx=sin(phi(1))
-        cy=cos(phi(2))
-        sy=sin(phi(2))
-        cz=cos(phi(3))
-        sz=sin(phi(3))
         LOOP_K: do k=1,npmax
-          if(kzx(1,k) .eq. 0)then
+          if(kzx(1,k) == 0)then
             ip=kptbl(k,1)
-            if(ip .le. np1)then
+            if(ip <= np1)then
               if(remain)then
                 do i=1,n1p
                   do j=nxm(i)-1,1,-1
-                    if(j .lt. nxm(i)-ncons)then
+                    if(j < nxm(i)-ncons)then
                       exit
-                    elseif(ntloss(i,j) .lt. nturn)then
+                    elseif(ntloss(i,j) < nturn)then
                       nxm(i)=j
-                    elseif(ntloss(i,j) .eq. maxturn)then
+                    elseif(ntloss(i,j) == maxturn)then
                       ntloss(i,j)=nturn
                       kzx(1,k)=i
                       kzx(2,k)=j
@@ -278,34 +307,31 @@ c     - Overwrite slot[np1] to slot[ip](Drop particle[k] information)
               g(ip)=g(np1)
               dv(ip)=dv(np1)
               np1=np1-1
-              if(np1 .le. 0)then
+              if(np1 <= 0)then
                 exit LOOP_K
               endif
             endif
           endif
         enddo LOOP_K
         np=np1
-        do while(np .gt. 0)
+        do while(np > 0)
 c     write(*,'(a,2i5,14(i5,1pg12.5))')
 c     $     'trackd-tturn-1 ',n,np,(kptbl(i,1),y(i),i=1,14)
-          call tturn(np,x,px,y,py,z,g,dv,spx,spy,spz,kptbl,n)
-c     if(muls .ne. 10)then
-c     write(*,*)'trackd-tturn ',npri,muls
-c     endif
+          call tturn(np,1,nlat,x,px,y,py,z,g,dv,spx,spy,spz,kptbl,n,normal)
 c     write(*,'(a,2i5,14(i5,1pg12.5))')
 c     $     'trackd-tturn-2 ',n,np,(kptbl(i,1),y(i),i=1,14)
-          if(damp .or. dampenough .ne. 0.d0)then
+          if(damp .or. dampenough /= 0.d0)then
             call tpdamp(np,x,px,y,py,z,g,dv,dampx,dampy,dampz,damp,
      $           aenox,aenoy,aenoz,kptbl(1,2),mturn)
           endif
           n=n+1
           ini=.false.
           do i=1,npmax
-            if(kzx(1,i) .le. 0)then
+            if(kzx(1,i) <= 0)then
               cycle
             endif
             kp=kptbl(i,1)
-            if(kp .le. np)then
+            if(kp <= np)then
               mturn(i)=mturn(i)+1
               if(mturn(i) .ge. nturn)then
                 kz=kzx(1,i)
@@ -317,7 +343,7 @@ c     $     'trackd-tturn-2 ',n,np,(kptbl(i,1),y(i),i=1,14)
             else
               kz=kzx(1,i)
               kx=kzx(2,i)
-c      if(kz .eq. 1)then
+c      if(kz == 1)then
 c        write(*,'(a,1x,8i10)')'trackd-Lost: ',
 c     $           kz,kx,mturn(i),i,np,np1,kp,npri
 c      endif
@@ -328,9 +354,9 @@ c      endif
           enddo
           if(ini)then
             cycle loop_1
-          elseif(np1 .lt. npmax)then
+          elseif(np1 < npmax)then
             iw=iw-1
-            if(iw .le. 0)then
+            if(iw <= 0)then
               cycle loop_1
             endif
           endif
@@ -340,9 +366,7 @@ c      endif
       if(.not. ktfrealq(kxm))then
         call tfevals('`ExtMap$@ResetMap[]',kxm,irtc)
       endif
-      if(iprid .eq. 0)then
-c        write(*,*)'trackd-stop ',npr1
-c        stop
+      if(iprid == 0)then
         call tfresetsharedmap()
         call exit_without_hooks(0)
       endif
@@ -351,13 +375,13 @@ c      write(*,*)'trackd-wait ',npr,n1p,n2p,np0
       loop_j: do j=1,npr-1
         do 
           irw=waitpid_nohang(-1,isw)
-          if(irw .eq. 0)then
+          if(irw == 0)then
             call tpause(1000000)
             if(iwtime .ge. 0)then
               iwtime=iwtime+1
-              if(iwtime .gt. limw)then
+              if(iwtime > limw)then
                 do k=1,npr-1
-                  if(ipr(k) .ne. 0)then
+                  if(ipr(k) /= 0)then
                     call tkill(ipr(k))
                     write(*,'(a,i5,i10)')'???trackd-wait timeout-kill: ',k,ipr(k)
                   endif
@@ -371,7 +395,7 @@ c      write(*,*)'trackd-wait ',npr,n1p,n2p,np0
         enddo
 c        write(*,*)'trackd-wait-j ',j,irw
         do k=1,npr-1
-          if(irw .eq. ipr(k))then
+          if(irw == ipr(k))then
 c            write(*,*)'trackd-wait-k ',k
             n=k
             ipr(k)=0
@@ -384,14 +408,12 @@ c            write(*,*)'trackd-wait-k ',k
       do i=1,n1p
         nsc=n2p
         do k=1,n2p
-          if(ntloss(i,k) .lt. nturn)then
+          if(ntloss(i,k) < nturn)then
             nsc=k-1
             exit
           endif
         enddo
         nscore=nscore+nsc
-c        write(*,*)'trackd: ',lfno,i,muls,
-c     $       rad62a(ntloss(i,1)/muls,1)
         write(lfno,'(1x,f8.2,i3,1x,51a1)')a1i(i),nsc,
      $       (rad62a(ntloss(i,jj)/muls,jj),jj=1,n2p)
         kal2%dbody(i)=kxadaloc(0,3,kal2i)
@@ -405,8 +427,6 @@ c     $       rad62a(ntloss(i,1)/muls,1)
      $'     N'//label(ivar1)//
      $     '     0----|----1----|----2----|----3----|----4----|----5'
       write(lfno,'(a,i5)')'    Score: ',nscore
-c      call tfdebugprint(symd%value,'res of DA',10)
-c      call tfevals('Print['//vname//']',kx,irtc)
       trval=nscore
       calpol=pol0
       return
@@ -416,9 +436,9 @@ c      call tfevals('Print['//vname//']',kx,irtc)
       implicit none
       integer*4 ,intent(in):: m,j
       character rad62
-      if(m .eq. 0)then
+      if(m == 0)then
         rad62a=' '
-        if(mod(j,10) .eq. 1 .and. j .ne. 1)then
+        if(mod(j,10) == 1 .and. j /= 1)then
           rad62a='.'
         endif
       else
@@ -428,6 +448,7 @@ c      call tfevals('Print['//vname//']',kx,irtc)
       end
 
       subroutine tinip1(x,px,y,py,z,g,dv,emx,emz,codin,dvfs)
+      use trackdlib
       implicit none
       real*8 ,intent(inout):: x,px,y,py,z,dv,g
       real*8 ,intent(in):: codin(6),dvfs,emx,emz
@@ -438,7 +459,7 @@ c      call tfevals('Print['//vname//']',kx,irtc)
       xa(4)=py*emx
       xa(5)=z *emz
       xa(6)=g *emz
-      call tmap(xa,xa,-1)
+      call tmap(xa,-1)
       xa(1:6)=xa(1:6)+codin
       call tconv(xa,xa,-1)
       x =xa(1)
@@ -452,6 +473,7 @@ c      call tfevals('Print['//vname//']',kx,irtc)
       end
 
       subroutine tinip(np,x,px,y,py,z,g,dv,emx,emz,codin,dvfs,cmplot)
+      use trackdlib
       implicit none
       integer*4 ,intent(in):: np
       integer*4 i
@@ -477,7 +499,7 @@ c      call tfevals('Print['//vname//']',kx,irtc)
           xa(5)=xa(6)*tgauss()
           xa(6)=xa(6)*tgauss()
         endif
-        call tmap(xa,xa,-1)
+        call tmap(xa,-1)
         xa(1:6)=xa(1:6)+codin
 c        call tadd(xa,codin,xa,6)
         call tconv(xa,xa,-1)
@@ -496,6 +518,7 @@ c      write(*,'(a,1p6g15.7)')'tinip ',xa(6),emx,emz
       subroutine tpdamp(np,x,px,y,py,z,g,dv,dampx,dampy,dampz,
      $     damp,aenox,aenoy,aenoz,kptbl,mturn)
       use tfstk
+      use trackdlib
       use tmacro
       implicit none
       integer*4 ,intent(in):: np,kptbl(np)
@@ -514,11 +537,11 @@ c      write(*,'(a,1p6g15.7)')'tinip ',xa(6),emx,emz
         xa(4)=py(i)-codin(4)
         xa(5)=z(i)-codin(5)
         xa(6)=g(i)-codin(6)
-        call tmap(xa,xa,1)
+        call tmap(xa,1)
         j=kptbl(i)
-        if(  xa(1)**2+xa(2)**2 .lt. aenox(j) .and.
-     $       xa(3)**2+xa(4)**2 .lt. aenoy(j) .and.
-     $       xa(5)**2+xa(6)**2 .lt. aenoz(j))then
+        if(  xa(1)**2+xa(2)**2 < aenox(j) .and.
+     $       xa(3)**2+xa(4)**2 < aenoy(j) .and.
+     $       xa(5)**2+xa(6)**2 < aenoz(j))then
 c          write(*,'(a,2i5,1p6g15.7)')'tpdamp ',j,i,
 c     $xa(1),xa(2),xa(5),xa(6),aenox(j),aenoz(j)
           mturn(j)=nturn-1
@@ -531,7 +554,7 @@ c          write(*,*)'tpdamp ',j,nturn-1
           xa(4)=xa(4)*dampy
           xa(5)=xa(5)*dampz
           xa(6)=xa(6)*dampz
-          call tmap(xa,xa,-1)
+          call tmap(xa,-1)
           x(i) =xa(1)+codin(1)
           px(i)=xa(2)+codin(2)
           y(i) =xa(3)+codin(3)
