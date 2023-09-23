@@ -4908,7 +4908,9 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         implicit none
         real*8, intent(in) :: x
         real*8 , intent(inout)::a(:)
-        a=sign(merge(x,merge(x,a,abs(a)>x),ktfenanq(a)),a)
+c        a=sign(merge(x,merge(x,a,abs(a)>x),ktfenanq(a)),a)
+        a=merge(x,merge(a,sign(x,a),abs(a)<=x),ktfenanq(a))
+c        a=merge(a,merge(sign(x,a),x,abs(a)>x),abs(a)<=x)
         return
         end subroutine
 

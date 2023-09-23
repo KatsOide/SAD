@@ -395,6 +395,7 @@ c      include 'DEBUG.inc'
       function  tfcomposeoper(isp1,iah,comp,isp0,irtc) result(kx)
       use tfstk
       use tfcx,only:tfclassmember
+      use convstr,only:tfstringjoin
       use ophash
       use eexpr
       implicit none

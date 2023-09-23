@@ -38,18 +38,18 @@
       n2=str2%nch
       if(n > 0)then
         call putstringbufb(strb,str1%str(1:1),m,full)
-        do while(m .lt. na)
+        do while(m < na)
           call putstringbufb(strb,str2%str,min(n2,na-m),full)
           m=m+n2
         enddo
       else
-        if(m .lt. na)then
+        if(m < na)then
           n=mod(na-m,n2)
           if(n > 0)then
             call putstringbufb(strb,str2%str(1+(n2-n):n2),n,full)
             na=na-n
           endif
-          do while(m .lt. na)
+          do while(m < na)
             call putstringbufb(strb,str2%str(1:n2),n2,full)
             na=na-n2
           enddo
@@ -104,7 +104,7 @@
       type (sad_strbuf), pointer :: strb
       integer*4 isp1,irtc,itfmessage,i,nc1,isp0
       real*8 base
-      if(isp .lt. isp1+2)then
+      if(isp < isp1+2)then
         irtc=itfmessage(9,'General::narg','"2 or more"')
         return
       endif
@@ -113,7 +113,7 @@
         return
       endif
       base=aint(rtastk(isp))
-      if(base .lt. 2.d0 .or. base > 62.d0)then
+      if(base < 2.d0 .or. base > 62.d0)then
         irtc=itfmessage(9,'General::wrongval',
      $       '"Base","between 2 and 62"')
         return
@@ -300,7 +300,7 @@
         if(nc1 > 0)then
           i1=1
           do while(i1 > 0 .and. i1 <= nc
-     $         .and. isp .lt. isp0+l)
+     $         .and. isp < isp0+l)
             ip=indexb(str%str,nc,strp%str,nc1,i1)
             if(ip <= 0)then
               i1=0
@@ -479,7 +479,7 @@ c      include 'DEBUG.inc'
       endif
       irtc=0
       do i=1,str%nch
-        if(str%istr(i) .lt. ichar('0') .or.
+        if(str%istr(i) < ichar('0') .or.
      $       str%istr(i) > ichar('9'))then
           kx%k=0
           return
@@ -503,9 +503,9 @@ c      include 'DEBUG.inc'
       endif
       irtc=0
       do i=1,str%nch
-        if(str%istr(i) .lt. ichar('A') .or.
+        if(str%istr(i) < ichar('A') .or.
      $       str%istr(i) > ichar('Z') .and.
-     $       str%istr(i) .lt. ichar('a') .or.
+     $       str%istr(i) < ichar('a') .or.
      $       str%istr(i) > ichar('z'))then
           kx%k=0
           return
@@ -518,7 +518,7 @@ c      include 'DEBUG.inc'
       integer function Unicode2UTF8(ucode, buffer)
       integer,          intent(in)  :: ucode
       character(len=*), intent(out) :: buffer
-      if(ucode .lt. 0)then
+      if(ucode < 0)then
         Unicode2UTF8 = 0
       elseif(len(buffer) >= 1 .and. ucode <= ior(Z'0000007F',0))then
         buffer(1:1)  = char(            iand(Z'07F', ucode)         )
@@ -558,6 +558,63 @@ c      include 'DEBUG.inc'
       endif
       return
       end
+
+      subroutine tfstringjoin(isp1,kx,irtc)
+      use strbuf
+      implicit none
+      type (sad_descriptor) kx
+      type (sad_string), pointer :: ksi,ksx
+      type (sad_strbuf), pointer :: strb
+      integer*4 isp1,irtc,i,nc1,l,is,isp0
+      if(isp1+1 == isp)then
+        call tftostring(isp1,kx,.false.,irtc)
+        return
+      elseif(isp1 == isp)then
+        kx=dxnulls
+        irtc=0
+        return
+      endif
+      l=0
+      do i=isp1+1,isp
+        if(ktfstringq(dtastk(i),ksi))then
+          l=l+ksi%nch
+        else
+          l=0
+          go to 1
+        endif
+      enddo
+      if(l == 0)then
+        kx=dxnulls
+      else
+        kx=kxscopy(ktfaddr(ktastk(isp1+1)),l,ksx)
+        call loc_sad(ktfaddr(ktastk(isp1+1)),ksi)
+        is=ksi%nch
+        do i=isp1+2,isp
+          call loc_sad(ktfaddr(ktastk(i)),ksi)
+          if(ksi%nch /= 0)then
+            ksx%str(is+1:is+ksi%nch)=ksi%str(1:ksi%nch)
+            is=is+ksi%nch
+          endif
+        enddo
+      endif
+      irtc=0
+      return
+ 1    isp0=isp
+      call getstringbuf(strb,l,.true.)
+      do i=isp1+1,isp0
+        call tfconvstrb(strb,dtastk(i),
+     $       nc1,.false.,.false.,-1,'*',irtc)
+        if(irtc /= 0)then
+          go to 9000
+        endif
+      enddo
+      kx=kxstringbuftostring(strb)
+      isp=isp0
+      return
+ 9000 call tfreestringbuf(strb)
+      isp=isp0
+      return
+      end subroutine
 
       end module
 
@@ -624,109 +681,6 @@ c        write(*,*)'convstrs ',l,lb,lh,nc,strb%str(lh-3:lh+3),' ',strb%str(nc-(l
         buff(1:nc)=strb%str(1:nc)
       endif
       call tfreestringbuf(strb)
-      isp=isp0
-      return
-      end
-
-      subroutine tfstringreplace(isp1,kx,irtc)
-      use tfstk
-      use strbuf
-      use eeval
-      implicit none
-      type (sad_descriptor) kx,kr
-      type (sad_strbuf), pointer :: strb
-      type (sad_string), pointer :: str,strs,stri
-      integer*4 isp1,irtc,isp0,i,ir,ls,isp2,
-     $     j,imin,ii,nr,indexb,itfmessage
-      logical*4 full
-      if(isp /= isp1+2)then
-        irtc=itfmessage(9,'General::narg','"2"')
-        return
-      endif
-      if(.not. ktfstringq(dtastk(isp1+1),str))then
-        irtc=itfmessage(9,'General::wrongtype','"Character-string"')
-        return
-      endif
-      isp0=isp
-      call tfreplace(dxnullo,dtastk(isp1+2),kx,
-     $     .false.,.false.,.true.,irtc)
-      if(irtc /= 0)then
-        return
-      endif
-      if(isp == isp0)then
-        kx=dtastk(isp1+1)
-        irtc=0
-        return
-      endif
-      do i=isp0+1,isp,2
-        if(.not. ktfstringq(dtastk(i)))then
-          irtc=itfmessage(9,'General::wrongtype',
-     $         '"String -> String"')
-          return
-        endif
-      enddo
-      nullify(strb)
-      ir=1
-      ls=str%nch
-      isp2=isp
- 1    j=0
-      imin=ls+1
-      do i=isp0+1,isp2,2
-        call descr_sad(dtastk(i),stri)
-        ii=indexb(str%str,ls,stri%str,stri%nch,ir)
-        if(ii > 0 .and. ii .lt. imin)then
-          imin=ii
-          j=i
-          itastk2(1,i)=stri%nch
-        endif
-      enddo
-      if(j /= 0)then
-        if(.not. associated(strb))then
-          call getstringbuf(strb,0,.true.)
-        endif
-        if(imin == ir+1)then
-          call putstringbufb1(strb,str%str(ir:ir))
-        elseif(imin > ir)then
-          call putstringbufb(strb,str%str(ir:imin-1),imin-ir,full)
-        endif
-        if(.not. ktfstringq(dtastk(j+1)))then
-          kr=tfeevalref(dtastk(j+1),irtc)
-          if(irtc /= 0)then
-            go to 9000
-          endif
-          if(.not. ktfstringq(kr))then
-            irtc=itfmessage(9,'General::wrongtype',
-     $           '"List of (String -> String)"')
-            go to 9000
-          endif
-          dtastk(j+1)=kr
-        endif
-        call descr_sad(dtastk(j+1),strs)
-        nr=strs%nch
-        if(nr == 1)then
-          call putstringbufb1(strb,strs%str)
-        elseif(nr > 0)then
-          call putstringbufb(strb,strs%str,nr,full)
-        endif
-        ir=imin+itastk2(1,j)
-        if(ir <= ls)then
-          go to 1
-        endif
-      endif
-      if(.not. associated(strb))then
-        kx=dtastk(isp1+1)
-      else
-        if(ls == ir)then
-          call putstringbufb1(strb,str%str(ir:ir))
-        elseif(ls > ir)then
-          call putstringbufb(strb,str%str(ir:ls),ls-ir+1,full)
-        endif
-        kx=kxstringbuftostring(strb)
-      endif
-      isp=isp0
-      irtc=0
-      return
- 9000 call tfreestringbuf(strb)
       isp=isp0
       return
       end
@@ -826,64 +780,6 @@ c      include 'DEBUG.inc'
       call getstringbuf(strb,0,.true.)
       call tfconvstrb(strb,k,nc1,infm,gens,-1,form,irtc)
       kx=kxstringbuftostring(strb)
-      isp=isp0
-      return
-      end
-
-      subroutine tfstringjoin(isp1,kx,irtc)
-      use convstr
-      use strbuf
-      implicit none
-      type (sad_descriptor) kx
-      type (sad_string), pointer :: ksi,ksx
-      type (sad_strbuf), pointer :: strb
-      integer*4 isp1,irtc,i,nc1,l,is,isp0
-      if(isp1+1 == isp)then
-        call tftostring(isp1,kx,.false.,irtc)
-        return
-      elseif(isp1 == isp)then
-        kx=dxnulls
-        irtc=0
-        return
-      endif
-      l=0
-      do i=isp1+1,isp
-        if(ktfstringq(dtastk(i),ksi))then
-          l=l+ksi%nch
-        else
-          l=0
-          go to 1
-        endif
-      enddo
-      if(l == 0)then
-        kx=dxnulls
-      else
-        kx=kxscopy(ktfaddr(ktastk(isp1+1)),l,ksx)
-        call loc_sad(ktfaddr(ktastk(isp1+1)),ksi)
-        is=ksi%nch
-        do i=isp1+2,isp
-          call loc_sad(ktfaddr(ktastk(i)),ksi)
-          if(ksi%nch /= 0)then
-            ksx%str(is+1:is+ksi%nch)=ksi%str(1:ksi%nch)
-            is=is+ksi%nch
-          endif
-        enddo
-      endif
-      irtc=0
-      return
- 1    isp0=isp
-      call getstringbuf(strb,l,.true.)
-      do i=isp1+1,isp0
-        call tfconvstrb(strb,dtastk(i),
-     $       nc1,.false.,.false.,-1,'*',irtc)
-        if(irtc /= 0)then
-          go to 9000
-        endif
-      enddo
-      kx=kxstringbuftostring(strb)
-      isp=isp0
-      return
- 9000 call tfreestringbuf(strb)
       isp=isp0
       return
       end

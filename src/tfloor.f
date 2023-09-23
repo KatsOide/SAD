@@ -13,7 +13,8 @@
      $     xthcs1=min(xths1,xthc1),
      $     xthcs2=min(xths2,xthc2),
      $     xthasx=(epsieee*13312.d0/231.d0/6.d0)**(1.d0/10.d0)
-      integer*4 ,parameter ::nmaxsvd=2000 000 000
+      real*8 ,parameter ::nmaxsvd=30.d9
+      integer*4 ,parameter ::nomp=400
 
       contains
       real*8 pure function tfloor(x)
@@ -419,7 +420,7 @@ c        dc=merge(-s**2/(1.d0+c),c-1.d0,c > 0.d0)
       real*8 pure function tfarg(x)
       implicit none
       real*8 ,intent(in)::x
-      tfarg=merge(0.d0,asin(1.d0)*2.d0,x .ge. 0.d0)
+      tfarg=merge(0.d0,asin(1.d0)*2.d0,x >= 0.d0)
       return
       end
 
@@ -492,6 +493,7 @@ c        dc=merge(-s**2/(1.d0+c),c-1.d0,c > 0.d0)
       implicit none
       real*8, intent(in) :: x
       real*8, parameter:: xth=8.d-6,xth1=3.4d-3,xmin=1.d-200
+c   sqrt1(x) = sqrt(1+x)-1
       if(abs(x) < xth)then
         sqrt1=x*(0.5d0+x*(-0.125d0+x*0.0625d0))
       elseif(abs(x) < xth1)then
@@ -607,7 +609,7 @@ c        dc=merge(-s**2/(1.d0+c),c-1.d0,c > 0.d0)
       real*8 pure elemental function moduloc(x,a) result(f)
       implicit none
       real*8 ,intent(in):: x,a
-      if(x .ge. 0.d0)then
+      if(x >= 0.d0)then
         f=modulo(x,a)
       else
         f=-modulo(-x,a)
@@ -618,7 +620,7 @@ c        dc=merge(-s**2/(1.d0+c),c-1.d0,c > 0.d0)
       real*8 pure elemental function moduloc2(x) result(f)
       implicit none
       real*8 ,intent(in):: x
-      if(x .ge. 0.d0)then
+      if(x >= 0.d0)then
         f=modulo(x,2.d0)
         if(f > 1.d0)then
           f=f-2.d0
@@ -711,7 +713,7 @@ c        dc=merge(-s**2/(1.d0+c),c-1.d0,c > 0.d0)
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       integer*4 itfmessage,mode,i
-      if(isp .le. isp1+1)then
+      if(isp <= isp1+1)then
         irtc=itfmessage(9,'General::narg','"2"')
       elseif(isp /= isp1+2)then
         if(mode == 0)then
@@ -1231,9 +1233,13 @@ c      use tmacro
               kx=kxavaloc(-1,m,klr)
               call descr_sad(kx,klx)
               klr%attr=ior(klr%attr,lconstlist)
+c              call omp_set_dynamic(.true.)
+c              call omp_set_num_threads(int(1+m/200))
+c!$OMP PARALLEL DO private(i)
               do i=1,m
                 klr%rbody(i)=fun(kl%rbody(i))
               enddo
+c!$OMP END PARALLEL DO
             endif
           else
             isp0=isp

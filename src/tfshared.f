@@ -120,12 +120,14 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
 
       subroutine tffswait(ipr,npa,npr,kash,nwait,tag,irtc)
       implicit none
-      integer*4 ,intent(out):: irtc,ipr
+      integer*4 ,intent(out):: irtc
+      integer*4 ,intent(inout):: ipr
       integer*4 ,intent(in):: npa,nwait
       integer*4 ,intent(inout):: npr(npa)
       integer*4 ist,i,j,waitpid,waitpid_nohang,iwait,lw
       integer*8 ,intent(in):: kash
       character*(*) ,intent(in):: tag
+      write(*,*)'tffswait-0 ',ipr,tag
       if(ipr == 0)then
         if(kash /= 0)then
           call tfreeshared(kash,-1)
@@ -140,6 +142,7 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
         irtc=0
         do i=1,npa-1
           dowait: do
+          write(*,*)'tffswait-3 ',i,npa
             if(nwait == 0)then
               ipr=waitpid(-1,ist)
             else

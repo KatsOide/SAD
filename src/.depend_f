@@ -298,7 +298,7 @@ tfdot.o: tfdot.f itfmaloc.o tfstk.o
 tfdset.o: tfdset.f itfpmat.o tfeeval.o tffuns.o tfreplace.o tfsameq.o tfstk.o
 tfearray.o: tfearray.f
 tfecmplx.o: tfecmplx.f tfstk.o
-tfeeval.o: tfeeval.f tffuns.o tfstk.o toplvl.o
+tfeeval.o: tfeeval.f tffuns.o tfstk.o tfstrbuf.o toplvl.o
 tfeexpr.o: tfeexpr.f tfefun.o tfstk.o
 tfefun.o: tfefun.f gamma.o itfmessage.o tfconvstr.o tfdot.o tfdset.o tfecmplx.o tfeeval.o tfeval1.o tffindroot.o tffuns.o tfloor.o tfmodule.o tfpart.o tfreplace.o tfsameq.o tfsolvemember.o tfstk.o tftable.o tftake.o toplvl.o
 tfefun1.o: tfefun1.f tffs.o tffsa.o tfstk.o
@@ -307,7 +307,7 @@ tfefun3ep.o: tfefun3ep.f tfeeval.o tfefun.o tfstk.o
 tfematrix.o: tfematrix.f tfstk.o
 tfemit.o: tfemit.f tffs.o tfstk.o toplvl.o
 tfepicsconstatcb.o: tfepicsconstatcb.f tfeeval.o tfsolvemember.o tfstk.o
-tfestk.o: tfestk.f itfpmat.o tfeeval.o tfefun.o tfmodule.o tfsolvemember.o tfstk.o toplvl.o
+tfestk.o: tfestk.f itfpmat.o tfconvstr.o tfeeval.o tfefun.o tfmodule.o tfsolvemember.o tfstk.o toplvl.o
 tfetok.o: tfetok.f tfconvstr.o tffs.o tfstk.o tfstrbuf.o toplvl.o
 tfeval.o: tfeval.f tfeeval.o tfstk.o toplvl.o
 tfeval1.o: tfeval1.f tfecmplx.o tfeeval.o tfstk.o

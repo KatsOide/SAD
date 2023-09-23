@@ -11,8 +11,8 @@ c               a=U^T.W.V .
 c    
 c
       use tfstk, only:ktfenanq
-      use mathfun,only:nmaxsvd,nomp,sqrt1
-c      use omp_lib
+      use mathfun,only:nmaxsvd,nopm
+      use omp_lib
       implicit none
       integer*4 ,parameter ::itmax=256
       integer*4 ,intent(in):: n,m,ndim,ndimb
@@ -32,7 +32,7 @@ c      use omp_lib
         write(*,*)' TSVDM Too large matrix. ',n,m
         return
       endif
-c      call omp_set_dynamic(.true.)
+      call omp_set_dynamic(.true.)
       allocate(v(0:2*max(m,n)),lsep(0:n),aa(m),bb(n))
       v(1:n)=1.d0
       x(1:m)=1.d0
@@ -50,31 +50,31 @@ c      call omp_set_dynamic(.true.)
               q=v(j)*p/h1
               v(j)=v(i)*v(j)/h1
               v(i)=h1
-c              call omp_set_num_threads(int(1+(m-i)/nomp))
+              call omp_set_num_threads(int(1+max(n1,m-i)/nopm))
 c!$OMP PARALLEL WORKSHARE shared(a,b,i,j,i1,m,n1,p,q)
               a(j,i1:m)=a(j,i1:m)-p*a(i,i1:m)
               a(i,i1:m)=a(i,i1:m)+q*a(j,i1:m)
-c!$OMP END PARALLEL WORKSHARE
               a(j,i)=0.d0
               b(j,1:n1)=b(j,1:n1)-p*b(i,1:n1)
               b(i,1:n1)=b(i,1:n1)+q*b(j,1:n1)
+c!$OMP END PARALLEL WORKSHARE
             elseif(a(j,i) /= 0.d0)then
               p=a(i,i)/a(j,i)
               h1=v(j)+v(i)*p**2
               q=v(i)*p/h1
               v(j)=v(i)*v(j)/h1
               v(i)=h1
-c              call omp_set_num_threads(int(1+(m-i)/nomp))
+              call omp_set_num_threads(int(1+max(n1,m-i)/nopm))
 c!$OMP PARALLEL WORKSHARE shared(a,b,aa,bb,i,j,i1,m,n1,p,q)
               aa(i1:m)=a(j,i1:m)
               a(j,i1:m)=p*aa(i1:m)-a(i,i1:m)
               a(i,i1:m)=aa(i1:m)-q*a(j,i1:m)
-c!$OMP END PARALLEL WORKSHARE
               a(i,i)=a(j,i)
               a(j,i)=0.d0
               bb(1:n1)=b(j,1:n1)
               b(j,1:n1)=p*bb(1:n1)-b(i,1:n1)
               b(i,1:n1)=bb(1:n1)-q*b(j,1:n1)
+c!$OMP END PARALLEL WORKSHARE
             endif
           enddo
         endif
@@ -94,7 +94,7 @@ c!$OMP END PARALLEL WORKSHARE
                 q=s*x(j )/h1
                 x(i1)=h1
                 x(j )=h2
-c                call omp_set_num_threads(int(1+(n-i)/nomp))
+                call omp_set_num_threads(int(1+(n-i)/nopm))
 c!$OMP PARALLEL WORKSHARE shared(a,p,q,i1,j,n)
                 a(i1:n,j )=a(i1:n,j )-p*a(i1:n,i1)
                 a(i1:n,i1)=a(i1:n,i1)+q*a(i1:n,j )
@@ -108,7 +108,7 @@ c!$OMP END PARALLEL WORKSHARE
                 q=c*x(i1)/h1
                 x(i1)=h1
                 x(j )=h2
-c                call omp_set_num_threads(int(1+(n-i)/nomp))
+                call omp_set_num_threads(int(1+(n-i)/nopm))
 c!$OMP PARALLEL WORKSHARE shared(a,bb,p,q,i1,j,n)
                 bb(i1:n)=a(i1:n,j)
                 a(i1:n,j )=p*bb(i1:n)-a(i1:n,i1)
@@ -120,8 +120,8 @@ c!$OMP END PARALLEL WORKSHARE
               s=0.d0
             endif
             a(i,j)=s
-            if(j < ndim+2)then
-c            if(j < n+2)then
+C     if(j < ndim+2)then
+            if(j < n+2)then
               a(j-1,i)=c
             else
               if(c <= abs(s) .and. c /= 0.d0)then
@@ -157,18 +157,16 @@ c            if(j < n+2)then
         i1mn=i1+mn
         do j=m,i+2,-1
           s=a(i,j)
-          if(j < ndim+2)then
-c          if(j < n+2)then
+C     if(j < ndim+2)then
+          if(j < n+2)then
             c=a(j-1,i)
             a(j-1,i)=0.d0
           else
             if(abs(s) > 1.d0)then
               c=abs(1.d0/s)
-              s=sign(1.d0+sqrt1(-c**2),s)
-c              s=sign(1.d0-c**2/(1.d0+sqrt((1.d0-c)*(1.d0+c))),s)
+              s=sign(1.d0-c**2/(1.d0+sqrt((1.d0-c)*(1.d0+c))),s)
             else
-              c=1.d0+sqrt1(-s**2)
-c              c=1.d0-s**2/(1.d0+sqrt((1.d0-s)*(1.d0+s)))
+              c=1.d0-s**2/(1.d0+sqrt((1.d0-s)*(1.d0+s)))
             endif
           endif
           if(abs(c) > abs(s))then
@@ -179,11 +177,11 @@ c              c=1.d0-s**2/(1.d0+sqrt((1.d0-s)*(1.d0+s)))
             v(i1mn)=h1
             v(j +mn)=h2
             a(i,j)=q*a(i,i1)
-c            call omp_set_num_threads(int(1+(mn-i)/nomp))
-c!$OMP PARALLEL WORKSHARE shared(a,p,q,i1,mn,j)
+            call omp_set_num_threads(int(1+(mn-i)/nopm))
+!$OMP PARALLEL WORKSHARE shared(a,p,q,i1,mn,j)
             a(i1:mn,i1)=a(i1:mn,i1)-p*a(i1:mn,j )
             a(i1:mn,j )=a(i1:mn,j )+q*a(i1:mn,i1)
-c!$OMP END PARALLEL WORKSHARE 
+!$OMP END PARALLEL WORKSHARE 
           else
             h1=v(j +mn)/s
             h2=v(i1mn)*s
@@ -193,16 +191,15 @@ c!$OMP END PARALLEL WORKSHARE
             v(j +mn)=h2
             a(i,j )=a(i,i1)
             a(i,i1)=a(i,i1)*q
-c            call omp_set_num_threads(int(1+(mn-i)/nomp))
-c!$OMP PARALLEL WORKSHARE shared(a,aa,p,q,i1,mn,j)
+            call omp_set_num_threads(int(1+(mn-i)/nopm))
+!$OMP PARALLEL WORKSHARE shared(a,aa,p,q,i1,mn,j)
             aa(i1:mn)=a(i1:mn,j)
             a(i1:mn,j )=p*aa(i1:mn)+a(i1:mn,i1)
             a(i1:mn,i1)=q*a(i1:mn,j )-aa(i1:mn)
-c!$OMP END PARALLEL WORKSHARE
+!$OMP END PARALLEL WORKSHARE
           endif
         enddo
       enddo
-c      write(*,*)'tsvdm-omp ',omp_get_num_threads()
       lsep(0)=0
       lsep(1)=1
       isep=1
@@ -311,13 +308,13 @@ c            an=max(abs(x(i)),abs(x(i+1)))
                 t=s*v(i1+mn)/h1
                 v(i+mn)=h1
                 v(i1+mn)=h2
-c                call omp_set_num_threads(int(1+mn/nomp))
-c!$OMP PARALLEL WORKSHARE shared(a,b,r,t,m,n1,i,i1)
+                call omp_set_num_threads(int(1+max(n1,m)/nopm))
+!$OMP PARALLEL WORKSHARE shared(a,b,r,t,m,n1,i,i1)
                 a(i1,1:m)=a(i1,1:m)-r*a(i ,1:m)
                 a(i ,1:m)=a(i ,1:m)+t*a(i1,1:m)
-c!$OMP END PARALLEL WORKSHARE
                 b(i1,1:n1)=b(i1,1:n1)-r*b(i,1:n1)
                 b(i ,1:n1)=b(i ,1:n1)+t*b(i1,1:n1)
+!$OMP END PARALLEL WORKSHARE
               else
                 h1=v(i1+mn)/s
                 h2=v(i+mn)*s
@@ -325,15 +322,15 @@ c!$OMP END PARALLEL WORKSHARE
                 t=c*v(i+mn)/h1
                 v(i+mn)=h1
                 v(i1+mn)=h2
-c                call omp_set_num_threads(int(1+mn/nomp))
-c!$OMP PARALLEL WORKSHARE shared(aa,bb,a,b,r,t,m,n1,i,i1)
+                call omp_set_num_threads(int(1+max(n1,m)/nopm))
+!$OMP PARALLEL WORKSHARE shared(aa,bb,a,b,r,t,m,n1,i,i1)
                 aa(1:m)=a(i1,1:m)
                 a(i1,1:m)=r*aa(1:m)-a(i ,1:m)
                 a(i ,1:m)=aa(1:m)-t*a(i1,1:m)
-c!$OMP END PARALLEL WORKSHARE
                 bb(1:n1)=b(i1,1:n1)
                 b(i1,1:n1)=r*bb(1:n1)-b(i,1:n1)
                 b(i ,1:n1)=bb(1:n1)-t*b(i1,1:n1)
+!$OMP END PARALLEL WORKSHARE
               endif
             enddo
             v(iend-1)=f
@@ -371,11 +368,8 @@ c!$OMP END PARALLEL WORKSHARE
             x(i)=s/anorm**2
             w=f
           endif
-c          call omp_set_num_threads(int(1+mn/nomp))
-c!$OMP PARALLEL WORKSHARE shared(a,b,m,w,f)
           a(i,1:m)=a(i,1:m)*w
           b(i,1:n1)=b(i,1:n1)*f
-c!$OMP END PARALLEL WORKSHARE
         enddo
       else
         do i=1,mn
@@ -388,11 +382,8 @@ c!$OMP END PARALLEL WORKSHARE
             w=f
           endif
           x(i)=s
-c          call omp_set_num_threads(int(1+mn/nomp))
-c!$OMP PARALLEL WORKSHARE shared(a,b,m,w,f)
           a(i,1:m)=a(i,1:m)*w
           b(i,1:n1)=b(i,1:n1)*f
-c!$OMP END PARALLEL WORKSHARE
         enddo
       endif
       x(mn+1:m)=0.d0

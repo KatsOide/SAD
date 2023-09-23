@@ -819,6 +819,7 @@ c              enddo
           lv=itfdownlevel()
         endif
         ogv=tforbitgeo(gv,cod)
+c        write(*,'(a,i5,1p10g12.4)')'ogeo ',lxp,gv(:,4),ogv(:,4),cod(1:4)
         if(keyword == 'OGX')then
           kx=dfromr(ogv(1,4))
         elseif(keyword == 'OGY')then

@@ -77,14 +77,17 @@
       cmpp%value(ky_DZ_SOL)=0.d0
       chi1=cmpp%value(ky_DPX_SOL)
       chi2=cmpp%value(ky_DPY_SOL)
+      xi=cmpp%value(ky_DX_SOL)
+      yi=cmpp%value(ky_DY_SOL)
+      pxi=-sin(chi1)*cos(chi2)
+      pyi=-sin(chi2)
       if(idir .gt. 0)then
         pos0=0
         bzs=tfbzs(k1,kbz)
         chi3=tfchi(geo(:,:,k),3)
         geo(:,1:3,k+1)=tfderotgeo(geo(:,:,k),(/chi1,chi2,chi3/))
-        geo(:,4,k+1)=geo(:,4,k)
-        cmp1%value(ky_CHI1_SOL:ky_CHI3_SOL)=
-     $       tgrot(geo(:,:,k),geo(:,:,k+1))
+        geo(:,4,k+1)=geo(:,4,k)+matmul(geo(:,1:3,k+1),(/-xi,-yi,0.d0/))
+        cmp1%value(ky_CHI1_SOL:ky_CHI3_SOL)=tgrot(geo(:,:,k),geo(:,:,k+1))
         pos(k+1)=pos(k)
       else
         geos=geo(:,:,k)
@@ -92,15 +95,10 @@
         bzs=tfbzs(k1-1,kbz)
         geo(:,:,ke)=geoini
         geo(:,:,ke1)=tfchitogeo((/chi1,chi2,0.d0/))
-        cmp2%value(ky_CHI1_SOL:ky_CHI3_SOL)=
-     $       tgrot(geo(:,1:3,ke),geo(:,:,ke1))
+        cmp2%value(ky_CHI1_SOL:ky_CHI3_SOL)=tgrot(geo(:,1:3,ke),geo(:,:,ke1))
         pos(ke:ke1)=0.d0
         geo(:,4,ke:ke1)=0.d0
       endif
-      xi=cmpp%value(ky_DX_SOL)
-      yi=cmpp%value(ky_DY_SOL)
-      pxi=-sin(chi1)*cos(chi2)
-      pyi=-sin(chi2)
       led=idvalc(k2)
       ds=0.d0
       gi=0.d0

@@ -15,8 +15,7 @@
       integer*4 ,intent(inout):: kptbl(np0,nkptbl),np
       integer*4 ,intent(in):: kturn
       real*8 ,intent(in):: ax,ay,dx,dy,xl,yl,xh,yh,pxj,pyj,dpj,theta
-      real*8 xh1,xl1,yh1,yl1,ax1,ay1,xa,ya,cost,sint,
-     $     x1,px1,y1,py1,z1,g1,dv1,phi(2),sx1,sy1,sz1,s
+      real*8 xh1,xl1,yh1,yl1,ax1,ay1,xa,ya,cost,sint,x1,px1,y1,py1,z1,g1,dv1,phi(2),sx1,sy1,sz1,s
       integer*4 i,j,k,kptmp(nkptbl)
       logical eli, dodrop
 
@@ -105,19 +104,13 @@ c     $     xl,xh,yl,yh,xl1,xh1,yl1,yh1
         ay1 = 1.d0 / ay
       endif
 
-      if(theta /= 0) then
-        cost = cos(theta)
-        sint = sin(theta)
-      else
-        cost = 1.d0
-        sint = 0.d0
-      endif
-
 c     Marking drop particles
       dodrop = .false.
       if(eli)then
         if(theta /= 0.d0)then
 c     Case: eli && theta != 0.0
+          cost = cos(theta)
+          sint = sin(theta)
           do i=1,np
             xa = cost * (x(i) - dx) - sint * (y(i) - dy)
             ya = sint * (x(i) - dx) + cost * (y(i) - dy)
@@ -151,6 +144,8 @@ c     $             xa,ya,ax1,ay1,xl1,xh1,yl1,yh1
         endif
       else
         if(theta /= 0.d0)then
+          cost = cos(theta)
+          sint = sin(theta)
 c     Case: !eli && (theta != 0.0)
           do i=1,np
             xa = cost * (x(i) - dx) - sint * (y(i) - dy)
@@ -305,8 +300,7 @@ c     $     rlist(lp+ky_DY_Aprt)
 c     Helper functions for Aperture Handling in Tracking Modules
 
 c     Report new drop marked particles in alive area [1, np]
-      subroutine tapert_report_dropped(outfd,kturn,lbegin,
-     $     np,x,px,y,py,z,g,sx,sy,sz,kptbl)
+      subroutine tapert_report_dropped(outfd,kturn,lbegin,np,x,px,y,py,z,g,sx,sy,sz,kptbl)
       use tfstk
       use tmacro
       use ffs_pointer, only:idvalc,idtypec,idelc
