@@ -97,7 +97,8 @@
         geo(:,:,ke1)=tfchitogeo((/chi1,chi2,0.d0/))
         cmp2%value(ky_CHI1_SOL:ky_CHI3_SOL)=tgrot(geo(:,1:3,ke),geo(:,:,ke1))
         pos(ke:ke1)=0.d0
-        geo(:,4,ke:ke1)=0.d0
+        geo(:,4,ke1)=0.d0
+        geo(:,4,ke)=matmul(geo(:,1:3,ke),(/-xi,-yi,0.d0/))
       endif
       led=idvalc(k2)
       ds=0.d0
