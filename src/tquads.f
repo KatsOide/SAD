@@ -64,7 +64,7 @@ c          p=(1.d0+g(i))**2
       endif
       if(krad)then
         if(photons)then
-          call tsetpcvt(l_track,dx,dy,theta2,0.d0,0.d0,al)
+          call tsetpcvt(l_track,dx,dy,theta2,0.d0,0.d0,0.d0,al)
           pcvt%fr0=-0.5d0*f1in/al
         endif
         if(f1in .ne. 0.d0)then

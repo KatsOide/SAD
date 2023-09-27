@@ -107,7 +107,7 @@ c     dp=g(i)*(2.d0+g(i))
         alx0=0.d0
         phix0=0.d0
         if(photons .and. krad)then
-          call tsetpcvt(l_track,dx,dy,theta,dtheta,phi0,al)
+          call tsetpcvt(l_track,dx,dy,theta,dtheta,phi0,phig,al)
         endif
         do n=n1,n2
           call tbendiinit(akxn(n),alx(n),n .eq. n1)
@@ -172,7 +172,7 @@ c                call tsetphotongeo(alx(n),phixn(n),theta,.false.)
       endif
       if(krad)then
         if(photons)then
-          call tsetpcvt(l_track,dx,dy,theta,dtheta,phi0,al)
+          call tsetpcvt(l_track,dx,dy,theta,dtheta,phi0,phig,al)
           pcvt%fr0=1.d0-alr(n2)/al
         endif
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,alr(n2),phixn(n2))

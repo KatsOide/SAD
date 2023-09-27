@@ -131,7 +131,14 @@
       return
       end
 
-      complex*16 pure function tcatan2(z1,z)
+      real*8 pure function tatan2(x,y)
+      implicit none
+      real*8, intent(in)::x,y
+      tatan2=atan2(y,x)
+      return
+      end function
+
+      complex*16 pure function tcatan2(z,z1)
       use macmath
       implicit none
       complex*16 ,intent(in)::z,z1

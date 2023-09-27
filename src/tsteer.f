@@ -67,7 +67,7 @@
         zr0=z
         ndiv=min(ndivmax,max(1,ndivrad(phic,0.d0,0.d0,eps)))
         if(photons)then
-          call tsetpcvt(l_track,dx,dy,theta,0.d0,0.d0,al)
+          call tsetpcvt(l_track,dx,dy,theta,0.d0,0.d0,0.d0,al)
         endif
       else
         ndiv=1

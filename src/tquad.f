@@ -65,7 +65,7 @@ c      theta2=theta+akang(dcmplx(ak0,0.d0),al,cr1)
       endif
       if(krad)then
         if(photons)then
-          call tsetpcvt(l_track,dx,dy,theta2,0.d0,0.d0,al)
+          call tsetpcvt(l_track,dx,dy,theta2,0.d0,0.d0,0.d0,al)
           pcvt%fr0=-0.5d0*f1in/al
         endif
         if(f1in .ne. 0.d0)then
@@ -156,7 +156,7 @@ c     end   initialize for preventing compiler warning
           bsi=0.d0
         endif
         if(photons)then
-          call tsetpcvt(l_track,dx,dy,theta,0.d0,0.d0,al)
+          call tsetpcvt(l_track,dx,dy,theta,0.d0,0.d0,0.d0,al)
         endif
       endif
       if(fringe)then

@@ -7,7 +7,7 @@
       end type
       type photoncvt
         sequence
-        real*8 dx,dy,theta,dtheta,phi0,al,cost,sint,fr0
+        real*8 dx,dy,theta,dtheta,phi0,al,cost,sint,fr0,phig
         integer*4 l
       end type
       integer*4 ntable,ltable
@@ -126,23 +126,24 @@
      $     thu,thv,xi30,xi1,xi2,xi3,c1,c2,s1,s2,ppx1,ppy1
       real*8 ,parameter :: frmin=1.d-12
       associate(l=>pcvt%l,cost=>pcvt%cost,sint=>pcvt%sint,al=>pcvt%al,
-     $     fr0=>pcvt%fr0)
+     $     fr0=>pcvt%fr0,phig=>pcvt%phig)
       fr=merge(fr0,fr0+ds/al,al == 0.d0)
       gv=tfgeofrac(l,fr,irtc)
       if(irtc /= 0)then
         return
       endif
-      callradangle1(h1,rho*p1/p0,dp,thu,thv,xi30,xi2)
+      call radangle1(h1,rho*p1/p0,dp,thu,thv,xi30,xi2)
       pp=hypot(ppx,ppy)
       ppx1=ppx/pp
       ppy1=ppy/pp
       pxir=pxi+( thv*ppx1+thu*ppy1)
       pyir=pyi+(-thv*ppy1+thu*ppx1)
       cod=tphchge([xi,pxir,yi,pyir,0.d0,0.d0])
-c      cod=[xi,pxir,yi,pyir,0.d0,0.d0]
       gv1=tforbitgeo(gv,cod)
+c      write(*,'(a,1p10g12.4)')'phrec ',fr,gv1(:,4),gv(:,4)
+c      write(*,'(1p10g12.4)')cod,xi,pxi,yi,pyi
       pzi=1.d0+pxy2dpz(cod(2),cod(4))
-      dpa=dp*matmul(gv(:,1:3),[cod(2),cod(4),pzi])
+      dpa=dp*matmul(gv1(:,1:3),[cod(2),cod(4),pzi])
       c1=( cost*ppx1+sint*ppy1)/pp
       s1=(-sint*ppx1+cost*ppy1)/pp
       c2=(c1-s1)*(c1+s1)
@@ -329,22 +330,23 @@ c      write(*,*)'with ',itp,ilp
       irad=0
       codx=cod
       call tchge(trans,codx,beam,srot,
-     $     -pcvt%dx,-pcvt%dy,0.d0,pcvt%theta,pcvt%dtheta,0.d0,0.d0,
-     $     pcvt%phi0,.false.)
+     $     pcvt%dx,pcvt%dy,0.d0,pcvt%theta,pcvt%dtheta,0.d0,0.d0,
+     $     pcvt%phig,.false.)
       irad=ir0
       return
       end function 
 
-      subroutine tsetpcvt(l,dx,dy,theta,dtheta,phi0,al)
+      subroutine tsetpcvt(l,dx,dy,theta,dtheta,phi0,phig,al)
       implicit none
       integer*4 ,intent(in):: l
-      real*8 ,intent(in):: dx,dy,theta,dtheta,phi0,al
+      real*8 ,intent(in):: dx,dy,theta,dtheta,phi0,al,phig
       pcvt%l=l
       pcvt%dx=dx
       pcvt%dy=dy
       pcvt%theta=theta
       pcvt%dtheta=dtheta
       pcvt%phi0=phi0
+      pcvt%phig=phig
       pcvt%al=al
       if(phi0 == 0.d0)then
         pcvt%cost=cos(theta+dtheta)
@@ -883,7 +885,7 @@ c        s=abs(dcmplx(sps(1,2),abs(dcmplx(sps(2,2),sps(3,2)))))
         damp=abs(params(ipdampx:ipdampz))
         amu=params(ipnx:ipnz)*m_2pi
         ssprd=sqrt(dot_product(drot(1,:)**2,[emit1(1),emit1(1),emit1(2),emit1(2),emit1(3),emit1(3)]))
-        write(*,'(a,1p10g12.4)')'spdepol2 ',damp,amu,smu
+c        write(*,'(a,1p10g12.4)')'spdepol2 ',damp,amu,smu
         rmd=.5d0*(
      $        (c3**2+c4**2+c5**2+c6**2)*(dex1+dex2)/abs(cexp1(dcmplx(-damp(1),smu+amu(1))))**2
      $       +(d3**2+d4**2+d5**2+d6**2)*(dey1+dey2)/abs(cexp1(dcmplx(-damp(2),smu+amu(2))))**2

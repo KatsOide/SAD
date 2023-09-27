@@ -551,9 +551,6 @@ c          call tmultr(trans1,trans2,6)
      $     pname(idelc(k))(1:lpnamec(k))
       ke=nlat
  20   bzs=tfbzs(k,kbz)
-      if(krad)then
-        allocate(bzph(np))
-      endif
       if(.not. insol)then
         call compelc(k,cmp)
         if(.not. cmp%update)then
@@ -585,6 +582,9 @@ c          call tmultr(trans1,trans2,6)
           call tsfrin(np,x,px,y,py,z,g,bzs)
         endif
         if(krad)then
+          if(.not. allocated(bzph))then
+            allocate(bzph(np))
+          endif
           call tradks(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         bzs,cmp%value(ky_F1_SOL),bzph)
 c          call tserad(np,x,px,y,py,g,dv,l1,rho)
@@ -735,6 +735,9 @@ c          call tserad(np,x,px,y,py,g,dv,l1,rho)
           krad=rad .and. cmp%value(ky_RAD_SOL) == 0.d0
      $         .and. cmp%value(ky_F1_SOL) /= 0.d0 .and. bzs /= bz1          
           if(krad)then
+            if(.not. allocated(bzph))then
+              allocate(bzph(np))
+            endif
             bzph=.5d0*bzs/(1.d0+g)
             pxr0=px+bzph*y
             pyr0=py-bzph*x
@@ -767,6 +770,9 @@ c              call tserad(np,x,px,y,py,g,dv,lp,rho)
      $           cmp%value(ky_DZ_SOL),
      $           rad .and. calpol,.false.)
           elseif(krad)then
+            if(.not. allocated(bzph))then
+              allocate(bzph(np))
+            endif
             call tradks(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $           bz1,cmp%value(ky_F1_SOL),bzph)
 c     call tserad(np,x,px,y,py,g,dv,lp,rhoe)
