@@ -104,8 +104,8 @@ void cdbint2int_(int *nfunc, int *iarg, int *nret, int *iret)
 	  *nret = 0;
 	return;
   case 18:
-	/* dbGetFieldType */
-	*nret = dbGetFieldType((DBENTRY *)*iarg);
+	/* dbGetFieldType 
+         *nret = dbGetFieldType((DBENTRY *)*iarg); */
 	return;
   case 45:
 	/* dbGetNMenuChoices */
