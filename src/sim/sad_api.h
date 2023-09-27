@@ -101,7 +101,7 @@ extern integer8 kfromr_(real8*);
 extern real8 rfromk_(integer8*);
 extern integer4 itfmessage_(integer4*, const_character, const_character,
 			    ftnlen, ftnlen);
-extern void tfreseterror_();
+extern void tfreseterror_(void);
 extern integer4 itfsymbolc_(const_character, integer4*, integer4*, ftnlen);
 extern integer8 ktfsymbolz_(const_character, integer4*, ftnlen);
 extern integer8 ktfsymbolf_(const_character, integer4*, logical4*, ftnlen);
@@ -161,7 +161,7 @@ extern void tfdeval(integer4, integer8, integer8*,
 		    integer4*, integer4*);
 extern void tflocal(integer8);
 extern void tflocal1(integer8);
-extern integer4 itfdownlevel();
+extern integer4 itfdownlevel(void);
 
 /* EPICS Channel Access Value Callback API Prototypes */
 extern void tfcavaluecb_(real8*, integer4*, integer4*, real8*,

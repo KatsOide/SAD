@@ -1,1 +1,0 @@
-/Users/oide/SAD/oldsad/contrib/gdtoa/gethex.c

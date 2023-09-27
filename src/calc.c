@@ -348,7 +348,7 @@ short *yysslim;
 YYSTYPE *yyvs;
 int yystacksize;
 /* allocate initial stack or double stack size, up to YYMAXDEPTH */
-static int yygrowstack()
+static int yygrowstack(void)
 {
     int newsize, i;
     short *newss;

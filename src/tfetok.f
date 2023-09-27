@@ -33,17 +33,17 @@
         character ch
         call getstringbuf(strb,l,.true.)
         i=1
-        do while(i .le. l)
+        do while(i <= l)
           ch=string(i:i)
           i=i+1
-          if(ch == '\\' .and. i .le. l)then
+          if(ch == '\\' .and. i <= l)then
             ch=string(i:i)
-            if('0' .le. ch .and. ch .le. '7')then
+            if('0' <= ch .and. ch <= '7')then
 c     Octal character literal:		\#[##]
               ucode=iachar(ch)-iachar('0')
               do j=1,min(2,l-i)
                 ch=string(i+j:i+j)
-                if('0' .le. ch .and. ch .le. '7')then
+                if('0' <= ch .and. ch <= '7')then
                   ucode=ucode*8+(iachar(ch)-iachar('0'))
                 else
                   exit
@@ -51,16 +51,16 @@ c     Octal character literal:		\#[##]
               enddo
               ch=char(ucode)
               i=i+j
-            elseif(i+1 .le. l .and. (ch == 'x' .or. ch == 'X'))then
+            elseif(i+1 <= l .and. (ch == 'x' .or. ch == 'X'))then
 c     Hexadecimal character literal:	\x#[#] or \X#[#]
               ucode=0
               do j=1,min(2,l-i)
                 ch=string(i+j:i+j)
-                if(    '0' .le. ch .and. ch .le. '9')then
+                if(    '0' <= ch .and. ch <= '9')then
                   ucode=ucode*16+(iachar(ch)-iachar('0'))
-                elseif('a' .le. ch .and. ch .le. 'f')then
+                elseif('a' <= ch .and. ch <= 'f')then
                   ucode=ucode*16+(iachar(ch)-iachar('a')+10)
-                elseif('A' .le. ch .and. ch .le. 'F')then
+                elseif('A' <= ch .and. ch <= 'F')then
                   ucode=ucode*16+(iachar(ch)-iachar('A')+10)
                 else
                   exit
@@ -68,7 +68,7 @@ c     Hexadecimal character literal:	\x#[#] or \X#[#]
               enddo
               ch=char(ucode)
               i=i+j
-            elseif(i+1 .le. l .and. (ch == 'u' .or. ch == 'U'))then
+            elseif(i+1 <= l .and. (ch == 'u' .or. ch == 'U'))then
 c     Unicode character literal:	\u#[###] or \U#[#######]
               if(ch == 'U')then
                 jmax=min(8,l-i)
@@ -78,11 +78,11 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
               ucode=0
               do j=1,jmax
                 ch=string(i+j:i+j)
-                if(    '0' .le. ch .and. ch .le. '9')then
+                if(    '0' <= ch .and. ch <= '9')then
                   ucode=ucode*16+(iachar(ch)-iachar('0'))
-                elseif('a' .le. ch .and. ch .le. 'f')then
+                elseif('a' <= ch .and. ch <= 'f')then
                   ucode=ucode*16+(iachar(ch)-iachar('a')+10)
-                elseif('A' .le. ch .and. ch .le. 'F')then
+                elseif('A' <= ch .and. ch <= 'F')then
                   ucode=ucode*16+(iachar(ch)-iachar('A')+10)
                 else
                   exit
@@ -208,7 +208,7 @@ c          write(*,*)'eval2 ',is1,m,l,is2,'"',string(is2:is2+1),'"'
             else
               exit
             endif
-          elseif(ch .ge. '0' .and. ch .le. '9'
+          elseif(ch .ge. '0' .and. ch <= '9'
      $           .or. index('eEdDxX-+.',ch) /= 0)then
             j=j+1
             buf(j:j)=ch
@@ -234,9 +234,9 @@ c          write(*,*)'eval2 ',is1,m,l,is2,'"',string(is2:is2+1),'"'
           elseif(index(oper//char(10),ch) /= 0)then
             levelop(i)=1
           endif
-          if(ch .ge. 'a' .and. ch .le. 'z')then
+          if(ch .ge. 'a' .and. ch <= 'z')then
             ic1=100000+(i-ichar('a'))*2
-          elseif(ch .ge. 'A' .and. ch .le. 'Z')then
+          elseif(ch .ge. 'A' .and. ch <= 'Z')then
             ic1=100000+(i-ichar('A'))*2+1
           else
             ic1=i
@@ -275,7 +275,7 @@ c          write(*,*)'eval2 ',is1,m,l,is2,'"',string(is2:is2+1),'"'
       kx%k=ktfoper+mtfnull
       l=len(string)
       irt=-2
-      if(l .le. 0)then
+      if(l <= 0)then
         istop=2
         return
       endif
@@ -365,7 +365,7 @@ c      endif
               istop=i+1
             case (mtfreplace,mtfunset,mtfreplacerepeated,
      $             mtfincrement,mtfdecrement)
-              if(i .lt. l .and. string(istop:istop) .le. '9'
+              if(i .lt. l .and. string(istop:istop) <= '9'
      $             .and. string(istop:istop) .ge. '0')then
                 istop=i
                 select case (jc)
@@ -418,7 +418,7 @@ c      endif
           endif
         enddo
         istop=is1+1
-      elseif(ch .ge. '0' .and. ch .le. '9')then
+      elseif(ch .ge. '0' .and. ch <= '9')then
         vx=eval2(string,is1,istop,buf)
         kx=dfromr(vx)
         irt=0
@@ -472,7 +472,7 @@ c      endif
               klx%dbody(1)%k=ktfsymbol+ktfcopy1(iaxline+4)
               go to 9000
             elseif(notany1(string(it1+1:it2),max(0,it2-it1),
-     $             '0123456789',1) .le. 0)then
+     $             '0123456789',1) <= 0)then
               irt=0
               kx=kxavaloc(-1,1,klr)
               call descr_sad(kx,klx)

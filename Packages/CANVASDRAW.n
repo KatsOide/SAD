@@ -1,11 +1,15 @@
 (* CANVASDRAW 5/8/2022 K. Oide *)
 
 TkWait;
-OpticsPlot;
+System`OpticsPlot;
 
-FFSCanvasDraw=Class[{},{},{},
+BeginPackage[`FFSCanvasDraw`,`Global`,`System`];
 
-  Draw[]:=If[$DisplayFunction<=>CanvasDrawer,
+Begin[`FFSCanvasDraw`];
+
+`FFSCanvasDraw=Class[{},{},{},
+
+  Draw[]:=If[$DisplayFunction<=>System`CanvasDrawer,
     1,
     Module[{w,r1=1,r2=LINE["LENGTH"],list,w1,opt,w1u},
       w=Read[-1,Word,ReadNewRecord->False];
@@ -60,8 +64,9 @@ FFSCanvasDraw=Class[{},{},{},
           True,
           Lattice->False],
         Lattice->False];
+!      Print["CD: ",opt];
       opt=Override[Draw$Option,{Region->{r1,r2},opt,GridLines->{None,Automatic},InfoLabel->True}];
-      OpticsPlot[list,Null@@opt,PlotLabel->TITLE];
+      System`OpticsPlot[list,Null@@opt,PlotLabel->TITLE];
       Update[];
       If[w1==";","",w]]];
 
@@ -78,6 +83,12 @@ FFSCanvasDraw=Class[{},{},{},
 
   ];
 
+End[];
+
+EndPackage[];
+
 FFS$CD=FFSCanvasDraw[];
 If[~ListQ[Draw$Option],Draw$Option={}];
-CANVASDRAW=FFS$CD@Draw;
+System`CANVASDRAW=FFS$CD@Draw;
+
+!Print[{?System`OpticsPlot,?OpticsPlot,$ContextPath}];

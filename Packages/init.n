@@ -3,7 +3,7 @@ SetAttributes[{Constant,HoldFirst,HoldAll,HoldRest,HoldNone},Constant];
 HoldPattern=Literal;
 SetAttributes[{Literal,HoldPattern},{HoldAll,Constant}];
 
-SetAttributes[{Real,String,BuiltinFunction,
+SetAttributes[{Real,String,BuiltinFunction,Heads,Dummy,
   Word,Expression,WordSeparators,ReadNewRecord,
   NullWords,EndOfFile,$Failed,FormatType,
   InputForm,HoldForm,GenericSymbolForm,
@@ -22,6 +22,8 @@ SetAttributes[{True,False,I,NaN,INF,Infinity,Pi,E,EulerGamma,
 GoldenRatio=(1+Sqrt[5])/2;
 Degree=Pi/180;
 SetAttributes[{GoldenRatio,Degree}, Constant];
+
+`a;`b;`c;`d;`e;`f;`g;`h;`i;`j;`k;`m;`n;`s;`t;`u;`v;`susp;`cal;`go;
 
 (* Option flags for DynamicLink[] *)
 DYNL$LAZY=1;
@@ -571,7 +573,7 @@ AutoLoad[CaOpenMonitor,PackagesDirectory//"CaSad2.n"];
 AutoLoad[CaMonitor,PackagesDirectory//"CaSad2c.n"];
 AutoLoad[EPICSDB,PackagesDirectory//"CEPICSRecord.n"];
 
-$DisplayFunction=If[Environment["DISPLAY"]<=>"",CanvasDrawer,Identity,Identiy];
+$DisplayFunction=If[Environment["DISPLAY"]<=>"",System`CanvasDrawer,Identity,Identiy];
 
 ! Check[`f=OpenRead["!command -v tdr"];
 !   Close[`f];
@@ -649,6 +651,7 @@ AutoLoad[D,Derivative,ReduceExpression,ReductionRule,
   InverseErfc,HarmonicNumber,Factorial2,ExpIntegralE,ExpIntegralEi,
   LogIntegral,SinIntegral,CosIntegral,SinhIntegral,CoshIntegral,
   WhittakerM,WhittakerW,HermiteH,FresnelS,FresnelC,
+  AiryAi,AiryBi,AiryAiPrime,AiryBiPrime,
   PackagesDirectory//"D.n"];
 AutoLoad[LDSolve,PackagesDirectory//"LDSolve.n"];
 AutoLoad[TextTerminal,KBF$MakeSADTerminal,KBF$CloseSADTerminal,KBFSADTerminal,PackagesDirectory//"SADTerminal.n"];
@@ -659,6 +662,10 @@ AutoLoad[NISTACK$OBJ,NISTACK$FIXSEED,PackagesDirectory//"NISTACK.n"];
 AutoLoad[LifeTrack,PackagesDirectory//"LifeTrack.n"];
 AutoLoad[CSR,CSRStability,PackagesDirectory//"CSR.n"];
 AutoLoad[WAKECOMMAND,PackagesDirectory//"WAKECOMMAND.n"];
+`$HaveLaTeX=Module[{f=OpenRead["!whereis pdflatex"]},
+  {Read[f,{Word,Word}][[2]],Close[f]}[[1]]<=>EndOfFile &&
+    (f=OpenRead["!whereis convert"];
+      {Read[f,{Word,Word}][[2]],Close[f]}[[1]]<=>EndOfFile)];
 AutoLoad[LaTeX,PackagesDirectory//"latex.n"];
 AutoLoad[BBBrem,PackagesDirectory//"bbbrem.n"];
 AutoLoad[Fortran,PackagesDirectory//"fortran.n"];
@@ -679,5 +686,6 @@ CompiledMap/:(`ExternalMap["TRACK",`n_,_,_]:=
             `ExternalMap["TRACK",n1,`nt_,`x_]:=
               `ExtMap$@`CompiledMap$[n1,`nt,`x,mod,`prm,single][[1]]]];
           ]]);
-
+$MessageCount[Hold[General::newsym]]=-1e8;
+$MessageCount[Hold[General::newset]]=-1e8;
 ! End of File

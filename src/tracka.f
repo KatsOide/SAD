@@ -1,6 +1,7 @@
       subroutine tracka(latt,kptbl,x,px,y,py,z,g,dv,pz,
      $                  sjx,sjxjx,sjy,sjyjy,sjz,sjzjz,zbuf,lsp,zbufa)
       use tfstk
+      use trackdlib,only:tmap
       use ffs_flag
       use tmacro
       use ffs_pointer, only:idelc,idtypec
@@ -14,7 +15,7 @@
       real*8 x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0),pz(np0)
       real*8 sjx(np0),sjxjx(np0),sjy(np0),sjyjy(np0),sjz(np0),sjzjz(np0)
       complex*16 zbuf(lsp,3,np0)
-      integer*4 lsp
+      integer*4 lsp,normal
       logical zbufa
 
       logical cmplot1,fourie1
@@ -107,13 +108,13 @@
               if(jp .ne. 0)then
                 if(kptbl(i,3) .lt. 0)then
                   call liemap(-2,xa,rlist(jp+6),1023)
-                  call tmap(xa,xa,1)
+                  call tmap(xa,1)
                 else
-                  call tmap(xa,xa,1)
+                  call tmap(xa,1)
                 endif
                 call tmov(xa,rlist(jp),6)
               else
-                call tmap(xa,xa,1)
+                call tmap(xa,1)
               endif
               if(zbufa)then
                 zbuf(n,1,i)=dcmplx(xa(1),xa(2))
@@ -199,7 +200,7 @@ c         write(*,*)jp,k,kptbl(jp,3),rlist(kp),rlist(kp+1)
         if(n .gt. nturn)then
           go to 1010
         endif
-        call tturn(np,x,px,y,py,z,g,dv,pz,kptbl,n)
+        call tturn(np,1,nlat,x,px,y,py,z,g,dv,pz,kptbl,n,normal)
         if(np .le. 0)then
           go to 1010
         endif

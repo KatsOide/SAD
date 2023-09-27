@@ -13,7 +13,7 @@
       endif
       title1=title
       call twbuf(
-     1    title1(1:lene(title1))//' '//name(1:lene(name))//' '//name1,'',
+     1    title1(1:len_trim(title1))//' '//name(1:len_trim(name))//' '//name1,'',
      1    lfno,1,irmgn,itab,1)
       return
       end

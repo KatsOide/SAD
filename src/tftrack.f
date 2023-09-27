@@ -228,7 +228,7 @@ c      call tclrparaall
         np00=np0
         np0=npp
         if(mt > 1)then
-          call tturn0(npa,ls,nlat,
+          call tturn(npa,ls,nlat,
      $         zx(1:npa,1),zx(1:npa,2),zx(1:npa,3),zx(1:npa,4),
      $         zx(1:npa,5),zx(1:npa,6),
      $         rlist(kdv),rlist(kpsx),rlist(kpsy),rlist(kpsz),
@@ -248,7 +248,7 @@ c      call tclrparaall
             mt=0
             exit
           endif
-          call tturn0(npa,1,nlat,
+          call tturn(npa,1,nlat,
      $         zx(1:npa,1),zx(1:npa,2),zx(1:npa,3),zx(1:npa,4),
      $         zx(1:npa,5),zx(1:npa,6),
      $         rlist(kdv),rlist(kpsx),rlist(kpsy),rlist(kpsz),
@@ -260,7 +260,7 @@ c      call tclrparaall
         if(ld <= ls)then
           normal=.false.
         elseif(mt >= 1 .and. npa > 0)then
-          call tturn0(npa,ls,ld,
+          call tturn(npa,ls,ld,
      $         zx(1:npa,1),zx(1:npa,2),zx(1:npa,3),zx(1:npa,4),
      $         zx(1:npa,5),zx(1:npa,6),
      $         rlist(kdv),rlist(kpsx),rlist(kpsy),rlist(kpsz),
@@ -295,7 +295,9 @@ c        write(*,*)'tftrack-afterwait ',npz,npa,ipn,zx(npz,3),zx(npa,3)
         kaxl=ktfresetparticles(zx0,iptbl,npz,nlat,nend,mc)
       endif
       call tmunmapp(kz)
-      call tfevals('`ExtMap$@ResetMap[]',kx,irtc)
+      if(.not. ktfrealq(kx))then
+        call tfevals('`ExtMap$@ResetMap[]',kx,irtc)
+      endif
       if(photons)then
         call tphotonlist()
       endif

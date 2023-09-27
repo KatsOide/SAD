@@ -61,12 +61,12 @@ OBJ4=defglb.o     \
      tcav.o      dolist.o    prexln.o \
      tcave.o     tltrm.o     twbuf.o         prkwdv.o \
      prline.o    tchge.o     tluma.o     doprin.o \
-     tmap.o      doread.o prnGlb.o tmast.o dorvrs.o prnflg.o \
+     doread.o prnGlb.o tmast.o dorvrs.o prnflg.o \
      twinil.o    dostop.o        tconv.o     synradcl.o \
      twinit.o    dotemp.o    tconvm.o    drndsr.o \
      tcoord.o    drwkwd.o   tcoorde.o \
      mkplst.o    psub.o      tday.o      tmuld.o \
-     wfbin.o     tdcmd.o     wfres.o eigs33.o       wiord.o     \
+     wfbin.o     tdcmd.o     wfres.o     wiord.o     \
      ptimes.o    elname.o errmsg.o ptrace.o    tdinit.o    mrecal1.o \
      push.o      mrqcof.o    wtune.o \
      expln.o     mrqcov.o    tphplt.o     \
@@ -101,8 +101,7 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      tlum.o      tmov.o      tmulte.o \
      tmulti.o    tmulta.o    tdrift.o     trackd.o \
      tmultr.o    tnorm.o     \
-     tquade.o    track.o \
-     tracka.o    trade.o     tsconv.o     tsgeo.o \
+     tquade.o    track.o     tracka.o     tsconv.o     tsgeo.o \
      tshow.o     tsol.o      tsole.o      tsolvg.o \
      tsolvm.o    tspac.o     tspini.o     tsteee.o   tsteer.o     tsvdm.o \
      tthine.o    ttinit.o    ttstat.o     tcsvdm.o \

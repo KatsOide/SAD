@@ -1,517 +1,550 @@
-(* OpticsPlot 5/8/2022 *)
+(* OpticsPlot 7/24/2023 *)
 
 PkgConfig$DefaultList["OpticsPlot"->{
   "PlotDivision"->80,
   }];
 
-ListPlot;
+System`ListPlot;
+System`CanvasDrawer;
+`Draw$Option;
+OP$XRange;
 
-SetAttributes[{Region,FrameHeight,Graph,Lattice,ListCoordinate,Unit,
-  InfoLabel,NameFilter,LatticeRegion,Kilometer,Milimeter,Micron,
-  Nanometer,Picometer,Femtometer,Attometer,InvKilometer,SquareMilimeter,
-  SquareMicrometer,Pi2,Miliradian,Microradian,PPB,PPM,Percent},  Constant];
+SetAttributes[
+  {Attometer,Femtometer,FrameHeight,Graph,InvKilometer,InvMeter,Kilometer,Lattice,LatticeRegion,ListCoordinate,
+    Meter,Micron,Microradian,Milimeter,Miliradian,NameFilter,Nanometer,Percent,Pi2,Picometer,PPB,PPM,Radian,Ratio,RemoveOperlap,
+    SqrtMeter,SquareMeter,SquareMicrometer,SquareMilimeter,Unit,Region,Initialize,FrameHeight,InfoLabel,InfoBind},
+  Constant];
 
-With[{def={
-  Region:>{1,LINE["LENGTH"]},
-  Initialize->True,
-  PlotRegion->{{0,1},{0.1,1.1}},
-  LatticeRegion->Automatic,
-  FrameHeight->Automatic,
-  InfoLabel->False,
-  InfoBind->True,
-  DisplayFunction->Default,
-  Lattice->True,
-  GridLines->{Automatic,Automatic},
-  RemoveOverlap->"L$NAME"}},
+Twiss$Functions={"AX","BX","NX","AY","BY","NY","EX","EPX","EY","EPY",
+  "R1","R2","R3","R4","DETR","DX","DPX","DY","DPY","DZ","DDP",
+  "AZ","BZ","NZ","ZX","ZPX","ZY","ZPY",
+  "PEX","PEPX","PEY","PEPY","PZX","PZPX","PZY","PZPY",
+  "GMX","GMY","GMZ"};
+RTwiss$Functions=("R"//#)&/@Twiss$Functions;
+DTwiss$Functions=("D"//#)&/@Twiss$Functions;
+XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"}];
 
-  OpticsPlot[f_List,opt___]:=Module[
-    {nf=Length[f],g,pr,rg,dx,init,fl,fh,yh,yh1,i1,lr,plb,
-      op=Override[opt,def],lpr,ss,slabel,gr,lat},
-    op = op/.{
+!BeginPackage[`OPlot`,`Global`,`System`];
+
+!Begin[`OPlot`];
+
+`OPlot=Class[{},{},{},
+
+  Constructor[]:=();
+
+  With[{def={
+    Region:>{1,LINE["LENGTH"]},
+    Initialize->True,
+    PlotRegion->{{0,1},{0.1,1.1}},
+    LatticeRegion->Automatic,
+    FrameHeight->Automatic,
+    InfoLabel->False,
+    InfoBind->True,
+    DisplayFunction->Default,
+    Lattice->True,
+    GridLines->{Automatic,Automatic},
+    RemoveOverlap->"L$NAME"}},
+
+    OpticsPlot[f_List,opt___]:=Module[
+      {nf=Length[f],g,pr,rg,dx,init,fl,fh,il,yh,yh1,i1,lr,plb,
+        op=Override[opt,def],lpr,ss,slabel,gr,lat},
+      op = op/.{
 !      Rule[sRegion->{s1_Real, s2_Real}, Region->OP$S2Position[s1,s2]],
-      Rule[Region->{S[s1_Real], s2:(_Real|_String)}, Region->{Floor[OP$S2Position[s1]], s2}],
-      Rule[Region->{s1:(_Real|_String), S[s2_Real]}, Region->{s1, Ceiling[OP$S2Position[s2]]}],
-      Rule[Region->{S[s1_Real], S[s2_Real]}, Region->OP$S2Position[s1, s2]],
-      Null[]};
-    {pr,rg,init,fh,il,lr,plb,gr,lat}={Region,PlotRegion,Initialize,FrameHeight,
-      InfoLabel,LatticeRegion,PlotLabel,GridLines,Lattice}/.op;
-    If[f==={},Return[Graphics[{}]]];
-    If[Head[pr]<=>List,pr={1,pr}];
-    pr=LINE["POSITION",pr]/.{0->1,{}->LINE["LENGTH"]};
-    lpr=-Subtract@@MinMax[LINE["S",pr]];
-    {ss,slabel}=If[lpr>=10000,{0.001,"km"},{1,"m"}];
-    If[fh===Automatic,fh=Table[1,{nf}]/nf];
-    If[Head[fh]<=>List||Length[fh]<>nf,
-      Message[OpticsPlot::frameheight]];
-    If[lr===Automatic,lr={-0.15,0.08}];
-    yh=Plus@@fh+lr[[2]]+0.02;
-    yh1=yh-First[fh];
-    g={};
-    g=Table[
-      i1=Min[nf,i+1];
-      If[fh[[i]]==0,
-        Rectangle[{0,yh1},{1,yh},
-          {yh,yh1}-=fh[[{i-1,i1}]];
-          OpticsPlot1$[f[[i]],pr,ss,slabel,True,
-            FrameTicks->{False,False,False,True},
-            TickSize->Sqrt[fh[[i-1]]],
-            GridLines->{None,None},
-            Frame->True,Background->False,opt]],
-        Rectangle[{0,yh1},{1,yh},
-          If[fh[[i1]]<>0,
-            {yh,yh1}-=fh[[{i,i1}]]];
-          OpticsPlot1$[f[[i]],pr,ss,slabel,False,
-            FrameTicks->
-              If[i==nf||i1==nf&&fh[[i1]]==0,
-                {True, True,Ticks,If[fh[[i1]],Ticks,False]},
-                {Ticks,True,Ticks,If[fh[[i1]],Ticks,False]}],
-            TickSize->Sqrt[fh[[i]]],
-            GridLines->gr,
-            Frame->True,opt]]],
-      {i,nf}];
-    If[lat,
-      If[il, g=MapAt[With[{slot=#}, Append[slot, Graphics[Hook[
-	Command:>((OP$XRange=If[#===CanvasDrawer && RealQ[Canvas$Frame],
-        The$CanvasObject@GraphicsList[[Canvas$Frame,1,2,4,1]],
-        Null])&)]]]]&,
-	g, {1,3}]];
-      AppendTo[g,
-        Rectangle[{0,lr[[1]]},{1,lr[[2]]},
-          LatticePlot[pr,ss,PlotRegion->rg,opt],
-	  If[il, Graphics[Hook[Command:>(If[#===CanvasDrawer &&
-	    RealQ[Canvas$Frame], OPBind[Canvas$Frame]]&)]], Null[]]]]];
-    g=Graphics[g,Override[Background->None,Initialize->init,FrameLabel->fl,opt]];
-    If[(DisplayFunction/.op)===Default,
-      Show[g,Override[Initialize->init,opt]]];
-    g
-    ]];
+        Rule[Region->{S[s1_Real], s2:(_Real|_String)}, Region->{Floor[OP$S2Position[s1]], s2}],
+        Rule[Region->{s1:(_Real|_String), S[s2_Real]}, Region->{s1, Ceiling[OP$S2Position[s2]]}],
+        Rule[Region->{S[s1_Real], S[s2_Real]}, Region->OP$S2Position[s1, s2]],
+        Null[]};
+      {pr,rg,init,fh,il,lr,plb,gr,lat}={Region,PlotRegion,Initialize,FrameHeight,
+        InfoLabel,LatticeRegion,PlotLabel,GridLines,Lattice}/.op;
+!      Print["OP-0 ",{op,{pr,rg,init,fh,il,lr,plb,gr,lat}}];
+      If[f==={},Return[Graphics[{}]]];
+      If[Head[pr]<=>List,pr={1,pr}];
+      pr=LINE["POSITION",pr]/.{0->1,{}->LINE["LENGTH"]};
+      lpr=-Subtract@@MinMax[LINE["S",pr]];
+      {ss,slabel}=If[lpr>=10000,{0.001,"km"},{1,"m"}];
+      If[fh===Automatic,fh=Table[1,{nf}]/nf];
+      If[Head[fh]<=>List||Length[fh]<>nf,
+        Message[`OpticsPlot::`frameheight]];
+      If[lr===Automatic,lr={-0.15,0.08}];
+      yh=Plus@@fh+lr[[2]]+0.02;
+      yh1=yh-First[fh];
+      g={};
+      g=Table[
+        i1=Min[nf,i+1];
+        If[fh[[i]]==0,
+          Rectangle[{0,yh1},{1,yh},
+            {yh,yh1}-=fh[[{i-1,i1}]];
+            OpticsPlot1$[f[[i]],pr,ss,slabel,True,
+              FrameTicks->{False,False,False,True},
+              TickSize->Sqrt[fh[[i-1]]],
+              GridLines->{None,None},
+              Frame->True,Background->False,opt]],
+          Rectangle[{0,yh1},{1,yh},
+            If[fh[[i1]]<>0,
+              {yh,yh1}-=fh[[{i,i1}]]];
+            OpticsPlot1$[f[[i]],pr,ss,slabel,False,
+              FrameTicks->
+                If[i==nf||i1==nf&&fh[[i1]]==0,
+                  {True, True,Ticks,If[fh[[i1]],Ticks,False]},
+                  {Ticks,True,Ticks,If[fh[[i1]],Ticks,False]}],
+              TickSize->Sqrt[fh[[i]]],
+              GridLines->gr,
+              Frame->True,opt]]],
+        {i,nf}];
+      If[lat,
+        If[il, g=MapAt[With[{slot=#}, Append[slot, Graphics[Hook[
+	  Command:>((OP$XRange=If[#===System`CanvasDrawer && RealQ[The$CanvasObject@Canvas$Frame],
+     `The$CanvasObject@GraphicsList[[`The$CanvasObject@Canvas$Frame,1,2,4,1]],
+     Null])&)]]]]&,
+	  g, {1,3}]];
+        AppendTo[g,
+          Rectangle[{0,lr[[1]]},{1,lr[[2]]},
+            LatticePlot[pr,ss,PlotRegion->rg,opt],
+	    If[il, Graphics[Hook[Command:>(If[#===System`CanvasDrawer &&
+       RealQ[`The$CanvasObject@Canvas$Frame], OPBind[`The$CanvasObject@Canvas$Frame]]&)]], Null[]]]]];
+      g=Graphics[g,Override[Background->None,Initialize->init,FrameLabel->fl,opt]];
+      If[(DisplayFunction/.op)===Default,
+        Show[g,Override[Initialize->init,opt]]];
+      g
+      ]];
 
-OpticsPlot[f_,opt___]:=OpticsPlot[{f},opt___];
+  OpticsPlot[f_,opt___]:=OpticsPlot[{f},opt___];
 
-OP$XRange=Null;
-OP$Bind[_,_]=True;
-OP$Element[s_]:=If[s<LINE["S","^^^"],
-  With[{s1=s+OP$Circ},
-    Position[LINE["S"],_?(#>=s1&),1,1]],
-  Position[LINE["S"],_?(#>=s&),1,1]];
-OP$S2Position[s1$_Real, s2$_Real:Null] := Module[{length, pos, tbl},
-  length = LINE["LENGTH"];
-  pos = Select[Range[1, length], (LINE["L", #] > 0)&];
-  tbl = Reverse[Thread[{LINE["S", pos], pos}]];
-  length = LINE["S", "$$$"]-LINE["S","^^^"];
+  OP$XRange=Null;
+  OP$Bind[_,_]=True;
+  OP$Element[s_]:=If[s<LINE["S","^^^"],
+    With[{s1=s+OP$Circ},
+      Position[LINE["S"],_?(#>=s1&),1,1]],
+    Position[LINE["S"],_?(#>=s&),1,1]];
+  OP$S2Position[s1$_Real, s2$_Real:Null] := Module[{length, pos, tbl},
+    length = LINE["LENGTH"];
+    pos = Select[Range[1, length], (LINE["L", #] > 0)&];
+    tbl = Reverse[Thread[{LINE["S", pos], pos}]];
+    length = LINE["S", "$$$"]-LINE["S","^^^"];
 
-  Which[
-    Not[RealQ[s2$]],	With[{s = Mod[s1$, length]},
-      pos = Select[tbl, #[[1]] =< s&, 1][[1, 2]];
-      pos + (s - LINE["S", pos]) / (LINE["L", pos])],
+    Which[
+      Not[RealQ[s2$]],	With[{s = Mod[s1$, length]},
+        pos = Select[tbl, #[[1]] =< s&, 1][[1, 2]];
+        pos + (s - LINE["S", pos]) / (LINE["L", pos])],
 
-    s1$ === s2$,	With[{s = Mod[s1$, length]},
-      pos = Select[tbl, #[[1]] =< s&, 1][[1, 2]];
-      {pos, pos}],
+      s1$ === s2$,	With[{s = Mod[s1$, length]},
+        pos = Select[tbl, #[[1]] =< s&, 1][[1, 2]];
+        {pos, pos}],
 
-    True,		{
-      Max[1, Floor[
-	With[{s = Mod[s1$, length]},
-	  pos = Select[tbl, #[[1]] =< s&, 1][[1, 2]];
-	  pos + (s - LINE["S", pos]) / LINE["L",pos]]]],
-      Min[LINE["LENGTH"], Ceiling[
-	With[{s = Mod[s2$, length]},
-	  pos = Select[tbl, #[[1]] =< s&, 1][[1, 2]];
-	  pos + (s - LINE["S", pos]) / LINE["L", pos]]]]}]];
+      True,		{
+        Max[1, Floor[
+	  With[{s = Mod[s1$, length]},
+     pos = Select[tbl, #[[1]] =< s&, 1][[1, 2]];
+     pos + (s - LINE["S", pos]) / LINE["L",pos]]]],
+        Min[LINE["LENGTH"], Ceiling[
+	  With[{s = Mod[s2$, length]},
+     pos = Select[tbl, #[[1]] =< s&, 1][[1, 2]];
+     pos + (s - LINE["S", pos]) / LINE["L", pos]]]]}]];
 
-OPBind[frid_]:=Module[{xs,ys,xo,yo,minmax},
-  {xs,ys,xo,yo}=Flatten[The$CanvasObject@GraphicsList[[frid,1,2,{6,7}]]];
-  minmax=The$CanvasObject@GraphicsList[[frid,1,2,4,1]];
-  OP$Circ=LINE["S","$$$"]-LINE["S","^^^"];
-  With[{The$Canvas,frid,xo,yo,xs,ys,minmax,xmargin=2/xs},
-    OP$S[The$Canvas,frid,x_]:=(x-xo)/xs;
-    OP$Y[The$Canvas,frid,y_]:=(y-yo)/ys;
-    OP$InRange[The$Canvas,frid,x_]:=
-      ((minmax[[1]] - xmargin =< x) && (x =< minmax[[2]] + xmargin))];
-  If[OP$Bind[The$Canvas,frid],
-    OP$Bind[The$Canvas,frid]=False;
-    With[{The$Canvas,frid},
-      Bind[The$Canvas,"<Button-1>", OP$InfoLabel[The$Canvas,frid],Add->True];
-      Bind[The$Canvas,"<ButtonRelease-1>",
-	(Bind[The$Canvas,"<Leave>"]; Bind[The$Canvas,"<Motion>"];
-	  After[0.3,KBF$WithdrawInfoLabel[False]]),Add->True]]]];
+  OPBind[frid_]:=Module[{xs,ys,xo,yo,minmax},
+    {xs,ys,xo,yo}=Flatten[`The$CanvasObject@GraphicsList[[frid,1,2,{6,7}]]];
+    minmax=`The$CanvasObject@GraphicsList[[frid,1,2,4,1]];
+    OP$Circ=LINE["S","$$$"]-LINE["S","^^^"];
+    With[{`The$Canvas,frid,xo,yo,xs,ys,minmax,xmargin=2/xs},
+      OP$S[`The$Canvas,frid,x_]:=(x-xo)/xs;
+      OP$Y[`The$Canvas,frid,y_]:=(y-yo)/ys;
+      OP$InRange[`The$Canvas,frid,x_]:=
+        ((minmax[[1]] - xmargin =< x) && (x =< minmax[[2]] + xmargin))];
+    If[OP$Bind[`The$Canvas,frid],
+      OP$Bind[`The$Canvas,frid]=False;
+      With[{`The$Canvas,frid},
+        Bind[`The$Canvas,"<Button-1>", OP$InfoLabel[`The$Canvas,frid],Add->True];
+        Bind[`The$Canvas,"<ButtonRelease-1>",
+	  (Bind[`The$Canvas,"<Leave>"]; Bind[`The$Canvas,"<Motion>"];
+     After[0.3,KBF$WithdrawInfoLabel[False]]),Add->True]]]];
 
-OP$InfoLabel[canvas_Widget,frid_Real,bind_:True]:=Module[{
-  l=OP$Element[OP$S[canvas,frid,X/.$Event]],
-  s=OP$S[canvas,frid,X/.$Event],y=OP$Y[canvas,frid,Y/.$Event],p,tt,te,t},
-  If[l<=>{} && y<1.2 && OP$InRange[canvas,frid,s],
-    If[bind,
-      Bind[canvas,"<Leave>", (Bind[canvas,"<Leave>"];
-	Bind[canvas,"<Motion>"];
-	After[0.001,KBF$WithdrawInfoLabel[False]])];
-      Bind[canvas,"<Motion>",OP$InfoLabel[canvas,frid,False]]];
-    p=Max[1,l[[1,1]]-1];
-    te=StandardForm[$FORM="10.5";Switch[tt=LINE["TYPENAME",p],
-      "BEND",   If[LINE["ANGLE",p]===0,	tt="STEER";
-                "K`d0`n ="//LINE["K0",p]//" rad",
-                "`fq`n ="//LINE["ANGLE",p]//" rad"],
-      "QUAD",   "K`d1`n ="//LINE["K1",p]//" m`u-1`n",
-      "SEXT",   "K`d2`n ="//LINE["K2",p]//" m`u-2`n",
-      "OCT",    "K`d3`n ="//LINE["K3",p]//" m`u-3`n",
-      "DECA",   "K`d4`n ="//LINE["K4",p]//" m`u-4`n",
-      "DODECA", "K`d5`n ="//LINE["K5",p]//" m`u-5`n",
-      "CAVI",   "V`dacc`n="//LINE["VOLT",p]//" V",
-      "TCAVI",  "K`d0`n="//LINE["K0",p]//" rad",
-      _,        ""]];
-    t=StandardForm[$FORM="10.5";
-      "Entrance of "//LINE["NAME",p]//":   s = "//
-	LINE["S",p]-If[s<LINE["S","^^^"],LINE["S","$$$"],0]//" m"//
-      If[te==="","","\n"//StringFill[tt, " ", 6]//": "//te]//
-      "\n`fb`n`dx,y `n = "//Twiss["BX",p]//", "//Twiss["BY",p]//
-      " m\n`fa`n`dx,y`n = "//Twiss["AX",p]//", "//Twiss["AY",p]//
-      "\n`fn`n`dx,y`n = "//Twiss["NX",p]/2/Pi//", "//Twiss["NY",p]/2/Pi//
-      "\n`fh`n`dx,y`n = "//Twiss["EX",p]//", "//Twiss["EY",p]//
-      " m\n`fh`n`dx,y`n' = "//Twiss["EPX",p]//", "//Twiss["EPY",p]//
-      "\nR`d1,2`n ="//Twiss["R1",p]//", "//Twiss["R2",p]//
-      " m\nR`d3,4`n ="//Twiss["R3",p]//" m`u-1`n, "//Twiss["R2",p]
-      ];
-    KBF$MoveCBForInfoLabel[t]]];
+  OP$InfoLabel[canvas_Widget,frid_Real,bind_:True]:=Module[{
+    l=OP$Element[OP$S[canvas,frid,X/.`$Event]],
+    s=OP$S[canvas,frid,X/.`$Event],y=OP$Y[canvas,frid,Y/.`$Event],p,tt,te,t},
+    If[l<=>{} && y<1.2 && OP$InRange[canvas,frid,s],
+      If[bind,
+        Bind[canvas,"<Leave>", (Bind[canvas,"<Leave>"];
+	  Bind[canvas,"<Motion>"];
+	  After[0.001,KBF$WithdrawInfoLabel[False]])];
+        Bind[canvas,"<Motion>",OP$InfoLabel[canvas,frid,False]]];
+      p=Max[1,l[[1,1]]-1];
+      te=StandardForm[$FORM="10.5";Switch[tt=LINE["TYPENAME",p],
+        "BEND",   If[LINE["ANGLE",p]===0,	tt="STEER";
+          "K`d0`n ="//LINE["K0",p]//" rad",
+          "`fq`n ="//LINE["ANGLE",p]//" rad"],
+        "QUAD",   "K`d1`n ="//LINE["K1",p]//" m`u-1`n",
+        "SEXT",   "K`d2`n ="//LINE["K2",p]//" m`u-2`n",
+        "OCT",    "K`d3`n ="//LINE["K3",p]//" m`u-3`n",
+        "DECA",   "K`d4`n ="//LINE["K4",p]//" m`u-4`n",
+        "DODECA", "K`d5`n ="//LINE["K5",p]//" m`u-5`n",
+        "CAVI",   "V`dacc`n="//LINE["VOLT",p]//" V",
+        "TCAVI",  "K`d0`n="//LINE["K0",p]//" rad",
+        _,        ""]];
+      t=StandardForm[$FORM="10.5";
+        "Entrance of "//LINE["NAME",p]//":   s = "//
+	  LINE["S",p]-If[s<LINE["S","^^^"],LINE["S","$$$"],0]//" m"//
+     If[te==="","","\n"//StringFill[tt, " ", 6]//": "//te]//
+       "\n`fb`n`dx,y `n = "//Twiss["BX",p]//", "//Twiss["BY",p]//
+         " m\n`fa`n`dx,y`n = "//Twiss["AX",p]//", "//Twiss["AY",p]//
+           "\n`fn`n`dx,y`n = "//Twiss["NX",p]/2/Pi//", "//Twiss["NY",p]/2/Pi//
+             "\n`fh`n`dx,y`n = "//Twiss["EX",p]//", "//Twiss["EY",p]//
+               " m\n`fh`n`dx,y`n' = "//Twiss["EPX",p]//", "//Twiss["EPY",p]//
+                 "\nR`d1,2`n ="//Twiss["R1",p]//", "//Twiss["R2",p]//
+                   " m\nR`d3,4`n ="//Twiss["R3",p]//" m`u-1`n, "//Twiss["R2",p]
+        ];
+      KBF$MoveCBForInfoLabel[t]]];
 
-With[{tdr:=TopDrawer,cdr:=CanvasDrawer},
-  SetAttributes[PlotColorDefault,HoldAll];
-  PlotColorDefault[tdr]={"black"};
-  PlotColorDefault[cdr]=
-    {"dark slate blue","red3","forest green","goldenrod","purple"};
-  SetAttributes[PlotColorDefault,HoldNone]];
+  With[{tdr:=TopDrawer,cdr:=System`CanvasDrawer},
+    SetAttributes[PlotColorDefault,HoldAll];
+    PlotColorDefault[tdr]={"black"};
+    PlotColorDefault[cdr]=
+      {"dark slate blue","red3","forest green","goldenrod","purple"};
+    SetAttributes[PlotColorDefault,HoldNone]];
 
-With[{def={PlotRange->Automatic,
-  Dashing->{{1},{0.6,0.15},{0.3,.1},{0.15,0.08},{0.1,.08},
-    {0.6, 0.08, 0.08, 0.08},{0.3, 0.08, 0.08, 0.08}},
-  FrameLabel->Automatic,
-  PlotColor->PlotColorDefault[$DisplayFunction],
-  PointColor->PlotColorDefault[$DisplayFunction],
-  PointSize->{1},
-  Legend->Automatic
-  },
-  frameoptions={PlotColor,Dashing,PointColor,PointSize}},
+  With[{def={PlotRange->Automatic,
+    Dashing->{{1},{0.6,0.15},{0.3,.1},{0.15,0.08},{0.1,.08},
+      {0.6, 0.08, 0.08, 0.08},{0.3, 0.08, 0.08, 0.08}},
+    FrameLabel->Automatic,
+    PlotColor->PlotColorDefault[$DisplayFunction],
+    PointColor->PlotColorDefault[$DisplayFunction],
+    PointSize->{1},
+    Legend->Automatic
+    },
+    frameoptions={PlotColor,Dashing,PointColor,PointSize}},
 
-  OpticsPlot1$[f_,pr_,ss_,slabel_,right_,opt___]:=Module[
-    {lf,plt,pra,fl,frame,lfr,fropt,l,unit,v,opv,min,max,am,ru,
-      del,del1,leg,fly,
-      {fopt,f1}=SwitchCases[f,{_Rule|_RuleDelayed,_}]},
+    OpticsPlot1$[f_,pr_,ss_,slabel_,right_,opt___]:=Module[
+      {lf,plt,pra,fl,frame,lfr,fropt,l,unit,v,opv,min,max,am,ru,
+        del,del1,leg,fly,pu,pu1,ll,
+        {fopt,f1}=SwitchCases[f,{_Rule|_RuleDelayed,_}]},
 !    Print["OP1$-0: ",{fopt,f1}];
-    If[f1 === {} || f1[[1]]==={},Return[Graphics[{}]]];
-    lf=Length[f1];
-    fopt=Override[fopt,opt,def];
-    {plt,pra,fl,leg}={Plot,PlotRange,FrameLabel,Legend}/.fopt;
-    {fl,fly}=If[ListQ[fl],
-      {fl=Take[Join[fl,{"","","",""}],4],
-      If[right,fl[[4]],fl[[2]]]},
-      {If[right,
-        {"","","",fl},
-        {"",fl,"",""}],fl}];
-    frame=Thread[Prepend[
-      (If[Head[fropt=#/.fopt]<=>List,fropt={fropt}];
-      lfr=Length[fropt];
-      With[{r=#},(r->#)&/@
-        Take[Flatten[Table[fropt,{Ceiling[lf/lfr]}],1],lf]])&/@frameoptions,
-      f1]];
-    l=If[f1==={},{OpticsList1$[pr,{},FrameLabel->fly,Null@@fopt]},
-      Apply[OpticsList1$[pr,##,FrameLabel->fly,Null@@fopt]&,frame,{1}]];
-    unit=l[[1,1,2]];
-    Scan[If[#[[1,2]]<=>unit,
-      Message[OpticsPlot::units,Evaluate[#[[1,2]]],Evaluate[unit]]]&,l];
-!    Print["OP1$-l: ",{l,unit}];
-    l=Cases[l,{{_,unit,_,_,_},_,_},1];
-    v=l[[,3]];
-    opv=l[[,2]];
-    {min,max}=MinMax[#[[,2]]&/@v];
-    am=Switch[pra,
-      {_Real, _Real},     Max[Abs[pra]],
-      {Automatic, _Real}, Max[Abs[min], Abs[pra[[2]]]],
-      {_Real, Automatic}, Max[Abs[pra[[1]]], Abs[max]],
-      _,                  Max[Abs[min], Abs[max]]];
-    unit=Optics$Unit[unit,am];
-    If[(ru=Unit$Factor[unit])<>1,
-      v=v/ru;
-      v=MapAt[#*ru&,v,{,,1}];
-      If[pra<=>Automatic,pra=If[RealQ[#],#/ru,#]&/@pra]];
-    If[pra===Automatic && And@@(Twiss$Positive/@f1),pra={0,am/ru*1.1}];
-    If[Depth[pra]<=2,pra={l[[1,1,5]]*ss,pra}];
-    {del,del1}={"",""};
-    If[leg===Automatic,
-      leg=l[[,1,1]]];
-    If[fly===Automatic,
-      fly={"",""};
-      Scan[
-        (If[Head[#]===List,
-          fly={First[fly]//del//First[#],Second[fly]//del1//Second[#]},
-          If[#<=>"",
-            fly={First[fly]//del//#,Second[fly]//del1//
-              StringFill[""," ",StringLength[#]]}]];
-          {del,del1}={", "," "})&,l[[,1,1]]]];
-    fly=Optics$FrameLabel[fly,unit];
-    If[right,fl[[4]]=fly,fl[[2]]=fly];
-    MapThread[ListPlot[If[ss==1,#,Thread[{ss,1}*Thread[#]]],
-      PlotJoined->#2,PointTags->#3,
-      DisplayFunction->Identity,PlotRange->pra,
-      FrameLabel->fl,FrameUnitLabel->{slabel},Legend->#5,Null@@#4,Plot->plt,Null@@fopt]&,
-      {v,l[[,1,3]],l[[,1,4]],opv,leg}]
-    ]];
+      If[f1 === {} || f1[[1]]==={},Return[Graphics[{}]]];
+      lf=Length[f1];
+      fopt=Override[fopt,opt,def];
+      {plt,pra,fl,leg}={Plot,PlotRange,FrameLabel,Legend}/.fopt;
+      {fl,fly}=If[ListQ[fl],
+        {fl=Take[Join[fl,{"","","",""}],4],
+          If[right,fl[[4]],fl[[2]]]},
+        {If[right,
+          {"","","",fl},
+          {"",fl,"",""}],fl}];
+      frame=Thread[Prepend[
+        (If[Head[fropt=#/.fopt]<=>List,fropt={fropt}];
+          lfr=Length[fropt];
+          With[{r=#},(r->#)&/@
+            Take[Flatten[Table[fropt,{Ceiling[lf/lfr]}],1],lf]])&/@frameoptions,
+        f1]];
+      l=If[f1==={},{OpticsList1$[pr,{},FrameLabel->fly,Null@@fopt]},
+        Apply[OpticsList1$[pr,##,FrameLabel->fly,Null@@fopt]&,frame,{1}]];
+      unit=l[[1,1,2]];
+!      Print["Unit? ",l[[,1]]];
+      Scan[If[#[[1,2]]<=>unit,
+        Message[`OpticsPlot::`units,Evaluate[#[[1,2]]],Evaluate[unit]]]&,l];
+      l=Cases[l,{{_,unit,_,_,_},_,_},1];
+      v=l[[,3]];
+      opv=l[[,2]];
+      {min,max}=MinMax[#[[,2]]&/@v];
+!    Print["OP1$-minmax: ",{min,max,v,l}];
+      am=Switch[pra,
+        {_Real, _Real},     Max[Abs[pra]],
+        {Automatic, _Real}, Max[Abs[min], Abs[pra[[2]]]],
+        {_Real, Automatic}, Max[Abs[pra[[1]]], Abs[max]],
+        _,                  Max[Abs[min], Abs[max]]];
+      unit=Optics$Unit[unit,am];
+      If[(ru=Unit$Factor[unit])<>1,
+        v=v/ru;
+        v=MapAt[#*ru&,v,{,,1}];
+        If[pra<=>Automatic,pra=If[RealQ[#],#/ru,#]&/@pra]];
+      If[pra===Automatic && And@@(Twiss$Positive/@f1),pra={0,am/ru*1.1}];
+      If[Depth[pra]<=2,pra={l[[1,1,5]]*ss,pra}];
+      {del,del1}={"",""};
+      If[leg===Automatic,
+        leg=l[[,1,1]]];
+      If[fly===Automatic,
+        If[$HaveLaTeX && Length[leg] > 1,
+          pu=StringPosition[#,"_"]&/@leg;
+          If[pu[[1]] <=> {} && SameQ@@(ll=StringLength/@leg) && SameQ@@pu &&
+            (pu1=pu[[1,1,1]];SameQ@@({#[1,pu1-1] ,#[pu1+2,-1]}&/@leg)),
+            fly=leg[[1]][1,pu1]//"{"//(StringJoin@@((#[pu1+1]//",")&/@leg))[1,-2]//"}"//leg[[1]][pu1+2,-1]]];
+        If[fly===Automatic,
+          fly={"",""};
+          Scan[
+            (If[Head[#]===List,
+              fly={First[fly]//del//First[#],Second[fly]//del1//Second[#]},
+              If[#<=>"",
+                fly={First[fly]//del//#,Second[fly]//del1//
+                  StringFill[""," ",StringLength[#]]}]];
+              {del,del1}={", "," "})&,l[[,1,1]]]]];
+      fly=Optics$FrameLabel[fly,unit];
+      If[right,fl[[4]]=fly,fl[[2]]=fly];
+      MapThread[ListPlot[If[ss==1,#,Thread[{ss,1}*Thread[#]]],
+        PlotJoined->#2,PointTags->#3,
+        DisplayFunction->Identity,PlotRange->pra,
+        FrameLabel->fl,FrameUnitLabel->{slabel},Legend->#5,Null@@#4,Plot->plt,Null@@fopt]&,
+        {v,l[[,1,3]],l[[,1,4]],opv,leg}]
+      ]];
 
-Optics$FrameLabel[fl_List,unit_]:=Module[{lu=Twiss$Unit$Label[unit]},
-  If[""<=>lu<=>{"",""},
-    If[ListQ[lu],
-      { First[fl]//" ("//First[lu]//")",
-        Second[fl]//"  "//Second[lu]//" "},
-      First[fl]//" ("//lu//")"],
-    {First[fl],Second[fl]}]];
+  MergeFL[fl:{fl1_,fl2_}]:=Module[
+    {l=StringLength/@fl,
+      p=StringPosition[#,"_"]&/@fl,k,p1},
+    If[(And@@p) && (Equal@@p) && (Equal@@l),
+      p1=p[[1]];
+      Do[If[fl[[1]][k] <=> fl[[1]][k],p1=k;Break[]],{k,l[[1]],p1+1,-1}];
+      fl1[1,p[[1]]-1]//"_{"//fl1[p[[1]]+1,p1]//", "//fl1[p[[1]]+1,p1]//"}"//fl1[p1+1,-1],
+      fl1//", "//fl2]];
 
-Optics$FrameLabel[fl_,unit_]:=Module[{lu=Twiss$Unit$Label[unit]},
-  If[""<=>lu<=>{"",""},
-    If[ListQ[lu],
-      {fl//" ("//First[lu]//")",StringFill[""," ",StringLength[fl]+2]//Second[lu]},
-      fl//" ("//lu//")"],
-    fl]];
+  Optics$FrameLabel[fl_List,unit_]:=Module[{lu=Twiss$Unit$Label[unit]},
+    If[""<=>lu<=>{"",""},
+      If[ListQ[lu],
+        { First[fl]//" ("//First[lu]//")",
+          Second[fl]//"  "//Second[lu]//" "},
+        First[fl]//" ("//lu//")"],
+      {First[fl],Second[fl]}]];
 
-OpticsList1$[pr_,{f_,r:((_Rule|_RuleDelayed)..)},opt___]:=OpticsList1$[pr,f,r,opt];
+  Optics$FrameLabel[fl_,unit_]:=Module[{lu=Twiss$Unit$Label[unit]},
+    If[""<=>lu<=>{"",""},
+      If[ListQ[lu],
+        {fl//" ("//First[lu]//")",StringFill[""," ",StringLength[fl]+2]//Second[lu]},
+        fl//" ("//lu//")"],
+      fl]];
 
-OpticsList1$[pr_,{f_}?(Length[Dimensions[#]]>=3&),opt___]:=OpticsList1$[pr,f,opt];
+  OpticsList1$[pr_,{f_,r:((_Rule|_RuleDelayed)..)},opt___]:=OpticsList1$[pr,f,r,opt];
 
-OpticsList1$[{pr1_,pr2_},f_,opt___]:=Module[
-  {nlat=LINE["LENGTH"],ndiv,
-    l,dl,leng,lc,unit,fl,pj,t,tags,x0,
-    op=Override[opt,
-      PlotDivision->PkgConfig["OpticsPlot", "PlotDivision"],
-      Unit->Twiss$Unit[f],
-      ListCoordinate->"POSITION",
-      PlotJoined->Head[f]<=>List]},
-  {ndiv,unit,lc,fl,pj,tags}=
-    {PlotDivision,Unit,ListCoordinate,FrameLabel,PlotJoined,PointTags}/.op;
-  {l,t}=If[pr2<=pr1,
-    ndiv=Min[2048,Max[ndiv,nlat+pr2-pr1]];
-    leng=LINE["S",nlat]-LINE["S","^^^"]+LINE["S",pr2]-LINE["S",pr1];
-    dl=Max[1e-6,leng/ndiv];
-    x0=LINE["S",pr1]-LINE["S",nlat]+LINE["S","^^^"];
-    If[MatchQ[tags,{_,_String,___}],
-      MapThread[Join,
-        {OpticsList[f,pr1,nlat,dl,LINE["S","^^^"]-LINE["S",nlat],lc,tags,pj<=>False],
-          OpticsList[f,1,pr2,dl,0,lc,tags,pj<=>False]}],
-      {Join[OpticsList[f,pr1,nlat,dl,LINE["S","^^^"]-LINE["S",nlat],lc,tags,pj<=>False][[1]],
-        OpticsList[f,1,pr2,dl,0,lc,tags,pj<=>False][[1]]],tags}],
-    ndiv=Min[2560,Max[ndiv,pr2-pr1]];      
-      leng=LINE["S",pr2]-LINE["S",pr1];
-    dl=Max[1e-6,leng/ndiv];
-    x0=LINE["S",pr1];
-    OpticsList[f,pr1,pr2,dl,0,lc,tags,pj<=>False]];
-  {{fl/.Automatic->Twiss$Label[f],unit,pj,t,
-    {x0-0.001,x0+leng+0.001}},op,l}];
+  OpticsList1$[pr_,{f_}?(Length[Dimensions[#]]>=3&),opt___]:=OpticsList1$[pr,f,opt];
 
-OpticsList[__]={};
+  OpticsList1$[{pr1_,pr2_},f_,opt___]:=Module[
+    {nlat=LINE["LENGTH"],ndiv,
+      l,dl,leng,lc,unit,fl,pj,t,tags,x0,
+      op=Override[opt,
+        PlotDivision->PkgConfig["OpticsPlot", "PlotDivision"],
+        Unit->Twiss$Unit[f],
+        ListCoordinate->"POSITION",
+        PlotJoined->Head[f]<=>List]},
+    {ndiv,unit,lc,fl,pj,tags}=
+      {PlotDivision,Unit,ListCoordinate,FrameLabel,PlotJoined,PointTags}/.op;
+    {l,t}=If[pr2<=pr1,
+      ndiv=Min[2048,Max[ndiv,nlat+pr2-pr1]];
+      leng=LINE["S",nlat]-LINE["S","^^^"]+LINE["S",pr2]-LINE["S",pr1];
+      dl=Max[1e-6,leng/ndiv];
+      x0=LINE["S",pr1]-LINE["S",nlat]+LINE["S","^^^"];
+      If[MatchQ[tags,{_,_String,___}],
+        MapThread[Join,
+          {OpticsList[f,pr1,nlat,dl,LINE["S","^^^"]-LINE["S",nlat],lc,tags,pj<=>False],
+            OpticsList[f,1,pr2,dl,0,lc,tags,pj<=>False]}],
+        {Join[OpticsList[f,pr1,nlat,dl,LINE["S","^^^"]-LINE["S",nlat],lc,tags,pj<=>False][[1]],
+          OpticsList[f,1,pr2,dl,0,lc,tags,pj<=>False][[1]]],tags}],
+      ndiv=Min[2560,Max[ndiv,pr2-pr1]];      
+        leng=LINE["S",pr2]-LINE["S",pr1];
+      dl=Max[1e-6,leng/ndiv];
+      x0=LINE["S",pr1];
+      OpticsList[f,pr1,pr2,dl,0,lc,tags,pj<=>False]];
+    {{fl/.Automatic->Twiss$Label[f],unit,pj,t,
+      {x0-0.001,x0+leng+0.001}},op,l}];
 
-OpticsList[f_List,i1_,i2_,_,off_,"POSITION",tags:{_,_String,___},pj_]:=
-  Module[{d=Thread[{f,tags,LINE["POSITION",f[[,1]]]}],l,t,d1,d2},
-    {l,t,d}=If[pj,
-      {d1,d,d2}=SelectCases[d,{#[[3]]<i1&,#[[3]]<=i2&,True&}];
-      Thread[Join[If[d1<=>{},{d1[[-1]]},{}],d,If[d2<=>{},{First[d2]},{}]]],
-      Thread[Select[d,i1<=#[[3]]<=i2&]]];
-    If[Length[l]>0,
-      {Thread[MapAt[(LINE["S",#]+off)&,Thread[l],{{1}}]],t},
-      {{},{}}]];
+  OpticsList[__]={};
 
-OpticsList[f_List,i1_,i2_,_,off_,"POSITION",t_,pj_]:=
-  Module[{d=Thread[{f,LINE["POSITION",f[[,1]]]}],l,d1,d2},
-    {l,d}=If[pj,
-      {d1,d,d2}=SelectCases[d,{#[[2]]<i1&,#[[2]]<=i2&,True&}];
-      Thread[Join[If[d1<=>{},{d1[[-1]]},{}],d,If[d2<=>{},{First[d2]},{}]]],
-      Thread[Select[d,i1<=#[[2]]<=i2&]]];
-    If[Length[l]>0,
-      {Thread[MapAt[(LINE["S",#]+off)&,Thread[l],{{1}}]],t},
-      {{},t}]];
+  OpticsList[f_List,i1_,i2_,_,off_,"POSITION",tags:{_,_String,___},pj_]:=
+    Module[{d=Thread[{f,tags,LINE["POSITION",f[[,1]]]}],l,t,d1,d2},
+      {l,t,d}=If[pj,
+        {d1,d,d2}=SelectCases[d,{#[[3]]<i1&,#[[3]]<=i2&,True&}];
+        Thread[Join[If[d1<=>{},{d1[[-1]]},{}],d,If[d2<=>{},{First[d2]},{}]]],
+        Thread[Select[d,i1<=#[[3]]<=i2&]]];
+      If[Length[l]>0,
+        {Thread[MapAt[(LINE["S",#]+off)&,Thread[l],{{1}}]],t},
+        {{},{}}]];
 
-OpticsList[f_List,i1_,i2_,_,off_,"S",tags:{_,_String,___},pj_]:=
-  Module[{d=Thread[{f,tags}],l,t,{s1,s2}=LINE["S",{i1,i2}],d1,d2},
-    {l,t}=If[pj,
-      {d1,d,d2}=SelectCases[d,{#[[1,1]]<s1&,#[[1,1]]<=s2&,True&}];
-      Thread[Join[If[d1<=>{},{d1[[-1]]},{}],d,If[d2<=>{},{First[d2]},{}]]],
-      Thread[Select[d,s1<=#[[1,1]]<=s2&]]];
-    If[Length[l]>0,
-      If[off,
-        {Thread[MapAt[(#+off)&,Thread[l],{{1}}]],t},
-        {l,t}],
-      {{},{}}]];
+  OpticsList[f_List,i1_,i2_,_,off_,"POSITION",t_,pj_]:=
+    Module[{d=Thread[{f,LINE["POSITION",f[[,1]]]}],l,d1,d2},
+      {l,d}=If[pj,
+        {d1,d,d2}=SelectCases[d,{#[[2]]<i1&,#[[2]]<=i2&,True&}];
+        Thread[Join[If[d1<=>{},{d1[[-1]]},{}],d,If[d2<=>{},{First[d2]},{}]]],
+        Thread[Select[d,i1<=#[[2]]<=i2&]]];
+      If[Length[l]>0,
+        {Thread[MapAt[(LINE["S",#]+off)&,Thread[l],{{1}}]],t},
+        {{},t}]];
 
-OpticsList[f_List,i1_,i2_,_,off_,"S",t_,pj_]:=
-  Module[{l,{s1,s2}=LINE["S",{i1,i2}],d,d1,d2},
-    l=If[pj,
-      {d1,d,d2}=SelectCases[f,{First[#]<s1&,First[#]<=s2&,True&}];
-      Join[If[d1<=>{},{d1[[-1]]},{}],d,If[d2<=>{},{First[d2]},{}]],
-      Select[f,s1<=First[#]<=s2&]];
-    If[Length[l]>0,
-      If[off,
-        {Thread[MapAt[(#+off)&,Thread[l],{{1}}]],t},
-        {l,t}],
-      {{},t}]];
+  OpticsList[f_List,i1_,i2_,_,off_,"S",tags:{_,_String,___},pj_]:=
+    Module[{d=Thread[{f,tags}],l,t,{s1,s2}=LINE["S",{i1,i2}],d1,d2},
+      {l,t}=If[pj,
+        {d1,d,d2}=SelectCases[d,{#[[1,1]]<s1&,#[[1,1]]<=s2&,True&}];
+        Thread[Join[If[d1<=>{},{d1[[-1]]},{}],d,If[d2<=>{},{First[d2]},{}]]],
+        Thread[Select[d,s1<=#[[1,1]]<=s2&]]];
+      If[Length[l]>0,
+        If[off,
+          {Thread[MapAt[(#+off)&,Thread[l],{{1}}]],t},
+          {l,t}],
+        {{},{}}]];
 
-OpticsList[f_,i1_,i2_,dl_,off_,_,tags_,_]:=Module[{fun,ndiv,div=True},
-  Which[
-    f=="BX" || f=="BY" || f=="BZ",
-    fun:=Sqrt[Twiss[f,#]]&,
-    MemberQ[Twiss$Functions,f],
-    fun:=Twiss[f,#]&,
-    f=="RBX" || f=="RBY" || f=="RBZ",
-    div=False;
-    fun:=Sqrt[Twiss[f,#]]&,
-    MemberQ[XTwiss$Functions,f],
-    div=False;
-    fun:=Twiss[f,#]&,
-    LINE$FunctionsQ[f],
-    div=True;
-    fun:=LINE[f,#]&,
-    True,
-    If[RealQ[f],
-      Message[OpticsPlot::wronglist];Return[{{0,0},{1,1}}],
-      fun:=f]
-    ];
-  {Table[
-    ndiv=Which[~div,
-      1,
-      LINE["TYPENAME",i]==="MARK",
-      0,
+  OpticsList[f_List,i1_,i2_,_,off_,"S",t_,pj_]:=
+    Module[{l,{s1,s2}=LINE["S",{i1,i2}],d,d1,d2},
+      l=If[pj,
+        {d1,d,d2}=SelectCases[f,{First[#]<s1&,First[#]<=s2&,True&}];
+        Join[If[d1<=>{},{d1[[-1]]},{}],d,If[d2<=>{},{First[d2]},{}]],
+        Select[f,s1<=First[#]<=s2&]];
+      If[Length[l]>0,
+        If[off,
+          {Thread[MapAt[(#+off)&,Thread[l],{{1}}]],t},
+          {l,t}],
+        {{},t}]];
+
+  OpticsList[f_,i1_,i2_,dl_,off_,_,tags_,_]:=Module[{fun,ndiv,div=True},
+    Which[
+      f=="BX" || f=="BY" || f=="BZ",
+      fun:=Sqrt[Twiss[f,#]]&,
+      MemberQ[Twiss$Functions,f],
+      fun:=Twiss[f,#]&,
+      f=="RBX" || f=="RBY" || f=="RBZ",
+      div=False;
+      fun:=Sqrt[Twiss[f,#]]&,
+      MemberQ[XTwiss$Functions,f],
+      div=False;
+      fun:=Twiss[f,#]&,
+      LINE$FunctionsQ[f],
+      div=True;
+      fun:=LINE[f,#]&,
       True,
-      Floor[(LINE["L",i])/dl]+1];
-    Null@@Table[{LINE["S",i]+(LINE["L",i])*j/ndiv+off,fun[i+j/ndiv]},{j,0,ndiv-1}],
-    {i,i1,i2}],tags}];
+      If[RealQ[f],
+        Message[`OpticsPlot::`wronglist];Return[{{0,0},{1,1}}],
+        fun:=f]
+      ];
+    {Table[
+      ndiv=Which[~div,
+        1,
+        LINE["TYPENAME",i]==="MARK",
+        0,
+        True,
+        Floor[(LINE["L",i])/dl]+1];
+      Null@@Table[{LINE["S",i]+(LINE["L",i])*j/ndiv+off,fun[i+j/ndiv]},{j,0,ndiv-1}],
+      {i,i1,i2}],tags}];
 
-With[{def={Names->"*",Tags->False,NameFilter->Identity,
-  PlotRegion->{{0,1},{0,1}},ElementHeight->Automatic,RemoveOverlap->"L$NAME"}},
-  LatticePlot[{pr01_,pr02_},ss_,opt___]:=Module[
-    {l,nlat=LINE["LENGTH"],s1=LINE["S",pr01],leng,
-      {pr1,pr2}=LINE["POSITION",{pr01,pr02}],
-      {n,tag,nf,pr,eh,ro}=
-        {Names,Tags,NameFilter,PlotRegion,ElementHeight,RemoveOverlap}/.
-      Override[opt,def],
-      yoff=-0.7,w,ltotal},
-    w=pr[[1,2]]-pr[[1,1]];
-    l=If[pr2<=pr1,
-      ltotal=LINE["S",nlat]-LINE["S","^^^"];
-      s1=s1-ltotal;
-      leng=LINE["S",pr2]-s1;
-      Join[LatticePlot1$[{pr1,nlat},-ltotal,tag,w,eh,ss],
-        LatticePlot1$[{1,pr2},0,tag,w,eh,ss]],
-      leng=LINE["S",pr2]-s1;
-      LatticePlot1$[{pr1,pr2},0,tag,w,eh,ss]];
-    l=If[StringQ[n] && n<>"",
-      {l,If[pr2<=pr1,
-        Join[LatticeNames[{pr1,nlat},n,-ltotal,leng/100/w,yoff,tag,nf,ss],
-          LatticeNames[{1,pr2},n,0,leng/100/w,yoff,tag,nf,ss]],
-        LatticeNames[{pr1,pr2},n,0,leng/100/w,yoff,tag,nf,ss]]},
-      {l}];
-    With[{s1,leng,ss}, Graphics[#,{DataRange->{{s1,s1+leng}*ss,{-1,1}},
-      PlotRange:>With[{XRange=OP$XRange}, OP$XRange=.;
-	{If[Head[XRange]===List, XRange, ss*{s1-0.001, s1+leng+0.001}],{-1,1}}],
-      Frame->False,Background->Null,RemoveOverlap->ro},opt]&/@l]]];
+  With[{def={Names->"*",Tags->False,NameFilter->Identity,
+    PlotRegion->{{0,1},{0,1}},ElementHeight->Automatic,RemoveOverlap->"L$NAME"}},
+    LatticePlot[{pr01_,pr02_},ss_,opt___]:=Module[
+      {l,nlat=LINE["LENGTH"],s1=LINE["S",pr01],leng,
+        {pr1,pr2}=LINE["POSITION",{pr01,pr02}],
+        {n,tag,nf,pr,eh,ro}=
+          {Names,Tags,NameFilter,PlotRegion,ElementHeight,RemoveOverlap}/.
+        Override[opt,def],
+        yoff=-0.7,w,ltotal},
+      w=pr[[1,2]]-pr[[1,1]];
+      l=If[pr2<=pr1,
+        ltotal=LINE["S",nlat]-LINE["S","^^^"];
+        s1=s1-ltotal;
+        leng=LINE["S",pr2]-s1;
+        Join[LatticePlot1$[{pr1,nlat},-ltotal,tag,w,eh,ss],
+          LatticePlot1$[{1,pr2},0,tag,w,eh,ss]],
+        leng=LINE["S",pr2]-s1;
+        LatticePlot1$[{pr1,pr2},0,tag,w,eh,ss]];
+      l=If[StringQ[n] && n<>"",
+        {l,If[pr2<=pr1,
+          Join[LatticeNames[{pr1,nlat},n,-ltotal,leng/100/w,yoff,tag,nf,ss],
+            LatticeNames[{1,pr2},n,0,leng/100/w,yoff,tag,nf,ss]],
+          LatticeNames[{pr1,pr2},n,0,leng/100/w,yoff,tag,nf,ss]]},
+        {l}];
+      With[{s1,leng,ss}, Graphics[#,{DataRange->{{s1,s1+leng}*ss,{-1,1}},
+        PlotRange:>With[{XRange=OP$XRange}, OP$XRange=.;
+	  {If[Head[XRange]===List, XRange, ss*{s1-0.001, s1+leng+0.001}],{-1,1}}],
+        Frame->False,Background->Null,RemoveOverlap->ro},opt]&/@l]]];
 
-LatticeNames[{pr1_,pr2_},n_,off_,w_,yoff_,tag_,nf_,ss_]:=Module[
-  {s,s0=LINE["S",pr1]+off,e=""},
-  Table[
-    With[{l=LINE["NAME",i]},
-      If[StringMatchQ[l,n] && e<>LINE["ELEMENT",i] &&
-        ((s=(LINE["S",i]+LINE["S",i+1])/2+off)>=s0),
-        s0=Max[s-w/2,s0];
-        e=LINE["ELEMENT",i];
-        Text[{nf[l],{Scaled[s0*ss],Scaled[yoff]}},TextFont->$DefaultSansSerifFont,
-          TextRotate->270,TextSize->0.8,TextAlign->"n",UseBG->False,
-          Tags->If[tag,{"L$"//l,"L$NAME"},"L$NAME","L$NAME"]],
-        e="";Null[],e="";Null[]]],
-    {i,pr1,pr2-1}]];
-
-With[{yoff0=0.1},
-  LatticePlot1$[{pr1_,pr2_},off_,tag_,wid_,eh_,ss_]:=Module[
-    {type,h,si,si1,yoff,s1=LINE["S",pr1],ds,h1,v},
-    ds=(LINE["S",pr2-1]-s1)/400/wid;
+  LatticeNames[{pr1_,pr2_},n_,off_,w_,yoff_,tag_,nf_,ss_]:=Module[
+    {s,s0=LINE["S",pr1]+off,e=""},
     Table[
-      type=LINE["TYPE",i];
-      h=Switch[eh[i],
-        _Real,eh[i],
-        _,Element$Height[type]];
-      si=LINE["S",i];
-      si1=LINE["S",i+1];
-      If[type==4 || type == 22 || si1>s1+ds || h>h1,
-        With[{default = Element["DEFAULT",LINE["ELEMENT",i]]},
-          v=If[default==="",0,LINE[default,i]]];
-        {h1,s1}={h,si1};
-        yoff=If[h>yoff0*1.1, Sign[v]*yoff0, 0.0];
-        Rectangle[{(si+off)*ss,yoff-h/2},{(si1+off)*ss,yoff+h/2},
-          FillColor->Element$Color[type,v],
-          If[tag,Tags->"C$"//LINE["NAME",i],Null[],Null[]]],
-        Null[],Null[]],
-      {i,pr1,pr2-1}]]];
+      With[{l=LINE["NAME",i]},
+        If[StringMatchQ[l,n] && e<>LINE["ELEMENT",i] &&
+          ((s=(LINE["S",i]+LINE["S",i+1])/2+off)>=s0),
+          s0=Max[s-w/2,s0];
+          e=LINE["ELEMENT",i];
+          Text[{nf[l],{Scaled[s0*ss],Scaled[yoff]}},TextFont->$DefaultSansSerifFont,
+            TextRotate->270,TextSize->0.8,TextAlign->"n",UseBG->False,
+            Tags->If[tag,{"L$"//l,"L$NAME"},"L$NAME","L$NAME"]],
+          e="";Null[],e="";Null[]]],
+      {i,pr1,pr2-1}]];
 
-With[{def={Orbit->True,AspectRatio->1,DataRange->Default,
-  SizeFunction->"SIZE"}},
-  BeamPlot[loc:(_Real|_String),ax_List,opt___]:=Module[{
-    orb,asp,dr,axisx,axisy,xx,yy,xy,sf,
-    x0,y0,a,axis,r,sig,x,g0,g1,g2,rx,flx,ry,fly},
-    {orb,asp,dr,sf}={Orbit,AspectRatio,DataRange,SizeFunction}/.Override[opt,def];
-    {axisx,axisy}=If[Length[ax]>1,ToUpperCase/@Take[ax,2],{"X","Y"}];
-    xx=LINE[sf//axisx//axisx,loc];
-    yy=LINE[sf//axisy//axisy,loc];
-    xy=LINE[sf//axisx//axisy,loc];
-    {x0,y0}=Switch[orb,
-      _List, orb,
-      True,  Twiss[{"D"//axisx,"D"//axisy},loc],
-      False, {0,0},
-      _,     {0,0}];
-    {sx,sy}=Sqrt[{xx,yy}];
-    If[dr===Default,
-      If[MemberQ[{{"X","Y"},{"Y","X"},{"PX","PY"},{"PY","PX"}},{axisx,axisy}],
-        sig=Max[sx,sy];
-        dr={{x0-sig,x0+sig},{y0-sig,y0+sig}},
-        dr={{x0-sx,x0+sx},{y0-sy,y0+sy}}]];
-    {rx,flx}=BP$FrameFactor[axisx,dr[[1]]];
-    {ry,fly}=BP$FrameFactor[axisy,dr[[2]]];
-    a=xy/xx;
-    r=Sqrt[yy-xy^2/xx]/sx;
-    xx/=rx^2;
-    {x0,sx}/=rx;
-    {a,r}*=(rx/ry);
-    dr/={rx,ry};
-    g0=ListPlot[{{x0,y0}},AspectRatio->asp,DataRange->dr,DisplayFunction->Identity,
-      opt,FrameLabel->{flx,fly},PointColor->"black",PointSize->0.2];
-    g1=Plot[r*Sqrt[Max[xx-(x-x0)^2,0]]+a*(x-x0)+y0,{x,x0-sx,x0+sx},
-      DisplayFunction->Identity,opt];
-    g2=Plot[-r*Sqrt[Max[xx-(x-x0)^2,0]]+a*(x-x0)+y0,{x,x0-sx,x0+sx},
-      DisplayFunction->Identity,opt];
-    Show[g0,g1,g2,AspectRatio->asp,DataRange->dr,opt]]];
+  With[{yoff0=0.1},
+    LatticePlot1$[{pr1_,pr2_},off_,tag_,wid_,eh_,ss_]:=Module[
+      {type,h,si,si1,yoff,s1=LINE["S",pr1],ds,h1,v},
+      ds=(LINE["S",pr2-1]-s1)/400/wid;
+      Table[
+        type=LINE["TYPE",i];
+        h=Switch[eh[i],
+          _Real,eh[i],
+          _,Element$Height[type]];
+        si=LINE["S",i];
+        si1=LINE["S",i+1];
+        If[type==4 || type == 22 || si1>s1+ds || h>h1,
+          With[{default = Element["DEFAULT",LINE["ELEMENT",i]]},
+            v=If[default==="",0,LINE[default,i]]];
+          {h1,s1}={h,si1};
+          yoff=If[h>yoff0*1.1, Sign[v]*yoff0, 0.0];
+          Rectangle[{(si+off)*ss,yoff-h/2},{(si1+off)*ss,yoff+h/2},
+            FillColor->Element$Color[type,v],
+            If[tag,Tags->"C$"//LINE["NAME",i],Null[],Null[]]],
+          Null[],Null[]],
+        {i,pr1,pr2-1}]]];
 
-BP$FrameFactor[axis_,dr_]:=Module[{
+  With[{def={Orbit->True,AspectRatio->1,DataRange->Default,
+    SizeFunction->"SIZE"}},
+    BeamPlot[loc:(_Real|_String),ax_List,opt___]:=Module[{
+      orb,asp,dr,axisx,axisy,xx,yy,xy,sf,
+      x0,y0,a,axis,r,sig,x,g0,g1,g2,rx,flx,ry,fly},
+      {orb,asp,dr,sf}={Orbit,AspectRatio,DataRange,SizeFunction}/.Override[opt,def];
+      {axisx,axisy}=If[Length[ax]>1,ToUpperCase/@Take[ax,2],{"X","Y"}];
+      xx=LINE[sf//axisx//axisx,loc];
+      yy=LINE[sf//axisy//axisy,loc];
+      xy=LINE[sf//axisx//axisy,loc];
+      {x0,y0}=Switch[orb,
+        _List, orb,
+        True,  Twiss[{"D"//axisx,"D"//axisy},loc],
+        False, {0,0},
+        _,     {0,0}];
+      {sx,sy}=Sqrt[{xx,yy}];
+      If[dr===Default,
+        If[MemberQ[{{"X","Y"},{"Y","X"},{"PX","PY"},{"PY","PX"}},{axisx,axisy}],
+          sig=Max[sx,sy];
+          dr={{x0-sig,x0+sig},{y0-sig,y0+sig}},
+          dr={{x0-sx,x0+sx},{y0-sy,y0+sy}}]];
+      {rx,flx}=BP$FrameFactor[axisx,dr[[1]]];
+      {ry,fly}=BP$FrameFactor[axisy,dr[[2]]];
+      a=xy/xx;
+      r=Sqrt[yy-xy^2/xx]/sx;
+      xx/=rx^2;
+      {x0,sx}/=rx;
+      {a,r}*=(rx/ry);
+      dr/={rx,ry};
+      g0=ListPlot[{{x0,y0}},AspectRatio->asp,DataRange->dr,DisplayFunction->Identity,
+        opt,FrameLabel->{flx,fly},PointColor->"black",PointSize->0.2];
+      g1=Plot[r*Sqrt[Max[xx-(x-x0)^2,0]]+a*(x-x0)+y0,{x,x0-sx,x0+sx},
+        DisplayFunction->Identity,opt];
+      g2=Plot[-r*Sqrt[Max[xx-(x-x0)^2,0]]+a*(x-x0)+y0,{x,x0-sx,x0+sx},
+        DisplayFunction->Identity,opt];
+      Show[g0,g1,g2,AspectRatio->asp,DataRange->dr,opt]]];
+
+  BP$FrameFactor[axis_,dr_]:=Module[{
     fl=Twiss$Label["SIG"//axis],
     fu=Twiss$Unit["SIG"//axis],
     am=Max[Abs[dr]],u},
     u=Optics$Unit[fu,am];
     {Unit$Factor[u],Optics$FrameLabel[{fl,""},u]}];
 
-Element$Height[1]=0.08;
-Element$Height[2]=0.4;
-Element$Height[4]=0.8;
-Element$Height[6]=0.6;
-Element$Height[8]=0.6;
-Element$Height[10]=0.6;
-Element$Height[12]=0.6;
-Element$Height[21]=0.4;
-Element$Height[22]=If[?TRPT,0.5,0.8,0.8];
-Element$Height[31]=0.3;
-Element$Height[32]=0.3;
-Element$Height[_]=0.08;
+  Element$Height[1]=0.08;
+  Element$Height[2]=0.4;
+  Element$Height[4]=0.8;
+  Element$Height[6]=0.6;
+  Element$Height[8]=0.6;
+  Element$Height[10]=0.6;
+  Element$Height[12]=0.6;
+  Element$Height[21]=0.4;
+  Element$Height[22]=If[?TRPT,0.5,0.8,0.8];
+  Element$Height[31]=0.3;
+  Element$Height[32]=0.3;
+  Element$Height[_]=0.08;
 
-Element$Color[4,_]="limegreen";
-Element$Color[2,0]="tomato";
-Element$Color[2,_]="gold";
-Element$Color[1,_]=Null;
-Element$Color[__]="skyblue";
+  Element$Color[4,_]="limegreen";
+  Element$Color[2,0]="tomato";
+  Element$Color[2,_]="gold";
+  Element$Color[1,_]=Null;
+  Element$Color[__]="skyblue";
 
-SetAttributes[{Meter,InvMeter,SqrtMeter,SquareMeter,Kilometer,
-  Milimeter,Micron,Nanometer,Pi2,SquareMilimeter,SquareMicrometer,
-  InvKilometer,Radian,Miliradian,Microradian,
-  Ratio,Percent,PPM,PPB},Constant];
-
-Optics$Unit[unit_,am_]:=
+  Optics$Unit[unit_,am_]:=
     Switch[unit,
       Meter,
       Which[
@@ -566,234 +599,373 @@ Optics$Unit[unit_,am_]:=
       unit
       ];
 
-Twiss$Functions={"AX","BX","NX","AY","BY","NY","EX","EPX","EY","EPY",
-  "R1","R2","R3","R4","DETR","DX","DPX","DY","DPY","DZ","DDP",
-  "AZ","BZ","NZ","ZX","ZPX","ZY","ZPY",
-  "PEX","PEPX","PEY","PEPY","PZX","PZPX","PZY","PZPY",
-  "GMX","GMY","GMZ"};
-RTwiss$Functions=("R"//#)&/@Twiss$Functions;
-DTwiss$Functions=("D"//#)&/@Twiss$Functions;
-XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"}];
 
-Twiss$Positive["BX"|"BY"|"BZ"|"GMX"|"GMY"|"GMZ"|
-  "SIGX"|"SIGY"|"SIGZ"|"SIGXX"|"SIGYY"|"SIGZZ"|
-    "SIZEX"|"SIZEY"|"SIZEZ"|"SIZEXX"|"SIZEYY"|"SIZEZZ"]=True;
-Twiss$Positive[_]=False;
+  Twiss$Positive["BX"|"BY"|"BZ"|"GMX"|"GMY"|"GMZ"|
+    "SIGX"|"SIGY"|"SIGZ"|"SIGXX"|"SIGYY"|"SIGZZ"|
+      "SIZEX"|"SIZEY"|"SIZEZ"|"SIZEXX"|"SIZEYY"|"SIZEZZ"]=True;
+  Twiss$Positive[_]=False;
 
-Twiss$Unit[
-  "EX"|"EY"|"R2"|"DX"|"DY"|"S"|"PEX"|"PEY"|"DZ"|
-    "REX"|"REY"|"RR2"|"RDX"|"RDY"|"RPEX"|"RPEY"|"RDZ"|
-      "DEX"|"DEY"|"DR2"|"DDX"|"DDY"|"DPEX"|"DPEY"|"DDZ"]=Meter;
-Twiss$Unit[
-  "DPX"|"DPY"|"EPX"|"EPY"|"PEPX"|"PEPY"|
-    "RDPX"|"RDPY"|"REPX"|"REPY"|"RPEPX"|"RPEPY"|
-      "DDPX"|"DDPY"|"DEPX"|"DEPY"|"DPEPX"|"DPEPY"|
-        "DDP"|"DBX"|"DBY"|"DBZ"|"DGMX"|"DGMY"|"DGMZ"]=Ratio;
-Twiss$Unit[
-  "R3"|"ZPX"|"ZPY"|"PZPX"|"PZPY"|
-    "RR3"|"RZPX"|"RZPY"|"RPZPX"|"RPZPY"|
-      "DR3"|"DZPX"|"DZPY"|"DPZPX"|"DPZPY"|
-        "GMX"|"GMY"|"GMZ"|"RGMX"|"RGMY"|"RGMZ"]=InvMeter;
-Twiss$Unit["BX"|"BY"|"BZ"|"RBX"|"RBY"|"RBZ"]=SqrtMeter;
-Twiss$Unit[
-  "NX"|"NY"|"NZ"|
-    "RNX"|"RNY"|"RNZ"|
-      "DNX"|"DNY"|"DNZ"]=Pi2;
-Twiss$Unit[x_String?(#[1,4]==="SIZE"&)]:=Module[
-  {{l,u}=MakeSize$Label$Unit[x[5,-1]]},
-  Twiss$Label[x]="`fs`n`d"//l//"`n";
-  Twiss$Unit[x]=u];
-Twiss$Unit[x_String?(#[1,3]==="SIG"&)]:=Module[
-  {{l,u}=MakeSize$Label$Unit[x[4,-1]]},
-  Twiss$Label[x]="`fs`n`d"//l//"`n";
-  Twiss$Unit[x]=u];
-Twiss$Unit[_]=1;
+  Twiss$Unit[
+    "EX"|"EY"|"R2"|"DX"|"DY"|"S"|"PEX"|"PEY"|"DZ"|
+      "REX"|"REY"|"RR2"|"RDX"|"RDY"|"RPEX"|"RPEY"|"RDZ"|
+        "DEX"|"DEY"|"DR2"|"DDX"|"DDY"|"DPEX"|"DPEY"|"DDZ"]=Meter;
+  Twiss$Unit[
+    "DPX"|"DPY"|"EPX"|"EPY"|"PEPX"|"PEPY"|
+      "RDPX"|"RDPY"|"REPX"|"REPY"|"RPEPX"|"RPEPY"|
+        "DDPX"|"DDPY"|"DEPX"|"DEPY"|"DPEPX"|"DPEPY"|
+          "DDP"|"DBX"|"DBY"|"DBZ"|"DGMX"|"DGMY"|"DGMZ"]=Ratio;
+  Twiss$Unit[
+    "R3"|"ZPX"|"ZPY"|"PZPX"|"PZPY"|
+      "RR3"|"RZPX"|"RZPY"|"RPZPX"|"RPZPY"|
+        "DR3"|"DZPX"|"DZPY"|"DPZPX"|"DPZPY"|
+          "GMX"|"GMY"|"GMZ"|"RGMX"|"RGMY"|"RGMZ"]=InvMeter;
+  Twiss$Unit["BX"|"BY"|"BZ"|"RBX"|"RBY"|"RBZ"]=SqrtMeter;
+  Twiss$Unit[
+    "NX"|"NY"|"NZ"|
+      "RNX"|"RNY"|"RNZ"|
+        "DNX"|"DNY"|"DNZ"]=Pi2;
+  Twiss$Unit[x_String?(#[1,4]==="SIZE"&)]:=Module[
+    {{l,u}=MakeSize$Label$Unit[x[5,-1]]},
+    Twiss$Label[x]="`fs`n`d"//l//"`n";
+    Twiss$Unit[x]=u];
+  Twiss$Unit[x_String?(#[1,3]==="SIG"&)]:=Module[
+    {{l,u}=MakeSize$Label$Unit[x[4,-1]]},
+    Twiss$Label[x]="`fs`n`d"//l//"`n";
+    Twiss$Unit[x]=u];
+  Twiss$Unit[_]=1;
 
-(*
-If[$DisplayFunction===Unevaluated[TopDrawer],
-  Twiss$Unit$Label[Meter]={"M","L"};
-  Twiss$Unit$Label[Kilometer]={"KM","LL"};
-  Twiss$Unit$Label[Milimeter]={"MM","LL"};
-  Twiss$Unit$Label[Micron]={"MM","GL"};
-  Twiss$Unit$Label[Nanometer]={"NM","LL"};
-  Twiss$Unit$Label[Miliradian]={"MRAD","LLLL"};
-  Twiss$Unit$Label[Microradian]={"MRAD","GLLL"};
-  Twiss$Unit$Label[Radian]={"RAD","LLL"};
-  Twiss$Unit$Label[SqrtMeter]={"2M062O1","MLUUUDU"};
-  Twiss$Unit$Label[SquareMeter]={"M223","LX X"};
-  Twiss$Unit$Label[InvMeter]={"M2-13","LX  X"};
-  Twiss$Unit$Label[InvKilometer]={"KM2-13","LLX  X"};
-  Twiss$Unit$Label[Pi2]={"2P"," G"};
-  Twiss$Unit$Label[_]={"",""};
-  Twiss$Label["AX"]={"A0X1","GXLX"};
-  Twiss$Label["BX"]={"2B06O0X1","MGUUDXLX"};
-  Twiss$Label["NX"]={"M0X1","GXLX"};
-  Twiss$Label["EX"]={"H0X1","GXLX"};
-  Twiss$Label["EPX"]={"HA0X1","GPXLX"};
-  Twiss$Label["PEX"]={"H0XP1","GXL X"};
-  Twiss$Label["PEPX"]={"HA0XP1","GPXL X"};
-  Twiss$Label["DX"]={"DX","FL"};
-  Twiss$Label["DPX"]={"DXA","FLP"};
-  Twiss$Label["AY"]={"A0Y1","GXLX"};
-  Twiss$Label["BY"]={"2B06O0Y1","MGUUDXLX"};
-  Twiss$Label["NY"]={"M0Y1","GXLX"};
-  Twiss$Label["EY"]={"H0Y1","GXLX"};
-  Twiss$Label["EPY"]={"HA0Y1","GPXLX"};
-  Twiss$Label["PEY"]={"H0YP1","GXL X"};
-  Twiss$Label["PEPY"]={"HA0YP1","GPXL X"};
-  Twiss$Label["DY"]={"DY","FL"};
-  Twiss$Label["DPY"]={"DYA","FLP"};
-  Twiss$Label["DZ"]={"DZ","FL"};
-  Twiss$Label["R1"]={"R1","  "};
-  Twiss$Label["R2"]={"R2","  "};
-  Twiss$Label["R3"]={"R3","  "};
-  Twiss$Label["R4"]={"R4","  "};
-  Twiss$Label["DETR"]={"DETR"," LL "},
-*)
+  (*
+    If[$DisplayFunction===Unevaluated[TopDrawer],
+      Twiss$Unit$Label[Meter]={"M","L"};
+      Twiss$Unit$Label[Kilometer]={"KM","LL"};
+      Twiss$Unit$Label[Milimeter]={"MM","LL"};
+      Twiss$Unit$Label[Micron]={"MM","GL"};
+      Twiss$Unit$Label[Nanometer]={"NM","LL"};
+      Twiss$Unit$Label[Miliradian]={"MRAD","LLLL"};
+      Twiss$Unit$Label[Microradian]={"MRAD","GLLL"};
+      Twiss$Unit$Label[Radian]={"RAD","LLL"};
+      Twiss$Unit$Label[SqrtMeter]={"2M062O1","MLUUUDU"};
+      Twiss$Unit$Label[SquareMeter]={"M223","LX X"};
+      Twiss$Unit$Label[InvMeter]={"M2-13","LX  X"};
+      Twiss$Unit$Label[InvKilometer]={"KM2-13","LLX  X"};
+      Twiss$Unit$Label[Pi2]={"2P"," G"};
+      Twiss$Unit$Label[_]={"",""};
+      Twiss$Label["AX"]={"A0X1","GXLX"};
+      Twiss$Label["BX"]={"2B06O0X1","MGUUDXLX"};
+      Twiss$Label["NX"]={"M0X1","GXLX"};
+      Twiss$Label["EX"]={"H0X1","GXLX"};
+      Twiss$Label["EPX"]={"HA0X1","GPXLX"};
+      Twiss$Label["PEX"]={"H0XP1","GXL X"};
+      Twiss$Label["PEPX"]={"HA0XP1","GPXL X"};
+      Twiss$Label["DX"]={"DX","FL"};
+      Twiss$Label["DPX"]={"DXA","FLP"};
+      Twiss$Label["AY"]={"A0Y1","GXLX"};
+      Twiss$Label["BY"]={"2B06O0Y1","MGUUDXLX"};
+      Twiss$Label["NY"]={"M0Y1","GXLX"};
+      Twiss$Label["EY"]={"H0Y1","GXLX"};
+      Twiss$Label["EPY"]={"HA0Y1","GPXLX"};
+      Twiss$Label["PEY"]={"H0YP1","GXL X"};
+      Twiss$Label["PEPY"]={"HA0YP1","GPXL X"};
+      Twiss$Label["DY"]={"DY","FL"};
+      Twiss$Label["DPY"]={"DYA","FLP"};
+      Twiss$Label["DZ"]={"DZ","FL"};
+      Twiss$Label["R1"]={"R1","  "};
+      Twiss$Label["R2"]={"R2","  "};
+      Twiss$Label["R3"]={"R3","  "};
+      Twiss$Label["R4"]={"R4","  "};
+      Twiss$Label["DETR"]={"DETR"," LL "},
+      *)
 
-  Twiss$Unit$Label[Meter]="m";
-  Twiss$Unit$Label[Kilometer]="km";
-  Twiss$Unit$Label[Milimeter]="mm";
-  Twiss$Unit$Label[Miliradian]="mrad";
-  Twiss$Unit$Label[Radian]="rad";
-  Twiss$Unit$Label[Nanometer]="nm";
-  Twiss$Unit$Label[Picometer]="pm";
-  Twiss$Unit$Label[Femtometer]="fm";
-  Twiss$Unit$Label[Attometer]="am";
-  Twiss$Unit$Label[Ratio]="";
-  Twiss$Unit$Label[PPM]="ppm";
-  Twiss$Unit$Label[PPB]="ppb";
-  Twiss$Unit$Label[Percent]="%";
-  Twiss$Unit$Label[Micron]="`fm`nm";
-  Twiss$Unit$Label[Microradian]="`fm`nrad";
-  Twiss$Unit$Label[SqrtMeter]="`f\326`n`om`O";
-  Twiss$Unit$Label[SquareMeter]="m`u2`n";
-  Twiss$Unit$Label[SquareMilimeter]="mm`u2`n";
-  Twiss$Unit$Label[SquareMicrometer]="`fm`nm`u2`n";
-  Twiss$Unit$Label[InvMeter]="m`u-1`n";
-  Twiss$Unit$Label[InvKilometer]="km`u-1`n";
-  Twiss$Unit$Label[Pi2]="2`fp`n";
-  Twiss$Unit$Label[_]="";
-  Twiss$Label["AX"]="`fa`n`dx`n";
-  Twiss$Label["RAX"]="`fa`n`dxR`n";
-  Twiss$Label["DAX"]="`fda`n`dx`n";
-  Twiss$Label["GMX"]="`fg`n`dx`n";
-  Twiss$Label["RGMX"]="`fg`n`dxR`n";
-  Twiss$Label["DGMX"]="`fdg`n`dx`n";
-  Twiss$Label["BX"]="`f\326`ob`n`dx`O`n";
-  Twiss$Label["RBX"]="`f\326`ob`n`dxR`O`n";
-  Twiss$Label["DBX"]="`fdb`n`dx`n / `fb`n`dxR`n";
-  Twiss$Label["NX"]="`fn`n`dx`n";
-  Twiss$Label["RNX"]="`fn`n`dxR`n";
-  Twiss$Label["DNX"]="`fdn`n`dx`n";
-  Twiss$Label["EX"]="`fh`n`dx`n";
-  Twiss$Label["REX"]="`fh`n`dxR`n";
-  Twiss$Label["DEX"]="`fdh`n`dx`n";
-  Twiss$Label["EPX"]="`fh`n`dpx`n";
-  Twiss$Label["REPX"]="`fh`n`dpxR`n";
-  Twiss$Label["DEPX"]="`fdh`n`dpx`n";
-  Twiss$Label["PEX"]="`fh`n`dxP`n";
-  Twiss$Label["RPEX"]="`fh`n`dxPR`n";
-  Twiss$Label["DPEX"]="`fdh`n`dxP`n";
-  Twiss$Label["PEPX"]="`fh`n`dpxP`n";
-  Twiss$Label["RPEPX"]="`fh`n`dpxPR`n";
-  Twiss$Label["DPEPX"]="`fdh`n`dpxP`n";
-  Twiss$Label["DX"]="`fD`nx`n";
-  Twiss$Label["RDX"]="`fD`nxR`n";
-  Twiss$Label["DDX"]="`fdD`nx`n";
-  Twiss$Label["DPX"]="`fD`np`dx`n";
-  Twiss$Label["RDPX"]="`fD`np`dxR`n";
-  Twiss$Label["DDPX"]="`fdD`np`dx`n";
-  Twiss$Label["AY"]="`fa`n`dy`n";
-  Twiss$Label["RAY"]="`fa`n`dyR`n";
-  Twiss$Label["DAY"]="`fda`n`dy`n";
-  Twiss$Label["GMY"]="`fg`n`dy`n";
-  Twiss$Label["RGMY"]="`fg`n`dyR`n";
-  Twiss$Label["DGMY"]="`fdg`n`dy`n";
-  Twiss$Label["BY"]="`f\326`ob`n`dy`O`n";
-  Twiss$Label["RBY"]="`f\326`ob`n`dyR`O`n";
-  Twiss$Label["DBY"]="`fdb`n`dy`n / `fb`n`dyR`n";
-  Twiss$Label["NY"]="`fn`n`dy`n";
-  Twiss$Label["RNY"]="`fn`n`dyR`n";
-  Twiss$Label["DNY"]="`fdn`n`dy`n";
-  Twiss$Label["EY"]="`fh`n`dy`n";
-  Twiss$Label["REY"]="`fh`n`dyR`n";
-  Twiss$Label["DEY"]="`fdh`n`dy`n";
-  Twiss$Label["EPY"]="`fh`n`dpy`n";
-  Twiss$Label["REPY"]="`fh`n`dpyR`n";
-  Twiss$Label["DEPY"]="`fdh`n`dpy`n";
-  Twiss$Label["PEY"]="`fh`n`dyP`n";
-  Twiss$Label["RPEY"]="`fh`n`dyPR`n";
-  Twiss$Label["DPEY"]="`fdh`n`dyP`n";
-  Twiss$Label["PEPY"]="`fh`n`dpyP`n";
-  Twiss$Label["RPEPY"]="`fh`n`dpyPR`n";
-  Twiss$Label["DPEPY"]="`fdh`n`dpyP`n";
-  Twiss$Label["DY"]="`fD`ny`n";
-  Twiss$Label["RDY"]="`fD`nyR`n";
-  Twiss$Label["DDY"]="`fdD`ny`n";
-  Twiss$Label["DPY"]="`fD`np`dy`n";
-  Twiss$Label["RDPY"]="`fD`np`dyR`n";
-  Twiss$Label["DDPY"]="`fdD`np`dy`n";
-  Twiss$Label["DZ"]="`fD`nz`n";
-  Twiss$Label["RDZ"]="`fD`nzR`n";
-  Twiss$Label["DDZ"]="`fdD`nz`n";
-  Twiss$Label["DDP"]="`fD`np / p`d0`n";
-  Twiss$Label["RDDP"]="`fD`np`dR`n / p`d0`n";
-  Twiss$Label["DDDP"]="`fdD`np / p`d0`n";
-  Twiss$Label["R1"]="R`d1`n";
-  Twiss$Label["RR1"]="R`d1R`n";
-  Twiss$Label["DR1"]="`fd`nR`d1`n";
-  Twiss$Label["R2"]="R`d2`n";
-  Twiss$Label["RR2"]="R`d2R`n";
-  Twiss$Label["DR2"]="`fd`nR`d2`n";
-  Twiss$Label["R3"]="R`d3`n";
-  Twiss$Label["RR3"]="R`d3R`n";
-  Twiss$Label["DR3"]="`fd`nR`d3`n";
-  Twiss$Label["R4"]="R`d4`n";
-  Twiss$Label["RR4"]="R`d4R`n";
-  Twiss$Label["DR4"]="`fd`nR`d4`n";
-  Twiss$Label["DETR"]="DetR";
-  Twiss$Label["RDETR"]="DetR`dR`n";
-  Twiss$Label["DDETR"]="`fd`nDetR";
-  Twiss$Label["AZ"]="`fa`n`dz`n";
-  Twiss$Label["RAZ"]="`fa`n`dzR`n";
-  Twiss$Label["DAZ"]="`fda`n`dz`n";
-  Twiss$Label["GMZ"]="`fg`n`dz`n";
-  Twiss$Label["RGMZ"]="`fg`n`dzR`n";
-  Twiss$Label["DGMZ"]="`fdg`n`dz`n";
-  Twiss$Label["BZ"]="`f\326`ob`n`dz`O`n";
-  Twiss$Label["RBZ"]="`f\326`ob`n`dzR`O`n";
-  Twiss$Label["DBZ"]="`fdb`n`dz`n / `fb`n`dzR`n";
-  Twiss$Label["NZ"]="`fn`n`dz`n";
-  Twiss$Label["RNZ"]="`fn`n`dzR`n";
-  Twiss$Label["DNZ"]="`fdn`n`dz`n";
-  Twiss$Label["ZX"]="`fh`n`dx`n";
-  Twiss$Label["RZX"]="`fh`n`dxR`n";
-  Twiss$Label["DZX"]="`fdh`n`dx`n";
-  Twiss$Label["ZPX"]="`fz`n`dpx`n";
-  Twiss$Label["RZPX"]="`fz`n`dpxR`n";
-  Twiss$Label["DZPX"]="`fdz`n`dpx`n";
-  Twiss$Label["PZX"]="`fz`n`dxP`n";
-  Twiss$Label["RPZX"]="`fz`n`dxPR`n";
-  Twiss$Label["DPZX"]="`fdz`n`dxP`n";
-  Twiss$Label["PZPX"]="`fz`n`dpxP`n";
-  Twiss$Label["RPZPX"]="`fz`n`dpxPR`n";
-  Twiss$Label["DPZPX"]="`fdz`n`dpxP`n";
-  Twiss$Label["ZY"]="`fz`n`dy`n";
-  Twiss$Label["RZY"]="`fz`n`dyR`n";
-  Twiss$Label["DZY"]="`fdz`n`dy`n";
-  Twiss$Label["ZPY"]="`fz`n`dpy`n";
-  Twiss$Label["RZPY"]="`fz`n`dpyR`n";
-  Twiss$Label["DZPY"]="`fdz`n`dpy`n";
-  Twiss$Label["PZY"]="`fz`n`dyP`n";
-  Twiss$Label["RPZY"]="`fz`n`dyPR`n";
-  Twiss$Label["DPZY"]="`fdz`n`dyP`n";
-  Twiss$Label["PZPY"]="`fz`n`dpyP`n";
-  Twiss$Label["RPZPY"]="`fz`n`dpyPR`n";
-  Twiss$Label["DPZPY"]="`fdz`n`dpyP`n";
-  Twiss$Label["BMAGX"]="B`dMAGx`n";
-  Twiss$Label["BMAGY"]="B`dMAGy`n";
-  Twiss$Label["BMAGZ"]="B`dMAGz`n";
+  If[$HaveLaTeX,
+    Twiss$Unit$Label[Meter]="m";
+    Twiss$Unit$Label[Kilometer]="km";
+    Twiss$Unit$Label[Milimeter]="mm";
+    Twiss$Unit$Label[Miliradian]="mrad";
+    Twiss$Unit$Label[Radian]="rad";
+    Twiss$Unit$Label[Nanometer]="nm";
+    Twiss$Unit$Label[Picometer]="pm";
+    Twiss$Unit$Label[Femtometer]="fm";
+    Twiss$Unit$Label[Attometer]="am";
+    Twiss$Unit$Label[Ratio]="";
+    Twiss$Unit$Label[PPM]="ppm";
+    Twiss$Unit$Label[PPB]="ppb";
+    Twiss$Unit$Label[Percent]="\\%";
+!    Twiss$Unit$Label[Micron]="$\\muup$m";
+    Twiss$Unit$Label[Micron]="$\\muup$m";
+    Twiss$Unit$Label[Microradian]="$\\muup$rad";
+    Twiss$Unit$Label[SqrtMeter]="$\\sqrt{\\rm m}$";
+    Twiss$Unit$Label[SquareMeter]="m$^2$";
+    Twiss$Unit$Label[SquareMilimeter]="mm$^2$";
+    Twiss$Unit$Label[SquareMicrometer]="$\\muup{\\rm m}^2$";
+    Twiss$Unit$Label[InvMeter]="m$^{-1}$";
+    Twiss$Unit$Label[InvKilometer]="km$^{-1}$";
+    Twiss$Unit$Label[Pi2]="$2\\pi$";
+    Twiss$Unit$Label[_]="";
+    Twiss$Label["AX"]="\\@$\\alpha_x$";
+    Twiss$Label["RAX"]="\\@$\\alpha_{x{\\rm R}}$";
+    Twiss$Label["DAX"]="\\@$\\delta\\alpha_x$";
+    Twiss$Label["GMX"]="\\@$\\gamma_x$";
+    Twiss$Label["RGMX"]="\\@$\\gamma_{x{\\rm R}}$";
+    Twiss$Label["DGMX"]="\\@$\\delta\\gamma_x$";
+    Twiss$Label["BX"]="\\@$\\sqrt{\\beta_x}$";
+    Twiss$Label["RBX"]="\\@$\\sqrt{\\beta_{x{\\rm R}}}$";
+    Twiss$Label["DBX"]="\\@$\\sqrt{\\delta\\beta_x}$";
+    Twiss$Label["NX"]="\\@$\\nu_x$";
+    Twiss$Label["RNX"]="\\@$\\nu_{x{\\rm R}}$";
+    Twiss$Label["DNX"]="\\@$\\delta\\nu_x$";
+    Twiss$Label["EX"]="\\@$\\eta_x$";
+    Twiss$Label["REX"]="\\@$\\eta_{x{\\rm R}}$";
+    Twiss$Label["DEX"]="\\@$\\delta\\eta_x$";
+    Twiss$Label["EPX"]="\\@$\\eta_{px}$";
+    Twiss$Label["REPX"]="\\@$\\eta_{px{\\rm R}}$";
+    Twiss$Label["DEPX"]="\\@$\\delta\\eta_{px}$";
+    Twiss$Label["PEX"]="\\@$\\eta_{x{\\rm P}}$";
+    Twiss$Label["RPEX"]="\\@$\\eta_{x{\\rm PR}}$";
+    Twiss$Label["DPEX"]="\\@$\\delta\\eta_{x{\\rm P}}$";
+    Twiss$Label["PEPX"]="\\@$\\eta_{px{\\rm P}}$";
+    Twiss$Label["RPEPX"]="\\@$\\eta_{px{\\rm PR}}$";
+    Twiss$Label["DPEPX"]="\\@$\\delta\\eta_{px{\\rm P}}$";
+    Twiss$Label["DX"]="\\@$\\varDelta x$";
+    Twiss$Label["RDX"]="\\@$\\varDelta x_{\\rm R}$";
+    Twiss$Label["DDX"]="\\@$\\delta\\varDelta x$";
+    Twiss$Label["DPX"]="\\@$\\varDelta p_x$";
+    Twiss$Label["RDPX"]="\\@$\\varDelta p_{x\\rm R}$";
+    Twiss$Label["DDPX"]="\\@$\\delta\\varDelta p_x$";
+    Twiss$Label["AY"]="\\@$\\alpha_y$";
+    Twiss$Label["RAY"]="\\@$\\alpha_{y{\\rm R}}$";
+    Twiss$Label["DAY"]="\\@$\\delta\\alpha_y$";
+    Twiss$Label["GMY"]="\\@$\\gamma_y$";
+    Twiss$Label["RGMY"]="\\@$\\gamma_{y{\\rm R}}$";
+    Twiss$Label["DGMY"]="\\@$\\delta\\gamma_y$";
+    Twiss$Label["BY"]="\\@$\\sqrt{\\beta_y}$";
+    Twiss$Label["RBY"]="\\@$\\sqrt{\\beta_{y{\\rm R}}}$";
+    Twiss$Label["DBY"]="\\@$\\sqrt{\\delta\\beta_y}$";
+    Twiss$Label["NY"]="\\@$\\nu_y$";
+    Twiss$Label["RNY"]="\\@$\\nu_{y{\\rm R}}$";
+    Twiss$Label["DNY"]="\\@$\\delta\\nu_y$";
+    Twiss$Label["EY"]="\\@$\\eta_y$";
+    Twiss$Label["REY"]="\\@$\\eta_{y{\\rm R}}$";
+    Twiss$Label["DEY"]="\\@$\\delta\\eta_y$";
+    Twiss$Label["EPY"]="\\@$\\eta_{py}$";
+    Twiss$Label["REPY"]="\\@$\\eta_{py{\\rm R}}$";
+    Twiss$Label["DEPY"]="\\@$\\delta\\eta_{py}$";
+    Twiss$Label["PEY"]="\\@$\\eta_{y{\\rm P}}$";
+    Twiss$Label["RPEY"]="\\@$\\eta_{y{\\rm PR}}$";
+    Twiss$Label["DPEY"]="\\@$\\delta\\eta_{y{\\rm P}}$";
+    Twiss$Label["PEPY"]="\\@$\\eta_{py{\\rm P}}$";
+    Twiss$Label["RPEPY"]="\\@$\\eta_{py{\\rm PR}}$";
+    Twiss$Label["DPEPY"]="\\@$\\delta\\eta_{py{\\rm P}}$";
+    Twiss$Label["DY"]="\\@$\\varDelta y$";
+    Twiss$Label["RDY"]="\\@$\\varDelta y_{\\rm R}$";
+    Twiss$Label["DDY"]="\\@$\\delta\\varDelta y$";
+    Twiss$Label["DPY"]="\\@$\\varDelta p_y$";
+    Twiss$Label["RDPY"]="\\@$\\varDelta p_{y\\rm R}$";
+    Twiss$Label["DDPY"]="\\@$\\delta\\varDelta p_y$";
+    Twiss$Label["AZ"]="\\@$\\alpha_z$";
+    Twiss$Label["RAZ"]="\\@$\\alpha_{z{\\rm R}}$";
+    Twiss$Label["DAZ"]="\\@$\\delta\\alpha_z$";
+    Twiss$Label["GMZ"]="\\@$\\gamma_z$";
+    Twiss$Label["RGMZ"]="\\@$\\gamma_{z{\\rm R}}$";
+    Twiss$Label["DGMZ"]="\\@$\\delta\\gamma_z$";
+    Twiss$Label["BZ"]="\\@$\\sqrt{\\beta_z}$";
+    Twiss$Label["RBZ"]="\\@$\\sqrt{\\beta_{z{\\rm R}}}$";
+    Twiss$Label["DBZ"]="\\@$\\sqrt{\\delta\\beta_z}$";
+    Twiss$Label["NZ"]="\\@$\\nu_z$";
+    Twiss$Label["RNZ"]="\\@$\\nu_{z{\\rm R}}$";
+    Twiss$Label["DNZ"]="\\@$\\delta\\nu_z$";
+    Twiss$Label["DZ"]="\\@$\\varDelta z$";
+    Twiss$Label["RDZ"]="\\@$\\varDelta z_{\\rm R}$";
+    Twiss$Label["DDZ"]="\\@$\\delta\\varDelta z$";
+    Twiss$Label["DDP"]="\\@$\\varDelta p/p_0$";
+    Twiss$Label["RDDP"]="\\@$\\varDelta p_{\\rm R}/p_{0{\\rm R}}$";
+    Twiss$Label["DDDP"]="\\@$\\delta\\varDelta p/p_0$";
+    Twiss$Label["R1"]="\\@$R_1$";
+    Twiss$Label["RR1"]="\\@$R_{1{\\rm R}}$";
+    Twiss$Label["DR1"]="\\@$\\delta R_1$";
+    Twiss$Label["R2"]="\\@$R_2$";
+    Twiss$Label["RR2"]="\\@$R_{2{\\rm R}}$";
+    Twiss$Label["DR2"]="\\@$\\delta R_2$";
+    Twiss$Label["R3"]="\\@$R_3$";
+    Twiss$Label["RR3"]="\\@$R_{3{\\rm R}}$";
+    Twiss$Label["DR3"]="\\@$\\delta R_3$";
+    Twiss$Label["R4"]="\\@$R_4$";
+    Twiss$Label["RR4"]="\\@$R_{4{\\rm R}}$";
+    Twiss$Label["DR4"]="\\@$\\delta R_4$";
+    Twiss$Label["DETR"]="\\@det$R$";
+    Twiss$Label["RDETR"]="\\@det$R_{\\rm R}$";
+    Twiss$Label["DDETR"]="\\@\\delta Det$R$";
+    Twiss$Label["ZX"]="\\@$\\zeta_x$";
+    Twiss$Label["RZX"]="\\@$\\zeta_{x{\\rm R}}$";
+    Twiss$Label["DZX"]="\\@$\\delta\\zeta_x$";
+    Twiss$Label["ZPX"]="\\@$\\zeta_{px}$";
+    Twiss$Label["RZPX"]="\\@$\\zeta_{px{\\rm R}}$";
+    Twiss$Label["DZPX"]="\\@$\\delta\\zeta_{px}$";
+    Twiss$Label["PZX"]="\\@$\\zeta_{x{\\rm P}}$";
+    Twiss$Label["RPZX"]="\\@$\\zeta_{x{\\rm PR}}$";
+    Twiss$Label["DPZX"]="\\@$\\delta\\zeta_{x{\\rm P}}$";
+    Twiss$Label["PZPX"]="\\@$\\zeta_{px{\\rm P}}$";
+    Twiss$Label["RPZPX"]="\\@$\\zeta_{px{\\rm PR}}$";
+    Twiss$Label["DPZPX"]="\\@$\\delta\\zeta_{px{\\rm P}}$";
+    Twiss$Label["ZY"]="\\@$\\zeta_y$";
+    Twiss$Label["RZY"]="\\@$\\zeta_{y{\\rm R}}$";
+    Twiss$Label["DZY"]="\\@$\\delta\\zeta_y$";
+    Twiss$Label["ZPY"]="\\@$\\zeta_{py}$";
+    Twiss$Label["RZPY"]="\\@$\\zeta_{py{\\rm R}}$";
+    Twiss$Label["DZPY"]="\\@$\\delta\\zeta_{py}$";
+    Twiss$Label["PZY"]="\\@$\\zeta_{y{\\rm P}}$";
+    Twiss$Label["RPZY"]="\\@$\\zeta_{y{\\rm PR}}$";
+    Twiss$Label["DPZY"]="\\@$\\delta\\zeta_{y{\\rm P}}$";
+    Twiss$Label["PZPY"]="\\@$\\zeta_{py{\\rm P}}$";
+    Twiss$Label["RPZPY"]="\\@$\\zeta_{py{\\rm PR}}$";
+    Twiss$Label["DPZPY"]="\\@$\\delta\\zeta_{py{\\rm P}}$";
+    Twiss$Label["BMAGX"]="\\@B_{{\\rm MAG}x}";
+    Twiss$Label["BMAGY"]="\\@B_{{\\rm MAG}y}";
+    Twiss$Label["BMAGZ"]="\\@B_{{\\rm MAG}z}",
+
+    Twiss$Unit$Label[Meter]="m";
+    Twiss$Unit$Label[Kilometer]="km";
+    Twiss$Unit$Label[Milimeter]="mm";
+    Twiss$Unit$Label[Miliradian]="mrad";
+    Twiss$Unit$Label[Radian]="rad";
+    Twiss$Unit$Label[Nanometer]="nm";
+    Twiss$Unit$Label[Picometer]="pm";
+    Twiss$Unit$Label[Femtometer]="fm";
+    Twiss$Unit$Label[Attometer]="am";
+    Twiss$Unit$Label[Ratio]="";
+    Twiss$Unit$Label[PPM]="ppm";
+    Twiss$Unit$Label[PPB]="ppb";
+    Twiss$Unit$Label[Percent]="%";
+    Twiss$Unit$Label[Micron]="`fm`nm";
+    Twiss$Unit$Label[Microradian]="`fm`nrad";
+    Twiss$Unit$Label[SqrtMeter]="`f\326`n`om`O";
+    Twiss$Unit$Label[SquareMeter]="m`u2`n";
+    Twiss$Unit$Label[SquareMilimeter]="mm`u2`n";
+    Twiss$Unit$Label[SquareMicrometer]="`fm`nm`u2`n";
+    Twiss$Unit$Label[InvMeter]="m`u-1`n";
+    Twiss$Unit$Label[InvKilometer]="km`u-1`n";
+    Twiss$Unit$Label[Pi2]="2`fp`n";
+    Twiss$Unit$Label[_]="";
+    Twiss$Label["AX"]="`fa`n`dx`n";
+    Twiss$Label["RAX"]="`fa`n`dxR`n";
+    Twiss$Label["DAX"]="`fda`n`dx`n";
+    Twiss$Label["GMX"]="`fg`n`dx`n";
+    Twiss$Label["RGMX"]="`fg`n`dxR`n";
+    Twiss$Label["DGMX"]="`fdg`n`dx`n";
+    Twiss$Label["BX"]="`f\326`ob`n`dx`O`n";
+    Twiss$Label["RBX"]="`f\326`ob`n`dxR`O`n";
+    Twiss$Label["DBX"]="`fdb`n`dx`n / `fb`n`dxR`n";
+    Twiss$Label["NX"]="`fn`n`dx`n";
+    Twiss$Label["RNX"]="`fn`n`dxR`n";
+    Twiss$Label["DNX"]="`fdn`n`dx`n";
+    Twiss$Label["EX"]="`fh`n`dx`n";
+    Twiss$Label["REX"]="`fh`n`dxR`n";
+    Twiss$Label["DEX"]="`fdh`n`dx`n";
+    Twiss$Label["EPX"]="`fh`n`dpx`n";
+    Twiss$Label["REPX"]="`fh`n`dpxR`n";
+    Twiss$Label["DEPX"]="`fdh`n`dpx`n";
+    Twiss$Label["PEX"]="`fh`n`dxP`n";
+    Twiss$Label["RPEX"]="`fh`n`dxPR`n";
+    Twiss$Label["DPEX"]="`fdh`n`dxP`n";
+    Twiss$Label["PEPX"]="`fh`n`dpxP`n";
+    Twiss$Label["RPEPX"]="`fh`n`dpxPR`n";
+    Twiss$Label["DPEPX"]="`fdh`n`dpxP`n";
+    Twiss$Label["DX"]="`fD`nx`n";
+    Twiss$Label["RDX"]="`fD`nxR`n";
+    Twiss$Label["DDX"]="`fdD`nx`n";
+    Twiss$Label["DPX"]="`fD`np`dx`n";
+    Twiss$Label["RDPX"]="`fD`np`dxR`n";
+    Twiss$Label["DDPX"]="`fdD`np`dx`n";
+    Twiss$Label["AY"]="`fa`n`dy`n";
+    Twiss$Label["RAY"]="`fa`n`dyR`n";
+    Twiss$Label["DAY"]="`fda`n`dy`n";
+    Twiss$Label["GMY"]="`fg`n`dy`n";
+    Twiss$Label["RGMY"]="`fg`n`dyR`n";
+    Twiss$Label["DGMY"]="`fdg`n`dy`n";
+    Twiss$Label["BY"]="`f\326`ob`n`dy`O`n";
+    Twiss$Label["RBY"]="`f\326`ob`n`dyR`O`n";
+    Twiss$Label["DBY"]="`fdb`n`dy`n / `fb`n`dyR`n";
+    Twiss$Label["NY"]="`fn`n`dy`n";
+    Twiss$Label["RNY"]="`fn`n`dyR`n";
+    Twiss$Label["DNY"]="`fdn`n`dy`n";
+    Twiss$Label["EY"]="`fh`n`dy`n";
+    Twiss$Label["REY"]="`fh`n`dyR`n";
+    Twiss$Label["DEY"]="`fdh`n`dy`n";
+    Twiss$Label["EPY"]="`fh`n`dpy`n";
+    Twiss$Label["REPY"]="`fh`n`dpyR`n";
+    Twiss$Label["DEPY"]="`fdh`n`dpy`n";
+    Twiss$Label["PEY"]="`fh`n`dyP`n";
+    Twiss$Label["RPEY"]="`fh`n`dyPR`n";
+    Twiss$Label["DPEY"]="`fdh`n`dyP`n";
+    Twiss$Label["PEPY"]="`fh`n`dpyP`n";
+    Twiss$Label["RPEPY"]="`fh`n`dpyPR`n";
+    Twiss$Label["DPEPY"]="`fdh`n`dpyP`n";
+    Twiss$Label["DY"]="`fD`ny`n";
+    Twiss$Label["RDY"]="`fD`nyR`n";
+    Twiss$Label["DDY"]="`fdD`ny`n";
+    Twiss$Label["DPY"]="`fD`np`dy`n";
+    Twiss$Label["RDPY"]="`fD`np`dyR`n";
+    Twiss$Label["DDPY"]="`fdD`np`dy`n";
+    Twiss$Label["DZ"]="`fD`nz`n";
+    Twiss$Label["RDZ"]="`fD`nzR`n";
+    Twiss$Label["DDZ"]="`fdD`nz`n";
+    Twiss$Label["DDP"]="`fD`np / p`d0`n";
+    Twiss$Label["RDDP"]="`fD`np`dR`n / p`d0`n";
+    Twiss$Label["DDDP"]="`fdD`np / p`d0`n";
+    Twiss$Label["R1"]="R`d1`n";
+    Twiss$Label["RR1"]="R`d1R`n";
+    Twiss$Label["DR1"]="`fd`nR`d1`n";
+    Twiss$Label["R2"]="R`d2`n";
+    Twiss$Label["RR2"]="R`d2R`n";
+    Twiss$Label["DR2"]="`fd`nR`d2`n";
+    Twiss$Label["R3"]="R`d3`n";
+    Twiss$Label["RR3"]="R`d3R`n";
+    Twiss$Label["DR3"]="`fd`nR`d3`n";
+    Twiss$Label["R4"]="R`d4`n";
+    Twiss$Label["RR4"]="R`d4R`n";
+    Twiss$Label["DR4"]="`fd`nR`d4`n";
+    Twiss$Label["DETR"]="DetR";
+    Twiss$Label["RDETR"]="DetR`dR`n";
+    Twiss$Label["DDETR"]="`fd`nDetR";
+    Twiss$Label["AZ"]="`fa`n`dz`n";
+    Twiss$Label["RAZ"]="`fa`n`dzR`n";
+    Twiss$Label["DAZ"]="`fda`n`dz`n";
+    Twiss$Label["GMZ"]="`fg`n`dz`n";
+    Twiss$Label["RGMZ"]="`fg`n`dzR`n";
+    Twiss$Label["DGMZ"]="`fdg`n`dz`n";
+    Twiss$Label["BZ"]="`f\326`ob`n`dz`O`n";
+    Twiss$Label["RBZ"]="`f\326`ob`n`dzR`O`n";
+    Twiss$Label["DBZ"]="`fdb`n`dz`n / `fb`n`dzR`n";
+    Twiss$Label["NZ"]="`fn`n`dz`n";
+    Twiss$Label["RNZ"]="`fn`n`dzR`n";
+    Twiss$Label["DNZ"]="`fdn`n`dz`n";
+    Twiss$Label["ZX"]="`fh`n`dx`n";
+    Twiss$Label["RZX"]="`fh`n`dxR`n";
+    Twiss$Label["DZX"]="`fdh`n`dx`n";
+    Twiss$Label["ZPX"]="`fz`n`dpx`n";
+    Twiss$Label["RZPX"]="`fz`n`dpxR`n";
+    Twiss$Label["DZPX"]="`fdz`n`dpx`n";
+    Twiss$Label["PZX"]="`fz`n`dxP`n";
+    Twiss$Label["RPZX"]="`fz`n`dxPR`n";
+    Twiss$Label["DPZX"]="`fdz`n`dxP`n";
+    Twiss$Label["PZPX"]="`fz`n`dpxP`n";
+    Twiss$Label["RPZPX"]="`fz`n`dpxPR`n";
+    Twiss$Label["DPZPX"]="`fdz`n`dpxP`n";
+    Twiss$Label["ZY"]="`fz`n`dy`n";
+    Twiss$Label["RZY"]="`fz`n`dyR`n";
+    Twiss$Label["DZY"]="`fdz`n`dy`n";
+    Twiss$Label["ZPY"]="`fz`n`dpy`n";
+    Twiss$Label["RZPY"]="`fz`n`dpyR`n";
+    Twiss$Label["DZPY"]="`fdz`n`dpy`n";
+    Twiss$Label["PZY"]="`fz`n`dyP`n";
+    Twiss$Label["RPZY"]="`fz`n`dyPR`n";
+    Twiss$Label["DPZY"]="`fdz`n`dyP`n";
+    Twiss$Label["PZPY"]="`fz`n`dpyP`n";
+    Twiss$Label["RPZPY"]="`fz`n`dpyPR`n";
+    Twiss$Label["DPZPY"]="`fdz`n`dpyP`n";
+    Twiss$Label["BMAGX"]="B`dMAGx`n";
+    Twiss$Label["BMAGY"]="B`dMAGy`n";
+    Twiss$Label["BMAGZ"]="B`dMAGz`n"];
+
   Twiss$Label[x_String?(#[1,4]==="SIZE"&)]:=Module[
     {{l,u}=MakeSize$Label$Unit[x[5,-1]]},
     Twiss$Unit[x]=u;
@@ -826,33 +998,39 @@ If[$DisplayFunction===Unevaluated[TopDrawer],
     Twiss$Unit[x]=u;
     Twiss$Label[x]="`fs`n`d"//l//"`n"];
 
-(*
+  (*
+    ];
+  *)
+
+  Twiss$Label[_]:="";
+
+  Unit$Factor[Kilometer]=1E3;
+  Unit$Factor[Milimeter]=1E-3;
+  Unit$Factor[Micron]=1E-6;
+  Unit$Factor[Nanometer]=1E-9;
+  Unit$Factor[Picometer]=1E-12;
+  Unit$Factor[Femtometer]=1E-15;
+  Unit$Factor[Attometer]=1E-18;
+  Unit$Factor[InvKilometer]=1E-3;
+  Unit$Factor[SquareMilimeter]=1e-6;
+  Unit$Factor[SquareMicrometer]=1e-12;
+  Unit$Factor[Pi2]=2*Pi;
+  Unit$Factor[Miliradian]=1E-3;
+  Unit$Factor[Microradian]=1E-6;
+  Unit$Factor[PPB]=1E-9;
+  Unit$Factor[PPM]=1E-6;
+  Unit$Factor[Percent]=1E-2;
+  Unit$Factor[_]=1;
+
+  LINE$FunctionsQ[f_]:=
+    MemberQ[LINE$Functions,f] || f[1,3]=="SIG" || f[1,4]=="SIZE";
+  LINE$Functions={"GAMMA","GAMMABETA","S","BZS"};
+
   ];
-*)
 
-Twiss$Label[_]:="";
+!End[];
 
-Unit$Factor[Kilometer]=1E3;
-Unit$Factor[Milimeter]=1E-3;
-Unit$Factor[Micron]=1E-6;
-Unit$Factor[Nanometer]=1E-9;
-Unit$Factor[Picometer]=1E-12;
-Unit$Factor[Femtometer]=1E-15;
-Unit$Factor[Attometer]=1E-18;
-Unit$Factor[InvKilometer]=1E-3;
-Unit$Factor[SquareMilimeter]=1e-6;
-Unit$Factor[SquareMicrometer]=1e-12;
-Unit$Factor[Pi2]=2*Pi;
-Unit$Factor[Miliradian]=1E-3;
-Unit$Factor[Microradian]=1E-6;
-Unit$Factor[PPB]=1E-9;
-Unit$Factor[PPM]=1E-6;
-Unit$Factor[Percent]=1E-2;
-Unit$Factor[_]=1;
-
-LINE$FunctionsQ[f_]:=
-  MemberQ[LINE$Functions,f] || f[1,3]=="SIG" || f[1,4]=="SIZE";
-LINE$Functions={"GAMMA","GAMMABETA","S","BZS"};
+!EndPackage[];
 
 OpticsPlot::units="Different units in one window: `1` `2`";
 OpticsPlot::frameheight=
@@ -860,12 +1038,15 @@ OpticsPlot::frameheight=
 OpticsPlot::wronglist=
   "List data must be {{x1, y1, (dy1)}, ..}";
 
-Protect[OpticsPlot,OpticsPlot1$,
-  Twiss$Functions,
-  RTwiss$Functions,
-  DTwiss$Functions,
-  XTwiss$Functions,
-  Twiss$Unit$Label,Unit$Factor,LINE$Funtions,
-  Element$Height,LINE$FunctionsQ,
-  BeamPlot,
-  OpticsList1$,OpticsList,LatticePlot,LatticePlot1$,LatticeNames];
+OPlot$=OPlot[];
+`OpticsPlot=System`OpticsPlot=OPlot$@OpticsPlot;
+`Twiss$Label=System`Twiss$Label=OPlot$@Twiss$Label;
+`LatticePlot=System`LatticePlot=OPlot$@LatticePlot;
+`BeamPlot=System`BeamPlot=OPlot$@BeamPlot;
+System`OP$S2Position=OPlot$@OP$S2Position;
+
+Protect[System`OpticsPlott,
+  System`Twiss$Label,
+  System`LatticePlot,
+  System`BeamPlot,
+  System`OP$S2Position];

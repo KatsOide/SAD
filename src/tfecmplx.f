@@ -119,6 +119,7 @@
       end function
 
       recursive function tfecmplxl(k1,k2,iopc1) result(kx)
+c      use omp_lib
       implicit none
       type (sad_descriptor) kx
       type (sad_descriptor) ,intent(in):: k1,k2
@@ -467,9 +468,17 @@ c              write(*,*)'tfecmplx-rl*2 '
           klr%attr=lconstlist
           select case (iopc1)
           case (mtfplus)
+c            call omp_set_dynamic(.true.)
+c            call omp_set_num_threads(int(1+m1/400))
+c!$OMP PARALLEL WORKSHARE shared(klr,klr1,klr2,m1)
             klr%rbody(1:m1)=klr2%rbody(1:m1)+klr1%rbody(1:m1)
+c!$OMP END PARALLEL WORKSHARE
           case (mtftimes)
+c            call omp_set_dynamic(.true.)
+c            call omp_set_num_threads(int(1+m1/400))
+c!$OMP PARALLEL WORKSHARE shared(klr,klr1,klr2,m1)
             klr%rbody(1:m1)=klr2%rbody(1:m1)*klr1%rbody(1:m1)
+c!$OMP END PARALLEL WORKSHARE
           case (mtfrevpower)
             do concurrent (i=1:m1)
               ir=int8(klr1%rbody(i))
@@ -535,10 +544,10 @@ c              write(*,*)'tfecmplx-rl*2 '
                 cx=cx1+cx2
                 klx%dbody(i)=kxcalocc(0,cx,d)
                 cycle
+              elseif(tflistq(k1i) .or. tflistq(k2i))then
+                kxi=tfecmplxl(k1i,k2i,mtfplus)
               else
-                kxi=merge(tfecmplxl(k1i,k2i,mtfplus),
-     $                 tfeexpr(k1i,k2i,mtfplus),
-     $                 tflistq(k1i) .or. tflistq(k2i))
+                kxi=tfeexpr(k1i,k2i,mtfplus)
               endif
               if(ktfnonrealq(kxi))then
                 c=c .and. tfconstq(kxi%k)
@@ -558,10 +567,10 @@ c              write(*,*)'tfecmplx-rl*2 '
                 cx=cx1*cx2
                 klx%dbody(i)=kxcalocc(0,cx,d)
                 cycle
+              elseif(tflistq(k1i) .or. tflistq(k2i))then
+                kxi=tfecmplxl(k1i,k2i,mtftimes)
               else
-                kxi=merge(tfecmplxl(k1i,k2i,mtftimes),
-     $               tfeexpr(k1i,k2i,mtftimes),
-     $               tflistq(k1i) .or. tflistq(k2i))
+                kxi=tfeexpr(k1i,k2i,mtftimes)
               endif
               if(ktfnonrealq(kxi))then
                 c=c .and. tfconstq(kxi%k)
@@ -587,10 +596,10 @@ c              write(*,*)'tfecmplx-rl*2 '
                 endif
                 klx%dbody(i)=kxcalocc(0,cx,d)
                 cycle
+              elseif(tflistq(k1i) .or. tflistq(k2i))then
+                kxi=tfecmplxl(k1i,k2i,mtfrevpower)
               else
-                kxi=merge(tfecmplxl(k1i,k2i,mtfrevpower),
-     $               tfeexpr(k1i,k2i,mtfrevpower),
-     $               tflistq(k1i) .or. tflistq(k2i))
+                kxi=tfeexpr(k1i,k2i,mtfrevpower)
               endif
               if(ktfnonrealq(kxi))then
                 c=c .and. tfconstq(kxi%k)
@@ -616,10 +625,10 @@ c              write(*,*)'tfecmplx-rl*2 '
                 cx=cx1+dcmplx(-imag(cx2),dble(cx2))
                 klx%dbody(i)=kxcalocc(0,cx,d)
                 cycle
+              elseif(tflistq(k1i) .or. tflistq(k2i))then
+                kxi=tfecmplxl(k1i,k2i,mtfcomplex)
               else
-                kxi=merge(tfecmplxl(k1i,k2i,mtfcomplex),
-     $               tfeexpr(k1i,k2i,mtfcomplex),
-     $               tflistq(k1i) .or. tflistq(k2i))    
+                kxi=tfeexpr(k1i,k2i,mtfcomplex)
               endif
               if(ktfnonrealq(kxi))then
                 c=c .and. tfconstq(kxi%k)

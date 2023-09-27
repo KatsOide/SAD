@@ -970,4 +970,105 @@ c      call tfdebugprint(kx,'puref',1)
       return
       end
 
+      subroutine tfstringreplace(isp1,kx,irtc)
+      use strbuf
+      implicit none
+      type (sad_descriptor) kx,kr
+      type (sad_strbuf), pointer :: strb
+      type (sad_string), pointer :: str,strs,stri
+      integer*4 isp1,irtc,isp0,i,ir,ls,isp2,
+     $     j,imin,ii,nr,indexb,itfmessage
+      logical*4 full
+      if(isp /= isp1+2)then
+        irtc=itfmessage(9,'General::narg','"2"')
+        return
+      endif
+      if(.not. ktfstringq(dtastk(isp1+1),str))then
+        irtc=itfmessage(9,'General::wrongtype','"Character-string"')
+        return
+      endif
+      isp0=isp
+      call tfreplace(dxnullo,dtastk(isp1+2),kx,
+     $     .false.,.false.,.true.,irtc)
+      if(irtc /= 0)then
+        return
+      endif
+      if(isp == isp0)then
+        kx=dtastk(isp1+1)
+        irtc=0
+        return
+      endif
+      do i=isp0+1,isp,2
+        if(.not. ktfstringq(dtastk(i)))then
+          irtc=itfmessage(9,'General::wrongtype',
+     $         '"String -> String"')
+          return
+        endif
+      enddo
+      nullify(strb)
+      ir=1
+      ls=str%nch
+      isp2=isp
+ 1    j=0
+      imin=ls+1
+      do i=isp0+1,isp2,2
+        call descr_sad(dtastk(i),stri)
+        ii=indexb(str%str,ls,stri%str,stri%nch,ir)
+        if(ii > 0 .and. ii < imin)then
+          imin=ii
+          j=i
+          itastk2(1,i)=stri%nch
+        endif
+      enddo
+      if(j /= 0)then
+        if(.not. associated(strb))then
+          call getstringbuf(strb,0,.true.)
+        endif
+        if(imin == ir+1)then
+          call putstringbufb1(strb,str%str(ir:ir))
+        elseif(imin > ir)then
+          call putstringbufb(strb,str%str(ir:imin-1),imin-ir,full)
+        endif
+        if(.not. ktfstringq(dtastk(j+1)))then
+          kr=tfeevalref(dtastk(j+1),irtc)
+          if(irtc /= 0)then
+            go to 9000
+          endif
+          if(.not. ktfstringq(kr))then
+            irtc=itfmessage(9,'General::wrongtype',
+     $           '"List of (String -> String)"')
+            go to 9000
+          endif
+          dtastk(j+1)=kr
+        endif
+        call descr_sad(dtastk(j+1),strs)
+        nr=strs%nch
+        if(nr == 1)then
+          call putstringbufb1(strb,strs%str)
+        elseif(nr > 0)then
+          call putstringbufb(strb,strs%str,nr,full)
+        endif
+        ir=imin+itastk2(1,j)
+        if(ir <= ls)then
+          go to 1
+        endif
+      endif
+      if(.not. associated(strb))then
+        kx=dtastk(isp1+1)
+      else
+        if(ls == ir)then
+          call putstringbufb1(strb,str%str(ir:ir))
+        elseif(ls > ir)then
+          call putstringbufb(strb,str%str(ir:ls),ls-ir+1,full)
+        endif
+        kx=kxstringbuftostring(strb)
+      endif
+      isp=isp0
+      irtc=0
+      return
+ 9000 call tfreestringbuf(strb)
+      isp=isp0
+      return
+      end
+
       end module eeval

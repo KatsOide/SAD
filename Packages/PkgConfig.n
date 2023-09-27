@@ -45,7 +45,7 @@ PkgConfig$DefaultList[l__] := (Scan[With[{pkg = #[[1]], config = #[[2]]},
   Scan[With[{var = #[[1]], val = #[[2]]},
     PkgConfig$Default[pkg, var] = val]&,
     First[SwitchCases[config, {Rule[_String, _]}]]]]&,
-  First[sl11=SwitchCases[Flatten[{l}], {Rule[_String, _List]}]]]);
+  First[SwitchCases[Flatten[{l}], {Rule[_String, _List]}]]]);
 
 PkgConfig$Default[pkg_String, var_String] := Module[{hit},
   {hit} = SwitchCases[PkgConfig$SystemDB[pkg],

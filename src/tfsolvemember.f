@@ -804,6 +804,7 @@ c      call tfdebugprint(kx,'==>',3)
       name(ls:ls)="$"
       kx=kxsymbolz(name,ls,symd)
       call sym_namtbl(symd%sym,loc)
+      loc%kind=1
       loc%str%nc=n0
       irtc=0
       return

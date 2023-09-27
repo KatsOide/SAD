@@ -5,10 +5,11 @@
       use ffs_flag, only:trpt,wspac,intra
       use temw, only:tfinibeam,tfetwiss,iaez,beamplt
       use maccbk, only:i00
+      use iso_c_binding
       implicit none
       integer*4 nparam,ntitle
       parameter (nparam=59,ntitle=26)
-      integer*4 lfno,i,in,lfnos,in1,lu,j,indexs,lene
+      integer*4 lfno,i,in,lfnos,in1,lu,j,indexs
       real*8 scale(nparam),cod(6),dps,dpsa,ddl,rgetgl1,v
       real*8 sx(-2:2),sy(-2:2),stbl(4,nparam)
       real*8 trans(6,12),beam(21,2),ctrb(21,21),param(nparam,-2:2)
@@ -60,6 +61,11 @@ c     $       tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
         beamin=tfinibeam(1)
       endif
       beamplt=wspac .or. intra
+      if(beamplt .and. ifsize .eq. 0)then
+        ifsize=ktaloc(nlat*21)
+        call c_f_pointer(c_loc(rlist(ifsize)),beamsize,[21,nlat])
+        modesize=0
+      endif
       cod=codin
       call temit(trans,cod,beam,ctrb,
      1     .not. trpt,iaez,plot,param(1,0),stab,lfno)
@@ -103,7 +109,7 @@ c     $       tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
           in1=indexs(title(i),',',in+1)
           unit=title(i)(in+1:in1-1)
           call trim(unit)
-          lu=max(lene(unit),1)
+          lu=max(len_trim(unit),1)
           buff(73:78)=' '
           buff(79-lu:78)=unit
           do 130 j=0,4
@@ -135,7 +141,7 @@ c     $       tw(mfitax:mfitny)/[1d0,1d0,m_2pi,1d0,1d0,m_2pi]
             in1=indexs(title(i),',',in+1)
             unit=title(i)(in+1:in1-1)
             call trim(unit)
-            lu=max(lene(unit),1)
+            lu=max(len_trim(unit),1)
             buff(73:78)=' '
             buff(79-lu:78)=unit
             write(lfno,'(a)')buff(1:78)

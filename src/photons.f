@@ -367,7 +367,7 @@ c      write(*,*)'with ',itp,ilp
 
       real*8, parameter :: pst=8.d0*sqrt(3.d0)/15.d0,
      $     sflc=.75d0*(elradi/finest)**2,cfpd=5.d0*sqrt(3.d0)/8.d0
-      real*8, parameter:: gmin=-0.9999d0,cave=8.d0/15.d0/sqrt(3.d0)
+      real*8, parameter:: gmin=-0.999999d0,cave=8.d0/15.d0/sqrt(3.d0)
       real*8, parameter:: cuu=11.d0/27.d0,cl=1.d0+gspin
 
       integer*4 ,parameter :: mord=6,lind=13
@@ -1260,8 +1260,7 @@ c     $               dpr(i),p,h1,-rph(i)*al,k)
         implicit none
         integer*4 , intent(in)::np
         real*8 ,intent(inout)::
-     $       x(np),px(np),y(np),py(np),dv(np),z(np),g(np),
-     $       sx(np),sy(np),sz(np)
+     $       x(np),px(np),y(np),py(np),dv(np),z(np),g(np),sx(np),sy(np),sz(np)
         real*8 , intent(in)::al,phi0
         if(al /= 0.d0)then
           cphi0=cos(phi0)

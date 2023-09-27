@@ -31,7 +31,7 @@
         do while(ka1 .ne. 0)
           call loc_defhash(ka1,dhash)
           ka10=dhash%next
-          if(dhash%gen .eq. maxgeneration)then
+          if(dhash%gen == maxgeneration)then
             do i=0,dhash%nhash
               kadi=dhash%dhash(i)%k
               do while(kadi .ne. 0)
@@ -57,8 +57,8 @@
         if(kp1 .ne. 0)then
           call loc1_symdef(kp1,def1)
           def1%prev=kp0
-          if(max(0,def1%sym%gen) .eq. max(0,def%sym%gen) .and.
-     $         def1%sym%override .eq. 0)then
+          if(max(0,def1%sym%gen) == max(0,def%sym%gen) .and.
+     $         def1%sym%override == 0)then
             def1%sym%override=-2
           endif
         endif

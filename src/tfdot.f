@@ -465,8 +465,7 @@ c          enddo
         return
       endif
       if(ktfnonrealq(dtastk(isp)) .or. ktfnonrealq(dtastk(isp-1)))then
-        irtc=itfmessage(9,'General::wrongtype',
-     $       '"Real number for #2 and #3"')
+        irtc=itfmessage(9,'General::wrongtype','"Real number for #2 and #3"')
         return
       endif
       eps=rtastk(isp-1)
@@ -474,7 +473,7 @@ c          enddo
       k=dtastk(isp1+1)
       call tfmatrixmaybeq(k,cmplm,realm,vec,n,m,kl)
       if(cmplm)then
-        if(max(n,m) .gt. 200)then
+        if(max(n,m) > 200)then
           call tftclupdate(3)
         endif
         call tcsvdma(kl,kux,kvx,kwx,n,m,eps,inv,irtc)
@@ -482,7 +481,7 @@ c          enddo
           return
         endif
       elseif(realm)then
-        if(max(n,m) .gt. 200)then
+        if(max(n,m) > 200)then
           call tftclupdate(3)
         endif
         call tsvdma(kl,kux,kvx,kwx,m,n,eps,inv)
@@ -531,16 +530,17 @@ c          enddo
       type (sad_dlist) ,intent(in)::kl
       integer*8,intent(out):: kux,kvx,kwx
       integer*4 ,intent(in)::n,m
-      integer*4 mn
+      integer*4 mn,ndim
       real*8 , allocatable:: a(:,:),u(:,:),w(:)
       real*8 , intent(in)::eps
       logical*4 ,intent(in)::inv
-      allocate (a(n,m),w(m),u(n,n))
+      ndim=max(n,m-1)
+      allocate (a(ndim,m),w(m),u(n,n))
       call tfl2m(kl,a,n,m,.false.)
-      call tsvdm(a,u,w,n,m,n,n,eps,inv)
+      call tsvdm(a,u,w,n,m,ndim,n,eps,inv)
       mn=min(m,n)
       kux=ktfaddr(kxm2l(u,mn,n,n,.false.))
-      kvx=ktfaddr(kxm2l(a,mn,m,n,.false.))
+      kvx=ktfaddr(kxm2l(a,mn,m,ndim,.false.))
       kwx=ktavaloc(-1,mn)
       rlist(kwx+1:kwx+mn)=w(1:mn)
       deallocate(a,w,u)
@@ -590,7 +590,7 @@ c          enddo
         irtc=itfmessage(9,'General::equalleng','"matrix and vector"')
         return
       endif
-      if(max(n,m) .gt. 200)then
+      if(max(n,m) > 200)then
         call tftclupdate(3)
       endif
       mx=max(mb,1)
@@ -729,7 +729,7 @@ c          enddo
         deallocate (c,cw,ce)
         return
       endif
-      if(m .gt. 200)then
+      if(m > 200)then
         call tftclupdate(3)
       endif
       call tceigen(c,cw,ce,m,m)
@@ -751,7 +751,7 @@ c          enddo
       logical*4 d,con
       allocate (a(m,m),w(m,m))
       call tfl2m(kl,a,m,m,.false.)
-      if(m .gt. 200)then
+      if(m > 200)then
         call tftclupdate(3)
       endif
       call teigen(a,w,ce,m,m)
@@ -1155,7 +1155,7 @@ c              W0=W0*WP+W0
         IF(M/=1) THEN
           KPRIME=KPRIME+1
           IF(KPRIME.LE.MPRIME) THEN
-c            IF(KPRIME.GT.MPRIME0) CALL NEXTPRIM(PRIME,KPRIME)
+c            IF(KPRIME>MPRIME0) CALL NEXTPRIM(PRIME,KPRIME)
             KK=PRIME(KPRIME)
           ELSE
             KK=KK+2
@@ -1182,7 +1182,7 @@ C-------------------------- NEXTPRIM ------------------------------
  100  P=P+2
       K=0
  120  K=K+1
-      IF(PRIME(K).GT.P/PRIME(K)) THEN
+      IF(PRIME(K)>P/PRIME(K)) THEN
         PRIME(KPRIME)=P
         RETURN
       ENDIF

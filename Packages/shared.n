@@ -70,7 +70,8 @@ With[{`tfork=0.01,`tsupdate=0.1,`nwu=100,`twcomp=1, nos=32,
             If[nw>=nwm,
               Do[If[sharedpid[k],
                 Print["Parallelize-Killed (Shared timeout): ",{k,sharedpid[k]}];
-                Kill[sharedpid[k]]],{k,n}];
+                Kill[sharedpid[k]];
+                shared[k]=$Failed],{k,n}];
               Break[]];
             Sleep[twcomp]]];
 !        Print["Parallelize-While-end ",{nw,nwm}];

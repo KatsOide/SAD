@@ -19,7 +19,7 @@ c     $     transfer(c_loc(jlist(1,ibcloc)),ibcloc)
       buffer(1:1)=char(10)
       ipoint=1
       iconv=iconv1
-c      call tfsetconvcase(iconv1 .eq. 1)
+c      call tfsetconvcase(iconv1 == 1)
       delim=';'//char(10)//' ,'//char(9)
       ldel=len_trim(delim)
       cmnt=cmnt1
@@ -139,7 +139,7 @@ c      write(*,*)'csinit ',lfni,ipoint,lrecl,ibcloc,buffer(1:1)
       do indexb=istart,ns-np+1
          i=indexb
          j=1
-         do while(j .le. np .and. string(i) .eq. pat(j))
+         do while(j .le. np .and. string(i) == pat(j))
             i=i+1
             j=j+1
          enddo
@@ -161,13 +161,13 @@ c      write(*,*)'csinit ',lfni,ipoint,lrecl,ibcloc,buffer(1:1)
       tr=.true.
       do i=1,l
         if(tr)then
-          tr=string(i:i) .eq. ' '
+          tr=string(i:i) == ' '
           if(.not. tr)then
             string(j:j)=string(i:i)
             j=j+1
           endif
         else
-          tr=string(i:i) .eq. ' '
+          tr=string(i:i) == ' '
           string(j:j)=string(i:i)
           j=j+1
         endif
@@ -280,11 +280,11 @@ c      parameter (ioff=ichar('A')-ichar('a'))
       do 10 i=1,l
         c=string(i:i)
         if(quote)then
-          if(c .eq. qc)then
+          if(c == qc)then
             quote=.false.
           endif
         else        
-          if(c .eq. '''' .or. c .eq. '"')then
+          if(c == '''' .or. c == '"')then
             quote=.true.
             qc=c
           elseif(c .ge. 'a' .and. c .le. 'z')then

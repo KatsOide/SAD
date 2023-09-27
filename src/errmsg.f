@@ -6,15 +6,15 @@
       integer*4 ercode,erlvl
       character*(*) rtn,msg
 c
-      integer*4 lene,lst,ln
+      integer*4 lst,ln
       character*(MAXLLEN) cwork
       character*(5) ,parameter ::astr=' *** '
 c     
 c      print *,"errmsg",rtn(:8)
 c
       if(msglvl .le. erlvl) then
-         ln=lene(rtn)
-         lst=lene(msg)
+         ln=len_trim(rtn)
+         lst=len_trim(msg)
          lst=min(lst,80-2*len(astr)-ln)
          cwork=astr//rtn(:ln)//astr//msg(:lst)
          write(errfl,*)cwork(:ln+lst+2*len(astr)),' ercode = ',ercode

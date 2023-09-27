@@ -129,10 +129,10 @@ c     end   initialize for preventing compiler warning
           call tftclupdate(int(rlist(intffs)))
           dp01=rlist(latt(1)+mfitddp)
           wcal=chgmod
-c          write(*,'(a,i5,7l2,i5,1p8g12.4)')'tffsmatch-0 ',iter,chgmod,newton,wcal,zcal,chgini,inicond,parallel,r%nstab,r%r,r0%r
+c          write(*,'(a,i5,7l2,i5,1p8g12.4)')'tffsmatch-20 ',iter,chgmod,newton,wcal,zcal,chgini,inicond,parallel,r%nstab,r%r,r0%r
           call tffscalc(flv%kdp,df,flv%iqcol,flv%lfp,nqcol,nqcol1,ibegin,
      $         r,residual,zcal,wcal,parallel,lout,error)
-c          write(*,'(a,i5,7l2,i5,1p8g12.4)')'tffsmatch-1 ',iter,chgmod,newton,wcal,zcal,chgini,inicond,parallel,r%nstab,r%r,r0%r
+c          write(*,'(a,i5,7l2,i5,1p8g12.4)')'tffsmatch-21 ',iter,chgmod,newton,wcal,zcal,chgini,inicond,parallel,r%nstab,r%r,r0%r
           if(error)then
             if(irtc == 20001)then
               exit do9000
@@ -190,7 +190,7 @@ c            chgini=.true.
                 if(cell)then
                   call twmov(1,twisss,1,0,.true.)
                 endif
-c                write(*,'(a,1p10g12.4)')'tffsmatch-chmod ',r%r,r0%r,r00%r
+cs                write(*,'(a,1p10g12.4)')'tffsmatch-chmod ',r%r,r0%r,r00%r
               else
                 imprv=resle(r,r0)
                 if(imprv)then
@@ -307,7 +307,6 @@ c                  write(*,'(a,1p10g12.4)')'tffsmatch-imprv ',r%r,r0%r,r00%r
                   nderiv=idtypec(nelvx(i)%klp) == icSOL
                 endif
               enddo
-c              write(*,'(a,2l2,2i5)')'tffsmatch ',nderiv,cell,nstab,nvar*nfam*nlat
 c              nderiv=nderiv .or.
 c     $             cell .and. r%nstab > 0
 c     $             .and. dble(nvar*nfam*nlat) < aloadmax
@@ -368,7 +367,7 @@ c     $             .and. dble(nvar*nfam*nlat) < aloadmax
                   rlist((kc-1)*nqcol+ifqu:kc*nqcol+ifqu-1)=
      $                 (ddf1(1:nqcol)-ddf2(1:nqcol))/2.d0/dvkc/wvar(kc)
                 enddo
-                call tffswait(ipr,npa,npr,iuta1,0,'tffsmatch-NumDerv',irtc)
+                call tffswait(ipr,npa,npr,iuta1,1000 000,'tffsmatch-NumDerv',irtc)
               else
                 call tffsqu(nqcol,nqcol1,nvar,nqumax,ifquw,ifqu,free,lfno,irtc)
                 if(irtc /= 0)then
@@ -600,7 +599,6 @@ c     $             .and. dble(nvar*nfam*nlat) < aloadmax
       limited=.false.
       do ii=1,nvar
         i=nvevx(ii)%ivarele
-c        write(*,*)'tffssetlimit ',ii,nvar
         call tffsvlimit(i,idelc(nelvx(i)%klp),
      $       nvevx(ii)%valvar,nvevx(ii)%valvar,
      $       vl,vl1,vl2,nvevx(ii)%ivvar,limited1,dlim)
@@ -677,7 +675,6 @@ c        write(*,*)'tffssetlimit ',ii,nvar
           dlim=.true.
           vl1=max(vl1,klr%rbody(1))
           vl2=min(vl2,klr%rbody(2))
-c          write(*,*)'tffsvlimit ',vl,vl1,vl2
           if(vl < vl1)then
             vl=vl1
             go to 2009

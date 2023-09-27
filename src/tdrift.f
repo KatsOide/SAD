@@ -144,11 +144,11 @@ c      write(*,'(a,106g15.7)')'td_sol ',x(1),px(1),y(1),py(1),z(1),g(1)
           dphi=merge((bpr-s)/u,(bpr-s)/pz0,abs(u) /= 0.d0)
           phi0=phi
           phi=phi+dphi
-          if(phi0 == phi .or. abs(dphi) .le. conv*abs(phi))then
+          if(phi0 == phi .or. abs(dphi) <= conv*abs(phi))then
             return
           endif
         enddo
-        if(ndiag .ge. 0)then
+        if(ndiag >= 0)then
           ndiag=ndiag-1
           write(*,'(a,1p8g13.5)')'tsolconv convergence error: ',
      $         phi,dphi,bpr,s,u,plz,pz0,pbz
@@ -182,7 +182,7 @@ c      write(*,'(a,106g15.7)')'td_sol ',x(1),px(1),y(1),py(1),z(1),g(1)
       bys=bys0
       bzs=bzs0
       babs=norm2([bzs,bxs,bys])
-      if(abs(babs) .lt. bzthre)then
+      if(abs(babs) < bzthre)then
         bxs=0.d0
         bys=0.d0
         bzs=0.d0

@@ -32,9 +32,9 @@ c
       use tfstk, only : forcesf
       use mathfun,only:nmaxsvd
       implicit none
-      integer*4 nmax,itmax
+      integer*4 itmax
       integer*4 ,intent(in)::n,m,ndim,ndimb
-      parameter (nmax=nmaxsvd,itmax=256)
+      parameter (itmax=256)
       complex*16 ,intent(inout)::a(ndim,m),b(ndimb,n)
       complex*16 p,cp,q,zc,zs,a1,aa,bb,r1,r2
       real*8 ,intent(out)::x(m)
@@ -48,7 +48,7 @@ c
       logical*4 ,intent(in)::inv
       mn=min(n,m)
       n1=min(ndimb,n)
-      if(mn*n1*max(n1,m) .gt. nmax)then
+      if(dble(mn)**2*dble(max(n,m)) > nmaxsvd)then
         write(*,*)' TCSVDM Too large matrix. ',n,m
         return
       endif

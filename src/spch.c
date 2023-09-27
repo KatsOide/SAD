@@ -156,7 +156,7 @@ double **SpaceChargeParamSet(int nlatend,int isp)
   return SP;
 }
 
-void PotentialSolverPrint()
+void PotentialSolverPrint(void)
 {
   printf("   Nx Ny Nz = %d x %d x %d\n",nx_psn,ny_psn,nz_psn);
   printf("    dx dy dz = %f x %f x %f\n",dx_psn,dy_psn,dz_psn);

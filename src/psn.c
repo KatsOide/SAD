@@ -50,7 +50,7 @@ void create_env_psn(int nx, int ny, double cx, double cy)
      g_facr_psn = (double*)malloc(size);
 }
 
-void clear_env_psn()
+void clear_env_psn(void)
 {
      free(g_facr_psn);
 }

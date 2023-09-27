@@ -260,7 +260,7 @@ c      write(*,*)'agint ',itmaxg,ag(itmaxg)
       integer*4 k,no
       if(x == czero)then
         f1=berbf(n)*factorial(dble(n))
-      elseif(imag(x) .eq. 0.d0)then
+      elseif(imag(x) == 0.d0)then
         f1=dcmplx(berpolr(n,dble(x)),0.d0)
       else
         select case (n)

@@ -361,8 +361,8 @@ With[{def={Weight->None,TextSize->1,FunctionLabel->Default,
               Null[]]}]],
           g3:=Null[]]];*)
        {s,If[rf,
-          Show[g1,g,FrameLabel->fl,If[leg<=>False,gl,Null[]],Null@@opt],
-          Show[g,g1,FrameLabel->fl,If[leg<=>False,gl,Null[]],Null@@opt]]}
+          Show[g1,g,FrameLabel->fl,Null@@opt],
+          Show[g,g1,FrameLabel->fl,Null@@opt]]}
       ]];
 
 SetAttributes[FitPlot,HoldRest];
@@ -571,7 +571,7 @@ CP$FindContour[l_,pr_,n_,cf_,cfs_,lc_,bf_]:=Module[
           CP$AddLine[#,k]&/@fc[f0>=k,f1>=k,f2>=k,f3>=k],
           {k,min+1,max}]],
       {i,nx-1},{j,ny-1}];
-    {gp,gl}=CP$GetLine[l1,n,cf];
+    {gp,gl}=CP$GetLine[n,cf];
     g=Flatten[{
       If[cf<=>Null,
         {Rectangle[mesh[{1,1}],mesh[{nx,ny}],PlotColor->"",FillColor->cf[0],
@@ -692,7 +692,7 @@ CP$JoinLine[{l:{x_,m___,y_},c_},k_]:=Module[{lx=contb[k][x],ly=contb[k][y],a},
     contb[k][y]=.];
   Null[]];
 
-CP$GetLine[l1_,n_,cf_]:=Module[
+CP$GetLine[n_,cf_]:=Module[
   {l=Extract[Delete[?contl,{{1,1},{1,-1}}],{{1,,2},{1,,1,0,1}}],
     ls,lc,ls1,k,t=Table[{k,_},{k,n}]},
   If[l==={},Return[{}]];

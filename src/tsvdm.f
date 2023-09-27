@@ -11,9 +11,10 @@ c               a=U^T.W.V .
 c    
 c
       use tfstk, only:ktfenanq
-      use mathfun,only:nmaxsvd
+      use mathfun,only:nmaxsvd,nomp,sqrt1
+c      use omp_lib
       implicit none
-      integer*4 ,parameter ::nmax=nmaxsvd,itmax=256
+      integer*4 ,parameter ::itmax=256
       integer*4 ,intent(in):: n,m,ndim,ndimb
       real*8 ,intent(inout):: a(ndim,m),b(ndimb,n)
       real*8 ,intent(out):: x(m)
@@ -27,10 +28,11 @@ c
       logical*4 inv
       mn=min(n,m)
       n1=min(ndimb,n)
-      if(mn*n1*max(n1,m) > nmax)then
+      if(dble(mn)**2*dble(max(n,m)) > dble(nmaxsvd))then
         write(*,*)' TSVDM Too large matrix. ',n,m
         return
       endif
+c      call omp_set_dynamic(.true.)
       allocate(v(0:2*max(m,n)),lsep(0:n),aa(m),bb(n))
       v(1:n)=1.d0
       x(1:m)=1.d0
@@ -48,33 +50,31 @@ c
               q=v(j)*p/h1
               v(j)=v(i)*v(j)/h1
               v(i)=h1
-c              do k=i1,m
-                a(j,i1:m)=a(j,i1:m)-p*a(i,i1:m)
-                a(i,i1:m)=a(i,i1:m)+q*a(j,i1:m)
-c              enddo
+c              call omp_set_num_threads(int(1+(m-i)/nomp))
+c!$OMP PARALLEL WORKSHARE shared(a,b,i,j,i1,m,n1,p,q)
+              a(j,i1:m)=a(j,i1:m)-p*a(i,i1:m)
+              a(i,i1:m)=a(i,i1:m)+q*a(j,i1:m)
+c!$OMP END PARALLEL WORKSHARE
               a(j,i)=0.d0
-c              do k=1,n1
-                b(j,1:n1)=b(j,1:n1)-p*b(i,1:n1)
-                b(i,1:n1)=b(i,1:n1)+q*b(j,1:n1)
-c              enddo
-            elseif(a(j,i) .ne. 0.d0)then
+              b(j,1:n1)=b(j,1:n1)-p*b(i,1:n1)
+              b(i,1:n1)=b(i,1:n1)+q*b(j,1:n1)
+            elseif(a(j,i) /= 0.d0)then
               p=a(i,i)/a(j,i)
               h1=v(j)+v(i)*p**2
               q=v(i)*p/h1
               v(j)=v(i)*v(j)/h1
               v(i)=h1
-c              do k=i1,m
-                aa(i1:m)=a(j,i1:m)
-                a(j,i1:m)=p*aa(i1:m)-a(i,i1:m)
-                a(i,i1:m)=aa(i1:m)-q*a(j,i1:m)
-c              enddo
+c              call omp_set_num_threads(int(1+(m-i)/nomp))
+c!$OMP PARALLEL WORKSHARE shared(a,b,aa,bb,i,j,i1,m,n1,p,q)
+              aa(i1:m)=a(j,i1:m)
+              a(j,i1:m)=p*aa(i1:m)-a(i,i1:m)
+              a(i,i1:m)=aa(i1:m)-q*a(j,i1:m)
+c!$OMP END PARALLEL WORKSHARE
               a(i,i)=a(j,i)
               a(j,i)=0.d0
-c              do k=1,n1
-                bb(1:n1)=b(j,1:n1)
-                b(j,1:n1)=p*bb(1:n1)-b(i,1:n1)
-                b(i,1:n1)=bb(1:n1)-q*b(j,1:n1)
-c              enddo
+              bb(1:n1)=b(j,1:n1)
+              b(j,1:n1)=p*bb(1:n1)-b(i,1:n1)
+              b(i,1:n1)=bb(1:n1)-q*b(j,1:n1)
             endif
           enddo
         endif
@@ -83,7 +83,7 @@ c              enddo
             r1=x(i1)*a(i,i1)
             r2=x(j )*a(i,j )
             r=sign(hypot(r1,r2),r1)
-            if(r .ne. 0.d0)then
+            if(r /= 0.d0)then
               c=r1/r
               s=r2/r
               if(abs(c) > abs(s))then
@@ -94,10 +94,11 @@ c              enddo
                 q=s*x(j )/h1
                 x(i1)=h1
                 x(j )=h2
-c                do  k=i1,n
-                  a(i1:n,j )=a(i1:n,j )-p*a(i1:n,i1)
-                  a(i1:n,i1)=a(i1:n,i1)+q*a(i1:n,j )
-c                enddo
+c                call omp_set_num_threads(int(1+(n-i)/nomp))
+c!$OMP PARALLEL WORKSHARE shared(a,p,q,i1,j,n)
+                a(i1:n,j )=a(i1:n,j )-p*a(i1:n,i1)
+                a(i1:n,i1)=a(i1:n,i1)+q*a(i1:n,j )
+c!$OMP END PARALLEL WORKSHARE
               else
                 a(i,i1)=a(i,j)
                 a(i,j)=0.d0
@@ -107,22 +108,23 @@ c                enddo
                 q=c*x(i1)/h1
                 x(i1)=h1
                 x(j )=h2
-c                do k=i1,n
-                  bb(i1:n)=a(i1:n,j)
-                  a(i1:n,j )=p*bb(i1:n)-a(i1:n,i1)
-                  a(i1:n,i1)=bb(i1:n)-q*a(i1:n,j )
-c                enddo
+c                call omp_set_num_threads(int(1+(n-i)/nomp))
+c!$OMP PARALLEL WORKSHARE shared(a,bb,p,q,i1,j,n)
+                bb(i1:n)=a(i1:n,j)
+                a(i1:n,j )=p*bb(i1:n)-a(i1:n,i1)
+                a(i1:n,i1)=bb(i1:n)-q*a(i1:n,j )
+c!$OMP END PARALLEL WORKSHARE
               endif
             else
               c=1.d0
               s=0.d0
             endif
             a(i,j)=s
-C     if(j < ndim+2)then
-            if(j < n+2)then
+            if(j < ndim+2)then
+c            if(j < n+2)then
               a(j-1,i)=c
             else
-              if(c .le. abs(s) .and. c .ne. 0.d0)then
+              if(c <= abs(s) .and. c /= 0.d0)then
                 a(i,j)=sign(1.d0/c,s)
               endif
             endif
@@ -136,9 +138,7 @@ C     if(j < ndim+2)then
         v(i+mn)=x(i)
         a(i,i)=a(i,i)*p
         x(i)=a(i,i)*x(i)
-c        do k=1,n1
-          b(i,1:n1)=b(i,1:n1)*p
-c        enddo
+        b(i,1:n1)=b(i,1:n1)*p
         if(i < m)then
           a(i,i+1)=a(i,i+1)*p
           v(i)=a(i,i+1)*x(i+1)
@@ -147,28 +147,28 @@ c        enddo
         endif
         an=abs(x(i))+abs(v(i))
         anorm=max(anorm,an)
-        if(an .ne. 0.d0)then
+        if(an /= 0.d0)then
           xmin=min(xmin,abs(x(i)))
         endif
       enddo
-c      do i=mn+1,m
-        v(2*mn+1:m)=x(mn+1:m)
-c      enddo
+      v(2*mn+1:m)=x(mn+1:m)
       do i=min(mn,m-2),1,-1
         i1=i+1
         i1mn=i1+mn
         do j=m,i+2,-1
           s=a(i,j)
-C     if(j < ndim+2)then
-          if(j < n+2)then
+          if(j < ndim+2)then
+c          if(j < n+2)then
             c=a(j-1,i)
             a(j-1,i)=0.d0
           else
             if(abs(s) > 1.d0)then
               c=abs(1.d0/s)
-              s=sign(1.d0-c**2/(1.d0+sqrt((1.d0-c)*(1.d0+c))),s)
+              s=sign(1.d0+sqrt1(-c**2),s)
+c              s=sign(1.d0-c**2/(1.d0+sqrt((1.d0-c)*(1.d0+c))),s)
             else
-              c=1.d0-s**2/(1.d0+sqrt((1.d0-s)*(1.d0+s)))
+              c=1.d0+sqrt1(-s**2)
+c              c=1.d0-s**2/(1.d0+sqrt((1.d0-s)*(1.d0+s)))
             endif
           endif
           if(abs(c) > abs(s))then
@@ -179,10 +179,11 @@ C     if(j < ndim+2)then
             v(i1mn)=h1
             v(j +mn)=h2
             a(i,j)=q*a(i,i1)
-c            do k=i1,mn
-              a(i1:mn,i1)=a(i1:mn,i1)-p*a(i1:mn,j )
-              a(i1:mn,j )=a(i1:mn,j )+q*a(i1:mn,i1)
-c            enddo
+c            call omp_set_num_threads(int(1+(mn-i)/nomp))
+c!$OMP PARALLEL WORKSHARE shared(a,p,q,i1,mn,j)
+            a(i1:mn,i1)=a(i1:mn,i1)-p*a(i1:mn,j )
+            a(i1:mn,j )=a(i1:mn,j )+q*a(i1:mn,i1)
+c!$OMP END PARALLEL WORKSHARE 
           else
             h1=v(j +mn)/s
             h2=v(i1mn)*s
@@ -192,30 +193,28 @@ c            enddo
             v(j +mn)=h2
             a(i,j )=a(i,i1)
             a(i,i1)=a(i,i1)*q
-c            do k=i1,mn
-              aa(i1:mn)=a(i1:mn,j)
-              a(i1:mn,j )=p*aa(i1:mn)+a(i1:mn,i1)
-              a(i1:mn,i1)=q*a(i1:mn,j )-aa(i1:mn)
-c            enddo
+c            call omp_set_num_threads(int(1+(mn-i)/nomp))
+c!$OMP PARALLEL WORKSHARE shared(a,aa,p,q,i1,mn,j)
+            aa(i1:mn)=a(i1:mn,j)
+            a(i1:mn,j )=p*aa(i1:mn)+a(i1:mn,i1)
+            a(i1:mn,i1)=q*a(i1:mn,j )-aa(i1:mn)
+c!$OMP END PARALLEL WORKSHARE
           endif
         enddo
       enddo
-c     write(*,9710)(v(i+mn)-1.d0,i=1,m)
-c9710 format(1x,:1p11g11.3)
+c      write(*,*)'tsvdm-omp ',omp_get_num_threads()
       lsep(0)=0
       lsep(1)=1
       isep=1
       ibegin=1
       iend=mn
-c      do i=1,mn
-        v(mn*2+1:mn)=1.d0
-c      enddo
+      v(mn*2+1:mn)=1.d0
       v(0)=0.d0
- 1002 if(v(iend) .ne. 0.d0)then
+ 1002 if(v(iend) /= 0.d0)then
         f=v(iend)
         v(iend)=0.d0
         do i=iend,ibegin,-1
-          if(abs(f)+abs(x(i)) .ne. abs(x(i)))then
+          if(abs(f)+abs(x(i)) /= abs(x(i)))then
             p=hypot(x(i),f)
             vv=v(i-1)/p
             v(i-1)=vv*x(i)
@@ -227,26 +226,25 @@ c      enddo
         enddo
       endif
       do3001: do
- 1001   if(ibegin .ge. iend)then
+        do while(ibegin >= iend)
           isep=isep-1
-          if(isep .le. 0)then
-            exit
+          if(isep <= 0)then
+            exit do3001
           endif
           iend=ibegin-1
           ibegin=lsep(isep)
-          go to 1001
-        endif
+        enddo
         do it=1,itmax
-          if(x(iend) .eq. 0.d0)then
+          if(x(iend) == 0.d0)then
             iend=iend-1
             go to 1002
           endif
           do i=iend-1,ibegin,-1
 c            an=max(abs(x(i)),abs(x(i+1)))
             an=abs(x(i))+abs(x(i+1))
-            if(abs(v(i)) .le. an*1.d-16)then
+            if(abs(v(i)) <= an*1.d-16)then
               v(i)=0.d0
-              if(i .eq. iend-1)then
+              if(i == iend-1)then
                 iend=iend-1
               else
                 isep=isep+1
@@ -262,13 +260,16 @@ c            an=max(abs(x(i)),abs(x(i+1)))
           g=merge(v(iend-2),0.d0,ibegin < iend-1)
           h=v(iend-1)
           f=((y-z)*(y+z)+(g-h)*(g+h))*.5d0
-          if(w .eq. 0.d0)then
+          if(w == 0.d0)then
             f=0.d0
           else
             g=h*y
             y=f+sign(hypot(f,g),f)
-            f=merge(((w-z)*(w+z)-h**2+g**2/y)/w,
-     $           ((w-z)*(w+z)-h**2)/w,y .ne. 0.d0)
+            if(y /= 0.d0)then
+              f=((w-z)*(w+z)-h**2+g**2/y)/w
+            else
+              f=((w-z)*(w+z)-h**2)/w
+            endif
           endif
           g=v(ibegin)
           h=g
@@ -277,7 +278,7 @@ c            an=max(abs(x(i)),abs(x(i+1)))
               i1=i+1
               z=hypot(f,g)
               v(i-1)=z
-              if(z .ne. 0.d0)then
+              if(z /= 0.d0)then
                 c=f/z
                 s=g/z
               else
@@ -291,7 +292,7 @@ c            an=max(abs(x(i)),abs(x(i+1)))
               y= x(i1)*c
               z=hypot(f,h)
               x(i)=z
-              if(z .ne. 0.d0)then
+              if(z /= 0.d0)then
                 c=f/z
                 s=h/z
               else
@@ -310,14 +311,13 @@ c            an=max(abs(x(i)),abs(x(i+1)))
                 t=s*v(i1+mn)/h1
                 v(i+mn)=h1
                 v(i1+mn)=h2
-c                do k=1,m
-                  a(i1,1:m)=a(i1,1:m)-r*a(i ,1:m)
-                  a(i ,1:m)=a(i ,1:m)+t*a(i1,1:m)
-c                enddo
-c                do k=1,n1
-                  b(i1,1:n1)=b(i1,1:n1)-r*b(i,1:n1)
-                  b(i ,1:n1)=b(i ,1:n1)+t*b(i1,1:n1)
-c                enddo
+c                call omp_set_num_threads(int(1+mn/nomp))
+c!$OMP PARALLEL WORKSHARE shared(a,b,r,t,m,n1,i,i1)
+                a(i1,1:m)=a(i1,1:m)-r*a(i ,1:m)
+                a(i ,1:m)=a(i ,1:m)+t*a(i1,1:m)
+c!$OMP END PARALLEL WORKSHARE
+                b(i1,1:n1)=b(i1,1:n1)-r*b(i,1:n1)
+                b(i ,1:n1)=b(i ,1:n1)+t*b(i1,1:n1)
               else
                 h1=v(i1+mn)/s
                 h2=v(i+mn)*s
@@ -325,16 +325,15 @@ c                enddo
                 t=c*v(i+mn)/h1
                 v(i+mn)=h1
                 v(i1+mn)=h2
-c                do k=1,m
-                  aa(1:m)=a(i1,1:m)
-                  a(i1,1:m)=r*aa(1:m)-a(i ,1:m)
-                  a(i ,1:m)=aa(1:m)-t*a(i1,1:m)
-c                enddo
-c                do k=1,n1
-                  bb(1:n1)=b(i1,1:n1)
-                  b(i1,1:n1)=r*bb(1:n1)-b(i,1:n1)
-                  b(i ,1:n1)=bb(1:n1)-t*b(i1,1:n1)
-c                enddo
+c                call omp_set_num_threads(int(1+mn/nomp))
+c!$OMP PARALLEL WORKSHARE shared(aa,bb,a,b,r,t,m,n1,i,i1)
+                aa(1:m)=a(i1,1:m)
+                a(i1,1:m)=r*aa(1:m)-a(i ,1:m)
+                a(i ,1:m)=aa(1:m)-t*a(i1,1:m)
+c!$OMP END PARALLEL WORKSHARE
+                bb(1:n1)=b(i1,1:n1)
+                b(i1,1:n1)=r*bb(1:n1)-b(i,1:n1)
+                b(i ,1:n1)=bb(1:n1)-t*b(i1,1:n1)
               endif
             enddo
             v(iend-1)=f
@@ -357,9 +356,9 @@ c                enddo
         endif
       enddo do3001
       anorm=abs(x(1))
-      do 3010 i=2,mn
+      do i=2,mn
         anorm=max(anorm,abs(x(i)))
- 3010 continue
+      enddo
       anorm=anorm*epslon
       if(inv)then
         do i=1,mn
@@ -372,12 +371,11 @@ c                enddo
             x(i)=s/anorm**2
             w=f
           endif
-c          do j=1,m
-            a(i,1:m)=a(i,1:m)*w
-c          enddo
-c          do k=1,n1
-            b(i,1:n1)=b(i,1:n1)*f
-c          enddo
+c          call omp_set_num_threads(int(1+mn/nomp))
+c!$OMP PARALLEL WORKSHARE shared(a,b,m,w,f)
+          a(i,1:m)=a(i,1:m)*w
+          b(i,1:n1)=b(i,1:n1)*f
+c!$OMP END PARALLEL WORKSHARE
         enddo
       else
         do i=1,mn
@@ -390,21 +388,14 @@ c          enddo
             w=f
           endif
           x(i)=s
-c          do j=1,m
-            a(i,1:m)=a(i,1:m)*w
-c          enddo
-c          do k=1,n1
-            b(i,1:n1)=b(i,1:n1)*f
-c          enddo
+c          call omp_set_num_threads(int(1+mn/nomp))
+c!$OMP PARALLEL WORKSHARE shared(a,b,m,w,f)
+          a(i,1:m)=a(i,1:m)*w
+          b(i,1:n1)=b(i,1:n1)*f
+c!$OMP END PARALLEL WORKSHARE
         enddo
       endif
-c      do j=mn+1,m
-        x(mn+1:m)=0.d0
-c      enddo
-c      do i=1,m
-c        do j=mn+1,n
-          a(mn+1:n,1:m)=0.d0
-c        enddo
-c      enddo
+      x(mn+1:m)=0.d0
+      a(mn+1:n,1:m)=0.d0
       return
       end

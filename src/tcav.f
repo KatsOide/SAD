@@ -21,7 +21,7 @@
      $     alx,dpepe,xi,pxi,fw0,
      $     asinh,t,ph,dh,dpr,dpy,dp,dp1,pr1,pe,vcorr
       logical*4 fringe,autophi,wak
-      if(w .eq. 0.d0)then
+      if(w == 0.d0)then
         wi=0.d0
       else
         wi=1.d0/w
@@ -46,7 +46,7 @@ c      pe=sqrt((he-1.d0)*(he+1.d0))
       r=abs(vnominal*(1.d0/h0+1.d0/he))
       ndiv=1+int(min(abs(w*al),
      $     sqrt(r**2/3.d0/eps)))
-      if(r .gt. 1.d-6)then
+      if(r > 1.d-6)then
         wl=asinh(r*(2.d0+r)/2.d0/(1.d0+r))
         ndiv=min(ndivmax,max(ndiv,
      $       nint(wl*10.d0)))
@@ -76,8 +76,7 @@ c      pe=sqrt((he-1.d0)*(he+1.d0))
       else
         tlim=0.d0
       endif
-      if(al .ne. 0.d0 .and. fringe .and.
-     $     mfring .ge. 0 .and. mfring .ne. 2)then
+      if(al /= 0.d0 .and. fringe .and. mfring >= 0 .and. mfring /= 2)then
         call tcavfrin(np,x,px,y,py,z,g,dv,al,v,w,p0,h0,
      $     dphis,dvfs,offset)
       endif
@@ -86,17 +85,17 @@ c      pe=sqrt((he-1.d0)*(he+1.d0))
       do 110 n=1,ndiv
         wsn=ws(n)
         if(wak)then
-          if(n .eq. 1)then
+          if(n == 1)then
             fw=fw0*wsn*.5d0
           else
             fw=fw0*(wsn+ws(n-1)*.5d0)
           endif
           call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         0.d0,0.d0,0.d0,int(anbunch),
-     $         fw,nwak,p0,h0,n .eq. 1)
+     $         fw,nwak,p0,h0,n == 1)
         endif
-        if(al .ne. 0.d0)then
-          if(n .eq. 1)then
+        if(al /= 0.d0)then
+          if(n == 1)then
             alx=al*wsn*.5d0
           else
             alx=al*(wsn+ws(n-1))*.5d0
@@ -110,7 +109,7 @@ c            dpz=-a/(1.d0+sqrt(1.d0-a))
             y(i)=y(i)+py(i)*al1
             z(i)=z(i)+dpz  *al1-dv(i)*alx
 10        continue
-          if(vnominal .ne. 0.d0)then
+          if(vnominal /= 0.d0)then
             sv=sv+vnominal*wsn
             h2=h0+sv
             p2=h2p(h2)
@@ -130,7 +129,7 @@ c            p2=sqrt((h2-1.d0)*(h2+1.d0))
           dp1r=g(i)
           p1r=1.d0+dp1r
           p1=p0*p1r
-          if(dv(i) .gt. 0.1d0)then
+          if(dv(i) > 0.1d0)then
             h1=p2h(p1)
 c            h1=p1*sqrt(1.d0+1.d0/p1**2)
 c            h1=sqrt(1.d0+p1**2)
@@ -169,7 +168,7 @@ c          dpr=a/(1.d0+sqrt(1.d0+a))
      $       fw,nwak,p0,h0,.false.)
       endif
 c      write(*,'(a,1p5g15.7)')'tcav-2 ',y(1),py(1),z(1),g(1),dv(1)
-      if(al .ne. 0.d0)then
+      if(al /= 0.d0)then
         alx=al*ws(ndiv)*.5d0
         do 30 i=1,np
           a=px(i)**2+py(i)**2
@@ -180,12 +179,12 @@ c          dpz=-a/(1.d0+sqrt(1.d0-a))
           y(i)=y(i)+py(i)*al1
           z(i)=z(i)+dpz  *al1-dv(i)*alx
 30      continue
-        if(fringe .and. mfring .ge. 0 .and. mfring .ne. 1)then
+        if(fringe .and. mfring >= 0 .and. mfring /= 1)then
           call tcavfrin(np,x,px,y,py,z,g,dv,al,-v,w,p0,h0,
      $         dphis,dvfs,offset)
         endif
       endif
-      if(vnominal .ne. 0.d0)then
+      if(vnominal /= 0.d0)then
 c        write(*,*)'tcav ',vnominal,p0,pe
         do 210 i=1,np
           dp=g(i)
@@ -220,7 +219,7 @@ c          h1=sqrt(1.d0+(pe*pr1)**2)
         dp1r=g(i)
         p1r=1.d0+dp1r
         p1=p0*p1r
-        if(dv(i) .gt. 0.1d0)then
+        if(dv(i) > 0.1d0)then
           h1=p2h(p1)
 c          h1=p1*sqrt(1.d0+1.d0/p1**2)
 c          h1=sqrt(1.d0+p1**2)

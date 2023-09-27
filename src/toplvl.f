@@ -678,7 +678,8 @@ c          enddo
 
       subroutine tffswait(ipr,npa,npr,kash,nwait,tag,irtc)
       implicit none
-      integer*4 ,intent(out):: irtc,ipr
+      integer*4 ,intent(out):: irtc
+      integer*4 ,intent(inout):: ipr
       integer*4 ,intent(in):: npa,nwait
       integer*4 ,intent(inout):: npr(npa)
       integer*4 ist,i,j,waitpid,waitpid_nohang,iwait,lw

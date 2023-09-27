@@ -40,7 +40,7 @@ integer4 isnan_(real8 *vx) {
   return isnan(*vx);
   }*/
 
-real8 second_() {
+real8 second_(void) {
   struct rusage u_ru;
 
   if(getrusage(RUSAGE_SELF, &u_ru))

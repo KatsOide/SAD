@@ -33,16 +33,16 @@
         ipoint=lrecl0
         lrecl0=max(lrecl0,1)
         lrecl1=lrecl0
-        do while (ios .eq. 0)
+        do while (ios == 0)
           ios=irbnofile
           if(lrecl0 .gt. nbmax-256)then
             ios=999999
             go to 10
           endif
           call tfreadbuf(lfni,lrecl0,nc)
-          if(nc .eq. irbeof)then
+          if(nc == irbeof)then
             go to 20
-          elseif(nc .eq.  irbnofile)then
+          elseif(nc ==  irbnofile)then
             go to 10
           elseif(nc .le. 0)then
             lrecl=max(lrecl0-1,0)
@@ -57,11 +57,11 @@
           ipoint=lrecl1
           ios=0
           if(lrecl .lt. lrecl0 .or.
-     $         trim .and. (buffer(lrecl0:lrecl) .eq. ' '))then
+     $         trim .and. (buffer(lrecl0:lrecl) == ' '))then
             lrecl=max(lrecl0-1,0)
             exit
           else
-            if(buffer(lrecl:lrecl) .eq. '\\')then
+            if(buffer(lrecl:lrecl) == '\\')then
               lrecl0=lrecl
             else
               lrecl=lrecl+1
@@ -75,13 +75,13 @@
       else
         ios=0
         call tfreadbuf(lfni,1,nc)
-        if(nc .eq. irbeof)then
+        if(nc == irbeof)then
           go to 20
-        elseif(nc .eq.  irbnofile)then
+        elseif(nc ==  irbnofile)then
           go to 10
         endif
         if(lfn1 .gt. 0)then
-          if(buffer(lrecl:lrecl) .eq. char(10))then
+          if(buffer(lrecl:lrecl) == char(10))then
             write(lfn1,'(1x,a)')buffer(ipoint:lrecl-1)
           else
             write(lfn1,'(1x,a)')buffer(ipoint:lrecl)
@@ -92,7 +92,7 @@
  10   if(ios .le. 0)then
         ios=9999
       endif
-      if(lfni .eq. 5)then
+      if(lfni == 5)then
         write(*,*)'???-getbuf-buffer overfolw for input stream'
         stop
       endif
@@ -100,7 +100,7 @@
  20   if(ios .le. 0)then
         ios=99999
       endif
-      if(lfni .eq. 5)then
+      if(lfni == 5)then
         write(*,*)'???-getbuf-end of input stream'
         stop
       endif
@@ -118,8 +118,8 @@
       character*80 pr
       character*10 n,autofg
       integer*4 l,nc
-      if(lfni .eq. 5 .and. lfno .eq. 6 .and. lfn1 .eq. 0)then
-        if(ipr .eq. 0)then
+      if(lfni == 5 .and. lfno == 6 .and. lfn1 == 0)then
+        if(ipr == 0)then
           if(ffsprmpt)then
             call elname(mfpnt,pr)
             l=len_trim(pr)
@@ -147,7 +147,7 @@
           pr(1:9)=' ...'//opcode(ipr)(1:nc)//'    '
           write(lfno,'(a,$)')pr(1:9)
         endif
-      elseif(lfno .eq. -1)then
+      elseif(lfno == -1)then
         ipr=lfni
       endif
       return

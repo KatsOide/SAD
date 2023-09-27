@@ -19,9 +19,9 @@
  * This macro is required 8.6a3 or later
  */
 #define	USE_INTERP_RESULT
-
-#include <tcl.h>
-#include <tk.h>
+/*
+  #include <tcl.h> */
+#include <tk.h> 
 
 /* Stub function/variable of Tk extensions for SAD */
 #if (TK_MAJOR_VERSION >= 8) && (TK_MINOR_VERSION >= 1)

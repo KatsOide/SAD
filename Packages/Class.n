@@ -183,7 +183,7 @@ ClassName[c_]:=c;
   c1 = Class[parents,classv,instv,{me}]);
 (c1_ = Class[parents_,{classv___},{instv___},
   {methods___}])^:=Module[
-    {heldmethods=Hold/@Hold[methods],classm,instm,calsss,insts,mets,
+    {heldmethods=Hold/@Hold[methods],classm,instm,classs,insts,mets,
       c=ToContext[c1,]},
     c1=c[c];
     Class[c]=c;
@@ -268,7 +268,7 @@ Object=Class[{None},{},{Options={}},
     AllParents[]:=Class`AllParents[c]];
   Print[x__:This]:=Literal[Print][x];
   Short[x_:This]:=Literal[Short][x,3];
-  Constructor$[]:=(SetAttributes[{Print,Short},HoldAll]);
+  Constructor$[]:=(SetAttributes[{Print},HoldAll]);
   Destructor$[]:=With[
     {x=First[This],
       s=Class`MemberObject2[First[This]]},
