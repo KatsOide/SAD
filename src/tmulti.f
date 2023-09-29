@@ -55,7 +55,7 @@ c      write(*,'(a,1p10g12.4)')'tmulti ',al,ak(1),chi1,chi2,alg,phig
      $     -chi1,-chi2,theta2,bxs,bys,bzs,.true.)
 c      write(*,'(a,1p10g12.4)')'tmulti-1 ',x(1),px(1),y(1),py(1),z(1),g(1)
       akr(0)=(akr0(0)+dcmplx(bys*al,bxs*al))*rtaper
-      if(nmmax == 0 .and. .not. spac .and. akr0(0) .eq. (0.d0,0.d0))then
+      if(nmmax == 0 .and. .not. spac .and. akr0(0) == (0.d0,0.d0))then
         call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al,bzs,dble(akr(0)),imag(akr(0)),krad)
       else
@@ -334,7 +334,7 @@ c      use ffs_pointer, only:inext,iprev
      $     alg,bz,dx,dy,dz,
      $     -chi1,-chi2,theta2,bxs,bys,bzs,.true.)
       akr(0)=(akr0(0)+dcmplx(bys*al,bxs*al))*rtaper
-      if(nmmax == 0 .and. vc == 0.d0 .and. .not. spac)then
+      if(nmmax == 0 .and. vc == 0.d0 .and. .not. spac .and. akr0(0) == (0.d0,0.d0))then
         call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al,bzs,dble(akr(0)),imag(akr(0)),krad)
         go to 1000
@@ -378,7 +378,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
       ndiv=min(ndivmax,max(ndiv,
      $     1+int(min(abs(w*al),
      $     sqrt(r**2/3.d0/(epsr*1.d-3))))))
-      if(abs(r) .gt. 1.d-6)then
+      if(abs(r) > 1.d-6)then
         wl=asinh(r*(2.d0+r)/2.d0/(1.d0+r))
         ndiv=min(ndivmax,max(ndiv,nint(wl*10.d0/epsr)))
         r1=wl/ndiv/2.d0
@@ -445,14 +445,14 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
       ibsi=1
       do m=1,ndiv
         if(wak)then
-          if(m .eq. 1)then
+          if(m == 1)then
             fw=fw0*ws(1)*.5d0
           else
             fw=fw0*(ws(m)+ws(m-1)*.5d0)
           endif
           call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $         0.d0,0.d0,0.d0,int(anbunch),
-     $         fw,nwak,p0,h0,m .eq. 1)
+     $         fw,nwak,p0,h0,m == 1)
         endif
         akrm(0:nmmax)=akr(0:nmmax)*ws(m)
         if(nzleng)then
@@ -521,7 +521,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
           p1r=1.d0+dp1r
           p1=p0*p1r
           h1=merge(p2h(p1),p1r*h0/(1.d0-dv(i)+dvfs),
-     $         dv(i) .gt. 0.1d0)
+     $         dv(i) > 0.1d0)
           z(i)=z(i)-dzn
           t=min(tlim,max(-tlim,-z(i)*h1/p1))
           ph=.5d0*w*t
