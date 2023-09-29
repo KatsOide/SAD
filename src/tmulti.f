@@ -55,7 +55,7 @@ c      write(*,'(a,1p10g12.4)')'tmulti ',al,ak(1),chi1,chi2,alg,phig
      $     -chi1,-chi2,theta2,bxs,bys,bzs,.true.)
 c      write(*,'(a,1p10g12.4)')'tmulti-1 ',x(1),px(1),y(1),py(1),z(1),g(1)
       akr(0)=(akr0(0)+dcmplx(bys*al,bxs*al))*rtaper
-      if(nmmax == 0 .and. .not. spac)then
+      if(nmmax == 0 .and. .not. spac .and. akr0(0) .eq. (0.d0,0.d0))then
         call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al,bzs,dble(akr(0)),imag(akr(0)),krad)
       else

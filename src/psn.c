@@ -44,7 +44,7 @@ void create_env_psn(int nx, int ny, double cx, double cy)
      ch = cy;
      ratio_psn = cw/ch;
 
-     ip_dfst_psn[0]=0;		/* 第一次计算时需要初始化 */
+     ip_dfst_psn[0]=0;		/* */
 
      size = (nh_count_psn)*(nv_count_psn+1)*sizeof(double);
      g_facr_psn = (double*)malloc(size);

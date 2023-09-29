@@ -59,10 +59,9 @@
           go to 1
         endif
       enddo
-      if(vc .ne. 0.d0 .or. gammab(l+1) .ne. gammab(l))then
+      if(vc .ne. 0.d0 .or. gammab(l+1) .ne. gammab(l) .or. ak(0) .ne. (0.d0,0.d0))then
         nmmax=0
       else
-c        write(*,'(a,1p12g12.4)')'tmulte-drife ',al,ak(0),akn0
         call tdrife(trans,cod,beam,srot,
      $       al,bzs,dble(akn0),imag(akn0),al,
      $       .true.,krad,irad)
