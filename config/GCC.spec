@@ -171,8 +171,8 @@ SYS_CXXOPT_DYNL_PIC= -fPIC
 GCC_FOPT_GFORTRAN=	-Wall -std=gnu \
 			-Wno-unused-dummy-argument $(SYS_FOPT_GFORTRAN_CHECK)
 GCC_FOPT_G95=		-Wall -traditional
-GCC_COPT_GCC=		-Wall -std=gnu11     -pedantic-errors
-GCC_CXXOPT_GCC=		-Wall -std=c++98   -pedantic-errors
+GCC_COPT_GCC=		-Wall -std=c2x -pedantic-errors
+GCC_CXXOPT_GCC=		-Wall -std=c++98 -pedantic-errors
 
 SYS_FOPT=$(GCC_FOPT_$(_USE_GNU_FORTRAN)) $(SYS_FOPT_DISABLE_BACKSLASH_ESCAPE)
 SYS_COPT=$(GCC_COPT_GCC)

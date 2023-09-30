@@ -13,7 +13,7 @@ typedef struct {
 typedef enum {
   _NOP,
   _INT,
-  _STR,
+  _STR
 } buildinfo_type_t;
 
 typedef struct {
