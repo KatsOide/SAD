@@ -2115,9 +2115,11 @@ CanvasGraphics=Class[{},
     LegendPos = p;
     ];
 
-  AdjustLegend1[ls_,r_,r1_,ida_]:=Module[{
+  AdjustLegend1[ls_,r_,r1_,ida_,d_:0]:=Module[{
     id=Join[BGItems,ida],
-    novmin=Infinity,zrmin,zr=CanvasWidget[BBox[ls]],ov,nov,d=10,dx,dy},
+    novmin=Infinity,zrmin,zr=CanvasWidget[BBox[ls]]+{d,d,-d,-d},ov,nov,d=10,dx,dy},
+    If[zr[[1]]>=zr[[3]] || zr[[2]]>=zr[[4]],
+      Return[INF]];
     If[r<=>r1,
       zrmin=zr;
       While[ov=Complement[CanvasWidget[Find$Overlapping[zr]],id];
@@ -2154,16 +2156,24 @@ CanvasGraphics=Class[{},
             CanvasWidget[Move] = {ls, {dx,dy}},
             CanvasWidget[Move] = {ls, (zrmin-zr)[[{1,2}]]};
             zr=zrmin;
-            Break[]]]]
-      ]];
+            Break[]]]]];
+    novmin
+    ];
+
+  AdjustLegend2[ls_,r_,r1_,ida_]:=Module[{res,d=0},
+    While[
+      (res=AdjustLegend1[ls,r,r1,ida,d])<=>INF,
+      d+=5];
+    res];
 
   AdjustLegend[]:=Module[{rl=Reverse[Legends],ida={},l,r,r1},
     If[rl<=>{},
       {l,r}=Thread[rl];
       r1=Drop[Prepend[r,Null],-1];
-      AdjustLegend1@@[
+      AdjustLegend2@@[
         Thread[{l,r,r1,
-          (ida=Join[ida,CanvasWidget[Find$WithTag[#[[1]]]]])&/@rl}],{1}]]];
+          (ida=Join[ida,CanvasWidget[Find$WithTag[#[[1]]]]])&/@rl}],{1}]
+      ]];
 
   Canvas$FrameClick[fr_, opt___] := Module[
     {d=4,sc,vperm,gr,xyr,r,ax1,ax2,ay1,ay2,gl},
