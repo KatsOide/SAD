@@ -1,10 +1,11 @@
-      subroutine tthine(trans,cod,beam,srot,nord,al,ak,
-     1                 dx,dy,theta,enarad)
+      subroutine tthine(trans,cod,beam,srot,nord,al,ak,dx,dy,theta,enarad)
       use ffs_flag
       use tmacro
+      use drife
       use temw,only:bsir0,tsetr0,tmulbs
       use multa, only:fact
       use chg,only:tchge
+      use sad_basics
       implicit none
       integer*4 kord,nord
       real*8 ,intent(in):: al,ak,dx,dy,theta
@@ -15,8 +16,7 @@
       logical*4 krad
       real*8 trans1(6,13)
       if(ak .eq. 0.d0)then
-        call tdrife(trans,cod,beam,srot,al,
-     $       0.d0,0.d0,0.d0,0.d0,.true.,.false.,irad)
+        call tdrife0(trans,cod,beam,srot,al,0.d0,0.d0,.true.,.false.,irad)
         return
       endif
       call tchge(trans,cod,beam,srot,
@@ -31,8 +31,7 @@
       if(al .ne. 0.d0)then
         ala=al/6.d0
         alb=al/1.5d0
-        call tdrife(trans,cod,beam,srot,ala,
-     $       0.d0,0.d0,0.d0,0.d0,.true.,.false.,irad)
+        call tdrife0(trans,cod,beam,srot,ala,0.d0,0.d0,.true.,.false.,irad)
         b1=brhoz/al*aki
         aki=aki*.5d0
       endif
@@ -65,8 +64,7 @@ c      endif
       cod(4)=cod(4)-aki*imag(cx)
       if(al .ne. 0.d0)then
         bsir0=bsir0-aki*imag(cx)/al
-        call tdrife(trans,cod,beam,srot,alb,
-     $       0.d0,0.d0,0.d0,al*.5d0,.true.,krad,irad)
+        call tdrife0(trans,cod,beam,srot,alb,0.d0,al*.5d0,.true.,krad,irad)
         call tinitr(trans1)
         if(kord .eq. 0)then
           cx=(1.d0,0.d0)
@@ -95,8 +93,7 @@ c        endif
         cod(2)=cod(2)-aki*dble(cx)
         cod(4)=cod(4)-aki*imag(cx)
         bsir0=bsir0+aki*imag(cx)/al
-        call tdrife(trans,cod,beam,srot,ala,
-     $       0.d0,0.d0,0.d0,al*.5d0,.true.,krad,irad)
+        call tdrife0(trans,cod,beam,srot,ala,0.d0,al*.5d0,.true.,krad,irad)
       endif
       bradprev=0.d0
       call tchge(trans,cod,beam,srot,

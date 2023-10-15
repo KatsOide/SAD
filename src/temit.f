@@ -88,6 +88,7 @@ c      enddo
       use tspin, only:spnorm,srotinit
       use eigen
       use macmath
+      use sad_basics
       implicit none
       type (iaemit),intent(in):: iae
       real*8 ,parameter ::conv=1.d-12
@@ -244,6 +245,7 @@ c          endif
       use tffitcode
       use tspin, only:spnorm,srequpol
       use eigen
+      use sad_basics
       use macmath
       use mathfun
       implicit none
@@ -570,6 +572,7 @@ c      write(*,'(1p10g12.4)')spt
       use tmacro
       use sad_main , only:iaidx
       use temw
+      use sad_basics
       implicit none
       type (sad_dlist), pointer :: klx1
       type (sad_dlist), pointer :: klx2,klx
@@ -944,6 +947,7 @@ c     $         sqrt(emitn(15)*emitn(21)-emitn(20)**2)
       use ffs_pointer
       use tmacro
       use tffitcode
+      use sad_basics
       use macmath
       implicit none
       integer*4 ,intent(in):: lfno

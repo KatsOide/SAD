@@ -13,7 +13,7 @@
      $     xthcs1=min(xths1,xthc1),
      $     xthcs2=min(xths2,xthc2),
      $     xthasx=(epsieee*13312.d0/231.d0/6.d0)**(1.d0/10.d0)
-      real*8 ,parameter ::nmaxsvd=30.d9
+      real*8 ,parameter ::nmaxsvd=100.d9
       integer*4 ,parameter ::nomp=400
 
       contains

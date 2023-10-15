@@ -202,7 +202,6 @@ c!$OMP END PARALLEL WORKSHARE
           endif
         enddo
       enddo
-c      write(*,*)'tsvdm-omp ',omp_get_num_threads()
       lsep(0)=0
       lsep(1)=1
       isep=1
@@ -226,6 +225,7 @@ c      write(*,*)'tsvdm-omp ',omp_get_num_threads()
         enddo
       endif
       do3001: do
+c      write(*,'(a,2i5,1p10g12.4)')'tsvdm-5 ',ibegin,iend,a(1,11:20)
         do while(ibegin >= iend)
           isep=isep-1
           if(isep <= 0)then

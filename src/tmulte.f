@@ -15,7 +15,9 @@
       use kradlib, only:tradke
       use mathfun
       use multa, only:fact,aninv
+      use drife
       use macmath
+      use sad_basics
       implicit none
       integer*4 ,parameter ::ndivmax=300
       real*8 ,parameter::ampmax=0.05d0,pmax=0.9999d0,oneev=1.d0+3.83d-12
@@ -62,9 +64,7 @@
       if(vc /= 0.d0 .or. gammab(l+1) /= gammab(l) .or. ak(0) /= (0.d0,0.d0))then
         nmmax=0
       else
-        call tdrife(trans,cod,beam,srot,
-     $       al,bzs,dble(akn0),imag(akn0),al,
-     $       .true.,krad,irad)
+        call tdrife0(trans,cod,beam,srot,al,bzs,al,.true.,krad,irad)
         dhg=0.d0
         go to 1000
       endif

@@ -1,5 +1,6 @@
       subroutine tbdecoup(beam,param,param1,
      1                    emix,emiy,emix1,emiy1,sigp)
+      use sad_basics
       implicit none
       integer*4 i,j
       real*8 beam(6,6),param(21),param1(21),emix,emiy,emix1,emiy1,sigp

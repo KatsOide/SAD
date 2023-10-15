@@ -253,6 +253,7 @@ c        write(*,'(a,1p9g13.5)')'tsolrot ',rr
       use mathfun, only: sqrtl,xsincos
       use temw,only:tmulbs
       use element_drift_common,only:tsoldz
+      use sad_basics
       implicit none
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 trans1(6,6),trans2(6,6),tb(6)

@@ -2,6 +2,7 @@
       use mathfun, only: sqrtl
       use element_drift_common, only:tsoldz
       use temw,only:tmulbs
+      use sad_basics
       implicit none
       integer*4 ,intent(in):: irad
       real*8 ,intent(in):: al,bz

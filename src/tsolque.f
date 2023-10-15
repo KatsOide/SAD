@@ -313,9 +313,11 @@ c        phi1=aln*w1
       subroutine tsolque(trans,cod,beam,srot,al,ak,
      $     bz0,ak0x,ak0y,eps0,enarad,irad)
       use tsolz
+      use drife
       use tmacro, only:bradprev
       use kradlib, only:tradke
       use temw,only:tmulbs
+      use sad_basics
       implicit none
       type(tzparam) tz
       integer*4 n,ndiv
@@ -366,8 +368,7 @@ c        phi1=aln*w1
      $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,
      $       cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
       if(ak .eq. 0.d0)then
-        call tdrife(trans,cod,beam,srot,al,
-     $       bz0,ak0x,ak0y,al,.true.,enarad,irad)
+        call tdrife(trans,cod,beam,srot,al,bz0,ak0x,ak0y,al,.true.,enarad,irad)
         return
 c      elseif(ak .lt. 0.d0)then
 c        write(*,*)'tsolque-implementation error ',ak

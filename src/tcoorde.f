@@ -4,6 +4,7 @@
       use tmacro
       use mathfun, only: sqrtl
       use temw,only:tmulbs
+      use sad_basics
       implicit none
       integer*4 i
       real*8 dx,dy,dz,chi1,chi2,chi3,cchi1,schi1,

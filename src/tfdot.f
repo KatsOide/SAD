@@ -418,7 +418,6 @@ c          enddo
       type (sad_descriptor) , intent(out)::kx
       type (sad_dlist) , intent(in):: kl
       integer*4 ,intent(in)::n
-      real*8 tdet
       real*8, allocatable :: a(:,:)
       allocate (a(n,n))
       call tfl2m(kl,a,n,n,.false.)
@@ -434,7 +433,7 @@ c          enddo
       integer*4 ,intent(in):: n
       integer*4 ,intent(out):: irtc
       complex*16 , allocatable ::c(:,:)
-      complex*16 cx,tcdet
+      complex*16 cx
       allocate (c(n,n))
       call tfl2cm(kl,c,n,n,.false.,irtc)
       if(irtc /= 0)then
@@ -484,7 +483,7 @@ c          enddo
         if(max(n,m) > 200)then
           call tftclupdate(3)
         endif
-        call tsvdma(kl,kux,kvx,kwx,m,n,eps,inv)
+        call tsvdma(kl,kux,kvx,kwx,n,m,eps,inv)
         irtc=0
       else
         irtc=itfmessage(9,'General::wrongtype',
@@ -498,7 +497,7 @@ c          enddo
       return
       end
 
-      subroutine tcsvdma(kl,kux,kvx,kwx,m,n,eps,inv,irtc)
+      subroutine tcsvdma(kl,kux,kvx,kwx,n,m,eps,inv,irtc)
       implicit none
       type (sad_dlist) , intent(in)::kl
       integer*8 , intent(out)::kux,kvx,kwx
@@ -525,7 +524,7 @@ c          enddo
       return
       end
 
-      subroutine tsvdma(kl,kux,kvx,kwx,m,n,eps,inv)
+      subroutine tsvdma(kl,kux,kvx,kwx,n,m,eps,inv)
       implicit none
       type (sad_dlist) ,intent(in)::kl
       integer*8,intent(out):: kux,kvx,kwx
@@ -536,7 +535,7 @@ c          enddo
       logical*4 ,intent(in)::inv
       ndim=max(n,m-1)
       allocate (a(ndim,m),w(m),u(n,n))
-      call tfl2m(kl,a,n,m,.false.)
+      call tfl2m1(kl,a,n,m,ndim,.false.)
       call tsvdm(a,u,w,n,m,ndim,n,eps,inv)
       mn=min(m,n)
       kux=ktfaddr(kxm2l(u,mn,n,n,.false.))
@@ -1086,6 +1085,90 @@ c        enddo
  9000 irtc=itfmessage(9,'General::wrongtype','"Matrix"')
       return
       end
+
+      real*8 function tdet(a,n,ndim)
+      use mathfun, only:p2h
+      implicit none
+      integer*4 ,intent(in)::n,ndim
+      integer*4 i,j,k
+      real*8 ,intent(inout)::a(ndim,n)
+      real*8 d,di,p,x,u
+      d=1.d0
+      do i=1,n-1
+        di=a(i,i)
+        do j=i+1,n
+          if(a(j,i) .ne. 0.d0)then
+            if(di .eq. 0.d0)then
+              do k=i+1,n
+                x=a(j,k)
+                a(j,k)=a(i,k)
+                a(i,k)=x
+              enddo
+              di=a(j,i)
+            else
+              p=a(j,i)/di
+c              u=1.d0/sqrt(1.d0+p**2)
+              u=1.d0/p2h(p)
+              do k=i+1,n
+                x=a(j,k)
+                a(j,k)=(x-p*a(i,k))*u
+                a(i,k)=(a(i,k)+p*x)*u
+              enddo
+              di=(di+p*a(j,i))*u
+            endif
+          endif
+        enddo
+        d=d*di
+        if(d .eq. 0.d0)then
+          tdet=0.d0
+          return
+        endif
+      enddo
+      tdet=d*a(n,n)
+      return
+      end function
+
+      complex*16 function tcdet(a,n,ndim)
+      implicit none
+      integer*4 ,intent(in)::n,ndim
+      integer*4 i,j,k
+      real*8 u
+      complex*16 ,intent(inout)::a(ndim,n)
+      complex*16 d,di,p,x,pc
+      d=(1.d0,0.d0)
+      do i=1,n-1
+        di=a(i,i)
+        do j=i+1,n
+          if(a(j,i) .ne. (0.d0,0.d0))then
+            if(di .eq. (0.d0,0.d0))then
+              do k=i+1,n
+                x=a(j,k)
+                a(j,k)=a(i,k)
+                a(i,k)=x
+              enddo
+              di=a(j,i)
+            else
+              p=a(j,i)/di
+              pc=conjg(p)
+              u=1.d0/sqrt(1.d0+dble(p*pc))
+              do k=i+1,n
+                x=a(j,k)
+                a(j,k)=(x-p*a(i,k))*u
+                a(i,k)=(a(i,k)+pc*x)*u
+              enddo
+              di=(di+pc*a(j,i))*u
+            endif
+          endif
+        enddo
+        d=d*di
+        if(d .eq. 0.d0)then
+          tcdet=0.d0
+          return
+        endif
+      enddo
+      tcdet=d*a(n,n)
+      return
+      end function
 
       end module
 c

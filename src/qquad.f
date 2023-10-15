@@ -1,6 +1,7 @@
       subroutine qquad(trans,cod,al,ak,
      1dx,dy,theta,fringe,f1in,f2in,f1out,f2out,mfring,eps0,
      $     kin,achro,coup)
+      use sad_basics
       implicit none
       integer*4 mfring
       real*8 ,intent(inout):: trans(4,5),cod(6),beam(42),srot(3,9)

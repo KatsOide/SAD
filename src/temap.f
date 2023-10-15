@@ -324,6 +324,7 @@ c      write(*,*)'unmap ',ipn,n,np,kzi%rbody(4)
       use temw,only:tmulbs
       use efun
       use maloc,only:ktfmalocp
+      use sad_basics
       use iso_c_binding
       implicit none
       type (sad_descriptor) kx,k2,k3,k4
@@ -449,6 +450,7 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       use tmacro
       use efun
       use maloc,only:tfl2m,tfmsize
+      use sad_basics
       implicit none
       type (sad_descriptor) :: kx
       type (sad_dlist), pointer :: kxl, k2l
@@ -513,7 +515,7 @@ c      itastk(2,isp)=iat
      $     ' element did not return ',
      $     '{cod(6), trans(6,6)}.'
       go to 9000
- 9200 call tinitr(trans,6)
+ 9200 call tinitr(trans)
       go to 9000
       end
 

@@ -55,6 +55,7 @@
       use codm
       use tmacro
       use gfun
+      use sad_basics
       implicit none
       type (sad_dlist), pointer :: kl
       type (sad_rlist), pointer :: kvl
@@ -172,9 +173,6 @@ c        write(*,'(a,2i5,1p7g12.4)')'temits1-cod ',i,i1,cod
         call tmov65(rm,trads(1,1,i))
         tws(1:ntwissfun,i)=tfetwiss(matmul(ri,tinv6(trans(:,1:6))),
      $       cod,.true.)
-c        call tinv6(trans,rm)
-c        call tmultr(rm,ri,6)
-c        call tfetwiss(rm,cod,tws(1,i),.true.)
         call tmulbs(beam,rxi,.false.)
         beams(1:10,i)=beam(1:10)
 c        write(*,'(a,i5,1p10g12.4)')'te ',i,beams(1:10,i)
@@ -1196,9 +1194,10 @@ c      enddo
       
       subroutine teintp1(ip,f,tws,tr1,h1,tw0,ndims)
       use tfstk, only:ktfenanq
-      use temw, only:etwiss2ri,ri,tinv6
+      use temw, only:etwiss2ri,ri
       use ffs, only:xyth
       use tffitcode
+      use sad_basics
       implicit none
       integer*4 ip,ip1,ndims
       real*8 tws(ntwissfun,-ndims:ndims),tr1(5,5),h1(4),
@@ -1227,9 +1226,6 @@ c      call etwiss2ri(tw0,ri,normal)
       rt(5,:)= cz*ri(5,:)+sz*ri(6,:)
       rt(6,:)=-sz*ri(5,:)+cz*ri(6,:)
       call tmov65(matmul(tinv6(rxi),rt),tr1)
-c      call tinv6(rxi,rx)
-c      call tmultr(rt,tinv6(rxi),6)
-c      call tmov65(rt,tr1)
       h1=twf(mfitdx:mfitdpy)
       return
       end

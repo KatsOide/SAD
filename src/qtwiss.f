@@ -20,6 +20,7 @@
       use tffitcode
       use sad_main
       use ffs_seg
+      use sad_basics
       use tfcsi, only:icslfno
       implicit none
       type (sad_comp), pointer :: cmp
@@ -991,8 +992,9 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
       use ffs
       use ffs_pointer
       use tffitcode
-      use temw, only:etwiss2ri,tfetwiss,tinv6,iaez
+      use temw, only:etwiss2ri,tfetwiss,iaez
       use geolib
+      use sad_basics
       implicit none
       type (sad_descriptor) dsave(kwMAX)
       type (sad_comp) , pointer :: cmp
@@ -1612,8 +1614,105 @@ c        write(*,'(a,3i5,1p2g15.7)')'qputfracseg ',k,i1,i,r,lkv0%rbody(i)
       return
       end
 
+      subroutine qmult(trans,cod,k,al,ak,bz,
+     $     phi0,psi1,psi2,apsi1,apsi2,
+     1     dx,dy,dz,chi1,chi2,theta,dtheta,alg,phig,
+     $     eps0,fringe,f1in,f2in,f1out,f2out,
+     $     mfring,fb1,fb2,bfrm,
+     $     vc,harm,phi,freq,wakew1,autophi,ini,coup)
+      use tfstk
+      use ffs
+      use tffitcode
+      use kyparam, only:nmult
+      use sad_basics
+      implicit none
+      integer*4 ,intent(in):: mfring,k
+      real*8 ,intent(inout):: trans(4,5),cod(6)
+      real*8 ,intent(in)::dx,dy,theta,f1in,f2in,f1out,f2out,
+     $     al,bz,eps0,chi1,chi2,dz,vc,harm,phi,freq,wakew1,
+     $     psi1,psi2,phi0,dtheta,apsi1,apsi2,fb1,fb2,alg,phig
+      real*8 transe(6,12),beam(42),srot(3,9)
+      real*8 ,intent(in):: ak(2,0:nmult)
+      logical*4 ,intent(out):: coup
+      logical*4 ,intent(in):: fringe,bfrm,autophi,ini
+      logical*4 rfsw0
+      rfsw0=rfsw
+      rfsw=rfsw .and. trpt
+      if(ini)then
+        call tinitr(transe)
+      endif
+      call tmulte(transe,cod,beam,srot,k,al,ak,bz,
+     $     phi0,psi1,psi2,apsi1,apsi2,
+     1     dx,dy,dz,chi1,chi2,theta,dtheta,alg,phig,
+     $     eps0,.false.,fringe,
+     $     f1in,f2in,f1out,f2out,
+     $     mfring,fb1,fb2,bfrm,vc,harm,phi,freq,wakew1,
+     $     1.d0,autophi,0)
+c      write(*,'(a,1p10g12.4)')'qmult ',chi1,chi2,cod(1:5)
+      call qcopymatg(trans,transe,k)
+      coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.
+     $     trans(2,3) .ne. 0.d0 .or. trans(2,4) .ne. 0.d0
+      rfsw=rfsw0
+      return
+      end
+
+      subroutine qcopymatg(trans,transe,k)
+      use ffs_pointer, only:gammab
+      implicit none
+      real*8 ,intent(out):: trans(4,5)
+      real*8 ,intent(in):: transe(6,6)
+      real*8 rg
+      integer*4 ,intent(in):: k
+      if(gammab(k) .eq. gammab(k+1))then
+        trans(1,1)=transe(1,1)
+        trans(1,2)=transe(1,2)
+        trans(1,3)=transe(1,3)
+        trans(1,4)=transe(1,4)
+        trans(1,5)=transe(1,6)
+        trans(2,1)=transe(2,1)
+        trans(2,2)=transe(2,2)
+        trans(2,3)=transe(2,3)
+        trans(2,4)=transe(2,4)
+        trans(2,5)=transe(2,6)
+        trans(3,1)=transe(3,1)
+        trans(3,2)=transe(3,2)
+        trans(3,3)=transe(3,3)
+        trans(3,4)=transe(3,4)
+        trans(3,5)=transe(3,6)
+        trans(4,1)=transe(4,1)
+        trans(4,2)=transe(4,2)
+        trans(4,3)=transe(4,3)
+        trans(4,4)=transe(4,4)
+        trans(4,5)=transe(4,6)
+      else
+        rg=sqrt(gammab(k+1)/gammab(k))
+        trans(1,1)=transe(1,1)*rg
+        trans(1,2)=transe(1,2)*rg
+        trans(1,3)=transe(1,3)*rg
+        trans(1,4)=transe(1,4)*rg
+        trans(1,5)=transe(1,6)*rg
+        trans(2,1)=transe(2,1)*rg
+        trans(2,2)=transe(2,2)*rg
+        trans(2,3)=transe(2,3)*rg
+        trans(2,4)=transe(2,4)*rg
+        trans(2,5)=transe(2,6)*rg
+        trans(3,1)=transe(3,1)*rg
+        trans(3,2)=transe(3,2)*rg
+        trans(3,3)=transe(3,3)*rg
+        trans(3,4)=transe(3,4)*rg
+        trans(3,5)=transe(3,6)*rg
+        trans(4,1)=transe(4,1)*rg
+        trans(4,2)=transe(4,2)*rg
+        trans(4,3)=transe(4,3)*rg
+        trans(4,4)=transe(4,4)*rg
+        trans(4,5)=transe(4,6)*rg
+      endif
+      return
+      end subroutine
+
       subroutine qthin(trans,cod,nord,al,ak,
      1                 dx,dy,theta,coup)
+      use sad_basics
       implicit none
       integer*4 nord
       real*8 trans(4,5),cod(6),transe(6,12),beam(42),srot(3,9),
@@ -1629,8 +1728,9 @@ c        write(*,'(a,3i5,1p2g15.7)')'qputfracseg ',k,i1,i,r,lkv0%rbody(i)
       end
 
       subroutine qquad(trans,cod,al,ak,
-     1dx,dy,theta,fringe,f1in,f2in,f1out,f2out,mfring,eps0,
+     1     dx,dy,theta,fringe,f1in,f2in,f1out,f2out,mfring,eps0,
      $     kin,achro,coup)
+      use sad_basics
       implicit none
       integer*4 mfring
       real*8 trans(4,5),cod(6),transe(6,12),beam(42),srot(3,9),

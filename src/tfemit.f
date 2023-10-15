@@ -5,8 +5,8 @@
       use tffitcode
       use iso_c_binding
       use tfcsi, only:icslfno
-      use temw, only:tfinitemip,nparams,tfetwiss,iptwiss,tfinibeam,
-     $     iaemit,iaez
+      use temw, only:tfinitemip,nparams,tfetwiss,iptwiss,tfinibeam,iaemit,iaez
+      use sad_basics
       implicit none
       type (sad_descriptor) kx
       type (sad_dlist), pointer :: kl,klx
@@ -192,7 +192,8 @@ c        ilist(2,iwakepold+6)=ifsize
       subroutine rotri(is,ris)
       use ffs_pointer,only:twiss
       use tffitcode
-      use temw,only:r,ri,tinv6
+      use temw,only:r,ri
+      use sad_basics
       implicit none
       integer*4 ,intent(in)::is
       real*8 , intent(out)::ris(6,6)

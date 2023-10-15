@@ -4,8 +4,10 @@
       use tmacro
       use bendib, only:rbh,rbl,tbendal
       use temw, only:tsetr0,tmulbs
-      use kradlib, only:tradke      
+      use kradlib, only:tradke
+      use drife
       use chg,only:tchge
+      use sad_basics
       use mathfun
       implicit none
       real*8 epslon,a3,a5,a7,a9,a11,a13,a15
@@ -29,12 +31,10 @@
      $       .false.)
         return
       elseif(phib .eq. 0.d0)then
-        call tdrife(trans,cod,beam,srot,al,
-     $         0.d0,0.d0,0.d0,0.d0,.true.,.false.,irad)
+        call tdrife0(trans,cod,beam,srot,al,0.d0,0.d0,.true.,.false.,irad)
         return
       endif
-      call tchge(trans,cod,beam,srot,
-     $     dx,dy,0.d0,theta,0.d0,0.d0,0.d0,0.d0,.true.)
+      call tchge(trans,cod,beam,srot,dx,dy,0.d0,theta,0.d0,0.d0,0.d0,0.d0,.true.)
       krad=enarad .and. al .ne. 0.d0
       if(krad)then
         call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)

@@ -409,9 +409,9 @@ c     (Note) Disperdion is defined in 2*2 world
       end
 
       subroutine qcell6d(fbound,idp,optstat,lfno)
-      use temw,only:calint,normali,tinv6,etwiss2ri,tsymp,nparams,
-     $     tfinibeam,iaez,tfetwiss
+      use temw,only:calint,normali,etwiss2ri,nparams,tfinibeam,iaez,tfetwiss
       use maccbk, only:i00
+      use sad_basics
       implicit none
       type (ffs_bound) ,intent(in):: fbound
       type (ffs_stat) ,intent(out):: optstat

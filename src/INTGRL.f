@@ -348,6 +348,7 @@ c      write(*,'(a,1p6g15.7)')'chrom ',RK1,CURV2,BU,BV,DL
       subroutine BMAG(TETA1)
       use tmacro, only:irad
       use bendeb, only:tbendebody
+      use sad_basics
       implicit none
       real*8 ,intent(in)::  TETA1
       real*8 trans(6,12),cod(6),beam(42),srot(3,9)
