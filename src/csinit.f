@@ -12,7 +12,7 @@ c      allocate(buffer0)
 c      write(*,*)'csinit-0 ',ibcloc*8,
 c     $     transfer(c_loc(jlist(1,ibcloc)),ibcloc)
       ibuf(lfni)=ibcloc
-      lfn1=lfn0
+      lfnm=lfn0
       ipoint=>mbuf(lfni)
       lrecl=>lbuf(lfni)
       lrecl=0

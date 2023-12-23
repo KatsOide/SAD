@@ -27,7 +27,7 @@
       do while (ipoint .le. lrecl)
         call skipline
       enddo
-      call tprmpt(lfni,lfno,lfn1)
+      call tprmpt(lfni,lfno,lfnm)
       if(unmapped)then
         lrecl0=merge(lrecl+1,1,rep)
         ipoint=lrecl0
@@ -51,8 +51,8 @@
           else
             lrecl=lrecl0+nc-1
           endif
-          if(lfn1 .gt. 0)then
-            write(lfn1,'(1x,a)')buffer(lrecl0:lrecl)
+          if(lfnm .gt. 0)then
+            write(lfnm,'(1x,a)')buffer(lrecl0:lrecl)
           endif
           ipoint=lrecl1
           ios=0
@@ -80,11 +80,11 @@
         elseif(nc ==  irbnofile)then
           go to 10
         endif
-        if(lfn1 .gt. 0)then
+        if(lfnm .gt. 0)then
           if(buffer(lrecl:lrecl) == char(10))then
-            write(lfn1,'(1x,a)')buffer(ipoint:lrecl-1)
+            write(lfnm,'(1x,a)')buffer(ipoint:lrecl-1)
           else
-            write(lfn1,'(1x,a)')buffer(ipoint:lrecl)
+            write(lfnm,'(1x,a)')buffer(ipoint:lrecl)
           endif
         endif
       endif
@@ -107,18 +107,18 @@
       return
       end
 
-      subroutine tprmpt(lfni,lfno,lfn1)
+      subroutine tprmpt(lfni,lfno,lfnm)
       use tfstk
       use ffs
       use ophash, only: opcode
       use tffitcode
       use prmpt
       implicit none
-      integer*4, intent(in):: lfni,lfno,lfn1
+      integer*4, intent(in):: lfni,lfno,lfnm
       character*80 pr
       character*10 n,autofg
       integer*4 l,nc
-      if(lfni == 5 .and. lfno == 6 .and. lfn1 == 0)then
+      if(lfni == 5 .and. lfno == 6 .and. lfnm == 0)then
         if(ipr == 0)then
           if(ffsprmpt)then
             call elname(mfpnt,pr)

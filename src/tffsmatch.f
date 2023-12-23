@@ -553,6 +553,7 @@ c     $             .and. dble(nvar*nfam*nlat) < aloadmax
       subroutine tffssetupqu(ifqu,ifquw,nqumax,nqcol,nvar,lfno)
       use tfmem, only:ktaloc,tfree
       use tfshare,only:itmmapp,tmunmapp
+      use tfcsi,only:icslfnm
       implicit none
       integer*8 ,intent(out):: ifqu,ifquw
       integer*4 ,intent(inout):: nqumax
@@ -577,7 +578,7 @@ c     $             .and. dble(nvar*nfam*nlat) < aloadmax
         nqumax=nqu
       endif
       return
- 9000 call termes(lfno,'?Too many conditions*variables.',' ')
+ 9000 call termes(icslfnm(),'?Too many conditions*variables.',' ')
       if(nqumax > 0)then
         ifqu=itmmapp(nqumax)
         ifquw=ktaloc(nqumax)
@@ -696,6 +697,7 @@ c     $             .and. dble(nvar*nfam*nlat) < aloadmax
       use tffitcode
       use iso_c_binding
       use eeval
+      use tfcsi,only:icslfnm
       implicit none
       type (sad_string), pointer, save :: svarn, skey
       type (sad_descriptor) , save ::ifvr,ifvw
@@ -758,7 +760,7 @@ c        call tfdebugprint(kx,':',1)
         kx%k=ktfoper+mtfnull
         level=itfdownlevel()
         if(ierrorprint /= 0)then
-          call tfaddmessage(' ',2,6)
+          call tfaddmessage(' ',2,icslfnm())
         endif
         if(id == 1)then
           call termes(6,'Error in VariableRange '//

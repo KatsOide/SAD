@@ -362,11 +362,12 @@ c      trans(3,6)=-pr*pyi*sxa*(f+pxi*sinp/pzi)
       use temw,only:tmulbs
       use sad_basics
       implicit none
-      real*8 trans(6,6),trans1(6,6),cod(6),beam(42),ak(2),pr,
-     $     akx,aky,xi,pxi,yi,pyi,y1,px1,a,dx,dpx,dy,dpy,dz,fb1,
+      real*8 ,intent(inout):: trans(6,6),cod(6),beam(42)
+      real*8 ,intent(in):: ak(2),fb1
+      logical*4 ,intent(in):: ent
+      real*8 trans1(6,6),pr,akx,aky,xi,pxi,yi,pyi,y1,px1,a,dx,dpx,dy,dpy,dz,
      $     dxfrx,dyfrx,dyfrax,
      $     dxfry,dyfry,dxfray,rhob
-      logical*4 ent
       pr=1.d0+cod(6)
       akx= ak(1)
       aky=-ak(2)
@@ -390,6 +391,7 @@ c      trans(3,6)=-pr*pyi*sxa*(f+pxi*sinp/pzi)
         dxfry=0.d0
         dxfray=0.d0
       endif
+c      write(*,'(a,l2,1p10g12.4)')'tbfrme ',ent,dxfrx,dyfrx,dyfrax,dxfry,dyfry,dxfray
       if((dxfrx .ne. 0.d0 .or. dyfry .ne. 0.d0) .and. ent)then
         call tbfrmle(trans,cod,beam,
      $       dxfrx,dyfrx,dyfrax,

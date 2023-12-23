@@ -85,7 +85,7 @@
       use tffitcode
       use kyparam
       use ffs_seg
-      use tfcsi, only:lfni
+      use tfcsi, only:lfni,icslfnm
       use geolib
       use gfun
       implicit none
@@ -228,7 +228,7 @@ c      write(*,*)'tfdisp ',word,wordp
      1         '   AY      BY      NY      EY      EPY    DetR     #'
         case (modeb)
           if(dref .or. icolm /= 0)then
-            call termes(lfno,
+            call termes(icslfnm(),
      $           'Info-REF and DREF not implemented for DISP B.',' ')
             return
           endif

@@ -15,7 +15,7 @@
       use cellm
       use dfun
       use tfshare
-      use tfcsi,only:lfno
+      use tfcsi,only:icslfnm
       use eeval
       use macmath
       use mathfun
@@ -64,10 +64,10 @@ c      call tfmemcheckprint('tffscalc-before-prolog',.true.,irtc)
       if(irtc /= 0)then
         if(irtc > 0)then
           if(ierrorprint /= 0)then
-            call tfaddmessage(' ',0,lfno)
+            call tfaddmessage(' ',0,icslfnm())
           endif
           call tclrfpe
-          call termes(lfno,'Error in OpticsProlog.',' ')
+          call termes(icslfnm(),'Error in OpticsProlog.',' ')
         endif
         error=.true.
         return
@@ -258,7 +258,7 @@ c                    endif
               irw=waitpid(-1,isw)
             enddo
             if(isw /= 0)then
-              call termes(lfno,
+              call termes(icslfnm(),
      1             '?Error in parallel process.',' ')
             endif
             do i=nfam1,nfam
@@ -291,7 +291,7 @@ c                    endif
       endif
       call tdfun(iqcol,lfp,nqcola,nqcola1,kdp,df,error)
       if(error)then
-        call termes(lfno,
+        call termes(icslfnm(),
      1         '?Too many fit conditions.',' ')
         return
       endif
@@ -308,7 +308,7 @@ c                    endif
         enddo
         if(fitflg)then
           if(nvar <= 0)then
-            call termes(lfno,'?No variable.',' ')
+            call termes(icslfnm(),'?No variable.',' ')
             error=.true.
           endif
           if(.not. cell .and. .not. geomet)then
@@ -425,10 +425,10 @@ c                    endif
       if(irtc /= 0)then
         if(irtc > 0)then
           if(ierrorprint /= 0)then
-            call tfaddmessage(' ',0,lfno)
+            call tfaddmessage(' ',0,icslfnm())
           endif
           call tclrfpe
-          call termes(lfno,'Error in OpticsEpilog.',' ')
+          call termes(icslfnm(),'Error in OpticsEpilog.',' ')
         endif
         error=.true.
       endif
@@ -446,6 +446,7 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
 c      use ffs_flag, only:cell
       use tffitcode
       use eeval
+      use tfcsi,only:icslfnm
       implicit none
       integer*4 ,intent(in):: nqcola,maxf,
      $     kfit(*),ifitp(*),kfitp(*),kdp(*),iqcol(nqcola)
@@ -558,7 +559,7 @@ c          endif
           call tfconnect(kx,irtc)
           if(irtc /= 0)then
             if(ierrorprint /= 0)then
-              call tfaddmessage(' ',2,6)
+              call tfaddmessage(' ',2,icslfnm())
             endif
             call termes(6,'Error in FitWeight '//
      $           nlist(k)//' at '//name,' ')

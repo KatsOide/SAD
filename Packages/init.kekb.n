@@ -33,10 +33,11 @@ Environment@@[{
 	"acsad"|"afsad",	"/scratch",
 	_,			"/tmp"]},
   {"SERVHOST","172.19.58.19"},
-  {"EPICS","/cont/epics/R312/epics"},
+!  {"EPICS","/SAD/epics"},
+!  {"EPICS","/cont/epics/R312/epics"},
   {"EPICS_CA_AUTO_ADDR_LIST","NO"},
 !  If[Environment["EPICS_CA_ADDR_LIST"]==="",
-  {"EPICS_CA_ADDR_LIST","172.19.68.144 172.19.68.161 172.19.63.255 130.87.71.176 172.19.64.37"},
+!  {"EPICS_CA_ADDR_LIST","172.19.68.144 172.19.68.161 172.19.63.255 130.87.71.176 172.19.64.37"},
 !  Null[]],
   {"TBLDIR","/users/furukawa/tbl"},
   Null[]},{1}];
@@ -69,3 +70,4 @@ ChooseHost[opt___]:=Module[{
 AutoLoad[KEKBDatabase, PackagesDirectory//"Oracle.n"];
 
 !End of File
+

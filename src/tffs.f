@@ -878,7 +878,7 @@ c        use ffs_pointer
         use tfstk
         use ffs
         use mackw
-        use tfcsi, only:icslfno
+        use tfcsi, only:icslfnm
         implicit none
         integer*4 ,intent(in):: l
         integer*4 lm,nm,lx,nmmax
@@ -901,7 +901,7 @@ c        use ffs_pointer
                     lm=lx
                     cycle
                   else
-                    call termes(icslfno(),
+                    call termes(icslfnm(),
      $                   '?Recursive OFFSET in',pnamec(l))
                   endif
                 endif

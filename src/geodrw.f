@@ -21,7 +21,7 @@ c       s.t.       x(beam)=x cos(t) - y sin(t)
       data window/2.,10.,1.,9./ parity /-1./
       goto 9000
  9000 continue
-      call termes(lfno,
+      call termes(lfnm,
      $     'A message from SAD/FFS: replace GEO command '//
      $      'with GeometryPlot[].',
      $  ' ')

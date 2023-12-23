@@ -1,6 +1,7 @@
 !! Frames for KEKB control software -- 
 ! Originally developed by N. Akasaka since 1997
 !
+!   V1.3.1.3k64 K. Oide, fixed HardCopy for a bug of xwd, non recognizing an xwd file
 !   V1.0.10.3.3a1 K. Oide, KBF$SAFilename to save the file name for SaveAs
 !   V1.0.10.3a5 K. Oide, KBF$Convert to specify convert.
 !   V1.0.10.3a4 K. Oide, Change default font size.
@@ -846,8 +847,7 @@ KBF$PageSetup[x_,l$_:Null] := Module[{r,lm,rm,tm,bm,sc,pl,med,nmed,t},
 KBF$sa4 = "^%%EndProlog$";
 KBF$totrp = "%%EndProlog\\\n%%BeginFeature: *InputSlot Transparency\\\n<</MediaPosition null/MediaClass (Transparency)/TraySwitch true /ManualFeed false>>setpagedevice\\\n%%EndFeature";
 
-
-KBF$HardCopy[x_,b$_:True,pr_:True] := Module[{mm2pt = 72/25.4,
+KBF$HardCopy[x_,b$_:True,pr_:False] := Module[{mm2pt = 72/25.4,
   convhost=Environment["CONVHOST"], prname, copyID, savedir, convert,
   fr, w, h, lm, rm, tm, bm, sc ,pl, nmed, pw, ph, mw, mh, r, dens,
   d, y, savediry, savedird, savefile, sd, tmpf, cmd, ofd,
@@ -901,19 +901,21 @@ KBF$HardCopy[x_,b$_:True,pr_:True] := Module[{mm2pt = 72/25.4,
         "; if [ ! -d "//savedird//" ]; then mkdir -m 777 "//savedird//"; cd "//savedird//
           "; touch index.txt; chmod 777 index.txt; fi'"];
     sd = savedir//"/"//savediry//"/"//savedird;
+!    Print["KBFH ",{sd,savedir,savediry,savefile,ToString[x[$Frame$WindowID]]}];
     tmpf = TemporaryName[]; Print[tmpf];
     cmd=StringJoin["cd ",sd,";",KBF$xwd,
       If[b$," -id "//ToString[x[$Frame$WindowID]],""]," -out ",tmpf,";",
-      convert," ",tmpf," ",savefile,";chmod 777 ",savefile,";",
+      "mv ",tmpf," ",tmpf,".xwd;",
+      convert," ",tmpf,".xwd ",savefile,";chmod 777 ",savefile,";",
       convert," -page A4+",Floor[lm*mm2pt],"+",Floor[bm*mm2pt],
       If[pl===2," -rotate 90"," -rotate 180"],
-      " -density ",dens,"x",dens," ",tmpf," ",tmpf//".ps",
+      " -density ",dens,"x",dens," ",tmpf,".xwd ",tmpf//".ps",
       If[Not[nmed[1]>0], "", StringJoin@@Table[
 	"; lpr -P"//prname//" < "//tmpf//".ps ",{nmed[1]}]],
       If[Not[nmed[2]>0], "", StringJoin@@Table[
 	"; sed -e 's,"//
           KBF$sa4//","//KBF$totrp//",' "//tmpf//".ps | lpr -P"//prname,{nmed[2]}]],
-      "; rm -f ",tmpf," ",tmpf//".ps"];
+      "; rm -f ",tmpf,".xwd ",tmpf//".ps"];
     Update[WindowTasks,IdleTasks];
     If[convhost=="",
       System[cmd],

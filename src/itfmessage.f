@@ -118,7 +118,7 @@
       ks=tfleval(klm,.true.,irtc)
       if(irtc /= 0)then
         if(irtc > 0)then
-          call tfaddmessage(' ',0,icslfno())
+          call tfaddmessage(' ',0,icslfnm())
         endif
         itfmessage=-1
         call tflocal1(dm%k)
@@ -241,16 +241,16 @@ c     Search '"' from string(is+1:l) with backslash escape
 
       subroutine tferrorhandle(kx,irtc)
       use tfstk
-      use tfcsi
+      use tfcsi,only:icslfnm
       implicit none
       type (sad_descriptor) ,intent(in):: kx
       integer*4 ,intent(in):: irtc
-      if(ierrorprint /= 0)then
+      integer*4 lf
+      lf=icslfnm()
+      if(lf /= 0 .and. ierrorprint /= 0)then
         ierrorf=kx%k
-        if(irtc > 0)then
-          if(tflistq(kerror))then
-            call tfaddmessage(' ',0,icslfno())
-          endif
+        if(irtc > 0  .and. tflistq(kerror))then
+          call tfaddmessage(' ',0,lf)
         endif
         ierrorprint=0
       endif
@@ -269,7 +269,7 @@ c     Search '"' from string(is+1:l) with backslash escape
         if(irtc > 0)then
           if(tflistq(kerror))then
             call tfaddmessage(str(1:len_trim(str)),
-     $           len_trim(str),icslfno())
+     $           len_trim(str),icslfnm())
           endif
         endif
         ierrorprint=0
@@ -277,12 +277,12 @@ c     Search '"' from string(is+1:l) with backslash escape
       return
       end
       
-      subroutine tfaddmessage(str,ip,lfno)
+      subroutine tfaddmessage(str,ip,lfn)
       use tfstk
       implicit none
       type (sad_descriptor) kx,kxaddmess,tfefunrefd
       type (sad_dlist), pointer :: kle
-      integer*4 ,intent(in):: ip,lfno
+      integer*4 ,intent(in):: ip,lfn
       integer*4 irtc,isp1,ltr0
       character*(*) ,intent(in):: str
       logical*4 iter
@@ -301,20 +301,20 @@ c     Search '"' from string(is+1:l) with backslash escape
         kxaddmess=kxsymbolz('Add$Message',11)
       endif
       isp1=isp+1
-      isp=isp1+1
-      dtastk(isp1)=kxaddmess
-      ktastk(isp)=kerror
-c      call tfdebugprint(kerror,'addmessage',1)
-      kx=tfefunrefd(isp1,irtc)
-c      call tfdebugprint(kx,'addmessage',1)
-      isp=isp1-1
-      if(irtc == 0)then
-        if(ktflistq(kx))then
-          call tfemes(kx,str,ip,lfno)
-        else
-          call tflocal(kerror)
-          kerror=0
-          call tclrfpe
+      if(lfn /= 0)then
+        isp=isp1+1
+        dtastk(isp1)=kxaddmess
+        ktastk(isp)=kerror
+        kx=tfefunrefd(isp1,irtc)
+        isp=isp1-1
+        if(irtc == 0)then
+          if(ktflistq(kx) .and. lfn /= 0)then
+            call tfemes(kx,str,ip,lfn)
+          else
+            call tflocal(kerror)
+            kerror=0
+            call tclrfpe
+          endif
         endif
       endif
       ierrorf=0
@@ -324,14 +324,14 @@ c      call tfdebugprint(kx,'addmessage',1)
       return
       end
 
-      subroutine tfemes(k,string,ip,lfno)
+      subroutine tfemes(k,string,ip,lfn)
       use tfstk
       implicit none
       integer*4 ,parameter :: lstr=512,lenbuf=2**23
       type (sad_descriptor) ,intent(in):: k
       type (sad_dlist), pointer :: kl
       character*(*) ,intent(in):: string
-      integer*4 ,intent(in):: ip,lfno
+      integer*4 ,intent(in):: ip,lfn
       integer*4 ls,ifchar,is,i,lb,nc,itfgetrecl,nc1
       character*10 autofg
       character*(lstr) tfgetstr,buff
@@ -348,49 +348,49 @@ c      call tfdebugprint(kx,'addmessage',1)
         buff='???Unexpected error: '//autofg(dble(k%k),'S10')
       endif
       ierrorprint=0
-      lb=min(len_trim(buff),lstr-1)
-      if(ierrorf /= 0)then
-        buff(lb+1:lb+4)=' in '
-        call tfconvstrs0(buff(lb+5:),lenbuf,ierrorf,nc,.true.,' ')
-c        str1=tfconvstr(ierrorf,nc,'*')
-        lb=min(lb+nc+4,lstr)
-      else
-        lb=lb+1
-        buff(lb:lb)=':'
-      endif
-      call tftruncprint(buff(1:lb),itfgetrecl()-1,' ,})]'//char(10),
-     $     .false.,lfno)
-      if(lfno /= 6 .and. lfno /= 0)then
-        call tftruncprint(buff(1:lb),itfgetrecl()-1,' ,})]'//char(10),
-     $       .false.,6)
-      endif
-      if(ip > 0)then
-        do i=ip-2,1,-1
-          if(string(i:i) == char(10))then
-            is=i+1
-            go to 1
-          endif
-        enddo
-        is=max(1,ip-32)
- 1      ls=ifchar(string(1:ip),char(10),is)-1
-        if(ls <= 0)then
-          ls=len_trim(string(1:ip))-1
+      if(lfn /= 0)then
+        lb=min(len_trim(buff),lstr-1)
+        if(ierrorf /= 0)then
+          buff(lb+1:lb+4)=' in '
+          call tfconvstrs0(buff(lb+5:),lenbuf,ierrorf,nc,.true.,' ')
+c     str1=tfconvstr(ierrorf,nc,'*')
+          lb=min(lb+nc+4,lstr)
+        else
+          lb=lb+1
+          buff(lb:lb)=':'
         endif
-        if(ls .ge. is)then
-          write(lfno,'(a)')string(is:ls)
-          if(lfno /= 6)then
-            write(6,'(a)')string(is:ls)
-          endif
-          if(ierrorf == 0)then
-            ls=ip-is
-            if(ls <= 0)then
-              ls=1
+        call tftruncprint(buff(1:lb),itfgetrecl()-1,' ,})]'//char(10),.false.,lfn)
+        if(lfn /= 6)then
+          call tftruncprint(buff(1:lb),itfgetrecl()-1,' ,})]'//char(10),.false.,6)
+        endif
+        if(ip > 0)then
+          do i=ip-2,1,-1
+            if(string(i:i) == char(10))then
+              is=i+1
+              go to 1
             endif
-            buff(1:ls)=' '
-            buff(ls:ls)='^'
-            write(lfno,'(a)')buff(1:ls)
-            if(lfno /= 6)then
-              write(6,'(a)')buff(1:ls)
+          enddo
+          is=max(1,ip-32)
+ 1        ls=ifchar(string(1:ip),char(10),is)-1
+          if(ls <= 0)then
+            ls=len_trim(string(1:ip))-1
+          endif
+          if(ls .ge. is)then
+            write(lfn,'(a)')string(is:ls)
+            if(lfn /= 6)then
+              write(6,'(a)')string(is:ls)
+            endif
+            if(ierrorf == 0)then
+              ls=ip-is
+              if(ls <= 0)then
+                ls=1
+              endif
+              buff(1:ls)=' '
+              buff(ls:ls)='^'
+              write(lfn,'(a)')buff(1:ls)
+              if(lfn /= 6)then
+                write(6,'(a)')buff(1:ls)
+              endif
             endif
           endif
         endif

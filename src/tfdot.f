@@ -43,10 +43,6 @@
       if(ktfreallistq(kl1))then
         if(ktfreallistq(kl2))then
           xr=dot_product(kl1%rbody(1:n),kl2%rbody(1:n))
-c          xr=kl1%rbody(1)*kl2%rbody(1)
-c          do i=2,n
-c            xr=xr+kl1%rbody(i)*kl2%rbody(i)
-c          enddo
           kx=sad_descr(xr)
           return
         else

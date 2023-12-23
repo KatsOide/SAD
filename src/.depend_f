@@ -237,6 +237,7 @@ synradcl.o: synradcl.f toplvl.o
 talign.o: talign.f tffs.o tfstk.o
 tapert.o: tapert.f initb1.o tffs.o tfstk.o toplvl.o tturn.o
 tbal.o: tbal.f
+tbal1.o: tbal1.f
 tbbbrem.o: tbbbrem.f tfstk.o
 tbdecoup.o: tbdecoup.f toplvl.o
 tbend.o: tbend.f photons.o tdrift.o tffs.o tfloor.o tfstk.o toplvl.o
@@ -270,6 +271,7 @@ tdrift.o: tdrift.f photons.o tffs.o tfloor.o toplvl.o
 tdrwdt.o: tdrwdt.f inc/common.inc tffs.o tfloor.o tfstk.o
 tedrawf.o: tedrawf.f
 teigen.o: teigen.f tfstk.o
+teigen1.o: teigen1.f
 temap.o: temap.f itfmaloc.o tfefun.o tffs.o tfloor.o tfstk.o tftrack.o tgrot.o toplvl.o
 temat.o: temat.f tffs.o tfstk.o
 temit.o: temit.f photons.o tcod.o teigen.o tffs.o tfloor.o tfstk.o toplvl.o
@@ -294,12 +296,13 @@ tfcoup.o: tfcoup.f tffs.o tfstk.o toplvl.o
 tfdapert.o: tfdapert.f tffs.o tfstk.o toplvl.o
 tfdbun.o: tfdbun.f tffs.o
 tfdisp.o: tfdisp.f initb1.o tffs.o tfstk.o tgfun.o tgrot.o toplvl.o
-tfdot.o: tfdot.f itfmaloc.o tfstk.o
+tfdot.o: tfdot.f itfmaloc.o tfloor.o tfstk.o
 tfdset.o: tfdset.f itfpmat.o tfeeval.o tffuns.o tfreplace.o tfsameq.o tfstk.o
 tfearray.o: tfearray.f
 tfecmplx.o: tfecmplx.f tfstk.o
 tfeeval.o: tfeeval.f tffuns.o tfstk.o tfstrbuf.o toplvl.o
 tfeexpr.o: tfeexpr.f tfefun.o tfstk.o
+tfeexpr1.o: tfeexpr1.f inc/TFCBK.inc inc/TFCODE.inc inc/TFSTK.inc
 tfefun.o: tfefun.f gamma.o itfmessage.o tfconvstr.o tfdot.o tfdset.o tfecmplx.o tfeeval.o tfeval1.o tffindroot.o tffuns.o tfloor.o tfmodule.o tfpart.o tfreplace.o tfsameq.o tfsolvemember.o tfstk.o tftable.o tftake.o toplvl.o
 tfefun1.o: tfefun1.f tffs.o tffsa.o tfstk.o
 tfefun2.o: tfefun2.f tfstk.o
@@ -345,7 +348,6 @@ tfoptics.o: tfoptics.f qcell.o tffs.o tfstk.o toplvl.o
 tfpart.o: tfpart.f tfeeval.o tfstk.o
 tfprint.o: tfprint.f tfdset.o tfeeval.o tfefun.o tffs.o tfsolvemember.o tfstk.o toplvl.o
 tfprinta.o: tfprinta.f tfeeval.o tfstk.o tfstrbuf.o toplvl.o
-tfrbuf.o: tfrbuf.f tfstk.o toplvl.o
 tfreadbuf.o: tfreadbuf.f
 tfrej.o: tfrej.f tffs.o tfstk.o
 tfrenumber_element.o: tfrenumber_element.f tffs.o tfstk.o
@@ -362,6 +364,7 @@ tfsolvemember.o: tfsolvemember.f tfdset.o tfeeval.o tffuns.o tfmodule.o tfpart.o
 tfsort.o: tfsort.f tfetok.o tfstk.o
 tfstk.o: tfstk.f
 tfstrbuf.o: tfstrbuf.f tfstk.o
+tfsystemcommand.o: tfsystemcommand.f inc/TFCBK.inc inc/TFCODE.inc inc/TFRBUF.inc inc/TFSTK.inc
 tftable.o: tftable.f tfeeval.o tfmodule.o tfstk.o
 tftake.o: tftake.f tfecmplx.o tfeeval.o tfstk.o
 tftmat.o: tftmat.f tffs.o tfstk.o
@@ -381,6 +384,7 @@ tgetfv.o: tgetfv.f tffs.o tfstk.o toplvl.o
 tgfun.o: tgfun.f tffs.o tfstk.o tgrot.o
 tgrot.o: tgrot.f tffs.o tfloor.o
 thess.o: thess.f
+thess1.o: thess1.f
 tinitr.o: tinitr.f
 tins.o: tins.f toplvl.o
 tinse.o: tinse.f tffs.o toplvl.o
@@ -411,6 +415,7 @@ tqente.o: tqente.f tdrift.o tffs.o tfloor.o toplvl.o
 tqfrie.o: tqfrie.f tffs.o tfstk.o toplvl.o
 tqlfre.o: tqlfre.f tffs.o toplvl.o
 tqr.o: tqr.f tfstk.o
+tqr1.o: tqr1.f
 tqrad.o: tqrad.f inc/TENT.inc inc/TEXIT.inc tffs.o toplvl.o
 tquad.o: tquad.f inc/TENT.inc inc/TEXIT.inc initb1.o photons.o tdrift.o tffs.o tfloor.o tfstk.o toplvl.o tsol.o
 tquade.o: tquade.f photons.o tdrife.o tffs.o tfstk.o toplvl.o tsol.o
@@ -460,6 +465,9 @@ twelm.o: twelm.f tffs.o
 twinil.o: twinil.f
 twinit.o: twinit.f
 twsdrw.o: twsdrw.f tffs.o tfstk.o
+twspacu.o: twspacu.f
+twspacu_spl.o: twspacu_spl.f
+twspuspl.o: twspuspl.f
 txcalc.o: txcalc.f tffs.o tfstk.o
 txwake.o: txwake.f inc/TENT.inc inc/TEXIT.inc initb1.o tffs.o tfstk.o
 undulator.o: undulator.f inc/TENT.inc inc/TEXIT.inc tffs.o toplvl.o

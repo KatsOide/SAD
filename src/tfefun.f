@@ -1909,7 +1909,7 @@ c      call tfdebugprint(kx,'setcontextpath',1)
       recursive function tfefunref(isp1,upvalue,irtc) result(kx)
       use tfmem
       use tfshare
-      use tfcsi,only:lfno
+      use tfcsi,only:lfno,cssetlfno,icslfno,icslfnm
       use findr,only:tffindroot,tffit
       use tfcx,only:tfatt,tfsolvemember
       use mathfun
@@ -2062,11 +2062,11 @@ c              Stch Sort Uni1 Ordr MChk Scan Iden TimU NumQ VecQ
 c
      $        1110,1120,1130,1140,1150,1160,1170,1180,1190,1200,
      $        1210,1220,1230,1240,1250,1260,1270,1280,1290,1300,
-     $        1310,1320,1330,1340,1350,1360,1370,1380,1390,1390,
+     $        1310,1320,1330,1340,1350,1360,1370,1380,90,90,
      $        1290,1420,1430,1440,1450,1460,1470,1480,1490,1500,
      $        1510,1520,1530,1540,1540,1560,1570,1580,1590,1600,
 c              AtmQ Outr MatQ TrcP Defi READ Ints Cmpl Roun IErf
-c              FrDt PolG ToIS ReaS OpnR ToEx StrM StrP ToUp Brek
+c              StIO PolG ToIS ReaS OpnR ToEx StrM StrP ToUp Brek
 c              Cont Goto Four IFou Chek Whic MapF UnmF GetU GetG
 c              ToLo Unev Case DelC Vect LogG Nams GbCl LgG1 Fact
 c              With WhiC Ovrr AppT PreT FndR GamR GmRP Erf  Erfc
@@ -2114,6 +2114,8 @@ c            write(*,*)'irtc: ',irtc
           endif
         endif
         go to 100
+ 90     irtc=itfmessage(999,'General::unregister',' ')
+        go to 6900
  100    write(*,*)'Function implementation error: ',id
         call tfdebugprint(k1,'tfefun',1)
         irtc=0
@@ -2476,7 +2478,7 @@ c            write(*,*)'irtc: ',irtc
         endif
  829    if(irtc /= 0)then
           if(vx == -2.d0)then
-            call tfaddmessage(' ',0,lfno)
+            call tfaddmessage(' ',0,icslfnm())
             irtc=0
             kx%k=kxfailed
             return
@@ -2636,7 +2638,7 @@ c        go to 6900
           go to 6811
         endif
         go to 6900
- 1210   irtc=itfmessage(999,'General::unregister',' ')
+ 1210   call tfsetioch(isp1,kx,irtc)
         go to 6900
  1220   if(narg == 1)then
           kx=tfeintf(polygamma,cpolygamma,k,.true.,
@@ -2685,8 +2687,6 @@ c        go to 6900
  1370   kx=tfmapfile(isp1,irtc)
         go to 6900
  1380   kx=tfunmapfile(isp1,irtc)
-        go to 6900
- 1390   irtc=itfmessage(999,'General::unregister',' ')
         go to 6900
  1420   kx=tfsequence(isp1,isp)
         irtc=0
@@ -3491,7 +3491,7 @@ c          write(*,*)'tfefun-mtfflag'
       endif
       if(irtc > 0)then
         if(ierrorprint /= 0)then
-          call tfaddmessage(' ',0,icslfno())
+          call tfaddmessage(' ',0,icslfnm())
         endif
       elseif(irtc == irtcabort .and. rlist(ierrorgen) == 0.d0)then
         irtc=itfmessage(999,'General::abort',' ')
@@ -4042,6 +4042,70 @@ c              enddo
       irtc=0
       return
       end
+
+      subroutine tfsetioch(isp1,kx,irtc)
+      use tfcsi
+      implicit none
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      real*8 ch,v
+      integer*4 ich
+      irtc=0
+      if(isp .eq. isp1+2 .and. ktfrealq(dtastk(isp1+1),ch) .and. ktfrealq(dtastk(isp1+2),v))then
+        ich=int(ch)
+        select case (ich)
+        case (0)
+          if(v .eq. -1.d0)then
+            lfni=5
+          else
+            lfni=int(v)
+          endif
+        case (1)
+          if(v .eq. -1.d0)then
+            lfni=6
+          else
+            lfno=int(v)
+          endif
+        case (2)
+          if(v .eq. -1.d0)then
+            lfni=6
+          else
+            lfnm=int(v)
+          endif
+        case default
+          irtc=-1
+        end select
+        kx=dfromr(v)
+      elseif(isp .eq. isp1+1 .and. ktfrealq(dtastk(isp1+1),ch))then
+        ich=int(ch)
+        select case (ich)
+        case (0)
+          if(lfni .eq. 5)then
+            kx=dfromr(-1.d0)
+          else
+            kx=dfromr(dble(lfni))
+          endif
+        case (1)
+          if(lfno .eq. 6)then
+            kx=dfromr(-1.d0)
+          else
+            kx=dfromr(dble(lfno))
+          endif
+        case (2)
+          if(lfnm .eq. 6)then
+            kx=dfromr(-1.d0)
+          else
+            kx=dfromr(dble(lfnm))
+          endif
+        case default
+          irtc=-1
+        end select
+      else
+        irtc=-1
+      endif
+      return
+      end subroutine tfsetioch
 
       end module efun
 

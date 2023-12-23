@@ -391,8 +391,6 @@ c     end   initialize for preventing compiler warning
       al1=aln*.5d0
       do n=1,ndiv
         call tqente(trans,cod,beam,al1,bz,irad)
-c        write(*,'(a,i5,1p8g13.4)')'tsolque-n ',n,
-c     $       al,ak,trans(5,1:6)
         xi0=cod(1)
         yi0=cod(3)
         xi=xi0+dx0
@@ -430,7 +428,7 @@ c     $       al,ak,trans(5,1:6)
           trans1(4,4)=ch2
           trans1(4,6)=(yi*(phi1*ch2+sh2)+aln*pyi*sh2)*w1p
           trans1(5,6)=-0.25d0*(
-     $          w1p*(xi**2*(xs1-phi1*c1)-yi**2*(xsh2-phi1*ch2)+
+     $         w1p*(xi**2*(xs1-phi1*dc1)-yi**2*(xsh2-phi1*dch2)+
      $         aln*(-xi*pxi*s1+yi*pyi*sh2))
      $         +trans1(1,6)*(u2+pxi)+u1*trans1(2,6)
      $         +trans1(3,6)*(v2+pyi)+v1*trans1(4,6))
@@ -441,6 +439,7 @@ c     $       al,ak,trans(5,1:6)
      $         -(pxi*trans1(1:4,2)+pyi*trans1(1:4,4))
           trans1(2,1:6)=trans1(2,1:6)*pr
           trans1(4,1:6)=trans1(4,1:6)*pr
+c          write(*,'(a,i5,1p10g12.4)')'tsolque-n ',n,xi,yi,w1p,trans1(5,6)
         else
 c cod has canonical momenta!
           pxi=(cod(2)+yi0*bzh)/pr

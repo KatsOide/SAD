@@ -260,7 +260,7 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
       If[leg===Automatic,
         leg=l[[,1,1]]];
       If[fly===Automatic,
-        If[$HaveLaTeX && Length[leg] > 1,
+        If[$HaveLaTeX<=>"" && Length[leg] > 1,
           pu=StringPosition[#,"_"]&/@leg;
           If[pu[[1]] <=> {} && SameQ@@(ll=StringLength/@leg) && SameQ@@pu &&
             (pu1=pu[[1,1,1]];SameQ@@({#[1,pu1-1] ,#[pu1+2,-1]}&/@leg)),
@@ -676,7 +676,7 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
       Twiss$Label["DETR"]={"DETR"," LL "},
       *)
 
-  If[$HaveLaTeX,
+  If[$HaveLaTeX<=>"",
     Twiss$Unit$Label[Meter]="m";
     Twiss$Unit$Label[Kilometer]="km";
     Twiss$Unit$Label[Milimeter]="mm";

@@ -3,7 +3,7 @@
       use ffs
       use ffs_pointer
       use tffitcode
-      use tfcsi,only:ipoint
+      use tfcsi,only:ipoint,icslfnm
       use tflinepcom
       use ffs_seg
       implicit none
@@ -81,7 +81,7 @@ c
             if(cont)then
               go to 9000
             else
-              call termes(lfno,'?Missing value for ',word)
+              call termes(icslfnm(),'?Missing value for ',word)
               exist=.false.
               exit
             endif
@@ -97,7 +97,7 @@ c
           ipoint=next
           exist=.true.
  912      if(iv .eq. 0)then
-            call termes(lfno,'?No default keyword for ',word)
+            call termes(icslfnm(),'?No default keyword for ',word)
             exist=.false.
             exit
           endif
@@ -105,7 +105,7 @@ c
           if(.not. exist1)then
             if(cont)then
             else
-              call termes(lfno,'?Missing value for ',word)
+              call termes(icslfnm(),'?Missing value for ',word)
             endif
             exist=.false.
             exit
@@ -123,7 +123,7 @@ c
             cycle LOOP_II
           endif
           if(diff)then
-            call termes(lfno,
+            call termes(icslfnm(),
      1           'Info-Different types of elements match ',
      $           word(1:lw)//" "//word1(1:lw1))
             diff=.false.
@@ -135,7 +135,7 @@ c
           ivi=nelvx(i)%ival
         endif
         if(ivi .eq. 0)then
-          call termes(lfno,'?No default keyword for ',word)
+          call termes(icslfnm(),'?No default keyword for ',word)
           exist=.false.
           exit
         endif

@@ -193,7 +193,7 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
       use ffs
       use ffs_pointer
       use tffitcode
-      use tfcsi,only:ipoint
+      use tfcsi,only:ipoint,icslfnm
       implicit none
       integer*4 ,intent(in):: lfno
       integer*4 next,ielm,i0
@@ -206,7 +206,7 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
         call tfinimult(i0)
         evarini=.true.
       else
-        call termes(lfno,
+        call termes(icslfnm(),
      $       'Missing origin component for RENUM_BER',' ')
       endif
       return

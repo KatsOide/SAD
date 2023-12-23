@@ -350,7 +350,14 @@ ReleaseVector[Vector[{`x___}]]^:={`x};
 Protect[Vector];
 
 $FORM=" ";
-$Input=$Output=-1;
+($Input=n_Real)^:=Set$IO[0,n];
+$Input:=Set$IO[0];
+($Output=n_Real)^:=Set$IO[1,n];
+$Output:=Set$IO[1];
+($Messages=n_Real)^:=Set$IO[2,n];
+$Messages:=Set$IO[2];
+$Input=$Output=$Messages=-1;
+
 (Environment[x_]=s_)^:=SetEnv[x,s];
 Environment[x_,s_]:=SetEnv[x,s];
 Environment[x_]:=GetEnv[x];
@@ -461,6 +468,17 @@ TimeZoneOffset=Block[{f=OpenRead["!date +\"%z\""]},{Read[f]*0.6,Close[f]}[[1]]];
 !TimeZoneOffset = SetTimeZone[];
 Protect[TimeZoneOffset];
 	(* Switch to Local TimeZone *)
+
+SetHL[]:=Module[{o=$Messages},
+  $Messages=0;
+  `$HaveLaTeX=Check[Module[{f=OpenRead["!whereis pdflatex"],cmd="pdflatex"},
+    If[({Read[f,{Word,Word}][[2]],Close[f]}[[1]]<=>EndOfFile
+      || FileQ[cmd=Environment["TLPATH"]//"/"//cmd]) &&
+        (f=OpenRead["!whereis convert"];
+          {Read[f,{Word,Word}][[2]],Close[f]}[[1]]<=>EndOfFile),
+      cmd,"",""]],""];
+  $Messages=o];
+SetHL[];
 
 MkSecureTemp[template_String:Null, op___Rule]:=Module[{prefix, suffix, dir},
   {prefix, suffix, dir} = SwitchCases[Join[{op}, {}],
@@ -662,10 +680,6 @@ AutoLoad[NISTACK$OBJ,NISTACK$FIXSEED,PackagesDirectory//"NISTACK.n"];
 AutoLoad[LifeTrack,PackagesDirectory//"LifeTrack.n"];
 AutoLoad[CSR,CSRStability,PackagesDirectory//"CSR.n"];
 AutoLoad[WAKECOMMAND,PackagesDirectory//"WAKECOMMAND.n"];
-`$HaveLaTeX=Module[{f=OpenRead["!whereis pdflatex"]},
-  {Read[f,{Word,Word}][[2]],Close[f]}[[1]]<=>EndOfFile &&
-    (f=OpenRead["!whereis convert"];
-      {Read[f,{Word,Word}][[2]],Close[f]}[[1]]<=>EndOfFile)];
 AutoLoad[LaTeX,PackagesDirectory//"latex.n"];
 AutoLoad[BBBrem,PackagesDirectory//"bbbrem.n"];
 AutoLoad[Fortran,PackagesDirectory//"fortran.n"];

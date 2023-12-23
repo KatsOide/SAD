@@ -3,6 +3,7 @@
       use efun
       use temw, only:tmulbs
       use ffs_flag, only:calpol
+      use tfcsi,only:icslfnm
       use mathfun
       implicit none
       type alist
@@ -72,7 +73,7 @@
         levele=itfdownlevel()
         isp=isp0
         if(ierrorprint /= 0)then
-          call tfaddmessage(' ',2,6)
+          call tfaddmessage(' ',2,icslfnm())
         endif
         write(*,*)' Error in ExternalMap of ',l,ord(l),' element at ',
      $       nt,ord(nt),' turn.'
@@ -326,6 +327,7 @@ c      write(*,*)'unmap ',ipn,n,np,kzi%rbody(4)
       use maloc,only:ktfmalocp
       use sad_basics
       use iso_c_binding
+      use tfcsi,only:icslfnm
       implicit none
       type (sad_descriptor) kx,k2,k3,k4
       integer*8 k1,kax,ka1,kat1,kbm,krt
@@ -353,7 +355,7 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       if(irtc /= 0)then
         levele=itfdownlevel()
         if(ierrorprint /= 0)then
-          call tfaddmessage(' ',2,6)
+          call tfaddmessage(' ',2,icslfnm())
         endif
         write(*,*)' Error in ExternalMap(EMIT) of ',l,ord(l),
      $       ' element.'
@@ -451,6 +453,7 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       use efun
       use maloc,only:tfl2m,tfmsize
       use sad_basics
+      use tfcsi,only:icslfnm
       implicit none
       type (sad_descriptor) :: kx
       type (sad_dlist), pointer :: kxl, k2l
@@ -481,7 +484,7 @@ c      itastk(2,isp)=iat
       if(irtc /= 0)then
         levele=itfdownlevel()
         if(ierrorprint /= 0)then
-          call tfaddmessage(' ',2,6)
+          call tfaddmessage(' ',2,icslfnm())
         endif
         write(*,*)' Error in ExternalMap(OPTICS) of ',l,ord(l),
      $       ' element.'
@@ -525,6 +528,7 @@ c      itastk(2,isp)=iat
       use tmacro
       use geolib
       use efun
+      use tfcsi,only:icslfnm
       implicit none
       type (sad_descriptor) kx
       integer*8 ktfgeol,kax,k1,k2,k11,k12,ka1,ka11,ka12,kdb
@@ -557,7 +561,7 @@ c      ktastk(isp)=ktflist+ktfgeol(geo(1,1,l))
       if(irtc /= 0)then
         levele=itfdownlevel()
         if(ierrorprint /= 0)then
-          call tfaddmessage(' ',2,6)
+          call tfaddmessage(' ',2,icslfnm())
         endif
         write(*,*)' Error in ExternalMap(GEO) of ',l,ord(l),' element.'
         isp=isp0

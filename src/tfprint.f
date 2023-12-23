@@ -214,34 +214,37 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
 
       subroutine tftruncprint(str,lrecl,delim,null,lfno)
       implicit none
-      integer*4 lrecl,lfno,i1,i2,l
-      character*(*) str,delim
-      logical*4 null
-      l=len_trim(str)
-      i1=1
-      do
-        if(i1+lrecl .gt. l)then
-          if(l .lt. i1)then
-            if(null)then
-              write(lfno,*)
+      integer*4 ,intent(in):: lrecl,lfno
+      character*(*) ,intent(in):: str,delim
+      integer*4 i1,i2,l
+      logical*4 ,intent(in):: null
+      if(lfno > 0)then
+        l=len_trim(str)
+        i1=1
+        do
+          if(i1+lrecl .gt. l)then
+            if(l .lt. i1)then
+              if(null)then
+                write(lfno,*)
+              endif
+            else
+              write(lfno,'(a)')str(i1:l)
             endif
+            return
           else
-            write(lfno,'(a)')str(i1:l)
+            i2=i1+lrecl-1
+            do while(index(delim,str(i2:i2)) .le. 0)
+              i2=i2-1
+              if(i2 .lt. i1)then
+                i2=i1+lrecl-1
+                go to 10
+              endif
+            enddo
+ 10         write(lfno,'(a)')str(i1:i2)
+            i1=i2+1
           endif
-          return
-        else
-          i2=i1+lrecl-1
-          do while(index(delim,str(i2:i2)) .le. 0)
-            i2=i2-1
-            if(i2 .lt. i1)then
-              i2=i1+lrecl-1
-              go to 10
-            endif
-          enddo
- 10       write(lfno,'(a)')str(i1:i2)
-          i1=i2+1
-        endif
-      enddo
+        enddo
+      endif
       end
 
       subroutine unreadbuf(word,irtc)

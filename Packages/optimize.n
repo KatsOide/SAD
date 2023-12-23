@@ -98,15 +98,18 @@ Simplex=Class[{},{},{CurrentSimplex,Status="Stop",prolog=Identity,
 
   ];
 
-FindCOD=Class[{},{},{ax,bx,ay,by,p0,NDiv=300,MaxAmp=2e-2},
+FindCOD=Class[{},{},{ax,bx,ay,by,p0,NDiv=300,MaxAmp=2e-2,
+  keys=Take[Element["KEYWORDS",1]/.{"PSIX"->"NX","PSIY"->"NY","PSIZ"->"NZ"},28]},
 
-  DiffCOD[z_]:=Module[{dz,r},
+  DiffCOD[z_]:=Module[{dz,r,v0},
     {DXI,DPXI,DYI,DPYI}=z;
+    v0=Twiss[keys,1];
     FFS["CALC4D;CELL;CALC NOEXP;"];
     If[?STABLE,Throw[0]];
     dz=Twiss[{"DX","DPX","DY","DPY"},"$$$"]-z;
     r=dz[[1]]^2/bx+bx*(dz[[2]]+ax/bx*dz[[1]])^2
     +dz[[3]]^2/by+by*(dz[[4]]+ay/by*dz[[3]])^2;
+    Twiss[keys,1]=v0;
     If[NaNQ[r],1e100,r]];
   
   Find[z0_List:{0,0,0,0},opt___]:=Module[{z1,dz,v,p0,p1,out},
@@ -115,7 +118,7 @@ FindCOD=Class[{},{},{ax,bx,ay,by,p0,NDiv=300,MaxAmp=2e-2},
     {DXI,DPXI,DYI,DPYI}=z0;
     FFS["CALC4D;INS;CAL NOEXP;"];
     {ax,bx,ay,by}=Twiss[{"AX","BX","AY","BY"},1];
-    z1=Twiss[{"DX","DPX","DY","DPY"},"$$$"];
+    z1=Twiss[{"DX","DPX","DY","DPY"},-1];
     dz=Restrict[z1-z0,-MaxAmp,MaxAmp]/NDiv;
     v=Prepend[Table[ReplacePart[z0,z0[[i]]+dz[[i]],i],{i,4}],z0];
     Catch[

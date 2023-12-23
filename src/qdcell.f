@@ -202,6 +202,7 @@ c                      write(*,'(a,3i5,l2,1p10g12.4)')'tdfun ',ka,j,kf,maxfit,vf
       use ffs_fit, only:inicond
       use tffitcode
       use eeval
+      use tfcsi, only:icslfnm
       implicit none
       integer*4 ,intent(in):: kp,kp1,iuid,kfam
       integer*4 ,intent(out):: irtc
@@ -277,9 +278,9 @@ c      call tfdebugprint(kx,'==> ',1)
       level=itfdownlevel()
  110  if(irtc /= 0)then
         if(ierrorprint /= 0)then
-          call tfaddmessage(' ',0,6)
+          call tfaddmessage(' ',0,icslfnm())
         endif
-        call termes(6,
+        call termes(icslfnm(),
      $       'Error in FitValue '//
      $       funname//' at '//name,' ')
       elseif(ktfrealq(kx,vf1))then
@@ -330,7 +331,7 @@ c     Note: index(name1,'.') > 0 if kp1 != 0
 
       subroutine tffsfitfun(nqcol,df,iqcol,kdp,maxcond,error)
       use tfstk
-      use tfcsi, only:icslfno
+      use tfcsi, only:icslfnm
       use eeval
       implicit none
       integer*4 ,intent(in):: maxcond
@@ -352,8 +353,8 @@ c     Note: index(name1,'.') > 0 if kp1 != 0
 c      call tfdebugprint(kx,'fitfun',3)
       if(irtc /= 0)then
         level=itfdownlevel()
-        call tfaddmessage(' ',2,icslfno())
-        call termes(6,'Error in FitFunction ',' ')
+        call tfaddmessage(' ',2,icslfnm())
+        call termes(icslfnm(),'Error in FitFunction ',' ')
         error=.true.
         return
       elseif(ktfrealq(kx,df(nqcol+1)))then
@@ -1210,6 +1211,7 @@ c      use ffs, only: flv,dpmax,nele,ndim,nlat,maxcond,nvevx,nelvx,tsetintm
 c      use match
       use tfshare
       use mackw
+      use tfcsi,only:icslfnm
       implicit none
       type (ffs_bound) fbound
       integer*8 ,intent(inout):: ifquw,ifqu
@@ -1432,7 +1434,7 @@ c                        write(*,'(a,l2,5i5,1p10g12.4)')'ffsqu-bmag ',cell,i,kq,
         endif
         return
       enddo do9000
-      call termes(lfno,'?Too many conditions*variables.',' ')
+      call termes(icslfnm(),'?Too many conditions*variables.',' ')
       if(nqumax > 0)then
         ifqu=itmmapp(nqumax)
         ifquw=ktaloc(nqumax)
@@ -1450,6 +1452,7 @@ c                        write(*,'(a,l2,5i5,1p10g12.4)')'ffsqu-bmag ',cell,i,kq,
       use tffitcode
       use ffs_pointer,only:kele2
       use eeval
+      use tfcsi,only:icslfnm
       use maloc,only:ktfmaloc
       implicit none
       type (sad_descriptor) km
@@ -1488,7 +1491,7 @@ c      call tfdebugprint(km,'coupmatrix',1)
  9010 if(irtc > 0 .and. ierrorprint /= 0)then
         call tfreseterror
       endif
- 9000 call termes(lfno,
+ 9000 call termes(icslfnm(),
      $     'Error or Non-numeric results in coupling matrix',' ')
  9100 kcm=0
       return
