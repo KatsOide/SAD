@@ -1,4 +1,4 @@
-      subroutine tgetfv(word,nfc,lfno,icalc,ncalc,
+      subroutine tgetfv(word,nfc,icalc,ncalc,
      1    kfit,fitval,mfitp,ifitp,ifitp1,
      $    exist,err)
       use tfstk
@@ -39,7 +39,7 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
           if(mfpnt .ne. mfpnt1)then
             if(i .gt. mfit .or.
      $           i .eq. mfittrx .or. i .eq. mfittry)then
-              call termes(lfno,
+              call termes(
      $             'Invalid function for range fitting: ',word)
               err=.true.
               return
@@ -47,7 +47,7 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
           endif
           if((i .eq. mfittrx .or. i .eq. mfittry)
      $         .and. mfpnt .ne. nlat)then
-            call termes(lfno,
+            call termes(
      $           'Trace fit is only valid at the end of line.',' ')
             err=.true.
             return
@@ -90,13 +90,13 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
               if(i .le. ntwissfun)then
                 x1=rlist(idvalc(mfpnt)+i)*sig
               else
-                call termes(lfno,'No Marked value for '//nlist(i),
+                call termes('No Marked value for '//nlist(i),
      1               ' at '//tname(mfpnt))
                 err=.true.
                 return
               endif
             else
-              call termes(lfno,'No MARK element at ',
+              call termes('No MARK element at ',
      $             tname(mfpnt))
               err=.true.
               return
@@ -118,14 +118,13 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
             endif
 110       continue
           if(word .eq. '*')then
-            call termes(lfno,'No default value of ',nlist(i))
+            call termes('No default value of ',nlist(i))
             err=.true.
             return
           endif
           if(nfc .eq. maxcond)then
             if(ix2 .lt. 0)then
-              call termes(lfno,
-     1             ' The value of '//nlist(i),' is not stored.')
+              call termes(' The value of '//nlist(i),' is not stored.')
             else
               do 130 j=1,nfc
                 if(mfitp(j) .eq. 0)then
@@ -136,8 +135,7 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
                   go to 111
                 endif
 130           continue
-              call termes(lfno,
-     $             'Too many conditions ',nlist(i))
+              call termes('Too many conditions ',nlist(i))
             endif
             err=.true.
             return
@@ -154,7 +152,7 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
               lnf=len_trim(nlist(i))
               call elname(ifitp(kp),namee)
               lne=len_trim(namee)
-              call termes(lfno,'Non-positive value for',
+              call termes('Non-positive value for',
      $             nlist(i)(1:lnf)//" @ "//namee(1:lne))
               err=.true.
               return
@@ -180,24 +178,24 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
           x=getva(exist)
           if(exist)then
             if((i .eq. mfitbx .or. i .eq. mfitby) .and. x .le. 0.d0)then
-              call termes(lfno,'Zero or negative value for ',word)
+              call termes('Zero or negative value for ',word)
             else
               rlist(latt(1)+i)=x
             endif
           else
-            call termes(lfno,'?Missing number for ',word)
+            call termes('?Missing number for ',word)
           endif
           return
         elseif(word(:lw) .eq. name4)then
           x=getva(exist)
           if(exist)then
             if(x .le. 0.d0)then
-              call termes(lfno,'Zero or negative scale ',word)
+              call termes('Zero or negative scale ',word)
             else
               scale(i)=x
             endif
           else
-            call termes(lfno,'Missing scale ',word)
+            call termes('Missing scale ',word)
           endif
           return
         endif

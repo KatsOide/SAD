@@ -62,7 +62,7 @@
         ret=.true.
         itype=itfpeeko(kx,next)
         if(.not. ktfstringq(kx,str))then
-          call termes(icslfnm(),'?Missing string for EXE_CUTE.',' ')
+          call termes('?Missing string for EXE_CUTE.',' ')
           init=.true.
           return
         endif
@@ -98,7 +98,7 @@
      1           ERR=6101)
           endif
         else
-          call termes(icslfnm(),'?Missing filename for OUT_PUT',' ')
+          call termes('?Missing filename for OUT_PUT',' ')
           init=.true.
           return
         endif
@@ -107,7 +107,7 @@
         exist=.true.
         return
  6101   lfno=6
-        call termes(lfno,'?File open error ',word)
+        call termes('?File open error ',word)
         init=.true.
         ios=9998
         return
@@ -130,19 +130,19 @@ c        call tfdebugprint(kx,'IN',1)
         elseif(ktfstringq(kx,str))then
           call trbopenmap(str%str(1:str%nch),kx,irtc)
           if(Irtc .ne. 0)then
-            call termes(icslfnm(),'?File open error for IN_PUT',
+            call termes('?File open error for IN_PUT',
      $           str%str(1:str%nch))
             return
           endif
           lfni1=int(rfromd(kx))
         else
-          call termes(icslfnm(),'?Missing filename for IN_PUT',' ')
+          call termes('?Missing filename for IN_PUT',' ')
           init=.true.
           return
         endif
         ipoint=next
         if(lfnp .ge. maxlfn)then
-          call termes(icslfnm(),'?Number of input files exceeds limit',' ')
+          call termes('?Number of input files exceeds limit',' ')
           init=.true.
           return
         endif

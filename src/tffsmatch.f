@@ -313,7 +313,7 @@ c     $             .and. dble(nvar*nfam*nlat) < aloadmax
               npa=min(nvar,nparallel)
               chgini=(r%nstab == 0) .or. nderiv
               if(nderiv)then
-                call tffssetupqu(ifqu,ifquw,nqumax,nqcol,nvar,lfno)
+                call tffssetupqu(ifqu,ifquw,nqumax,nqcol,nvar)
                 ipr=-1
                 if(npa > 1)then
                   istep=npa
@@ -550,14 +550,14 @@ c     $             .and. dble(nvar*nfam*nlat) < aloadmax
       return
       end
 
-      subroutine tffssetupqu(ifqu,ifquw,nqumax,nqcol,nvar,lfno)
+      subroutine tffssetupqu(ifqu,ifquw,nqumax,nqcol,nvar)
       use tfmem, only:ktaloc,tfree
       use tfshare,only:itmmapp,tmunmapp
       use tfcsi,only:icslfnm
       implicit none
       integer*8 ,intent(out):: ifqu,ifquw
       integer*4 ,intent(inout):: nqumax
-      integer*4 ,intent(in):: nqcol,nvar,lfno
+      integer*4 ,intent(in):: nqcol,nvar
       integer*4 nqu
       integer*4 , parameter :: minnqu=512
       nqu=max(minnqu,nqcol*nvar)
@@ -578,7 +578,7 @@ c     $             .and. dble(nvar*nfam*nlat) < aloadmax
         nqumax=nqu
       endif
       return
- 9000 call termes(icslfnm(),'?Too many conditions*variables.',' ')
+ 9000 call termes('?Too many conditions*variables.',' ')
       if(nqumax > 0)then
         ifqu=itmmapp(nqumax)
         ifquw=ktaloc(nqumax)
@@ -763,10 +763,10 @@ c        call tfdebugprint(kx,':',1)
           call tfaddmessage(' ',2,icslfnm())
         endif
         if(id == 1)then
-          call termes(6,'Error in VariableRange '//
+          call termes('Error in VariableRange '//
      $         pname(ld)//' '//vn,' ')
         elseif(id == 2)then
-          call termes(6,'Error in VariableWeight '//
+          call termes('Error in VariableWeight '//
      $         pname(ld)//' '//vn,' ')
         endif
       else

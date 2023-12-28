@@ -228,8 +228,7 @@ c      write(*,*)'tfdisp ',word,wordp
      1         '   AY      BY      NY      EY      EPY    DetR     #'
         case (modeb)
           if(dref .or. icolm /= 0)then
-            call termes(icslfnm(),
-     $           'Info-REF and DREF not implemented for DISP B.',' ')
+            call termes('Info-REF and DREF not implemented for DISP B.',' ')
             return
           endif
           header=

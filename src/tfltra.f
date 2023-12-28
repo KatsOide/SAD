@@ -13,17 +13,17 @@
       logical exist
       call tfgetr(os1,pi2,word,lfno,exist)
       if(.not. exist)then
-        call termes(lfno,'?Missing initial nuz for','LTR_ACK')
+        call termes('?Missing initial nuz for','LTR_ACK')
         go to 8001
       endif
       call tfgetr(os2,pi2,word,lfno,exist)
       if(.not. exist)then
-        call termes(lfno,'?Missing final nuz for','LTR_ACK')
+        call termes('?Missing final nuz for','LTR_ACK')
         go to 8001
       endif
       call tfgetr(oss,pi2,word,lfno,exist)
       if(.not. exist)then
-        call termes(lfno,'?Missing nus step for','LTR_ACK')
+        call termes('?Missing nus step for','LTR_ACK')
         go to 8001
       endif
       if(oss .ne. 0.d0)then
@@ -65,6 +65,6 @@
       call tfree(ics)
       call tfree(ios)
       return
-8001  call termes(lfno,'Syntax: LTR_ACK nusi nusf nusstep',' ')
+8001  call termes('Syntax: LTR_ACK nusi nusf nusstep',' ')
       return
       end

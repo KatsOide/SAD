@@ -274,8 +274,7 @@ c      call tfdebugprint(kx,'==> ',1)
         if(ierrorprint /= 0)then
           call tfaddmessage(' ',0,icslfnm())
         endif
-        call termes(icslfnm(),
-     $       'Error in FitValue '//
+        call termes('Error in FitValue '//
      $       funname//' at '//name,' ')
       elseif(ktfrealq(kx,vf1))then
       elseif(kx%k .eq. ktfoper+mtfnull)then
@@ -348,7 +347,7 @@ c      call tfdebugprint(kx,'fitfun',3)
       if(irtc /= 0)then
         level=itfdownlevel()
         call tfaddmessage(' ',2,icslfnm())
-        call termes(icslfnm(),'Error in FitFunction ',' ')
+        call termes('Error in FitFunction ',' ')
         error=.true.
         return
       elseif(ktfrealq(kx,df(nqcol+1)))then

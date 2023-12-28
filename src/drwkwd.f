@@ -66,7 +66,7 @@ c     end   initialize for preventing compiler warning
           ia=i
           exist=.true.
           if(ipw(1,i) .ne. 0)then
-            call termes(icslfnm(),'?Duplicate graph ',word1)
+            call termes('?Duplicate graph ',word1)
             err=.true.
             return
           endif
@@ -79,8 +79,7 @@ c     end   initialize for preventing compiler warning
                 if(icat1 .eq. -9999)then
                   icat1=idim(j)
                 elseif(icat1 .ne. idim(j))then
-                  call termes(icslfnm(),
-     1              '?Too many scales in a window ',word1)
+                  call termes('?Too many scales in a window ',word1)
                   err=.true.
                   return
                 endif

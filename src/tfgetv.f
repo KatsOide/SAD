@@ -1,4 +1,4 @@
-      subroutine tfgetv(word,lfno,next,exist)
+      subroutine tfgetv(word,next,exist)
       use tfstk
       use ffs
       use ffs_pointer
@@ -11,7 +11,6 @@
       type (sad_descriptor) kx
       type (sad_rlist),pointer:: kl
       integer*8 kav
-      integer*4 ,intent(in):: lfno
       integer*4 ,intent(out):: next
       integer*4 ii,i,id,iv,ivi,kv,next1,lw1,j,lv,nl,irtc,lw,iii,lenw,isp0,ivj
       real*8 v,getva,va,vx
@@ -81,7 +80,7 @@ c
             if(cont)then
               go to 9000
             else
-              call termes(icslfnm(),'?Missing value for ',word)
+              call termes('?Missing value for ',word)
               exist=.false.
               exit
             endif
@@ -97,7 +96,7 @@ c
           ipoint=next
           exist=.true.
  912      if(iv .eq. 0)then
-            call termes(icslfnm(),'?No default keyword for ',word)
+            call termes('?No default keyword for ',word)
             exist=.false.
             exit
           endif
@@ -105,7 +104,7 @@ c
           if(.not. exist1)then
             if(cont)then
             else
-              call termes(icslfnm(),'?Missing value for ',word)
+              call termes('?Missing value for ',word)
             endif
             exist=.false.
             exit
@@ -123,7 +122,7 @@ c
             cycle LOOP_II
           endif
           if(diff)then
-            call termes(icslfnm(),
+            call termes(
      1           'Info-Different types of elements match ',
      $           word(1:lw)//" "//word1(1:lw1))
             diff=.false.
@@ -135,7 +134,7 @@ c
           ivi=nelvx(i)%ival
         endif
         if(ivi .eq. 0)then
-          call termes(icslfnm(),'?No default keyword for ',word)
+          call termes('?No default keyword for ',word)
           exist=.false.
           exit
         endif

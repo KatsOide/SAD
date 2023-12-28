@@ -1909,7 +1909,7 @@ c      call tfdebugprint(kx,'setcontextpath',1)
       recursive function tfefunref(isp1,upvalue,irtc) result(kx)
       use tfmem
       use tfshare
-      use tfcsi,only:lfno,cssetlfno,icslfno,icslfnm
+      use tfcsi,only:cssetlfno,icslfno,icslfnm
       use findr,only:tffindroot,tffit
       use tfcx,only:tfatt,tfsolvemember
       use mathfun

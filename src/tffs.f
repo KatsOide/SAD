@@ -901,8 +901,7 @@ c        use ffs_pointer
                     lm=lx
                     cycle
                   else
-                    call termes(icslfnm(),
-     $                   '?Recursive OFFSET in',pnamec(l))
+                    call termes('?Recursive OFFSET in',pnamec(l))
                   endif
                 endif
               endif

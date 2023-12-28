@@ -67,7 +67,7 @@ c      call tfmemcheckprint('tffscalc-before-prolog',.true.,irtc)
             call tfaddmessage(' ',0,icslfnm())
           endif
           call tclrfpe
-          call termes(icslfnm(),'Error in OpticsProlog.',' ')
+          call termes('Error in OpticsProlog.',' ')
         endif
         error=.true.
         return
@@ -258,7 +258,7 @@ c                    endif
               irw=waitpid(-1,isw)
             enddo
             if(isw /= 0)then
-              call termes(icslfnm(),
+              call termes(
      1             '?Error in parallel process.',' ')
             endif
             do i=nfam1,nfam
@@ -291,7 +291,7 @@ c                    endif
       endif
       call tdfun(iqcol,lfp,nqcola,nqcola1,kdp,df,error)
       if(error)then
-        call termes(icslfnm(),
+        call termes(
      1         '?Too many fit conditions.',' ')
         return
       endif
@@ -308,7 +308,7 @@ c                    endif
         enddo
         if(fitflg)then
           if(nvar <= 0)then
-            call termes(icslfnm(),'?No variable.',' ')
+            call termes('?No variable.',' ')
             error=.true.
           endif
           if(.not. cell .and. .not. geomet)then
@@ -428,7 +428,7 @@ c                    endif
             call tfaddmessage(' ',0,icslfnm())
           endif
           call tclrfpe
-          call termes(icslfnm(),'Error in OpticsEpilog.',' ')
+          call termes('Error in OpticsEpilog.',' ')
         endif
         error=.true.
       endif
@@ -561,8 +561,7 @@ c          endif
             if(ierrorprint /= 0)then
               call tfaddmessage(' ',2,icslfnm())
             endif
-            call termes(6,'Error in FitWeight '//
-     $           nlist(k)//' at '//name,' ')
+            call termes('Error in FitWeight '//nlist(k)//' at '//name,' ')
           elseif(ktfrealq(kx,wiq(iq)))then
           endif
         else

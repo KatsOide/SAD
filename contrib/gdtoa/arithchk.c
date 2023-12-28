@@ -41,7 +41,7 @@ VAX		= { "VAX", 4 },
 CRAY		= { "CRAY", 5};
 
  static Akind *
-Lcheck()
+Lcheck(void)
 {
 	union {
 		double d;
@@ -68,7 +68,7 @@ Lcheck()
 	}
 
  static Akind *
-icheck()
+icheck(void)
 {
 	union {
 		double d;
@@ -97,7 +97,7 @@ icheck()
 char *emptyfmt = "";	/* avoid possible warning message with printf("") */
 
  static Akind *
-ccheck()
+ccheck(void)
 {
 	union {
 		double d;
@@ -118,7 +118,7 @@ ccheck()
 	}
 
  static int
-fzcheck()
+fzcheck(void)
 {
 	double a, b;
 	int i;
@@ -137,7 +137,7 @@ fzcheck()
 	}
 
  int
-main()
+main(void)
 {
 	Akind *a = 0;
 	int Ldef = 0;

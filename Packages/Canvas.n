@@ -1846,14 +1846,17 @@ CanvasGraphics=Class[{},
 
   With[{def={PlotColor->Null,FillColor->Null,MeshStyle->Null,Tags->False,
     BelowFrame->False}},
+    RectOpt[opt___]:=(RectOpt[opt]=
+      MapThread[If[StringQ[#],#2->#,Null[]]&,
+        {{FillColor,MeshStyle,PlotColor,Tags}/.Override[opt,def],
+          {Fill,Stipple,OutLine,Tag}}]);
+
     Primitive[Rectangle[min_,max_,
       opt:((_Rule|_RuleDelayed)...)]]:=(
         CanvasWidget[Create$Rectangle]={
           CoordLimited[min],
           CoordLimited[max],
-          MapThread[If[StringQ[#],#2->#,Null[]]&,
-            {{FillColor,MeshStyle,PlotColor,Tags}/.Override[opt,def],
-              {Fill,Stipple,OutLine,Tag}}]};
+          Null@@RectOpt[opt]};
         If[BelowFrame/.{opt}/.def,
           The$Canvas[Lower]={CanvasLastID,StartID}]
         )];

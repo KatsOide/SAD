@@ -1,10 +1,14 @@
-      subroutine termes(lfno,mess,mess1)
+      subroutine termes(mess,mess1)
+      use tfcsi,only:icslfnm
       implicit none
       character*(*) mess
       character*(*) mess1
       character*20 head
-      integer*4 lfno,l1,l2,l
-      l=lfno
+      integer*4 l1,l2,l
+      l=icslfnm()
+      if(l .eq. 0)then
+        return
+      endif
       l1=min(69,len_trim(mess))
       l2=min(70-l1,len_trim(mess1))
       if(mess(1:4) .eq. 'Info' .or. mess(1:5) .eq. 'Usage')then

@@ -77,7 +77,7 @@ c                cmp%update=cmp%nparam .le. 0
       integer*4 i,ie,iv
       call tffscoupledvar(irtc)
       if(irtc .ne. 0)then
-        call termes(icslfnm(),'?Error in CoupledVariables',' ')
+        call termes('?Error in CoupledVariables',' ')
       endif
       do i=1,flv%nvar
         ie=nvevx(i)%ivarele
@@ -142,7 +142,7 @@ c                cmp%update=cmp%nparam .le. 0
       endif
       call tffscoupledvar(irtc)
       if(irtc .ne. 0)then
-        call termes(icslfnm(),'?Error in CoupledVariables',' ')
+        call termes('?Error in CoupledVariables',' ')
       endif
       return
       end
@@ -193,7 +193,7 @@ c                cmp%update=cmp%nparam .le. 0
       endif
       call tffscoupledvar(irtc)
       if(irtc .ne. 0)then
-        call termes(icslfno(),'?Error in CoupledVariables',' ')
+        call termes('?Error in CoupledVariables',' ')
       endif
       return
       end

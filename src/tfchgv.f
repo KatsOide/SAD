@@ -1,11 +1,10 @@
-      subroutine tfchgv(lfno)
+      subroutine tfchgv()
       use tfstk
       use ffs
       use ffs_pointer
       use tffitcode
       use tfcsi,only:ipoint
       implicit none
-      integer*4 ,intent(in):: lfno
       integer*4 i,k,j,next1
       character*(MAXPNAME) word
       character*8 key,ki,tfkwrd,tfkwrd1
@@ -47,8 +46,7 @@
       if(apply)then
         evarini=.true.
       else
-        call termes(lfno,
-     $       'No element for VAR_Y with keyword: ',key)
+        call termes('No element for VAR_Y with keyword: ',key)
         ipoint=next1
       endif
       return

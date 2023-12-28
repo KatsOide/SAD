@@ -4,9 +4,9 @@ Environment@@[{
   {"UNIX95",""},
   {"TCL_LIBRARY",""},
   {"TK_LIBRARY",""},
-  {"KBFRAMEDIR","/users/oide/SAD/oldsad/KBFrame"},
-  {"PYTHONPATH","/users/oide/SAD/oldsad/Packages/"},
-  {"TLPATH","/users/oide/SAD/oldsad/contrib/texlive/bin"}
+  {"KBFRAMEDIR",Environment["SAD_ROOTPATH"]//"/KBFrame"},
+  {"PYTHONPATH",Environment["SAD_ROOTPATH"]//"/Packages/"},
+  {"TLPATH",Environment["SAD_ROOTPATH"]//"/contrib/texlive/bin"}
   },{1}];
 
 If[`$HaveLaTeX==="",
@@ -14,10 +14,10 @@ If[`$HaveLaTeX==="",
   Environment["PATH",Environment["TLPATH"]//":"//Environment["PATH"]]];
 !`$HaveLaTeX="";
 
-DocumentsDirectory="/users/oide/SAD/oldsad/Documents/";
-ExamplesDirectory="/users/oide/SAD/oldsad/script/";
+DocumentsDirectory=Environment["SAD_ROOTPATH"]//"/Documents/";
+ExamplesDirectory=Environment["SAD_ROOTPATH"]//"/script/";
 
-KBF$ScreenShotDirectory = "/ldata/KEKB/KCG/ScrShot";
+!KBF$ScreenShotDirectory = "/ldata/KEKB/KCG/ScrShot";
 
 !Get[PackagesDirectory//"init.kekb.n"];
 

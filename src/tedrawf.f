@@ -54,7 +54,7 @@
 
       subroutine mathinit(s)
       implicit none
-      integer*4 lfno,ip,lene
+      integer*4 ip,lene
       character*80 mb
       character*(*) s
       common /math/ip,mb

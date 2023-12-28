@@ -1,4 +1,4 @@
-      subroutine tfdbun(word,bunch,nbunch,lfno,err)
+      subroutine tfdbun(word,bunch,nbunch,err)
       use ffs
       use tffitcode
       real*8 bunch(nbunch),prn(nbunch)
@@ -10,7 +10,7 @@
         ipoint=next
         r=getva(exist)
         if(.not. exist)then
-          call termes(lfno,'?Missing value for DBUNCH R_ANDOM.',' ')
+          call termes('?Missing value for DBUNCH R_ANDOM.',' ')
           err=.true.
           return
         endif
@@ -31,21 +31,18 @@
       else
         n=int(getva(exist))
         if(.not. exist)then
-          call termes(lfno,
-     1          '?Missing bunch number for DBUNCH.',' ')
+          call termes('?Missing bunch number for DBUNCH.',' ')
           err=.true.
           return
         endif
         if(n .le. 0 .or. n .gt. nbunch)then
-          call termes(lfno,
-     1          '?Bunch number out of range.',' ')
+          call termes('?Bunch number out of range.',' ')
           err=.true.
           return
         endif
         r=getva(exist)
         if(.not. exist)then
-          call termes(lfno,
-     1          '?Missing deviation for DBUNCH.',' ')
+          call termes('?Missing deviation for DBUNCH.',' ')
           err=.true.
           return
         endif
