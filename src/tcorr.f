@@ -3,7 +3,7 @@
       use ffs
       use tffitcode
       use ffs_pointer, only:idelc,idvalc,idtypec
-      use tfcsi,only:cssetp
+      use tfcsi,only:cssetp,icslfnm
       implicit real*8 (a-h,o-z)
       integer*8 latt(nlat),le,le1,ix,i1,i2
       dimension pos(nlat)
@@ -139,14 +139,13 @@
           go to 1
         else
           if(.not. exist1)then
-            call termes(lfno,'?Undefined element ',word)
+            call termes('?Undefined element ',word)
           endif
           go to 9980
         endif
       endif
 9980  call tfree(ix)
       return
-9990  call termes(lfno,
-     1'Syntax: DELCOR corlength delx dely element [element1...]',' ')
+9990  call termes('Syntax: DELCOR corlength delx dely element [element1...]',' ')
       return
       end

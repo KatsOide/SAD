@@ -1,4 +1,4 @@
-      subroutine tffsfreefix(frefix,nvar,lfno)
+      subroutine tffsfreefix(frefix,nvar)
       use tfstk
       use ffs, only:nele,nlat,nvevx,nelvx,ffv
       use ffs_pointer
@@ -9,7 +9,7 @@
       use tflinepcom, only:tftouch
       implicit none
       integer*8 kal
-      integer*4 nvar,lfno,l,ifany,
+      integer*4 nvar,l,ifany,
      $     i,j,k,it,iv,ivi,next,itk,ivk,lenw,kk,jj,ivck,
      $     irtc,nl,kkk
       logical*4 frefix,tmatch,wild,found,comp,temat
@@ -97,7 +97,7 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
           kk=iele1(k)
           if(iv .eq. 0)then
             if(nelvx(kk)%ival .eq. 0)then
-              call termes(lfno,'Can''t use as variable ',
+              call termes('Can''t use as variable ',
      $             pnamec(k))
               return
             endif
@@ -108,7 +108,7 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
               if(nvevx(i)%ivvar .eq. ivi)then
                 if(comp)then
                   if(nvevx(i)%ivcomp .eq. 0)then
-                    call termes(lfno,
+                    call termes(
      $                   'Element already used as variable: ',
      $                   pnamec(k))
                     return
@@ -118,7 +118,7 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
                 else
                   if(nvevx(i)%ivcomp .ne. 0)then
                     call elname(nvevx(i)%ivcomp,name)
-                    call termes(lfno,
+                    call termes(
      $        'A component has been already used as variable: ',
      $                   name)
                     return
@@ -156,14 +156,14 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
                 do jj=1,nlat-1
                   if(jj .ne. k .and. icomp(jj) .eq. k)then
                     call elnameK(jj,name)
-                    call termes(lfno,'Info-Component '//
+                    call termes('Info-Component '//
      $                   name(1:lenw(name))//' is coupled to ',
      $                   name1(1:lenw(name1))//' .')
                   endif
                 enddo
               else
                 call elnameK(k,name)
-                call termes(lfno,'Info-Component '//
+                call termes('Info-Component '//
      $               name(1:lenw(name))//' is coupled to ',
      $               name1(1:lenw(name1))//' .')
               endif
@@ -175,7 +175,7 @@ c     `jj' is same family but different master with `k',
 c     where klp(iele1(k)) == k
                   call elnameK(jj,name)
                   call elnameK(icomp(jj),name1)
-                  call termes(lfno,'Info-Component '//
+                  call termes('Info-Component '//
      $                 name(1:lenw(name))//' is coupled to ',
      $                 name1(1:lenw(name1)))
                 endif

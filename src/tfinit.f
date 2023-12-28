@@ -188,14 +188,13 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
       return
       end
 
-      subroutine tffsrenumber(lfno)
+      subroutine tffsrenumber()
       use tfstk
       use ffs
       use ffs_pointer
       use tffitcode
-      use tfcsi,only:ipoint
+      use tfcsi,only:ipoint,icslfnm
       implicit none
-      integer*4 ,intent(in):: lfno
       integer*4 next,ielm,i0
       character*(MAXPNAME+16) name
       logical*4 exist
@@ -206,8 +205,7 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
         call tfinimult(i0)
         evarini=.true.
       else
-        call termes(lfno,
-     $       'Missing origin component for RENUM_BER',' ')
+        call termes('Missing origin component for RENUM_BER',' ')
       endif
       return
       end

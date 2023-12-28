@@ -61,7 +61,7 @@ c .... parsing word
           goto 1
         endif
 6101    lfn=6
-        call termes(lfno,'?File open error ',word)
+        call termes('?File open error ',word)
         goto 999
       endif
    19 continue

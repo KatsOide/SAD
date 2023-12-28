@@ -6,7 +6,6 @@
       real*8 trans(6,12),cod(6),beam(42),trx(6,7),trans1(6,7),x1,px1,y1,py1
       trans1=trx
       trans(:,1:irad)=matmul(trans1(:,1:6),trans(:,1:irad))
-c      call tmultr(trans,trans1(:,1:6),irad)
       call tmulbs(beam ,trans1(:,1:6),.true.)
        x1=trans1(1,1)*cod(1)+trans1(1,2)*cod(2)+
      $    trans1(1,3)*cod(3)+trans1(1,4)*cod(4)+trans1(1,6)*cod(6)+

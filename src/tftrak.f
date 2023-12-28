@@ -11,7 +11,7 @@ c     end   initialize for preventing compiler warning
       if(abbrev(word,'TRA_CK','_'))then
         if(dapert)then
           if(np0 .lt. 3)then
-            call termes(lfno,'NP must be larger than 2.',' ')
+            call termes('NP must be larger than 2.',' ')
             call skipline
             exist=.false.
             return

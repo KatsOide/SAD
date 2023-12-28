@@ -45,7 +45,7 @@
           if(irtc /= 0)then
             go to 10
           endif
-          exist=exist .or. nc .gt. 0
+          exist=exist .or. nc > 0
         enddo
         isp=isp2
       enddo
@@ -258,7 +258,7 @@ c      enddo
       prolog(ncprolog:ncprolog)=' '
       levele=levele+1
       call tfprint1(k,6,79,nline,.true.,.true.,irtc)
-      if(irtc .gt. 0 .and. ierrorprint /= 0)then
+      if(irtc > 0 .and. ierrorprint /= 0)then
         call tfreseterror
       endif
       l=itfdownlevel()
@@ -283,8 +283,8 @@ c      enddo
           return
         endif
         nret=int(rtastk(isp))
-        call tfprint1(dtastk(isp1+1),
-     $       lfno,-itfgetrecl(),abs(nret),nret .ge. 0,
+        call tfprint1(dtastk(isp1+1),icslfno(),
+     $       -itfgetrecl(),abs(nret),nret .ge. 0,
      $       .true.,irtc)
       else
         irtc=itfmessage(9,'General::narg','"1 or 2"')
@@ -307,12 +307,16 @@ c      enddo
       logical*4 ,intent(in):: cr,str
       save kxlongstr
       data kxlongstr%k /0/
+      if(lfno == 0)then
+        irtc=0
+        return
+      endif
       isp0=isp
       call getstringbuf(strb,lrec,.true.)
-      if(nret .gt. 0)then
+      if(nret > 0)then
         strb%remlines=nret
       endif
-      if(ncprolog .gt. 0)then
+      if(ncprolog > 0)then
         call putstringbufp(strb,prolog(1:ncprolog),lfno,irtc)
         if(irtc /= 0)then
           go to 9000
@@ -323,7 +327,7 @@ c      enddo
         call writestringbufn(strb,cr,lfno)
       elseif(irtc == -1)then
         irtc=0
-      elseif(irtc .gt. 0)then
+      elseif(irtc > 0)then
         kr=dlist(ktfaddr(kerror)+2)
         if(kxlongstr%k == 0)then
           call tfevals('Hold[General::longstr]',ks,irtc1)
@@ -481,7 +485,7 @@ c      call tfdebugprint(k,'tfget',1)
       levele=levele+1
       kx%k=ktfoper+mtfnull
       call trbassign(lfn)
-      lfn1=0
+      lfnm=0
       call skiplnget
       itf=0
       do while(itf .ge. 0)
@@ -524,7 +528,7 @@ c      call tfdebugprint(kx,'tfget-r',1)
       openf=lfn /= sav%lfni
       if(openf)then
         call trbassign(lfn)
-        lfn1=0
+        lfnm=0
       endif
       levele=levele+1
       itf=-1
@@ -811,7 +815,7 @@ c          enddo
       else
         opts%ndel=0
       endif
-      if(isp .gt. isp1+2)then
+      if(isp > isp1+2)then
         isp0=isp
         call tfgetoptionstk(isp1+3,kaopt,optname,nopt,ispopt,irtc)
         isp=isp0
@@ -907,7 +911,7 @@ c          enddo
         endif
         if(nc == 0)then
           if(opts%new)then
-            if((opts%ndel .gt. 0 .and. .not. opts%null) .or. char1)then
+            if((opts%ndel > 0 .and. .not. opts%null) .or. char1)then
               nc=-1
               cycle
             endif
@@ -919,7 +923,7 @@ c          enddo
         if(char1)then
           nc1=1
           next=2
-        elseif(opts%ndel .gt. 0)then
+        elseif(opts%ndel > 0)then
           call tfword(buffer(ipoint:ipoint+nc-1),
      $         opts%delim(1:opts%ndel),
      $         isw,nc1,next,opts%null)
@@ -939,7 +943,7 @@ c          enddo
         exit
       enddo
       is=ipoint
-      if(opts%new .and. next .gt. nc)then
+      if(opts%new .and. next > nc)then
         call trbnextl(lfn)
       else
         call trbmovepoint(lfn,next-1)
@@ -993,7 +997,7 @@ c          enddo
         itfbig=kxsymbolf('BigEndian',9,.true.)
       endif
       little=.false.
-      if(narg .gt. 2)then
+      if(narg > 2)then
         isp0=isp
         call tfgetoptionstk(isp1+3,kaopt,optname,nopt,ispopt,irtc)
         isp=isp0
@@ -1074,7 +1078,7 @@ c          enddo
       nc=len(str)
       if(null)then
         is=1
-        if(index(del,str(1:1)) .gt. 0)then
+        if(index(del,str(1:1)) > 0)then
           next=2
           nw=0
           return
@@ -1092,7 +1096,7 @@ c          enddo
         return
       endif
  10   do i=is+1,nc
-        if(index(del,str(i:i)) .gt. 0)then
+        if(index(del,str(i:i)) > 0)then
           nw=i-is
           next=i+1
           return
@@ -1116,7 +1120,7 @@ c          enddo
         irtc=0
         return
       endif
-      if(isp .gt. isp1+1 .or.
+      if(isp > isp1+1 .or.
      $     .not. ktfstringq(dtastk(isp),str))then
         kx=dtastk(isp)
         irtc=itfmessage(9,'General::wrongtype','"Character-string"')
@@ -1168,7 +1172,7 @@ c          enddo
           call loc_string(ktfaddr(kx1),str)
           nc=str%nch
         else
-          if(nc .gt. 2) then
+          if(nc > 2) then
              if (str%str(nc-1:nc) == '.z' .or.
      $           str%str(nc-1:nc) == '.Z')then
                call tfuncompress(str%str,nc,kx,irtc)
@@ -1179,7 +1183,7 @@ c          enddo
                disp=.true.
              endif
           endif
-          if(nc .gt. 3) then
+          if(nc > 3) then
              if (str%str(nc-2:nc) == '.gz')then
                call tfungzip(str%str,nc,kx,irtc)
                if(irtc /= 0)then
@@ -1189,7 +1193,7 @@ c          enddo
                disp=.true.
              endif
           endif
-          if(nc .gt. 4) then
+          if(nc > 4) then
              if (str%str(nc-3:nc) == '.bz2')then
                call tfunbzip2(str%str,nc,kx,irtc)
                if(irtc /= 0)then

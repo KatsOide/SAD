@@ -496,6 +496,7 @@ c        call tfdebugprint(ki,'evallev',1)
       use tfcode
       use iso_c_binding
       use funs
+      use tfcsi,only:icslfno
       implicit none
       type (sad_descriptor) kx,kf,kh,kl,tfefunrefu
       type (sad_funtbl), pointer :: fun
@@ -533,7 +534,7 @@ c        call tfdebugprint(ki,'evallev',1)
       case (ktfsymbol)
         if(ref)then
           kf=tfsyeval(kf,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 8000
           endif
         else
@@ -545,14 +546,14 @@ c        call tfdebugprint(ki,'evallev',1)
         call loc_dlist(kaf,list)
         if(iand(lconstlist,list%attr) == 0)then
           kf=tfleval(list,ref,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 8000
           endif
         endif
       case (ktfpat)
         if(ref)then
           kf=tfpateval(kf,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 8000
           endif
         endif
@@ -576,9 +577,9 @@ c        call tfdebugprint(ki,'evallev',1)
             iaat=0
           endif
         elseif(ktfsymbolq(kf%k,sym))then
-          if(sym%override .ne. 0)then
+          if(sym%override /= 0)then
             iaat=iand(iattrholdall,sym%attr)
-            if(iaat .ne. 0)then
+            if(iaat /= 0)then
               ev=.false.
               iaat=merge(i00,-iaat,iaat == iattrholdall)
             endif
@@ -641,7 +642,7 @@ c          call tfstk2l(lista,lista)
         rep=tfgetseqstk(ks,ns)
         if(isp .gt. isp1)then
           dtastk(isp)=tfeevalref(dtastk(isp),irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 8000
           endif
         endif
@@ -651,7 +652,7 @@ c          call tfstk2l(lista,lista)
         do i=1,ns
           isp10=isp
           call tfseqevalstk(kls%dbody(1),ns,i,av,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 8000
           endif
           isp11=isp
@@ -680,7 +681,7 @@ c          call tfstk2l(lista,lista)
         do i=1,ns
           isp10=isp
           call tfseqevalstk(kls%dbody(1),ns,i,av,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 8000
           endif
           isp11=isp
@@ -712,7 +713,7 @@ c          call tfstk2l(lista,lista)
         endif
         isp=isp+1
         dtastk(isp)=tfeevaldef(kls%dbody(1),irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 8000
         endif
         call tfseqevalstkall(kls%dbody(2),ns-1,av,irtc)
@@ -729,14 +730,13 @@ c          call tfstk2l(lista,lista)
         endif
         i1=1
         do
-          if(ltrace .gt. 0)then
+          if(ltrace > 0)then
             levele=levele+1
             lpw=min(131,itfgetrecl())
             do i=i1,ns
-              call tfprint1(kls%dbody(i),6,-lpw,4,.true.,
-     $             .true.,irtc)
+              call tfprint1(kls%dbody(i),icslfno(),-lpw,4,.true.,.true.,irtc)
               kx=tfeevalref(kls%dbody(i),irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 go to 1320
               endif
             enddo
@@ -752,18 +752,18 @@ c          call tfstk2l(lista,lista)
               elseif(ktfpatq(kx))then
                 kx=tfpateval(kx,irtc)
               endif
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 go to 1320
               endif
             enddo
           endif
           go to 7000
- 1320     if(irtc .gt. irtcret)then
+ 1320     if(irtc > irtcret)then
             go to 7000
           endif
           call tfcatchreturn(irtcgoto,kl,irtc)
           l=itfdownlevel()
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             exit
           endif
           call tffindlabel(kls,ns,i1,kl)
@@ -793,20 +793,20 @@ c          call tfstk2l(lista,lista)
       levele=levele+1
       if(ev)then
         call tfseqevalstkall(kls%dbody(1),ns,av,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 7000
         endif
       elseif(iaat == 0 .or. av)then
         rep=tfgetseqstk(ks,ns)
       else
         call tfargevalstk(isp1,kls,ns,iaat,mf,.false.,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 7000
         endif
       endif
  6000 dtastk(isp1)=kf
 c      call tfmemcheckprint('seval-efun',.false.,irtc)
-c      if(irtc .ne. 0)then
+c      if(irtc /= 0)then
 c        call tfdebugprint(kf,'tfseval-efunref-in',3)
 c        call tfdebugprint(ktastk(isp1+1),' ',3)
 c        call tfdebugprint(ktastk(isp),' ',3)
@@ -846,7 +846,7 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
       logical*4 exist
       kx=dxnullo
       ns=kls%nl
-      if(ns .gt. 1)then
+      if(ns > 1)then
         irtc=itfmessage(9,'General::narg','"0 or 1"')
         return
       endif
@@ -886,7 +886,7 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
       endif
       isps=ipurefp+ind
       if(iopc == mtfslot)then
-        if(ipurefp == 0 .or. ind <= 0 .or. ind .gt. napuref)then
+        if(ipurefp == 0 .or. ind <= 0 .or. ind > napuref)then
           call strfromil(ind,inds,ls)
           irtc=itfmessagestr(999,'General::slot',
      $         '#'//inds(:ls))
@@ -908,8 +908,6 @@ c      call tfdebugprint(kx,'tfseval-connect',3)
       naf0=napuref
       ipurefp=itastk(1,ipf0+naf0+1)
       napuref=itastk(2,ipf0+naf0+1)
-c      write(*,*)'tfslot ',ipf0,naf0,ipurefp,napuref
-c      call tfdebugprint(kx,'puref',1)
       kx=tfeeval(kx,ref,irtc)
       ipurefp=ipf0
       napuref=naf0
@@ -955,7 +953,7 @@ c      call tfdebugprint(kx,'puref',1)
       integer*4 ,intent(in):: ns
       integer*4 i
       tfgetseqstk=.false.
-      if(ns .gt. 0)then
+      if(ns > 0)then
         do i=1,ns
           ki=klist(ks+i)
           if(ktfsequenceq(ki,kl))then

@@ -293,7 +293,7 @@ With[{def={Weight->None,TextSize->1,FunctionLabel->Default,
           fun,x,par0],
         True,
         Fit[data,fun,x,par0]];
-      g1=ListPlot[data,DisplayFunction->Identity,Null@@opt];
+      g1=ListPlot[data,DisplayFunction->Identity,Null@@opt];;
       {x1,x2}=Switch[pr,
         {{_Real,_Real},_},First[pr],
         {{_Real,Automatic},_},{pr[[1,1]],Max[xa]},

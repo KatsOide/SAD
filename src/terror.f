@@ -131,7 +131,7 @@ c     temat(ilist(2,latt(1))... MUST need because of latt defined by (2,0:nlatt)
           add=.false.
           go to 3
         else
-          call termes(lfno,'?Missing amount of error ',word)
+          call termes('?Missing amount of error ',word)
           errflg=.true.
           return
         endif

@@ -7,6 +7,7 @@
       use ffs_flag
       use tmacro
       use temw,only:tmulbs
+      use sad_basics
       use mathfun, only:pxy2dpz,xsincos
       implicit none
       integer*4 , parameter :: ms=9
@@ -126,6 +127,7 @@
       end
 
       subroutine tbrote(trans,cod,srot,alg,phig,dx,dz,dtheta,dchi2,ent)
+      use sad_basics
       use tmacro, only:irad
       use ffs_flag,only:calpol
       use mathfun, only:xsincos
@@ -280,6 +282,6 @@ c      trans(5,6)=zfpzf*(1.d0-pr/pzf*    r33*dpzidp)
       trans(6,1:5)=0.d0
       trans(6,6)=1.d0
       return
-      end
+      end subroutine
 
       end module

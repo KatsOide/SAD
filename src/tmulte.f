@@ -15,7 +15,9 @@
       use kradlib, only:tradke
       use mathfun
       use multa, only:fact,aninv
+      use drife
       use macmath
+      use sad_basics
       implicit none
       integer*4 ,parameter ::ndivmax=300
       real*8 ,parameter::ampmax=0.05d0,pmax=0.9999d0,oneev=1.d0+3.83d-12
@@ -37,7 +39,7 @@
       complex*16 cx,cx0,cx2,cr,cr1
       complex*16 akn(0:nmult),ak0n,akn0
       logical*4 acc,krad
-      if(phia .ne. 0.d0)then
+      if(phia /= 0.d0)then
         call tmultae(trans,cod,beam,srot,al,ak,
      $       phia,psi1,psi2,apsi1,apsi2,bz,
      1       dx,dy,theta,dtheta,chi2,alg,phig,
@@ -49,27 +51,24 @@
       call tsolrote(trans,cod,beam,srot,alg,bz,dx,dy,dz,
      $     -chi1,-chi2,theta2,bxs,bys,bzs,.true.)
       akn0=(ak(0)*cr1+dcmplx(bys,bxs)*al)*rtaper
-      krad=enarad .and. al .ne. 0.d0
+      krad=enarad .and. al /= 0.d0
       if(krad)then
         call tsetr0(trans(:,1:6),cod,bzs*.5d0,0.d0)
       endif
       do n=nmult,1,-1
-        if(ak(n) .ne. 0.d0)then
+        if(ak(n) /= 0.d0)then
           nmmax=n
           go to 1
         endif
       enddo
-      if(vc .ne. 0.d0 .or. gammab(l+1) .ne. gammab(l))then
+      if(vc /= 0.d0 .or. gammab(l+1) /= gammab(l) .or. ak(0) /= (0.d0,0.d0))then
         nmmax=0
       else
-c        write(*,'(a,1p12g12.4)')'tmulte-drife ',al,ak(0),akn0
-        call tdrife(trans,cod,beam,srot,
-     $       al,bzs,dble(akn0),imag(akn0),al,
-     $       .true.,krad,irad)
+        call tdrife0(trans,cod,beam,srot,al,bzs,al,.true.,krad,irad)
         dhg=0.d0
         go to 1000
       endif
- 1    eps=merge(eps00m,eps00m*eps0,eps0 .eq. 0.d0)
+ 1    eps=merge(eps00m,eps00m*eps0,eps0 == 0.d0)
       ndiv=1
       do n=2,nmmax
         ndiv=max(ndiv,
@@ -83,7 +82,7 @@ c        write(*,'(a,1p12g12.4)')'tmulte-drife ',al,ak(0),akn0
         ndiv=min(ndiv,ndivmax)
       endif
       aln=al/ndiv
-      acc=vc .ne. 0.d0 .and. rfsw
+      acc=vc /= 0.d0 .and. rfsw
       p0=gammab(l)
       h0=p2h(p0)
       p1=gammab(l+1)
@@ -98,10 +97,10 @@ c        write(*,'(a,1p12g12.4)')'tmulte-drife ',al,ak(0),akn0
       wi=0.d0
       v02a=0.d0
       if(acc)then
-        w=merge(m_2pi*freq/c,omega0*harm/c,harm .eq. 0.d0)
-        wi=merge(0.d0,1.d0/w,w .eq. 0.d0)
+        w=merge(m_2pi*freq/c,omega0*harm/c,harm == 0.d0)
+        wi=merge(0.d0,1.d0/w,w == 0.d0)
         vc0=vc0+vc
-        if(omega0 .ne. 0.d0)then
+        if(omega0 /= 0.d0)then
           hvc0=hvc0+(c*w)/omega0*vc
         endif
         if(rfsw)then
@@ -133,7 +132,7 @@ c        write(*,'(a,1p12g12.4)')'tmulte-drife ',al,ak(0),akn0
           vcacc=vcacc-vc*sp
         endif
       endif
-      dhg=merge((p1-p0)*(p1+p0)/(h1+h0)/ndiv,0.d0,p1 .ne. 0.d0)
+      dhg=merge((p1-p0)*(p1+p0)/(h1+h0)/ndiv,0.d0,p1 /= 0.d0)
       cr=cr1*rtaper
       akn(0)=akn0/ndiv
       do n=1,max(nmmax,1)
@@ -144,29 +143,29 @@ c        write(*,'(a,1p12g12.4)')'tmulte-drife ',al,ak(0),akn0
       ak1=dble(akn(1))*.5d0
       al1=aln*.5d0
       ak0n=akn(0)*.5d0
-      if(al .ne. 0.d0)then
-        if(fringe .and. mfring .ne. 2)then
+      if(al /= 0.d0)then
+        if(fringe .and. mfring /= 2)then
           if(acc)then
             call tcavfrie(trans,cod,beam,al,v,w,phic,phis-phic,s0,p0,
-     $           irad,irad .gt. 6 .or. calpol,autophi)
+     $           irad,irad > 6 .or. calpol,autophi)
           endif
-          if(ak1 .ne. 0.d0)then
+          if(ak1 /= 0.d0)then
             call tqfrie(trans,cod,beam,ak1,al1,bzs)
           endif
         endif
-        if(bfrm .and. ak0n .ne. (0.d0,0.d0))then
-          if(mfring .eq. 1 .or. mfring .eq. 3)then
+        if(bfrm .and. ak0n /= (0.d0,0.d0))then
+          if(mfring == 1 .or. mfring == 3)then
             call tbfrme(trans,cod,beam,ak0n/al1,fb1,.true.)
-          elseif(mfring .ne. 2)then
+          elseif(mfring /= 2)then
             call tbfrme(trans,cod,beam,ak0n/al1,0.d0,.true.)
           endif
         endif
-        if(mfring .eq. 1 .or. mfring .eq. 3)then
+        if(mfring == 1 .or. mfring == 3)then
           call tqlfre(trans,cod,beam,al1,ak1,f1in,f2in,bzs)
         endif
         nmmin=2
         if(krad)then
-          if(f1in .ne. 0.d0)then
+          if(f1in /= 0.d0)then
             call tradke(trans,cod,beam,srot,f1in,0.d0,bzs*.5d0)
           else
             call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0,0.d0)
@@ -180,7 +179,7 @@ c        write(*,'(a,1p12g12.4)')'tmulte-drife ',al,ak(0),akn0
       w1n=pbunch*abs(charge)*e*wakew1/amass/p0/ndiv
       dgb=0.d0
       do m=1,ndiv
-        if(nmmin .eq. 2)then
+        if(nmmin == 2)then
           call tsolque(trans,cod,beam,srot,al1,ak1,
      $         bzs,dble(ak0n),imag(ak0n),
      $         eps0,krad,irad)
@@ -197,7 +196,7 @@ c        write(*,'(a,1p12g12.4)')'tmulte-drife ',al,ak(0),akn0
           cx=(cx+akn(kord))*cx0*aninv(kord)
           cx2=cx2*cx0*aninv(kord)+akn(kord)
         enddo
-        if(nmmin .eq. 2)then
+        if(nmmin == 2)then
           cx=cx*cx0
           cx2=cx2*cx0
         else
@@ -211,8 +210,8 @@ c        write(*,'(a,1p12g12.4)')'tmulte-drife ',al,ak(0),akn0
         trans1(4,3)= dble(cx2)+w1n
         cod(2)=cod(2)-dble(cx)+w1n*cod(1)
         cod(4)=cod(4)+imag(cx)+w1n*cod(3)
-        bsir0=merge(bsir0+imag(cx)/al1,0.d0,m .eq. 1)
-        if(m .eq. ndiv)then
+        bsir0=merge(bsir0+imag(cx)/al1,0.d0,m == 1)
+        if(m == ndiv)then
           bsir0=bsir0-imag(cx)/al1
         endif
         if(acc)then
@@ -238,7 +237,7 @@ c        write(*,'(a,1p12g12.4)')'tmulte-drife ',al,ak(0),akn0
           dh=max(oneev-h1,-va*(sp+offset1))
           veff=vcn
           vc0=vc0+veff
-          if(omega0 .ne. 0.d0)then
+          if(omega0 /= 0.d0)then
             hvc0=hvc0+(c*w)/omega0*veff
           endif
           h2=h1+dh
@@ -286,7 +285,7 @@ c        write(*,'(a,1p12g12.4)')'tmulte-drife ',al,ak(0),akn0
           cod(5)=-t*v2
           trans(:,1:irad)=matmul(trans1,trans(:,1:irad))
           dgb=dgb+dhg
-c$$$        elseif(irad .eq. 6)then
+c$$$        elseif(irad == 6)then
 c$$$          trans(2,1)=trans(2,1)+trans1(2,1)*trans(1,1)
 c$$$     $         +trans1(2,3)*trans(3,1)
 c$$$          trans(4,1)=trans(4,1)+trans1(4,1)*trans(1,1)
@@ -317,52 +316,52 @@ c$$$     $         +trans1(4,3)*trans(3,6)
           trans(4,1:irad)=trans(4,1:irad)+trans1(4,1)*trans(1,1:irad)
      $         +trans1(4,3)*trans(3,1:irad)
         endif
-        if(irad .gt. 6)then
+        if(irad > 6)then
           call tmulbs(beam ,trans1,.true.)
         endif
       enddo
-      if(nmmin .eq. 2)then
+      if(nmmin == 2)then
         call tsolque(trans,cod,beam,srot,al1*.5d0,ak1*.5d0,
      $       bzs,dble(ak0n)*.5d0,imag(ak0n)*.5d0,
      $       eps0,krad,irad)
         call tgetdvh(dgb,dv)
         cod(5)=cod(5)+dv*al1*.5d0
       endif
-      if(al .ne. 0.d0)then
-        if(mfring .eq. 2 .or. mfring .eq. 3)then
+      if(al /= 0.d0)then
+        if(mfring == 2 .or. mfring == 3)then
           call tqlfre(trans,cod,beam,al1,ak1,-f1out,f2out,bzs)
         endif
-        if(bfrm .and. ak0n .ne. (0.d0,0.d0))then
-          if(mfring .eq. 2 .or. mfring .eq. 3)then
+        if(bfrm .and. ak0n /= (0.d0,0.d0))then
+          if(mfring == 2 .or. mfring == 3)then
             call tbfrme(trans,cod,beam,-ak0n/al1,fb2,.false.)
-          elseif(mfring .ne. 1)then
+          elseif(mfring /= 1)then
             call tbfrme(trans,cod,beam,-ak0n/al1,0.d0,.false.)
           endif
         endif
-        if(fringe .and. mfring .ne. 1)then
-          if(ak1 .ne. 0.d0)then
+        if(fringe .and. mfring /= 1)then
+          if(ak1 /= 0.d0)then
             call tqfrie(trans,cod,beam,-ak1,al1,bzs)
           endif
           if(acc)then
             call tcavfrie(trans,cod,beam,al,-v,w,phic,phis-phic,s0,p0,
-     $           irad,irad .gt. 6,autophi)
+     $           irad,irad > 6,autophi)
           endif
         endif
       endif
-      if(krad .and. f1out .ne. 0.d0)then
+      if(krad .and. f1out /= 0.d0)then
         call tradke(trans,cod,beam,srot,f1out,0.d0,bzs*.5d0)
       endif
  1000 continue
       call tsolrote(trans,cod,beam,srot,alg-al,bz,dx,dy,dz,
      $     -chi1,-chi2,theta2,bxs,bys,bzs,.false.)
-      if(dhg .ne. 0.d0)then
+      if(dhg /= 0.d0)then
         rg2=p0/gammab(l+1)
         call tinitr(trans1)
         trans1(2,2)=rg2
         trans1(4,4)=rg2
         trans1(6,6)=rg2
         trans(:,1:irad)=matmul(trans1,trans(:,1:irad))
-        if(irad .gt. 6)then
+        if(irad > 6)then
           call tmulbs(beam,trans1,.true.)
         endif
         cod(2)=cod(2)*rg2

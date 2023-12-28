@@ -17,7 +17,7 @@ yyrcsid[] = "$FreeBSD: src/usr.bin/yacc/skeleton.c,v 1.37 2003/02/12 18:03:55 da
 #if defined(__cplusplus) || __STDC__
 static int yygrowstack(void);
 #else
-static int yygrowstack();
+static int yygrowstack(void);
 #endif
 #define YYPREFIX "yy"
 #line 7 "src/calc.y"

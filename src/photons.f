@@ -318,24 +318,6 @@ c      write(*,*)'with ',itp,ilp
       return
       end subroutine
 
-      real*8 function tphchge(cod) result(codx)
-      use tmacro, only:irad
-      use chg, only:tchge
-      implicit none
-      dimension codx(6)
-      real*8 ,intent(in):: cod(6)
-      real*8 trans(6,12),beam(42),srot(3,9)
-      integer*4 ir0
-      ir0=irad
-      irad=0
-      codx=cod
-      call tchge(trans,codx,beam,srot,
-     $     pcvt%dx,pcvt%dy,0.d0,pcvt%theta,pcvt%dtheta,0.d0,0.d0,
-     $     pcvt%phig,.false.)
-      irad=ir0
-      return
-      end function 
-
       subroutine tsetpcvt(l,dx,dy,theta,dtheta,phi0,phig,al)
       implicit none
       integer*4 ,intent(in):: l
@@ -358,9 +340,26 @@ c      write(*,*)'with ',itp,ilp
       pcvt%fr0=0.d0
       return
       end subroutine
-      
-      end module
 
+      real*8 function tphchge(cod) result(codx)
+      use chg,only:tchge
+      use tmacro, only:irad
+      implicit none
+      dimension codx(6)
+      real*8 ,intent(in):: cod(6)
+      real*8 trans(6,12),beam(42),srot(3,9)
+      integer*4 ir0
+      ir0=irad
+      irad=0
+      codx=cod
+      call tchge(trans,codx,beam,srot,
+     $     pcvt%dx,pcvt%dy,0.d0,pcvt%theta,pcvt%dtheta,0.d0,0.d0,
+     $     pcvt%phig,.false.)
+      irad=ir0
+      return
+      end function 
+
+      end module
 
       module tspin
       use macphys
@@ -895,8 +894,7 @@ c        write(*,'(a,1p10g12.4)')'spdepol2 ',damp,amu,smu
         end subroutine
 
         subroutine srequpol(srot,sps,params,demit,sdamp,rm1,equpol)
-        use temw,only:ipdampx,nparams,ipdampz,ipemx,ipemz,ipnup,
-     $       ipnx,ipnz,r
+        use temw,only:ipdampx,nparams,ipdampz,ipemx,ipemz,ipnup,ipnx,ipnz,r
         use macmath
         implicit none
         real*8 , intent(in)::srot(3,9),demit(21),sps(3,3),
@@ -1350,11 +1348,11 @@ c$$$            endif
 
         subroutine tradke(trans,cod,beam,srot,al,phir0,bzh)
         use tmacro
-        use temw,only:codr0,bzhr0,bsir0,calint,tinv6,gintd,transr,
-     $       tmulbs,dsg
+        use temw,only:codr0,bzhr0,bsir0,calint,gintd,transr,tmulbs,dsg
         use ffs_flag,only:radcod,calpol
         use mathfun, only:pxy2dpz,p2h,asinz,xsincos
         use tspin, only:cave,cl,cuu,gmin,sflc
+        use sad_basics
         implicit none
         real*8 , intent(inout)::trans(6,12),cod(6),beam(42),srot(3,9)
         real*8 , intent(in)::al,bzh,phir0

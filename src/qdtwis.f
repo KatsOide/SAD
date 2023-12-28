@@ -5,7 +5,7 @@
       use ffs_pointer
       use sad_main
       use tffitcode
-      use temw, only:tmultr45
+      use sad_basics
       implicit none
       type (sad_comp), pointer::cmp
       integer*4 ,intent(in):: nfam,nut,k0,l,idp
@@ -442,7 +442,7 @@ c      return
       use ffs_pointer
       use ffs_fit, only:nut
       use tffitcode
-      use temw, only:tmultr45
+      use sad_basics
       implicit none
       type (ffs_bound) fbound,fbound1
       real*8 eps
@@ -568,7 +568,7 @@ c      call tadd(transe,dtrans,dtrans,20)
       use tffitcode
       use mackw
       use ffs_seg
-      use temw, only:tmultr45
+      use sad_basics
       implicit none
       type (sad_comp), pointer :: cmp
       real*8 ,parameter  ::eps=1.d-6,vmin=1.d-6

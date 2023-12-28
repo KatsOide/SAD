@@ -44,8 +44,7 @@
               na=max((memmax-2)/4,minsize)
               lwp=ktaloc(na*2+1)
               if(lwp .le. 0)then
-                call termes(lfno,
-     1          '?Insufficient memory space for WAKE.',' ')
+                call termes('?Insufficient memory space for WAKE.',' ')
                 err=.true.
                 return
               endif
@@ -62,7 +61,7 @@
                 s=getva(exist)
                 if(.not. exist)then
                   err=.true.
-                  call termes(lfno,'?Missing ENDWAKE.',' ')
+                  call termes('?Missing ENDWAKE.',' ')
                   call tfree(lwp)
                   lwp=0
                   return
@@ -70,7 +69,7 @@
                 w=getva(exist)
                 if(.not. exist)then
                   err=.true.
-                  call termes(lfno,'?Missing value of wake.',' ')
+                  call termes('?Missing value of wake.',' ')
                   call tfree(lwp)
                   return
                 endif
@@ -78,7 +77,7 @@
                 rlist(lwp+j*2  )=w
 30            continue
               err=.true.
-              call termes(lfno,'?Too many wake data.',' ')
+              call termes('?Too many wake data.',' ')
               call tfree(lwp)
               lwp=0
               return

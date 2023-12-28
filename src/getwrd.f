@@ -300,7 +300,7 @@ c     Peek character from input buffer with case normalization
       use tfcsi
       implicit none
       integer*4 lfn0
-      lfn1=lfn0
+      lfnm=lfn0
       call skipline
       ios=0
       return

@@ -2,6 +2,7 @@
             use tfstk
       use ffs
       use tffitcode
+      use sad_basics
       implicit none
       real*8 trans(4,5),cod(6),transe(6,12),dx,dy,dz,chi1,chi2,chi3,
      $     beam(42)

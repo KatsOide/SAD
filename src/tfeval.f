@@ -420,7 +420,7 @@ c        call tfdebugprint(dtastk(isp),'tfeval-8',3)
         kx%k=ktfoper+mtfnull
         ierrorf=0
         if(kerror /= 0)then
-          call tfaddmessage(string(1:l),min(istop,l+1),icslfno())
+          call tfaddmessage(string(1:l),min(istop,l+1),icslfnm())
         endif
       endif
  8910 istop=ifchar(string(1:l),char(10),iste)+1

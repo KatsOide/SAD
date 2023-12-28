@@ -694,8 +694,7 @@ c-----Noboru addition end -----
       i=itfunaloc('Round',109,1,map,ieval,2)
       map(1)=0
       i=itfunaloc('InverseErf',110,1,map,ieval,2)
-c      i=itfunaloc('SemCtrl',111,3,map,ieval,0)
-c      i=itfunaloc('FromDate',111,1,map,ieval,1)
+      i=itfunaloc('Set$IO',111,2,map,ieval,0)
       i=itfunaloc('PolyGammaGeneralized',112,2,map,ieval,2)
       i=itfunaloc('ToInputString',113,1,map,ieval,0)
       ieval(3)=0
@@ -717,7 +716,6 @@ c      i=itfunaloc('FromDate',111,1,map,ieval,1)
       ieval(2)=0
       i=itfunaloc('MapFile',127,2,map,ieval,0)
       i=itfunaloc('UnmapFile',128,1,map,ieval,0)
-c      i=itfunaloc('GetUID',129,1,map,ieval,0)
 c      i=itfunaloc('GetGID',130,1,map,ieval,0)
       i=itfunaloc('ToLowerCase',131,1,map,ieval,2)
       ieval(1)=1

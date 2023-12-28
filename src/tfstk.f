@@ -1197,6 +1197,10 @@ c      end interface
         module procedure ktfstringqk,ktfstringqd
       end interface
 
+      interface ktfnonstringq
+        module procedure ktfnonstringqk,ktfnonstringqd
+      end interface
+
       interface ktfcxq
         module procedure ktfcxqk,ktfcxqd
       end interface
@@ -2106,16 +2110,27 @@ c        k=kfromr(x)
         return
         end function ktfstringqd
 
-        logical*4 function ktfnonstringq(k,str)
+        logical*4 function ktfnonstringqk(k,str)
         implicit none
         type (sad_string), pointer, optional, intent(out) :: str
         integer*8 , intent(in)::k
-        ktfnonstringq=iand(ktfmask,k) /= ktfstring
-        if(present(str) .and. .not. ktfnonstringq)then
+        ktfnonstringqk=iand(ktfmask,k) /= ktfstring
+        if(present(str) .and. .not. ktfnonstringqk)then
           call loc_string(ktfaddr(k),str)
         endif
         return
-        end function ktfnonstringq
+        end function ktfnonstringqk
+
+        logical*4 function ktfnonstringqd(k,str)
+        implicit none
+        type (sad_string), pointer, optional, intent(out) :: str
+        type (sad_descriptor) , intent(in)::k
+        ktfnonstringqd=iand(ktfmask,k%k) /= ktfstring
+        if(present(str) .and. .not. ktfnonstringqd)then
+          call loc_string(ktfaddr(k),str)
+        endif
+        return
+        end function ktfnonstringqd
 
         logical*4 function ktflistq_rlist(k,kl)
         implicit none

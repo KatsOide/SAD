@@ -4,10 +4,12 @@
       use tfstk
       use ffs_flag
       use tmacro
+      use drife
       use ffs_pointer, only: gammab
       use temw,only:tmulbs
       use chg,only:tchge
       use mathfun
+      use sad_basics
       implicit none
       real*8 eps,oneev
       parameter (eps=1.d-2)
@@ -81,11 +83,9 @@ c      write(*,'(a,1p5g15.7)')'tcave ',phi,phis,phic,trf0
         do n=1,ndiv
          if(al .ne. 0.d0)then
             if(n .eq. 1)then
-              call tdrife(trans,cod,beam,srot,aln*.5d0,
-     $             0.d0,0.d0,0.d0,0.d0,.true.,.false.,irad)
+              call tdrife0(trans,cod,beam,srot,aln*.5d0,0.d0,0.d0,.true.,.false.,irad)
             else
-              call tdrife(trans,cod,beam,srot,aln,
-     $             0.d0,0.d0,0.d0,0.d0,.true.,.false.,irad)
+              call tdrife0(trans,cod,beam,srot,aln,0.d0,0.d0,.true.,.false.,irad)
               call tgetdvh(dgb,dv)
               cod(5)=cod(5)+dv*aln
             endif
@@ -165,8 +165,7 @@ c          call tmultr(trans,trans1,irad)
           dgb=dgb+dhg
         enddo
         if(al .ne. 0.d0)then
-          call tdrife(trans,cod,beam,srot,aln*.5d0,
-     $         0.d0,0.d0,0.d0,0.d0,.true.,.false.,irad)
+          call tdrife0(trans,cod,beam,srot,aln*.5d0,0.d0,0.d0,.true.,.false.,irad)
           call tgetdvh(dgb,dv)
           cod(5)=cod(5)+dv*aln*.5d0
           if(fringe .and. mfring .ge. 0 .and. mfring .ne. 1)then
@@ -182,8 +181,7 @@ c          call tmultr(trans,trans1,irad)
         ddvcacc=ddvcacc+vc*sp*w**2
         vcacc=vcacc-vc*sp
         if(al .ne. 0.d0)then
-          call tdrife(trans,cod,beam,srot,al,
-     $         0.d0,0.d0,0.d0,0.d0,.true.,.false.,irad)
+          call tdrife0(trans,cod,beam,srot,al,0.d0,0.d0,.true.,.false.,irad)
         endif
       endif
       if(dhg .ne. 0.d0)then
@@ -216,6 +214,7 @@ c     $     trans(5,5),trans(5,6),trans(6,5),trans(6,6)
       subroutine tcavfrie(trans,cod,beam,al,v,w,phic,dphis,s0,p0,
      $     irad,calb,autophi)
       use temw,only:tmulbs
+      use sad_basics
       use mathfun, only:p2h
       implicit none
       real*8 trans(6,12),cod(6),trans1(6,6),beam(42),

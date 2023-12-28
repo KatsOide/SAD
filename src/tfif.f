@@ -1,7 +1,6 @@
-      subroutine tfif(word,iflevel,lfno,exist)
+      subroutine tfif(word,iflevel,exist)
       implicit none
       integer*4 ,intent(inout):: iflevel
-      integer*4 ,intent(in):: lfno
       character*(*) ,intent(inout):: word
       character ch
       character*13 delim
@@ -16,7 +15,7 @@
  1      f=getva(exist) .ne. 0.d0
 c        write(*,*)'tfif-1 ',f,exist
         if(.not. exist)then
-          call termes(lfno,'?Missing condition for IF',' ')
+          call termes('?Missing condition for IF',' ')
           call skipline
           iflevel=0
           return
@@ -50,7 +49,7 @@ c            write(*,*)'tfif-if  ',word(1:len_trim(word)),' ',ch,' ',iflevel
         endif
       elseif(word .eq. 'ELSE')then
         if(iflevel .le. 0)then
-          call termes(lfno,'?ELSE without IF',' ')
+          call termes('?ELSE without IF',' ')
           call skipline
           iflevel=0
           exist=.true.
@@ -72,7 +71,7 @@ c          write(*,*)'tfif-else ',word(1:len_trim(word)),iflevel
         exist=.true.
       elseif(word .eq. 'ELSEIF')then
         if(iflevel .le. 0)then
-          call termes(lfno,'?ELSEIF without IF',' ')
+          call termes('?ELSEIF without IF',' ')
           call skipline
           exist=.true.
           iflevel=0
@@ -82,7 +81,7 @@ c          write(*,*)'tfif-else ',word(1:len_trim(word)),iflevel
         go to 2
       elseif(word .eq. 'ENDIF')then
         if(iflevel .le. 0)then
-          call termes(lfno,'?ENDIF without IF',' ')
+          call termes('?ENDIF without IF',' ')
           call skipline
           exist=.true.
           iflevel=0

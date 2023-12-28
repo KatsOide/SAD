@@ -141,6 +141,7 @@ c      endif
       use tmacro
       use sad_main
       use temw, only:calint,iaemit,iaez,beamplt
+      use sad_basics
       use maloc,only:tfl2m
       implicit none
       type (iaemit) ,intent(in):: iae
@@ -340,7 +341,9 @@ c     below is incorrect for fra <> 0
       use sad_main
       use tfcsi, only:icslfno
       use ffs_seg
+      use drife
       use temw,only:tsetr0,calint,iaemit
+      use sad_basics
       implicit none
       real*8 , parameter:: demax=.5d0,tapmax=0.3d0
       type (iaemit) ,intent(in):: iae
@@ -471,8 +474,7 @@ c        go to 5000
           if(calint)then
             if(al .ne. 0.d0)then
               al=al*.5d0
-              call tdrife(trans,cod,beam,srot,al,0.d0,0.d0,0.d0,0.d0,
-     $             .true.,.false.,irad)
+              call tdrife0(trans,cod,beam,srot,al,0.d0,0.d0,.true.,.false.,irad)
               call tintrb(trans,cod,beam,bmi,al,al*.5d0,optics,l)
               if(plotib)then
                 bmi=bmi*0.5d0
@@ -484,8 +486,7 @@ c        go to 5000
               endif
             endif
           endif
-          call tdrife(trans,cod,beam,srot,al,0.d0,0.d0,0.d0,0.d0,
-     $         .true.,.false.,irad)
+          call tdrife0(trans,cod,beam,srot,al,0.d0,0.d0,.true.,.false.,irad)
 
         case (icBEND)
           if(dir .gt. 0.d0)then
@@ -776,8 +777,8 @@ c      call tfmemcheckprint('tturne-end1',0,.true.,irtc)
       use ffs_flag, only:codplt
       use tffitcode
       use tmacro
-      use temw, only:tfetwiss,etwiss2ri,normali,ri,toln,tinv6,
-     $     beamplt
+      use temw, only:tfetwiss,etwiss2ri,normali,ri,toln,beamplt
+      use sad_basics
       use macmath
       implicit none
       integer*4 ,intent(in):: l,idp,lorg

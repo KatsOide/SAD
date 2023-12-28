@@ -50,12 +50,12 @@ OBJ2=packpi.o    tfdbun.o    tracke.o    NewGRF.o padd.o       \
 
 OBJ3=sethtb.o    atof.o      bint.o      skipch.o    tspect.o    pfcoup.o \
      sols33.o    pgaussj.o   spline.o     sprexl.o    tlinit.o \
-     sprlin.o    pinner.o  tfzap.o     ttcav.o      \
+     sprlin.o    pinner.o    tfzap.o     ttcav.o      \
      ttcave.o    talign.o    tgfun.o      \
      pmicad.o    tgrot.o     dAssgn.o     defflg.o
 
 OBJ4=defglb.o     \
-     tinitr.o    doelem.o    doexpn.o \
+     doelem.o    doexpn.o \
      prSad.o     tvcorr.o    doflag.o     \
      prelem.o    title.o     doline.o    prelm0.o \
      tcav.o      dolist.o    prexln.o \
@@ -82,11 +82,9 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      pgflag.o    pgmast.o     pgrmat.o \
      pgsolvcond.o qcell.o qdbend.o qdcell.o \
      qddrif.o    qdmdia.o    qdquad.o     qdthin.o   qdtwis.o \
-     qgettr.o    qins.o      qmult.o       \
-     qtent.o     qtwiss.o     tapert.o \
-     tbdecoup.o  tbende.o     tbendi.o   tbfrie.o \
-     tceigen.o    tcftr.o    tcod.o \
-     tcorr.o     tdet.o      tdgeo.o    tdlat.o \
+     qgettr.o    qins.o      qtent.o     qtwiss.o     tapert.o \
+     tbdecoup.o  tbende.o    tbendi.o    tbfrie.o \
+     tceigen.o   tcftr.o     tcod.o      tcorr.o     tdgeo.o     tdlat.o \
      teigen.o    temap.o     temat.o      temitf.o \
      temits.o    terror.o    tfaprt.o     tfattr.o   tfcalc.o     tfchgv.o \
      tfchro.o    tfcoup.o    tfdapert.o   tfdisp.o   tfemit.o \
@@ -99,8 +97,7 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      tftype.o    tfvars.o    tgauss_.o \
      tgetfv.o    tins.o     tinse.o \
      tlum.o      tmov.o      tmulte.o \
-     tmulti.o    tmulta.o    tdrift.o     trackd.o \
-     tmultr.o    tnorm.o     \
+     tmulti.o    tmulta.o    tdrift.o     trackd.o     \
      tquade.o    track.o     tracka.o     tsconv.o     tsgeo.o \
      tshow.o     tsol.o      tsole.o      tsolvg.o \
      tsolvm.o    tspac.o     tspini.o     tsteee.o   tsteer.o     tsvdm.o \

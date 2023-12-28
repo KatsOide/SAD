@@ -1,5 +1,6 @@
       subroutine qthin(trans,cod,nord,al,ak,
      1                 dx,dy,theta,coup)
+      use sad_basics
       implicit none
       integer*4 nord
       real*8 ,intent(inout):: trans(4,5),cod(6)

@@ -33,7 +33,7 @@ c$$$        err=.false.
 c$$$      endif
 c$$$      return
  9000 err=.true.
-      call termes(lfno,
+      call termes(
      $  'A message from SAD: TDR command is now obsolete.',
      $  ' ')
       return

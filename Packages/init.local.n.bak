@@ -1,17 +1,26 @@
 (* Please localize this file as you like. *)
 
-With[{root=Environment["SAD_ROOTPATH"]},
-  Environment@@[{
-    {"UNIX95",""},
-    {"TCL_LIBRARY",""},
-    {"TK_LIBRARY",""},
-    {"KBFRAMEDIR",root//"/KBFrame"},
-    {"PYTHONPATH",root//"/Packages/"}
-    },{1}];
+Environment@@[{
+  {"UNIX95",""},
+  {"TCL_LIBRARY",""},
+  {"TK_LIBRARY",""},
+  {"KBFRAMEDIR",Environment["SAD_ROOTPATH"]//"/KBFrame"},
+  {"PYTHONPATH",Environment["SAD_ROOTPATH"]//"/Packages/"},
+  {"TLPATH",Environment["SAD_ROOTPATH"]//"/contrib/texlive/bin"}
+  },{1}];
 
-  DocumentsDirectory=root//"/Documents/";
-  ExamplesDirectory=root//"/script/"
+If[`$HaveLaTeX==="",
+  SetHL[];
+  Environment["PATH",Environment["TLPATH"]//":"//Environment["PATH"]]];
+!`$HaveLaTeX="";
 
-    ];
+DocumentsDirectory=Environment["SAD_ROOTPATH"]//"/Documents/";
+ExamplesDirectory=Environment["SAD_ROOTPATH"]//"/script/";
+
+!KBF$ScreenShotDirectory = "/ldata/KEKB/KCG/ScrShot";
+
+!Get[PackagesDirectory//"init.kekb.n"];
 
 !TimeZoneOffset=Block[{f=OpenRead["!date +\"%z\""]},{Read[f]*0.6,Close[f]}[[1]]]; (* Use local time *)
+
+! End of File

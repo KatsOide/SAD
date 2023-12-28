@@ -117,7 +117,7 @@
       nwakep=0
       npara=min(nprmax,max(nparallel,1))
       if(wake)then
-        call tffssetupwake(icslfno(),irtc)
+        call tffssetupwake(icslfnm(),irtc)
         if(irtc /= 0)then
           return
         endif

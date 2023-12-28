@@ -162,6 +162,7 @@ c      write(*,'(a,106g15.7)')'td_sol ',x(1),px(1),y(1),py(1),z(1),g(1)
       end
 
       subroutine tsoldz(trans,cod,al,bxs0,bys0,bzs0,drift)
+      use sad_basics
       use mathfun
       implicit none
       integer*4 ,save::ndiag=15

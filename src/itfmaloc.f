@@ -115,9 +115,19 @@ c          enddo
       subroutine tfl2m(kl,a,n,m,trans)
       implicit none
       type (sad_dlist) ,intent(in):: kl
-      type (sad_dlist), pointer :: kli
       integer*4 ,intent(in):: n,m
       real*8, intent(out):: a(n,m)
+      logical*4 ,intent(in):: trans
+      call tfl2m1(kl,a,n,m,n,trans)
+      return
+      end
+
+      subroutine tfl2m1(kl,a,n,m,ndim,trans)
+      implicit none
+      type (sad_dlist) ,intent(in):: kl
+      type (sad_dlist), pointer :: kli
+      integer*4 ,intent(in):: n,m,ndim
+      real*8, intent(out):: a(ndim,m)
       logical*4 ,intent(in):: trans
       integer*4 i
       if(trans)then

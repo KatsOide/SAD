@@ -36,6 +36,7 @@
       use ffs, only:mfitddp
       use tmacro
       use temw, only:iaez
+      use sad_basics
       use mathfun,only:asinz
       implicit none
       integer*4 im

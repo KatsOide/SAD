@@ -138,7 +138,7 @@
         i=ielmh(name,iord)
         if(i == 0)then
           if(lfn .ne. 0 .and. idot .gt. 0)then
-            call termes(lfn,'?Undefined location ',word(1:lw))
+            call termes('?Undefined location ',word(1:lw))
           endif
           ielmf=nlat
           exist=.false.

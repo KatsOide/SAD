@@ -60,7 +60,9 @@
 
       subroutine tbendecorr(trans,cod,beam,ak1,al)
       use tmacro
+      use sad_basics
       use mathfun
+      use sad_basics
       implicit none
       real*8 , intent(in) :: ak1,al
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42)
@@ -123,6 +125,7 @@ c      zf=cod(5)+(.5d0*s+(1.d0+xi/rho0)*dpzi/pzi)*al
       use tmacro
       use kradlib, only:tradke
       use temw,only:tmulbs
+      use sad_basics
       use mathfun, only:pxy2dpz
       implicit none
       real*8, intent(in):: ak1,al,bsi1,bsi2,alr
@@ -223,6 +226,7 @@ c     $     *(drhopp*xsxkx+drhop*xsxkxp-sxkxp*xi-dcxkxp*pxi))
       use tmacro
       use kradlib, only:tradke
       use temw,only:tmulbs
+      use sad_basics
       use mathfun
       implicit none
       real*8, intent(in):: phi0n,sn,xsn,cn,dcn,aln,bsi1,bsi2,alr
@@ -385,6 +389,7 @@ c$$$     1     +drho*sinsq0
       use kradlib, only:tradke,dphipol
       use temw,only:tsetr0
       use chg,only:tchge
+      use sad_basics
       use mathfun, only:xsincos
       implicit none
       integer*4 ,intent(in)::  mfring,l
@@ -587,7 +592,9 @@ c      write(*,'(a,1p10g12.4)')'tbende-9 ',srot(2,9)
 
       subroutine tbdrifte(trans,cod,beam,srot,al,phi0,
      $     h0,h1emit,dvemit,irad)
+      use drife
       use temw,only:tmulbs
+      use sad_basics
       use mathfun
       implicit none
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
@@ -599,8 +606,7 @@ c      write(*,'(a,1p10g12.4)')'tbende-9 ',srot(2,9)
       real*8 ,parameter ::psqmax=0.9999d0
       call xsincos(phi0,sp,xs,cp,dcp)
       rho0=al/phi0
-      call tdrife(trans,cod,beam,srot,rho0*sp,0.d0,0.d0,0.d0,0.d0,
-     $     .true.,.false.,irad)
+      call tdrife0(trans,cod,beam,srot,rho0*sp,0.d0,0.d0,.true.,.false.,irad)
       xi=cod(1)-rho0*dcp
       pr=1.d0+cod(6)
       pxi=cod(2)
@@ -651,6 +657,7 @@ c      pzi=sqrt(max(1.d-4,(pr-pxi)*(pr+pxi)-pyi**2))
       subroutine qbend(trans,cod,
      1     al0,phib,phi0,psi1,psi2,apsi1,apsi2,ak,
      1     dx,dy,dz,theta,dtheta,dchi2,alg,phig,fb1,fb2,mfring,fringe,eps0,coup)
+      use sad_basics
       implicit none
       integer*4 ,intent(in):: mfring
       real*8 ,intent(inout):: trans(4,5),cod(6)
@@ -675,6 +682,7 @@ c      pzi=sqrt(max(1.d-4,(pr-pxi)*(pr+pxi)-pyi**2))
       use ffs_flag
       use tmacro
       use temw,only:tmulbs
+      use sad_basics
       implicit none
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42)
       real*8 ,intent(in):: dxfr,dyfr,dyfra
@@ -706,6 +714,7 @@ c      pzi=sqrt(max(1.d-4,(pr-pxi)*(pr+pxi)-pyi**2))
       use tmacro
       use temw,only:tmulbs
       use chg,only:tchge
+      use sad_basics
       implicit none
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 ,intent(in):: phib,phi0,dx,dy,dz,theta,dtheta,dchi2

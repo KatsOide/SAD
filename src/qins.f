@@ -4,6 +4,7 @@
       use ffs
       use ffs_pointer
       use tffitcode
+      use sad_basics
       implicit none
       integer*4 i,l2,k
       integer*4 l1,idp

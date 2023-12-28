@@ -6,6 +6,7 @@
       use tfstk
       use ffs_flag
       use tmacro
+      use drife
       use temw, only:tsetr0
       use sol,only:tsolrote
       use kradlib, only:tradke      
@@ -24,8 +25,7 @@
      $       al,ak,dx,dy,theta,.false.)
         return
       elseif(ak .eq. 0.d0)then
-        call tdrife(trans,cod,beam,srot,al,bz,
-     $       0.d0,0.d0,0.d0,.true.,.false.,irad)
+        call tdrife0(trans,cod,beam,srot,al,bz,0.d0,.true.,.false.,irad)
         return
       endif
       if(ak*al .lt. 0.d0)then

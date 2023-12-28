@@ -196,6 +196,7 @@ c     $             .or. inicond .and. idp /= 0))then
       use ffs_fit, only:inicond
       use tffitcode
       use eeval
+      use tfcsi,only:icslfnm
       implicit none
       integer*4 ,intent(in):: kp,kp1,iuid,kfam
       integer*4 ,intent(out):: irtc
@@ -271,10 +272,9 @@ c      call tfdebugprint(kx,'==> ',1)
       level=itfdownlevel()
  110  if(irtc /= 0)then
         if(ierrorprint /= 0)then
-          call tfaddmessage(' ',0,6)
+          call tfaddmessage(' ',0,icslfnm())
         endif
-        call termes(6,
-     $       'Error in FitValue '//
+        call termes('Error in FitValue '//
      $       funname//' at '//name,' ')
       elseif(ktfrealq(kx,vf1))then
       elseif(kx%k .eq. ktfoper+mtfnull)then
@@ -346,8 +346,8 @@ c     Note: index(name1,'.') > 0 if kp1 != 0
 c      call tfdebugprint(kx,'fitfun',3)
       if(irtc /= 0)then
         level=itfdownlevel()
-        call tfaddmessage(' ',2,icslfno())
-        call termes(6,'Error in FitFunction ',' ')
+        call tfaddmessage(' ',2,icslfnm())
+        call termes('Error in FitFunction ',' ')
         error=.true.
         return
       elseif(ktfrealq(kx,df(nqcol+1)))then

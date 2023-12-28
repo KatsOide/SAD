@@ -92,7 +92,7 @@ c          write(*,*)': ',irtc
             if(ierrorprint .ne. 0)then
               call tfaddmessage(' ',2,6)
             endif
-            call termes(6,'Error in VariableRange ',
+            call termes('Error in VariableRange ',
      $           pname(k)(:lpname(k))//' '//key(1:lenw(key)))
             kx=kxadalocnull(-1,nvar)
             return

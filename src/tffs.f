@@ -878,7 +878,7 @@ c        use ffs_pointer
         use tfstk
         use ffs
         use mackw
-        use tfcsi, only:icslfno
+        use tfcsi, only:icslfnm
         implicit none
         integer*4 ,intent(in):: l
         integer*4 lm,nm,lx,nmmax
@@ -901,8 +901,7 @@ c        use ffs_pointer
                     lm=lx
                     cycle
                   else
-                    call termes(icslfno(),
-     $                   '?Recursive OFFSET in',pnamec(l))
+                    call termes('?Recursive OFFSET in',pnamec(l))
                   endif
                 endif
               endif
@@ -2137,120 +2136,10 @@ c     $     iaez%iamat=int8(0),iaez%iabmi=int8(0)
      1                '    py/p0 ','        z ','    dp/p0 ']
 
       public :: tfetwiss,etwiss2ri,tfnormalcoord,toln,
-     $     tfinitemip,tsetr0,tinv6,tsymp,tmultr45,
+     $     tfinitemip,tsetr0,
      $     label1,label2,tfinibeam,tmulbs,iaemit
 
       contains
-
-      real*8 function tinv6(ra) result(rinv)
-      implicit none
-      real*8, intent(in):: ra(6,6)
-      dimension rinv(6,6)
-      rinv(1,1)= ra(2,2)
-      rinv(1,2)=-ra(1,2)
-      rinv(1,3)= ra(4,2)
-      rinv(1,4)=-ra(3,2)
-      rinv(1,5)= ra(6,2)
-      rinv(1,6)=-ra(5,2)
-      rinv(2,1)=-ra(2,1)
-      rinv(2,2)= ra(1,1)
-      rinv(2,3)=-ra(4,1)
-      rinv(2,4)= ra(3,1)
-      rinv(2,5)=-ra(6,1)
-      rinv(2,6)= ra(5,1)
-      rinv(3,1)= ra(2,4)
-      rinv(3,2)=-ra(1,4)
-      rinv(3,3)= ra(4,4)
-      rinv(3,4)=-ra(3,4)
-      rinv(3,5)= ra(6,4)
-      rinv(3,6)=-ra(5,4)
-      rinv(4,1)=-ra(2,3)
-      rinv(4,2)= ra(1,3)
-      rinv(4,3)=-ra(4,3)
-      rinv(4,4)= ra(3,3)
-      rinv(4,5)=-ra(6,3)
-      rinv(4,6)= ra(5,3)
-      rinv(5,1)= ra(2,6)
-      rinv(5,2)=-ra(1,6)
-      rinv(5,3)= ra(4,6)
-      rinv(5,4)=-ra(3,6)
-      rinv(5,5)= ra(6,6)
-      rinv(5,6)=-ra(5,6)
-      rinv(6,1)=-ra(2,5)
-      rinv(6,2)= ra(1,5)
-      rinv(6,3)=-ra(4,5)
-      rinv(6,4)= ra(3,5)
-      rinv(6,5)=-ra(6,5)
-      rinv(6,6)= ra(5,5)
-      return
-      end function
-
-      real*8 function tsymp(trans) result(rx)
-      implicit none
-      real*8 , intent(in)::trans(6,6)
-      dimension rx(6,6)
-c  gfortran up to 10 generates a warning on uninitialized..., which is said to be a bug in gcc...
-      rx=matmul(trans,tinv6(trans))
-      rx=-0.5d0*matmul(rx,trans)+1.5d0*trans
-c      call tinv6(trans,ri)
-c      call tmultr(ri,trans,6)
-c      do i=1,6
-c        ri(:,i)=-ri(:,i)*.5d0
-c        ri(i,i)=ri(i,i)+1.5d0
-c      enddo
-c      call tmultr(trans,ri,6)
-      return
-      end function
-
-      real*8 function tmultr45(a,b) result(c)
-      implicit none
-      real*8 ,intent(in)::a(4,5),b(4,5)
-      dimension c(4,5)
-c      real*8 v1,v2,v3,v4
-      c=matmul(b(:,1:4),a)
-      c(:,5)=c(:,5)+b(:,5)
-c$$$      v1=a(1,1)
-c$$$      v2=a(2,1)
-c$$$      v3=a(3,1)
-c$$$      v4=a(4,1)
-c$$$      c(1,1)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
-c$$$      c(2,1)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
-c$$$      c(3,1)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
-c$$$      c(4,1)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
-c$$$      v1=a(1,2)
-c$$$      v2=a(2,2)
-c$$$      v3=a(3,2)
-c$$$      v4=a(4,2)
-c$$$      c(1,2)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
-c$$$      c(2,2)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
-c$$$      c(3,2)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
-c$$$      c(4,2)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
-c$$$      v1=a(1,3)
-c$$$      v2=a(2,3)
-c$$$      v3=a(3,3)
-c$$$      v4=a(4,3)
-c$$$      c(1,3)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
-c$$$      c(2,3)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
-c$$$      c(3,3)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
-c$$$      c(4,3)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
-c$$$      v1=a(1,4)
-c$$$      v2=a(2,4)
-c$$$      v3=a(3,4)
-c$$$      v4=a(4,4)
-c$$$      c(1,4)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4
-c$$$      c(2,4)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4
-c$$$      c(3,4)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4
-c$$$      c(4,4)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4
-c$$$      v1=a(1,5)
-c$$$      v2=a(2,5)
-c$$$      v3=a(3,5)
-c$$$      v4=a(4,5)
-c$$$      c(1,5)=b(1,1)*v1+b(1,2)*v2+b(1,3)*v3+b(1,4)*v4+b(1,5)
-c$$$      c(2,5)=b(2,1)*v1+b(2,2)*v2+b(2,3)*v3+b(2,4)*v4+b(2,5)
-c$$$      c(3,5)=b(3,1)*v1+b(3,2)*v2+b(3,3)*v3+b(3,4)*v4+b(3,5)
-c$$$      c(4,5)=b(4,1)*v1+b(4,2)*v2+b(4,3)*v3+b(4,4)*v4+b(4,5)
-      return
-      end function
 
       subroutine tsetr0(trans,cod,bzh,bsi0)
       implicit none
@@ -2698,13 +2587,6 @@ c      real*8 ,target::transs(6,6)
       if(irad < 12)then
         return
       endif
-c      if(size(trans,2) == 6)then
-c        trans1=>trans
-c      else
-c        transs=trans(1:6,1:6)+trans(1:6,7:12)
-c        trans1=>transs
-c      endif
-c      do j=1,6
         s(1,1:6)=trans1(1:6,1)*beam(1) +trans1(1:6,2)*beam(2)
      1          +trans1(1:6,3)*beam(4) +trans1(1:6,4)*beam(7)
      1          +trans1(1:6,5)*beam(11)+trans1(1:6,6)*beam(16)
@@ -2797,6 +2679,7 @@ c         enddo
       use ffs_pointer,only:twiss
       use tffitcode,only:ntwissfun
       use ffs_flag, only:wspac,intra
+      use sad_basics
       implicit none
       dimension beam(21)
       integer*4 ,intent(in):: is
@@ -2900,13 +2783,6 @@ c         enddo
       use ffs
       use ffs_pointer
       implicit none
-c      type (sad_dlist) , pointer ::kl
-c      elatt%elmv%k=ktadalocnull(0,nele,kl)
-c      do i=1,nele
-c        l=ilist(i,ifmult)
-c        id=ilist(1,l)
-cc
-c
       return
       end
 

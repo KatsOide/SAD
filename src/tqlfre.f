@@ -2,6 +2,7 @@
       use ffs_flag
       use tmacro
       use temw,only:tmulbs
+      use sad_basics
       implicit none
       real*8 ,intent(in):: al,ak,f1,f2,bz
       real*8 af1,af2,p,a,b,ea,bzph,bp,xf,yf,pxf,pyf,f,fdp,bb

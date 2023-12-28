@@ -73,6 +73,7 @@ c     $     beam(1)
       use ffs_pointer
       use tffitcode
       use temw,only:iaez
+      use sad_basics
       implicit none
       type (ffs_bound) fbound
       integer*4 k,kf

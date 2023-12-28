@@ -191,9 +191,9 @@ c
         call trbassign(lfni)
       endif
       lfno=outfl
- 2    lfn1=merge(merge(lfno,merge(0,lfno,igetgl('$LOG$') == 0),
+ 2    lfnm=merge(merge(lfno,merge(0,lfno,igetgl('$LOG$') == 0),
      $     lfni /= 5),0,lfnb==1)
-      call csrst(lfn1)
+      call csrst(lfnm)
       kffs=dxnullo
  10   continue
       if(iffserr /= 0)then
@@ -209,8 +209,7 @@ c
         if(lfnp .lt. lfnb)then
           go to 9000
         endif
-        lfn1=merge(lfno,merge(0,lfno,igetgl('$LOG$') == 0),
-     $       lfni /= 5)
+        lfnm=merge(lfno,merge(0,lfno,igetgl('$LOG$') == 0),lfni /= 5)
       elseif(ios .lt. 0)then
         ios=0
       endif
@@ -236,7 +235,7 @@ c
       endif
       if(word == 'UNTIL')then
         if(levelr <= 0)then
-          call termes(lfno,'?UNTIL without REPEAT.',' ')
+          call termes('?UNTIL without REPEAT.',' ')
           go to 2
         endif
         ftest=getva(exist) /= 0.d0
@@ -268,7 +267,7 @@ c
         rep=.true.
         go to 10
       endif
-      call tfif(word,iflevel,lfno,exist)
+      call tfif(word,iflevel,exist)
       if(exist)then
         go to 10
       endif
@@ -276,8 +275,7 @@ c
       if(exist)then
         go to 10
       endif
-      call tgetfv
-     1     (word,flv%nfc,lfno,flv%icalc,flv%ncalc,
+      call tgetfv(word,flv%nfc,flv%icalc,flv%ncalc,
      1     flv%kfit,flv%fitval,flv%mfitp,flv%ifitp,flv%ifitp1,
      $     exist,err)
       if(err)then
@@ -286,7 +284,7 @@ c
       if(exist)then
         go to 10
       endif
-      call terror(word,new,lfno,exist,err)
+      call terror(word,new,lfnm,exist,err)
       if(err)then
         go to 2
       endif
@@ -362,13 +360,13 @@ c        call tfdebugprint(kx,'USE ',1)
         endif
         if(idtype(iuse) /= icLINE)then
           if(irtc /= 0)then
-            call tfaddmessage(ename,lenw(ename),6)
+            call tfaddmessage(ename,lenw(ename),icslfnm())
           endif
           if(visit)then
-            call termes(lfno,
+            call termes(
      $           'Missing beamline in VISIT.',' ')
           else
-            call termes(lfno,
+            call termes(
      $           'Missing beamline in USE.',' ')
           endif
           go to 2
@@ -432,7 +430,7 @@ c          call tmovb(ename,flv%blname,MAXPNAME)
           if(byeall)then
             go to 10
           else
-            call termes(lfno,'BYE without VISIT.',' ')
+            call termes('BYE without VISIT.',' ')
             go to 2
           endif
         endif
@@ -460,7 +458,7 @@ c        call tmovb(flv%blname,ename,MAXPNAME)
         call tfunblocksym('`OpticsProlog',13,.true.)
         call tfunblocksym('`OpticsEpilog',13,.true.)
       elseif(word == 'SPLIT')then
-        call termes(lfno,
+        call termes(
      $       'SPLIT is obsolete.   Use OFFSET of a marker.',' ')
       elseif(abbrev(word,'MAXI_TERATION','_'))then
         call tfgeti(flv%itmax,1.d0,word,lfno,exist)
@@ -490,7 +488,7 @@ c$$$     $           gammab,newcor)
 c$$$          endif
           go to 10
         endif
-        call tffsfreefix(frefix,flv%nvar,lfno)
+        call tffsfreefix(frefix,flv%nvar)
       elseif(word == 'FIT')then
         call getwdl2(word,wordp)
         if(word == 'ALL')then
@@ -697,13 +695,13 @@ c    syntax DELWave wave_length, amplitude, initial_phase,
 c                   directio_vector(angle)
         wl=getva(exist)
         if(.not. exist) then
-          call termes(lfno,'? syntax:DELW <WAVE LENGTH> <amplitude>'//
+          call termes('? syntax:DELW <WAVE LENGTH> <amplitude>'//
      &     '<initial_phase><direction>',' ')
           go to 10
         end if
         wa=getva(exist)
         if(.not. exist) then
-          call termes(lfno,'? syntax:DELW <wave length> <AMPLITUDE>'//
+          call termes('? syntax:DELW <wave length> <AMPLITUDE>'//
      &     '<initial_phase><direction>',' ')
           go to 10
         end if
@@ -728,7 +726,7 @@ c End of the lines added by N. Yamamoto Apr. 25, '93
       endif
       cmd=.false.
       if(word == 'VARY')then
-        call tfchgv(lfno)
+        call tfchgv()
         call tfinitvar
         go to 10
       elseif(abbrev(word,'REJ_ECT','_'))then
@@ -737,14 +735,14 @@ c End of the lines added by N. Yamamoto Apr. 25, '93
      1    flv%kfit,flv%mfitp,flv%ifitp,flv%ifitp1,exist)
         go to 30
       elseif(abbrev(word,'COUP_LE','_'))then
-        call tfcoup(lfno,exist)
+        call tfcoup(lfnm,exist)
         call tffsadjustvar
         if(.not. exist)then
           go to 2
         endif
         go to 10
       elseif(abbrev(word,'DECOUP_LE','_'))then
-        call tfdecoup(lfno)
+        call tfdecoup()
         call tffsadjustvar
         go to 10
       elseif(abbrev(word,'INDEP_ENDENT','_'))then
@@ -752,26 +750,26 @@ c End of the lines added by N. Yamamoto Apr. 25, '93
         call tffsadjustvar
         go to 10
       elseif(word == 'SBUNCH')then
-        call termes(lfno,'?SBUNCH is obsolete.',' ')
+        call termes('?SBUNCH is obsolete.',' ')
         go to 10
 c        iwakepold=ifwakep
 c        call tfgetr(rlist(iwakepold+1),1.d0,word,lfno,exist)
 c        go to 31
       elseif(word == 'DBUNCH')then
-        call termes(lfno,'?DBUNCH is obsolete.',' ')
+        call termes('?DBUNCH is obsolete.',' ')
         go to 10
 c        iwakepold=ifwakep
 c        call tfdbun(word,rlist(ilist(2,iwakepold)),ilist(1,iwakepold),
-c     1              lfno,err)
+c     1              err)
 c        go to 32
       elseif(word == 'SLICE')then
-        call termes(lfno,'?SLICE is obsolete.',' ')
+        call termes('?SLICE is obsolete.',' ')
         go to 10
 c        iwakepold=ifwakep
 c        ns=ilist(1,iwakepold+2)
 c        call tfgeti(ns,1.d0,word,lfno,exist)
 c        if(ns <= 0)then
-c          call termes(lfno,'?Parameter out of range in SLICE.',' ')
+c          call termes('?Parameter out of range in SLICE.',' ')
 c          go to 2
 c        endif
 c        ilist(1,iwakepold+2)=ns
@@ -876,7 +874,7 @@ c        geo0(:,1:3)=tfchitogeo(-chi0*scale(mfitchi1:mfitchi3))
         kffs=tfvars(flv%nvar,irtcffs,lfnb > 1,lfno)
         go to 10
       elseif(abbrev(word,'RENUM_BER','_'))then
-        call tffsrenumber(lfno)
+        call tffsrenumber()
         go to 10
       elseif(abbrev(word,'REV_ERSE','_'))then
         axi=-axi
@@ -971,10 +969,10 @@ c     $         ilist(1,iwakepold)*8
       endif
       cmd=.false.
       if(word == 'WAKE')then
-        lfnl0=lfn1
-        lfn1=lfno
+        lfnl0=lfnm
+        lfnm=lfno
         call tfevalb('WAKECOMMAND[]',kx,irtc)
-        lfn1=lfnl0
+        lfnm=lfnl0
         if(irtc /= 0 .or. kx%k /= ktftrue)then
           go to 2
         endif
@@ -1043,7 +1041,7 @@ c        dpmax=rgetgl1('SIGE')
 c        rlist(itlookup('DP',ivtype))=dpmax
         gauss=.true.
         go to 10
- 7310   call termes(lfno,
+ 7310   call termes(
      $       'Usage: SYNCHROB_ETA nus_start nus_stop nus_step.',' ')
         go to 2
       elseif(abbrev(word,'BEAM_SIZE','_'))then
@@ -1054,14 +1052,14 @@ c        rlist(itlookup('DP',ivtype))=dpmax
         call talign(latt,word,wordp,pos,lfno,exist)
         go to 30
       endif
- 7000 call tfgetv(word,lfno,nextt,exist)
+ 7000 call tfgetv(word,nextt,exist)
       if(.not. exist)then
         if(itt .ge. 0)then
           call cssetp(nextt)
           call tfprintout(16.d0,irtc)
           go to 10
         else
-          call termes(lfno,
+          call termes(
      1         '?Undefined command or element: ',word)
         endif
         if(ios /= 0)then
@@ -1087,7 +1085,7 @@ c        rlist(itlookup('DP',ivtype))=dpmax
       endif
  1000 continue
       if(busy)then
-        call termes(lfno,'?Recursive CAL or GO',' ')
+        call termes('?Recursive CAL or GO',' ')
         go to 2
       endif
       busy=.true.
@@ -1112,7 +1110,7 @@ c        rlist(itlookup('DP',ivtype))=dpmax
           endif
           nfcol=nfcol+1
           if(nfcol > maxcond)then
-            call termes(lfno,'?Too many fit conditions.',' ')
+            call termes('?Too many fit conditions.',' ')
             go to 8810
           endif
           flv%kfitp(nfcol)=k1
@@ -1126,11 +1124,11 @@ c        rlist(itlookup('DP',ivtype))=dpmax
           endif
         enddo
       endif
-      call tffssetupcouple(lfno)
+      call tffssetupcouple()
       if(calexp)then
         call tffsadjustvar
       else
-        call termes(lfno,
+        call termes(
      $         'Info-Element values are not expanded.',' ')
       endif
       if(fitflg)then
@@ -1148,7 +1146,7 @@ c        do i=nfam1,nfr
 c        enddo
         jfam(0)=0
       elseif(err)then
-        call termes(lfno,'Error in InitialOrbits',' ')
+        call termes('Error in InitialOrbits',' ')
         go to 8810
       else
         inicond=.false.
@@ -1159,7 +1157,7 @@ c        enddo
           endif
         enddo
         if(nfr > 0 .and. dpmax == 0.d0)then
-          call termes(lfno,'?No momentum bandwidth.',' ')
+          call termes('?No momentum bandwidth.',' ')
           go to 8810
         endif
         if(nfr .lt. 0)then
@@ -1187,10 +1185,10 @@ c        dpm2=rlist(ktlookup('DPM'))
       kwakeelm=0
       nwakep=0
       if(wake)then
-        call tffssetupwake(lfno,irtc)
+        call tffssetupwake(icslfnm(),irtc)
 c        write(*,*)'tffsa-setupwake-done ',nwakep
         if(irtc /= 0)then
-          call termes(lfno,'?Error in WakeFunction.',' ')
+          call termes('?Error in WakeFunction.',' ')
           go to 8810
         endif
         if(nwakep == 0)then
@@ -1199,7 +1197,7 @@ c        write(*,*)'tffsa-setupwake-done ',nwakep
       endif
       flv%iut=iutwiss(flv%nvar,nfcol,nfam,nut,.not. cell)
       if(flv%iut <= 1)then
-        call termes(lfno,
+        call termes(
      $       '?Too many off-momentum or fit points.',' ')
         go to 8810
       endif
@@ -1467,7 +1465,7 @@ c          call tmov(rlist(iffssave+2),ffv,nxh)
       endif
       kx=tfsyeval(iaini,irtc)
       if(irtc /= 0)then
-        call tfemes(irtc,'InitialOrbits',1,lfno)
+        call tfemes(irtc,'InitialOrbits',1,icslfnm())
         return
       endif
       if(tflistq(kx,klx))then
@@ -1477,7 +1475,7 @@ c          call tmov(rlist(iffssave+2),ffv,nxh)
         endif
         nfr=(n+1)/2
         if(nfr > ndimmax)then
-          call termes(lfno,'Too many initial conditions.',' ')
+          call termes('Too many initial conditions.',' ')
           return
         endif
         nfr1=-(n/2)
@@ -1532,7 +1530,7 @@ c            call tclr(uini(1,0),28)
       return
       end
 
-      subroutine tffssetupcouple(lfno)
+      subroutine tffssetupcouple()
       use ffs
       use ffs_pointer, only: kele2
       use tffitcode
@@ -1542,7 +1540,6 @@ c            call tclr(uini(1,0),28)
       type (sad_rlist), pointer :: kle
       type (sad_symdef), pointer :: symd
       integer*8 iet
-      integer*4 ,intent(in):: lfno
       integer*4 i,j,k,nk,m,me,nc, ie,ik,irtc
       character*(MAXPNAME) key,tfgetstrs
       type (sad_descriptor) kx,ki,kk,ke
@@ -1627,7 +1624,7 @@ c                  write(*,*)'setupcouple ',k,iet,ik,nk
  9010 if(irtc > 0 .and. ierrorprint /= 0)then
         call tfreseterror
       endif
- 9000 call termes(lfno,
+ 9000 call termes(
      $     'ElementValues := { key[elem] :> f[ key1[elem1] ], ...}',
      $     ' ')
       return

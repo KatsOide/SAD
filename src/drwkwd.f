@@ -1,5 +1,6 @@
       subroutine drwkwd(word,wordp,kwd,idim,ipw,sc,nkey,lfno,exist,err)
       use maccbk
+      use tfcsi,only:icslfnm
       implicit none
 C*DEC added by Y.Tange 10-Jan-1995
       integer*4 nkey
@@ -65,7 +66,7 @@ c     end   initialize for preventing compiler warning
           ia=i
           exist=.true.
           if(ipw(1,i) .ne. 0)then
-            call termes(lfno,'?Duplicate graph ',word1)
+            call termes('?Duplicate graph ',word1)
             err=.true.
             return
           endif
@@ -78,8 +79,7 @@ c     end   initialize for preventing compiler warning
                 if(icat1 .eq. -9999)then
                   icat1=idim(j)
                 elseif(icat1 .ne. idim(j))then
-                  call termes(lfno,
-     1              '?Too many scales in a window ',word1)
+                  call termes('?Too many scales in a window ',word1)
                   err=.true.
                   return
                 endif

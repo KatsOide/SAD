@@ -250,6 +250,7 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
       use temw,only:tmulbs
       use chg,only:tchge
       use kradlib, only:tradke      
+      use sad_basics
       implicit none
       integer*4 ndivmax
       real*8 ampmax,eps00

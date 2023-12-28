@@ -23,7 +23,7 @@ c      parameter (eeuler=7.98221278918726d0,a=5.5077d0,b=1.1274d0)
 
       subroutine tintrb(trans,cod,beam,bmi,al,al1,optics,ll)
       use intrb
-      use temw, only:diagr=>r, diagri=>ri,tinv6,eemx,eemy,eemz,caltouck,
+      use temw, only:diagr=>r, diagri=>ri,eemx,eemy,eemz,caltouck,
      $     tmulbs
       use touschek_table
       use tfstk
@@ -34,6 +34,7 @@ c      parameter (eeuler=7.98221278918726d0,a=5.5077d0,b=1.1274d0)
       use mathfun
       use macmath
       use sad_main, ia=>iaidx
+      use sad_basics
       implicit none
       integer*4 ,intent(in):: ll
       integer*4 i,j
@@ -278,6 +279,7 @@ c     $     ((1.d0+(a1-1.d0)*u212)*(1.d0+(a2-1.d0)*u212)))
       use mathfun
       use sad_main, ia=>iaidx
       use ffs_pointer,only:gammab
+      use sad_basics
       implicit none
       integer*4 ,intent(in):: l
       real*8 ,intent(in):: al

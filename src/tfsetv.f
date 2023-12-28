@@ -71,13 +71,13 @@ c                cmp%update=cmp%nparam .le. 0
       use tfstk
       use ffs, only: flv,nvevx,nelvx
       use ffs_pointer
-      use tfcsi, only:icslfno
+      use tfcsi, only:icslfnm
       implicit none
       integer*4 k,irtc
       integer*4 i,ie,iv
       call tffscoupledvar(irtc)
       if(irtc .ne. 0)then
-        call termes(icslfno(),'?Error in CoupledVariables',' ')
+        call termes('?Error in CoupledVariables',' ')
       endif
       do i=1,flv%nvar
         ie=nvevx(i)%ivarele
@@ -97,7 +97,7 @@ c                cmp%update=cmp%nparam .le. 0
       use ffs
       use ffs_pointer
       use tffitcode
-      use tfcsi, only:icslfno
+      use tfcsi, only:icslfnm
       use ffs_seg
       implicit none
       integer*4 itv(flv%ntouch),ite(nve*2)
@@ -142,7 +142,7 @@ c                cmp%update=cmp%nparam .le. 0
       endif
       call tffscoupledvar(irtc)
       if(irtc .ne. 0)then
-        call termes(icslfno(),'?Error in CoupledVariables',' ')
+        call termes('?Error in CoupledVariables',' ')
       endif
       return
       end
@@ -193,7 +193,7 @@ c                cmp%update=cmp%nparam .le. 0
       endif
       call tffscoupledvar(irtc)
       if(irtc .ne. 0)then
-        call termes(icslfno(),'?Error in CoupledVariables',' ')
+        call termes('?Error in CoupledVariables',' ')
       endif
       return
       end

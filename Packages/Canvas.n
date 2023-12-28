@@ -146,7 +146,7 @@ CanvasGraphics=Class[{},
       RawWindowAspectRatio=StandardAspectRatio[];
       RotSym=If[TkAngle,`Angle,`Rotation,`Rotation];
       SetCanvas$Scale[Automatic];
-      If[$HaveLaTeX,lt=LaTeX[`style->"standalone",`pt->12,`pw->"20 cm",`margins->"'0 1 0 1'",`dpi->600]]
+      If[`$HaveLaTeX<=>"",lt=LaTeX[`style->"standalone",`pt->12,`pw->"20 cm",`margins->"'0 1 0 1'",`dpi->600]]
       ),
 
     Constructor[Widget[c_,__]]:=(
@@ -301,6 +301,7 @@ CanvasGraphics=Class[{},
     Module[{f},
       f=lt@Typeset[text,opt];
       CreateImage[Image[The$Canvas,PhotoImage[f,File->f,Format->"png"]]];
+      System["rm "//f];
       f]);
 
   GetResize[font_]:=(GetResize[font]=StandardForm[
@@ -308,7 +309,7 @@ CanvasGraphics=Class[{},
       s//"%"]]);
 
   With[{def={`Angle->0,`Font->DefaultFont,`UseBG->True}},
-    DrawText[text_,pos_,opt___]:=If[$HaveLaTeX && StringLength[text]>2 && text[1,2]=="\\@",
+    DrawText[text_,pos_,opt___]:=If[`$HaveLaTeX <=> "" && StringLength[text]>2 && text[1,2]=="\\@",
       Module[{{op1,op2}=SwitchCases[{opt},{(Rule|RuleDelayed)[`Angle|`Font|`Justify|`UseBG|`Fill,_],_}],
         rot,font,bg,a,op={},sz},
 !        Print["DTopts: ",{op1,op2}];
@@ -714,7 +715,7 @@ CanvasGraphics=Class[{},
   TitleRotate[_]:={Anchor->"c"};
 
   EffectiveStringLength[s_,m_]:=(EffectiveStringLength[s,m]=
-    If[$HaveLaTeX,
+    If[`$HaveLaTeX<=>"",
       Round[CanvasTextSize[s,DefaultFont][[1]]/GetFontSize[DefaultFont]],
       Module[{p=StringPosition[s,"\n"],s1,l,q,d},
         s1=If[p==={},
@@ -1845,14 +1846,17 @@ CanvasGraphics=Class[{},
 
   With[{def={PlotColor->Null,FillColor->Null,MeshStyle->Null,Tags->False,
     BelowFrame->False}},
+    RectOpt[opt___]:=(RectOpt[opt]=
+      MapThread[If[StringQ[#],#2->#,Null[]]&,
+        {{FillColor,MeshStyle,PlotColor,Tags}/.Override[opt,def],
+          {Fill,Stipple,OutLine,Tag}}]);
+
     Primitive[Rectangle[min_,max_,
       opt:((_Rule|_RuleDelayed)...)]]:=(
         CanvasWidget[Create$Rectangle]={
           CoordLimited[min],
           CoordLimited[max],
-          MapThread[If[StringQ[#],#2->#,Null[]]&,
-            {{FillColor,MeshStyle,PlotColor,Tags}/.Override[opt,def],
-              {Fill,Stipple,OutLine,Tag}}]};
+          Null@@RectOpt[opt]};
         If[BelowFrame/.{opt}/.def,
           The$Canvas[Lower]={CanvasLastID,StartID}]
         )];
@@ -2115,9 +2119,11 @@ CanvasGraphics=Class[{},
     LegendPos = p;
     ];
 
-  AdjustLegend1[ls_,r_,r1_,ida_]:=Module[{
+  AdjustLegend1[ls_,r_,r1_,ida_,d_:0]:=Module[{
     id=Join[BGItems,ida],
-    novmin=Infinity,zrmin,zr=CanvasWidget[BBox[ls]],ov,nov,d=10,dx,dy},
+    novmin=Infinity,zrmin,zr=CanvasWidget[BBox[ls]]+{d,d,-d,-d},ov,nov,d=10,dx,dy},
+    If[zr[[1]]>=zr[[3]] || zr[[2]]>=zr[[4]],
+      Return[INF]];
     If[r<=>r1,
       zrmin=zr;
       While[ov=Complement[CanvasWidget[Find$Overlapping[zr]],id];
@@ -2154,16 +2160,24 @@ CanvasGraphics=Class[{},
             CanvasWidget[Move] = {ls, {dx,dy}},
             CanvasWidget[Move] = {ls, (zrmin-zr)[[{1,2}]]};
             zr=zrmin;
-            Break[]]]]
-      ]];
+            Break[]]]]];
+    novmin
+    ];
+
+  AdjustLegend2[ls_,r_,r1_,ida_]:=Module[{res,d=0},
+    While[
+      (res=AdjustLegend1[ls,r,r1,ida,d])<=>INF,
+      d+=5];
+    res];
 
   AdjustLegend[]:=Module[{rl=Reverse[Legends],ida={},l,r,r1},
     If[rl<=>{},
       {l,r}=Thread[rl];
       r1=Drop[Prepend[r,Null],-1];
-      AdjustLegend1@@[
+      AdjustLegend2@@[
         Thread[{l,r,r1,
-          (ida=Join[ida,CanvasWidget[Find$WithTag[#[[1]]]]])&/@rl}],{1}]]];
+          (ida=Join[ida,CanvasWidget[Find$WithTag[#[[1]]]]])&/@rl}],{1}]
+      ]];
 
   Canvas$FrameClick[fr_, opt___] := Module[
     {d=4,sc,vperm,gr,xyr,r,ax1,ax2,ay1,ay2,gl},
