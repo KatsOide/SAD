@@ -288,8 +288,16 @@ c'\
           kv=pat%expr%k
           kav=ktfaddr(kv)
           ktv=kv-kav
-          kpat=merge(merge(int(kav),0,kav .le. 3),-1,
-     $         ktv == ktfref)
+          if(ktv == ktfref)then
+            if(kav <= 3)then
+              kpat=int(kav)
+            else
+              kpat=0
+            endif
+          else
+            kpat=-1
+          endif
+c          kpat=merge(merge(int(kav),0,kav .le. 3),-1,ktv == ktfref)
           if(pat%default%k .ne. ktfref)then
             if(kpat .lt. 0)then
               call putstringbufp(strb,'((',lfno,irtc)
@@ -735,7 +743,6 @@ c
      $         ichar(string(1:1)) .le. ichar('z')
      $         )
           indent=strb%lexp .ge. 0
-c          write(*,*)'psbuf-1 ',indent,l,strb%nch,strb%lexp
           if(l > strb%lexp-strb%nch .and. l <= strb%lexp)then
             call flushstringbuf(strb,indent,.true.,lfno,irtc)
           endif

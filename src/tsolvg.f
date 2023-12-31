@@ -344,7 +344,11 @@ c            an=max(abs(x(i)),abs(x(i+1)))
           w=x(ibegin)
           z=x(iend)
           y=x(iend-1)
-          g=merge(v(iend-2),0.d0,ibegin .lt. iend-1)
+          if(ibegin < iend-1)then
+            g=v(iend-2)
+          else
+            g=0.d0
+          endif
           h=v(iend-1)
           f=((y-z)*(y+z)+(g-h)*(g+h))*.5d0
           if(w .eq. 0.d0)then
@@ -352,8 +356,11 @@ c            an=max(abs(x(i)),abs(x(i+1)))
           else
             g=h*y
             y=f+sign(hypot(f,g),f)
-            f=merge(((w-z)*(w+z)-h**2+g**2/y)/w,
-     $           ((w-z)*(w+z)-h**2)/w,y .ne. 0.d0)
+            if(y /= 0.d0)then
+              f=((w-z)*(w+z)-h**2+g**2/y)/w
+            else
+              f=((w-z)*(w+z)-h**2)/w
+            endif
           endif
           g=v(ibegin)
           h=g
@@ -434,8 +441,11 @@ c            an=max(abs(x(i)),abs(x(i+1)))
       if(svd)then
         do concurrent (i=1:mn)
           s=x(i)
-          w=merge(v(i+mn)/s,s*v(i+mn)/anorm**2,
-     $         abs(s) > anorm)
+          if(abs(s) > anorm)then
+            w=v(i+mn)/s
+          else
+            w=s*v(i+mn)/anorm**2
+          endif
           v(i)=w/v(i+mn)
           b(i)=b(i)*w
           a(i,1:m)=a(i,1:m)*w
@@ -449,8 +459,11 @@ c            an=max(abs(x(i)),abs(x(i+1)))
       else
         do concurrent (i=1:mn)
           s=x(i)
-          w=merge((v(i+mn)/s)**2,(s*v(i+mn)/anorm**2)**2,
-     $         abs(s) > anorm)
+          if(abs(s) > anorm)then
+            w=(v(i+mn)/s)**2
+          else
+            w=(s*v(i+mn)/anorm**2)**2
+          endif
           b(i)=b(i)*w
         enddo
         do concurrent (i=1:m)

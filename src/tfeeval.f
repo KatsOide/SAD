@@ -8,7 +8,11 @@
       type (sad_descriptor) ,intent(in):: k
       logical*4 ,intent(in):: ref
       integer*4 ,intent(out):: irtc
-      kx=merge(tfeevalref(k,irtc),tfeevaldef(k,irtc),ref)
+      if(ref)then
+        kx=tfeevalref(k,irtc)
+      else
+        kx=tfeevaldef(k,irtc)
+      endif
       return
       end
 
@@ -45,7 +49,6 @@
       logical*4 ,intent(in):: ref
       kaa=ksad_loc(list%head%k)
       kx%k=ktflist+kaa
-c      call tfdebugprint(kx,'tfleval',1)
       irtc=0
       if(iand(lconstlist,list%attr) /= 0)then
         return
@@ -119,10 +122,6 @@ c      call tfdebugprint(kx,'tfleval',1)
                   return
                 endif
               elseif(ilist(2,iaat+min(isp-isp0+1,mf+1)) == 0)then
-c                call tfmemcheckprint('aevstk',.false.,irtc)
-c                if(irtc /= 0)then
-c                  call tfdebugprint(ki,'argevstk',1)
-c                endif
                 call tflevalstk(kli,.true.,irtc)
                 if(irtc /= 0)then
                   return
@@ -262,7 +261,6 @@ c                endif
       dtastk(isp)=list%head
       do i=1,list%nl
         ki=list%dbody(i)
-c        call tfdebugprint(ki,'evallev',1)
         kai=ktfaddr(ki)
         select case(ki%k-kai)
         case (ktflist)
@@ -620,9 +618,6 @@ c        call tfdebugprint(ki,'evallev',1)
             kls=>kls1
           endif
           kls%head%k=ktfoper+iaf
-c          call tfloadlstk(lista,lista)
-c          lista%head=ktfoper+kaf
-c          call tfstk2l(lista,lista)
           if(ref .and. tfconstlistqo(kls))then
             kx=sad_descr(kls)
             irtc=0
@@ -805,22 +800,12 @@ c          call tfstk2l(lista,lista)
         endif
       endif
  6000 dtastk(isp1)=kf
-c      call tfmemcheckprint('seval-efun',.false.,irtc)
-c      if(irtc /= 0)then
-c        call tfdebugprint(kf,'tfseval-efunref-in',3)
-c        call tfdebugprint(ktastk(isp1+1),' ',3)
-c        call tfdebugprint(ktastk(isp),' ',3)
-c      endif
       if(ref)then
         kx=tfefunrefu(isp1,irtc)
-c          call tfdebugprint(kf,'tfseval-efunref-out',3)
-c          call tfdebugprint(ktastk(isp1+1),' ',3)
-c          call tfdebugprint(ktastk(isp),' ',3)
       else
         call tfefundef(isp1,kx,irtc)
       endif
  7000 continue
-c      call tfdebugprint(kx,'tfseval-connect',3)
       call tfconnect(kx,irtc)
  8000 isp=isp0
  9000 level=max(0,level-1)

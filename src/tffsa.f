@@ -191,8 +191,9 @@ c
         call trbassign(lfni)
       endif
       lfno=outfl
- 2    lfnm=merge(merge(lfno,merge(0,lfno,igetgl('$LOG$') == 0),
-     $     lfni /= 5),0,lfnb==1)
+ 2    lfnm=6
+c 2    lfnm=merge(merge(lfno,merge(0,lfno,igetgl('$LOG$') == 0),
+c     $     lfni /= 5),6,lfnb==1)
       call csrst(lfnm)
       kffs=dxnullo
  10   continue
@@ -209,7 +210,8 @@ c
         if(lfnp .lt. lfnb)then
           go to 9000
         endif
-        lfnm=merge(lfno,merge(0,lfno,igetgl('$LOG$') == 0),lfni /= 5)
+        lfnm=6
+c        lfnm=merge(lfno,merge(0,lfno,igetgl('$LOG$') == 0),lfni /= 5)
       elseif(ios .lt. 0)then
         ios=0
       endif
@@ -363,11 +365,9 @@ c        call tfdebugprint(kx,'USE ',1)
             call tfaddmessage(ename,lenw(ename),icslfnm())
           endif
           if(visit)then
-            call termes(
-     $           'Missing beamline in VISIT.',' ')
+            call termes('Missing beamline in VISIT.',' ')
           else
-            call termes(
-     $           'Missing beamline in USE.',' ')
+            call termes('Missing beamline in USE.',' ')
           endif
           go to 2
         else

@@ -26,14 +26,18 @@
         endif
         ispf=isp-2
       elseif(narg .eq. 1)then
-        irtc=merge(-1,
-     $       itfmessage(9,'General::narg','"2 or 3"'),
-     $       mode .ne. 0 .and. mode .ne. 4)
+        if(mode .ne. 0 .and. mode .ne. 4)then
+          irtc=-1
+        else
+          irtc=itfmessage(9,'General::narg','"2 or 3"')
+        endif
         return
       else
-        irtc=merge(itfmessage(9,'General::narg','"2 or 3"'),
-     $       itfmessage(9,'General::narg','"1 or 2 or 3"'),
-     $       mode .ne. 0 .and. mode .ne. 4)
+        if(mode .ne. 0 .and. mode .ne. 4)then
+          irtc=itfmessage(9,'General::narg','"2 or 3"')
+        else
+          irtc=itfmessage(9,'General::narg','"1 or 2 or 3"')
+        endif
         return
       endif
       allocate(rind(maxind))

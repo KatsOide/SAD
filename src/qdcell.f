@@ -1272,7 +1272,12 @@ c      use match
           kk=iele1(kc)
           kk1=iele1(k)
           iec=kele2(k)
-          nk=merge(0,ilist(1,iec),iec == 0)
+          if(iec == 0)then
+            nk=0
+          else
+            nk=ilist(1,iec)
+          endif
+c          nk=merge(0,ilist(1,iec),iec == 0)
           if(kk > 0 .and. free(kk) .or. iec /= 0)then
             posk=pos(k)
             wk=1.d0

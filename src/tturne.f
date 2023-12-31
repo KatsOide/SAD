@@ -112,8 +112,11 @@ c      endif
       if(wrfeff .eq. 0.d0 .and. vc0 .ne. 0.d0)then
         wrfeff=hvc0/vc0*omega0/c
       endif
-      vceff=merge(hypot(vcacc,dvcacc/wrfeff),0.d0,
-     $     wrfeff .ne. 0.d0)
+      if(wrfeff .ne. 0.d0)then
+        vceff=hypot(vcacc,dvcacc/wrfeff)
+      else
+        vceff=0.d0
+      endif
       if(vceff .eq. 0.d0)then
         vceff=vc0
       endif

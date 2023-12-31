@@ -42,8 +42,11 @@
       endif
       if(tflistq(kl,listl))then
         if(ktfnonreallistqo(listl))then
-          irtc=merge(itfmessage(9,'General::wrongtype',
-     $         '"List of reals as index"'),-1,err)
+          if(err)then
+            irtc=itfmessage(9,'General::wrongtype','"List of reals as index"')
+          else
+            irtc=-1
+          endif
           return
         endif
         m=listl%nl
@@ -110,19 +113,24 @@
         endif
       elseif(ierrorexp .gt. 0)then
         irtc=-1
+      elseif(err)then
+        irtc=itfmessage(9,'General::wrongtype','"Real, List of Reals, or Null as index"')
       else
-        irtc=merge(itfmessage(9,'General::wrongtype',
-     $       '"Real, List of Reals, or Null as index"'),
-     $       -1,err)
+        irtc=-1
       endif
       return
- 9030 irtc=merge(
-     $     itfmessageexp(9,'General::index',sad_descr(dble(ivi))),
-     $     -1,err)
+ 9030 if(err)then
+        irtc=itfmessageexp(9,'General::index',sad_descr(dble(ivi)))
+      else
+        irtc=-1
+      endif
       isp=isp0
       return
- 9040 irtc=merge(itfmessage(9,'General::toomany','"indices"'),
-     $       -1,err)
+ 9040 if(err)then
+        irtc=itfmessage(9,'General::toomany','"indices"')
+      else
+        irtc=-1
+      endif
       isp=isp0
       return
       end
@@ -301,18 +309,24 @@ c              enddo
               endif
             enddo
           endif
+        elseif(err)then
+          irtc=itfmessage(9,'General::wrongtype','"Real, List of Reals, or Null as index"')
         else
-          irtc=merge(itfmessage(9,'General::wrongtype',
-     $         '"Real, List of Reals, or Null as index"'),
-     $         -1,err)
+          irtc=-1
         endif
       endif
       return
- 9030 irtc=merge(itfmessageexp(9,'General::index',sad_descr(dble(ivi))),
-     $     -1,err)
+ 9030 if(err)then
+        irtc=itfmessageexp(9,'General::index',sad_descr(dble(ivi)))
+      else
+        irtc=-1
+      endif
       return
- 9040 irtc=merge(itfmessage(9,'General::toomany','"indices"'),
-     $     -1,err)
+ 9040 if(err)then
+        irtc=itfmessage(9,'General::toomany','"indices"')
+      else
+        irtc=-1
+      endif
       return
       end
 
@@ -427,8 +441,7 @@ c              enddo
         else
           list%dbody(iv)=dtfcopy(k)
           eval=ktfsequenceq(k%k)
-          list%attr=merge(ktoberebuilt+lnonreallist,
-     $         lnonreallist,eval)
+          list%attr=merge(ktoberebuilt+lnonreallist,lnonreallist,eval)
         endif
       else
         call tflocald(list%dbody(iv))
@@ -956,26 +969,36 @@ c              call tfdebugprint(kxi,'reppart1-kxi',1)
       type (sad_dlist), pointer :: kl
       integer*4 itfmessage,m
       if(isp .ne. isp1+1)then
-        irtc=merge(-1,
-     $       itfmessage(9,'General::narg','"1"'),
-     $       rlist(iaximmediate) .lt. 0.d0)
+        if(rlist(iaximmediate) .lt. 0.d0)then
+          irtc=-1
+        else
+          irtc=itfmessage(9,'General::narg','"1"')
+        endif
         return
       endif
       k=dtastk(isp)
       if(ktfnonlistq(k,kl))then
-        irtc=merge(-1,
-     $       itfmessage(9,'General::wrongtype','"List"'),
-     $       rlist(iaximmediate) .lt. 0.d0)
+        if((iaximmediate) .lt. 0.d0)then
+          irtc=-1
+        else
+          irtc=itfmessage(9,'General::wrongtype','"List"')
+        endif
         return
       endif
       m=kl%nl
       if(m .le. max(0,mode))then
-        irtc=merge(-1,
-     $       itfmessage(9,'General::index','""'),
-     $       rlist(iaximmediate) .lt. 0.d0)
+        if(rlist(iaximmediate) .lt. 0.d0)then
+          irtc=-1
+        else
+          irtc=itfmessage(9,'General::index','""')
+        endif
         return
       endif
-      kx=merge(kl%dbody(m),kl%dbody(mode+1),mode .lt. 0)
+      if(mode .lt. 0)then
+        kx=kl%dbody(m)
+      else
+        kx=kl%dbody(mode+1)
+      endif
       irtc=0
       kx=tfeevalref(kx,irtc)
       return

@@ -366,7 +366,11 @@
             klxi%dbody(j)=dtfcopy(kij)
           endif
         enddo
-        klxi%attr=merge(ior(klxi%attr,lnonreallist),lconstlist,d)
+        if(d)then
+          klxi%attr=ior(klxi%attr,lnonreallist)
+        else
+          klxi%attr=lconstlist
+        endif
       enddo
       irtc=0
       return
@@ -905,7 +909,7 @@ c            enddo
           endif
         endif
         f=.5d0/sqrt(dble(m))
-        w=merge(-2.d0*pi/m,2.d0*pi/m,inv)
+        w=merge(-2.d0,2.d0,inv)*pi/m
         do concurrent (i=1:m/2-1)
           c=cos(w*i)
           s=sin(w*i)

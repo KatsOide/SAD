@@ -70,8 +70,7 @@
             isp2=isp
             call tfpvrulestk(ivstk2(1,i),ivstk2(2,i))
             if(isp .gt. isp2)then
-              call tfreplacesymbolstk(kx,isp2,(isp-isp2)/2,kx,
-     $             .false.,rep1,irtc)
+              kx=tfreplacesymbolstk(kx,isp2,(isp-isp2)/2,.false.,rep1,irtc)
             endif
             call tfresetpat(kp)
             isp=isp0
@@ -136,7 +135,11 @@
               endif
             endif
           enddo
-          kx=merge(tfcompose(isp1+1,ktastk(isp1+1),irtc),k,rep)
+          if(rep)then
+            kx=tfcompose(isp1+1,ktastk(isp1+1),irtc)
+          else
+            kx=k
+          endif
           isp=isp1
         endif
       elseif(ktfpatq(k,pat))then
@@ -174,17 +177,21 @@
           endif
           rep=rep .or. rep1
         endif
-        kx=merge(kxpcopyss(k1,pat%head,ks,kd),k,rep)
+        if(rep)then
+          kx=kxpcopyss(k1,pat%head,ks,kd)
+        else
+          kx=k
+        endif
       else
         kx=k
       endif
       return
       end
 
-      subroutine tfreplacesymbolstk(k,ispr,nrule,kx,scope,rep,irtc)
+      function tfreplacesymbolstk(k,ispr,nrule,scope,rep,irtc) result(kx)
       implicit none
+      type (sad_descriptor) kx
       type (sad_descriptor) ,intent(in):: k
-      type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: ispr,nrule
       integer*4 ,intent(out):: irtc
       integer*4 nrule1
@@ -265,8 +272,7 @@ c     call tfdebugprint(ktflist+ktfaddr(k),'repsymstk',3)
           endif
           do i=1,m
 c            call tfdebugprint(kl%dbody(i),'repsymstk',1)
-            ki=tfreplacesymbolstk1(kl%dbody(i),ispr,nrule,
-     $           scope,rep1,irtc)
+            ki=tfreplacesymbolstk1(kl%dbody(i),ispr,nrule,scope,rep1,irtc)
             if(irtc .ne. 0)then
               return
             endif
@@ -373,8 +379,16 @@ c          endif
         rep=rep .or. rep2 .or. rep1
       endif
       if(isp .eq. isp1+1)then
-        i=merge(merge(2,3,ktastk(isp1+1) .ne. 0),0,
-     $       ktfrealq(ktastk(isp1+1)))
+        if(ktfrealq(ktastk(isp1+1)))then
+          if(ktastk(isp1+1) .ne. 0)then
+            i=2
+          else
+            i=3
+          endif
+        else
+          i=0
+        endif
+c        i=merge(merge(2,3,ktastk(isp1+1) .ne. 0),0,ktfrealq(ktastk(isp1+1)))
       else
         rep=.true.
         i=0
@@ -382,7 +396,7 @@ c          endif
       if(i .ne. 0)then
         rep=.true.
         j=isp+1
-        if(i .le. list%nl)then
+        if(i <= list%nl)then
           ki=list%dbody(i)
           if(ktfrealq(ki) .or. ktfstringq(ki) .or. ktfoperq(ki))then
             kx=ki
@@ -394,7 +408,7 @@ c          endif
             endif
             call tfgetstkstk(kr,rep2) 
             rep=rep .or. rep1 .or. rep2
-            kx=merge(dtastk(j),dxnullo,j .le. isp)
+            kx=merge(dtastk(j),dxnullo,j <= isp)
           endif
         else
           kx%k=ktfoper+mtfnull
@@ -416,7 +430,11 @@ c          endif
           rep=rep2 .or. rep .or. rep1
         endif
       enddo
-      kx=merge(tfcompose(isp1,ktastk(isp1),irtc),sad_descr(list),rep)
+      if(rep)then
+        kx=tfcompose(isp1,ktastk(isp1),irtc)
+      else
+        kx=sad_descr(list)
+      endif
       return
       end
 
@@ -513,7 +531,7 @@ c          endif
       integer*4 ,intent(in):: n
       integer*4 ,intent(out):: itab(n)
       integer*4 m,i1,i2,is,im,ip1,ip2
-      if(n .le. 1)then
+      if(n <= 1)then
         return
       endif
       i1=itab(1)
@@ -554,15 +572,15 @@ c          endif
       itab(2)=im
       ip1=3
       ip2=n-1
-      do while(ip1 .le. ip2)
+      do while(ip1 <= ip2)
         do while((iz(itab(ip1)) .lt. iz(im) .or.
      $       iz(itab(ip1)) .eq. iz(im) .and. kg(itab(ip1)) .lt. kg(im))
-     $       .and. ip1 .le. ip2)
+     $       .and. ip1 <= ip2)
           ip1=ip1+1
         enddo
         do while((iz(im) .lt. iz(itab(ip2)) .or.
      $       iz(itab(ip2)) .eq. iz(im) .and. kg(im) .lt. kg(itab(ip2)))
-     $       .and. ip1 .le. ip2)
+     $       .and. ip1 <= ip2)
           ip2=ip2-1
         enddo
         if(ip2 .gt. ip1)then
@@ -672,8 +690,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       else
         ksave=list%head%k
         list%head%k=ktfoper+mtfhold
-        kx=tfreplacesymbolstk1(sad_descr(list),
-     $       ispa,nrule,.true.,rep,irtc)
+        kx=tfreplacesymbolstk1(sad_descr(list),ispa,nrule,.true.,rep,irtc)
         if(irtc .eq. 0 .and. ktflistq(kx,klx))then
           klx%head%k=ksave
         endif
@@ -725,8 +742,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       endif
       ksave=list%head%k
       list%head%k=ktfoper+mtfhold
-      kx=tfreplacesymbolstk1(sad_descr(list),ispr,nrule,
-     $     .true.,rep1,irtc)
+      kx=tfreplacesymbolstk1(sad_descr(list),ispr,nrule,.true.,rep1,irtc)
       if(irtc .eq. 0 .and. ktflistq(kx,klx))then
         klx%head%k=ksave
       endif
@@ -858,7 +874,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       integer*4 ,intent(out):: irtc
       integer*4 i,itfmessage
       kx=dxnullo
-      if(isp .le. isp1+1)then
+      if(isp <= isp1+1)then
         irtc=itfmessage(9,'General::narg','"2 or more"')
         return
       endif
@@ -880,7 +896,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       integer*4 ,intent(out):: irtc
       integer*4 i,itfmessage
       kx=dxnullo
-      if(isp .le. isp1+1)then
+      if(isp <= isp1+1)then
         irtc=itfmessage(9,'General::narg','"2 or more"')
         return
       endif
@@ -979,11 +995,11 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
       if(rule)then
         return
       endif
-      if(nrule .le. 0)then
+      if(nrule <= 0)then
         kx=k
       else
         if(symbol)then
-          call tfreplacesymbolstk(k,isp1,nrule,kx,.false.,rep,irtc)
+          kx=tfreplacesymbolstk(k,isp1,nrule,.false.,rep,irtc)
         else
           call tfinitrule(isp1,nrule)
           kx=tfreplacestk(k,isp1,nrule,all,rep,irtc)
@@ -1033,8 +1049,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
         ka=kf%dbody(1)
         if(ktfsymbolq(ka))then
           if(narg /= 1)then
-            irtc=itfmessage(9,'General::narg',
-     $           '"equal to actual number of args"')
+            irtc=itfmessage(9,'General::narg','"equal to actual number of args"')
             return
           endif
           dtastk(isp+1)=ka
@@ -1043,21 +1058,18 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
         elseif(tflistq(ka,kla))then
           m=kla%nl
           if(m /= narg)then
-            irtc=itfmessage(9,'General::narg',
-     $           '"equal to actual number of args"')
+            irtc=itfmessage(9,'General::narg','"equal to actual number of args"')
             return
           endif
           if(m /= 0)then
             if(ktfreallistq(kla))then
-              irtc=itfmessage(9,'General::wrongtype',
-     $             '"List of symbols"')
+              irtc=itfmessage(9,'General::wrongtype','"List of symbols"')
               return
             endif
             do i=1,m
               ki=kla%dbody(i)
               if(.not. ktfsymbolq(ki))then
-                irtc=itfmessage(9,'General::wrongtype',
-     $               '"List of symbols"')
+                irtc=itfmessage(9,'General::wrongtype','"List of symbols"')
                 return
               endif
               j=isp+i*2
@@ -1072,8 +1084,9 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
         endif
         kx=kf%dbody(2)
         if(narg /= 0)then
-          call tfreplacesymbolstk(kx,isp1+narg,narg,kx,.true.,rep,irtc)
-c          call tfdebugprint(kx,'puref-2',3)
+c          call tfdebugprint(kb,'puref-1',1)
+          kx=tfreplacesymbolstk(kx,isp1+narg,narg,.true.,rep,irtc)
+c          call tfdebugprint(kx,'puref-2',1)
 c          write(*,*)irtc
           if(irtc /= 0)then
             isp=isp1+narg

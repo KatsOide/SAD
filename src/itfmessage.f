@@ -54,6 +54,8 @@
         ka=ktfaddr(kx)
         isp=isp0
         init=.true.
+        r=.false.
+        return
       endif
       r=newsym .and. init .and. ktfstringq(dlist(ka))
       return
@@ -77,6 +79,8 @@
         ka=ktfaddr(kx)
         isp=isp0
         init=.true.
+        r=.false.
+        return
       endif
       r=newset .and. init .and. ktfstringq(dlist(ka))
       return
@@ -98,14 +102,14 @@
       character*256 mess,arg
       logical*4 ,save::iter=.false.
       data mn%k /0/
-      if(iter .or. level .lt. ierrorth .or.
-     $     rlist(iaximmediate) .lt. 0.d0)then
+      if(iter .or. level .lt. ierrorth .or. rlist(iaximmediate) .lt. 0.d0)then
         itfmessage=-1
         return
       endif
       if(mn%k == 0)then
         mn=kxsymbolz('MessageString',13)
       endif
+c      write(*,*)'itfmessage ',level,mess0,' ',arg0
       iter=.true.
       ltr0=ltrace
       ltrace=0
@@ -143,6 +147,7 @@
         rlist(ierrorgen)=rlist(ierrorgen)+1.d0
         ierrorprint=sad_loc(klx%head%k)
         itfmessage=1
+c        call tfdebugprint(klx%dbody(4),'itfmessage-klx',1)
       else
         call tflocal1(dm%k)
         itfmessage=-1
@@ -195,7 +200,7 @@ c     Search '"' from string(is+1:l) with backslash escape
         endif
         if(in <= 0)then
           isp=isp+1
-          dtastk(isp)=kxsalocb(-1,string(is:),l-is+1)
+          dtastk(isp)=kxsalocb(-1,string(is:),l-is)
           return
         endif
         isp=isp+1
@@ -288,7 +293,7 @@ c     Search '"' from string(is+1:l) with backslash escape
       logical*4 iter
       data kxaddmess%k,iter /0,.false./
       if(iter)then
-        call tfdebugprint(kerror,'???Error in error handling.',10)
+        call tfdebugprint(dfromk(kerror),'???Error in error handling.',10)
         return
       endif
       if(.not. tflistq(kerror,kle))then
@@ -300,12 +305,14 @@ c     Search '"' from string(is+1:l) with backslash escape
       if(kxaddmess%k == 0)then
         kxaddmess=kxsymbolz('Add$Message',11)
       endif
+c      write(*,*)'addmessage-lfn ',lfn
       isp1=isp+1
       if(lfn /= 0)then
         isp=isp1+1
         dtastk(isp1)=kxaddmess
         ktastk(isp)=kerror
         kx=tfefunrefd(isp1,irtc)
+c        call tfdebugprint(kx,'addmessage',1)
         isp=isp1-1
         if(irtc == 0)then
           if(ktflistq(kx) .and. lfn /= 0)then

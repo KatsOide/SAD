@@ -273,8 +273,8 @@
       ig=max(0,ig0)
       do while(kas1 /= 0)
         ig1=max(0,ilist(2,kas1+7))
-c        call tfdebugprint(ktfsymbol+kas1+8,'sydefg',1)
-c        write(*,*)ig,ig1,kas1,klist(loc+1)
+c        call tfdebugprint(dfromk(ktfsymbol+kas1+8),'tfsydefg',1)
+c        write(*,*)ig,ig1,kas1
         if(ig == ig1)then
           kx%k=ktfsymbol+kas1+8
           return
@@ -293,9 +293,7 @@ c        write(*,*)ig,ig1,kas1,klist(loc+1)
             call abort
           else
             name(1:nc)=loc%str%str(1:nc)
-c            write(*,*)'tfsydefg ',name(1:nc)
             idx=hsrchz1(name(1:nc))
-c            write(*,*)' : ',idx
             if(idx /= 0 .and. idtype(idx) == icGLR)then
               kx=kxnaloc1(ig,locp)
               call descr_sad(kx,symd)

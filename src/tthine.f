@@ -40,8 +40,11 @@
         cx=(1.d0,0.d0)
         cx1=(0.d0,0.d0)
       else
-        cx1=merge((1.d0,0.d0),dcmplx(cod(1),-cod(3))**(kord-1),
-     $       kord .eq. 1)
+        if(kord == 1)then
+          cx1=(1.d0,0.d0)
+        else
+          cx1=dcmplx(cod(1),-cod(3))**(kord-1)
+        endif
         cx=dcmplx(cod(1),-cod(3))*cx1
         cx1=cx1*kord
         trans1(2,1)=-aki*dble(cx1)
@@ -70,8 +73,11 @@ c      endif
           cx=(1.d0,0.d0)
           cx1=(0.d0,0.d0)
         else
-          cx1=merge((1.d0,0.d0),dcmplx(cod(1),-cod(3))**(kord-1),
-     $         kord .eq. 1)
+          if(kord == 1)then
+            cx1=(1.d0,0.d0)
+          else
+            cx1=dcmplx(cod(1),-cod(3))**(kord-1)
+          endif
           cx=dcmplx(cod(1),-cod(3))*cx1
           cx1=cx1*kord
           trans1(2,1)=-aki*dble(cx1)

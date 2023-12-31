@@ -88,9 +88,9 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
                   exit
                 endif
               enddo
-              if(j .gt. 1)then
+              if(j > 1)then
                 jmax=Unicode2UTF8(ucode,ubuf)
-                if(jmax .gt. 0)then
+                if(jmax > 0)then
                   call putstringbufb(strb,ubuf,jmax,full)
                   i=i+j
                   cycle
@@ -146,12 +146,12 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
         integer*4 i,j
         i=0
         j=0
-        do while(i .lt. len(string))
+        do while(i < len(string))
           i=i+1
-          if(i .lt. len(string) .and. string(i:i+1) == '\\\n')then
+          if(i < len(string) .and. string(i:i+1) == '\\\n')then
             i=i+1
             cycle
-          elseif(i .lt. len(string)-1 .and.
+          elseif(i < len(string)-1 .and.
      $           string(i:i+2) == '\\\r\n')then
             i=i+2
             cycle
@@ -174,10 +174,9 @@ c     Unicode character literal:	\u#[###] or \U#[#######]
         l=len(string)
         vx=eval1(string,l,is1,m)
         istop=is1+m
-        if(m .gt. 0 .or. string(is1:is1) == '.')then
+        if(m > 0 .or. string(is1:is1) == '.')then
           is2=is1+max(m,1)
-c          write(*,*)'eval2 ',is1,m,l,is2,'"',string(is2:is2+1),'"'
-          if(is2 .lt. l .and. (string(is2:is2+1) == '\\\n' .or.
+          if(is2 < l .and. (string(is2:is2+1) == '\\\n' .or.
      $           index('eEdDxX',string(is2:is2)) /= 0))then
             call tedigicopy(string(is1:l),buf,j,nnl)
             vx=eval1(buf,j,1,m)
@@ -197,18 +196,18 @@ c          write(*,*)'eval2 ',is1,m,l,is2,'"',string(is2:is2+1),'"'
         j=0
         i=0
         nnl=0
-        do while (i .lt. len(string))
+        do while (i < len(string))
           i=i+1
           ch=string(i:i)
           if(ch == '\\')then
-            if(i .lt. len(string) .and. string(i+1:i+1) == '\n')then
+            if(i < len(string) .and. string(i+1:i+1) == '\n')then
               nnl=nnl+2
               i=i+1
               cycle
             else
               exit
             endif
-          elseif(ch .ge. '0' .and. ch <= '9'
+          elseif(ch >= '0' .and. ch <= '9'
      $           .or. index('eEdDxX-+.',ch) /= 0)then
             j=j+1
             buf(j:j)=ch
@@ -234,9 +233,9 @@ c          write(*,*)'eval2 ',is1,m,l,is2,'"',string(is2:is2+1),'"'
           elseif(index(oper//char(10),ch) /= 0)then
             levelop(i)=1
           endif
-          if(ch .ge. 'a' .and. ch <= 'z')then
+          if(ch >= 'a' .and. ch <= 'z')then
             ic1=100000+(i-ichar('a'))*2
-          elseif(ch .ge. 'A' .and. ch <= 'Z')then
+          elseif(ch >= 'A' .and. ch <= 'Z')then
             ic1=100000+(i-ichar('A'))*2+1
           else
             ic1=i
@@ -292,9 +291,6 @@ c          write(*,*)'eval2 ',is1,m,l,is2,'"',string(is2:is2+1),'"'
       enddo
       return
  1    ch=string(is1:is1)
-c      if(is1 == 1)then
-c        write(*,*)'tfetok-1 ',l,ch
-c      endif
       ich=ichar(ch)
       if(levelop(ich) /= 0)then
         select case (ch)
@@ -307,7 +303,7 @@ c      endif
         case (C_CARRIAGE_RETURN)
           if(is1 == 1 .or. string(is1-1:is1-1) /= '\\')then
             irt=-2
-            if(is1 .lt. l .and.
+            if(is1 < l .and.
      $           string(is1+1:is1+1) == C_NEW_LINE)then
               istop=is1+2
             else
@@ -334,13 +330,13 @@ c      endif
         if(is1 == l)then
           lm=is1
         elseif(is1 == l-1)then
-          if(levelop(ichar(string(l:l))) .gt. 1)then
+          if(levelop(ichar(string(l:l))) > 1)then
             lm=l
           else
             lm=is1
           endif
-        elseif(levelop(ichar(string(is1+1:is1+1))) .gt. 2)then
-          if(levelop(ichar(string(is1+2:is1+2))) .gt. 3)then
+        elseif(levelop(ichar(string(is1+1:is1+1))) > 2)then
+          if(levelop(ichar(string(is1+2:is1+2))) > 3)then
             lm=is1+2
           else
             lm=is1+1
@@ -350,14 +346,14 @@ c      endif
         endif
         do i=lm,is1,-1
           jc=itfopcode(string(is1:i))
-          if(jc .ge. 0)then
+          if(jc >= 0)then
             irt=-1
             kax=jc
             istop=i+1
             select case (jc)
             case (mtfdot)
               vx=eval2(string,i,istop,buf)
-              if(istop .gt. i)then
+              if(istop > i)then
                 irt=0
                 kx=dfromr(vx)
                 return
@@ -365,8 +361,8 @@ c      endif
               istop=i+1
             case (mtfreplace,mtfunset,mtfreplacerepeated,
      $             mtfincrement,mtfdecrement)
-              if(i .lt. l .and. string(istop:istop) <= '9'
-     $             .and. string(istop:istop) .ge. '0')then
+              if(i < l .and. string(istop:istop) <= '9'
+     $             .and. string(istop:istop) >= '0')then
                 istop=i
                 select case (jc)
                 case(mtfreplace)
@@ -382,13 +378,13 @@ c      endif
                 end select
               endif
             case(mtfatt)
-              if(is1 .gt. 1)then
+              if(is1 > 1)then
                 irt=-2
                 istop=is1
                 return
               endif
             case(mtfpower)
-              if(is1 /= 1 .and. is1 .lt. l-1
+              if(is1 /= 1 .and. is1 < l-1
      $             .and. string(is1:is1+2) == '^^^')then
                 irt=-2
                 istop=is1
@@ -396,13 +392,13 @@ c      endif
               endif
             case(mtfleftcomment)
               istop=l+1
-              if(is1 .lt. l-2)then
+              if(is1 < l-2)then
                 is2=index(string(is1+2:l),'*)')
-                if(is2 .gt. 0)then
+                if(is2 > 0)then
                   is2=is2+is1+1
-                  if(is2 .lt. l-1)then
+                  if(is2 < l-1)then
                     is1=notspace(string(1:l),is2+2)
-                    if(is1 .gt. 0)then
+                    if(is1 > 0)then
                       go to 1
                     endif
                   endif
@@ -418,7 +414,7 @@ c      endif
           endif
         enddo
         istop=is1+1
-      elseif(ch .ge. '0' .and. ch <= '9')then
+      elseif(ch >= '0' .and. ch <= '9')then
         vx=eval2(string,is1,istop,buf)
         kx=dfromr(vx)
         irt=0
@@ -440,8 +436,7 @@ c      endif
                 nnl=nnl+2
                 cycle
               elseif(string(i-1:i) == '\\\r')then
-                nnl=nnl+merge(3,2,
-     $               i .lt. l .and. string(i+1:i+1) == '\n')
+                nnl=nnl+merge(3,2,i < l .and. string(i+1:i+1) == '\n')
                 cycle
               endif
               nc=i-is1
@@ -450,10 +445,10 @@ c      endif
             endif
           enddo
         endif
-        if(icont .ge. 0)then
+        if(icont >= 0)then
           it1=is1
           it2=it1+nc-1
-          if(nnl .gt. 0)then
+          if(nnl > 0)then
             call tremovecont(string(it1:it2),buf)
           endif
           if(index(string(it1:it2),'_') /= 0)then
@@ -477,15 +472,19 @@ c      endif
               kx=kxavaloc(-1,1,klr)
               call descr_sad(kx,klx)
               klx%head%k=ktfsymbol+ktfcopy1(iaxout)
-              klr%rbody(1)=merge(ifromstr(string(it1+1:it2)),
-     $             ifromstr(buf(1:nc-nnl)),nnl == 0)
+              if(nnl == 0)then
+                klr%rbody(1)=ifromstr(string(it1+1:it2))
+              else
+                klr%rbody(1)=ifromstr(buf(1:nc-nnl))
+              endif
               go to 9000
             endif
           endif
-          kx=merge(kxsymbolz(string(it1:it2),nc,symd),
-     $         kxsymbolz(buf,nc-nnl,symd),nnl == 0)
-c          write(*,*)'tfetok ',string(it1:it2),kax,klist(kax)
-c          call tfdebugprint(kx,'etok',1)
+          if(nnl == 0)then
+            kx=kxsymbolz(string(it1:it2),nc,symd)
+          else
+            kx=kxsymbolz(buf,nc-nnl,symd)
+          endif
           if(rlist(iaximmediate) /= 0.d0)then
             call loc_namtbl(symd%sym%loc,loc)
             ka=loc%symdef
@@ -496,8 +495,6 @@ c          call tfdebugprint(kx,'etok',1)
               endif
             endif
           endif
-c          call tfdebugprint(kx,'tfetok-symbol',1)
-c          write(*,*)'kax ',kax
         endif
       endif
  9000 return
@@ -518,28 +515,28 @@ c          write(*,*)'kax ',kax
      $     +ichar(oper1(3:3))+ichar(oper1(4:4))
       ih=iand(ih,63)
       j=iophash(1,ih)
-      if(j .lt. 0)then
+      if(j < 0)then
         go to 10
       elseif(iop1 == transfer(opcode(j),0))then
         itfopcode=j
         return
       endif
       j=iophash(2,ih)
-      if(j .lt. 0)then
+      if(j < 0)then
         go to 10
       elseif(iop1 == transfer(opcode(j),0))then
         itfopcode=j
         return
       endif
       j=iophash(3,ih)
-      if(j .lt. 0)then
+      if(j < 0)then
         go to 10
       elseif(iop1 == transfer(opcode(j),0))then
         itfopcode=j
         return
       endif
       j=iophash(4,ih)
-      if(j .ge. 0)then
+      if(j >= 0)then
         if(iop1 == transfer(opcode(j),0))then
           itfopcode=j
           return
@@ -579,7 +576,7 @@ c          write(*,*)'kax ',kax
       integer*4 ,intent(out):: irtc
       integer*4 ,intent(in):: isp1
       integer*4 i,lenw,itfmessage
-      if(isp .gt. isp1+1)then
+      if(isp > isp1+1)then
         irtc=itfmessage(9,'General::narg','"0"')
         return
       endif

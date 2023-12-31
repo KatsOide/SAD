@@ -103,9 +103,6 @@ c      endif
       type (sad_descriptor) ,intent(in):: k
       type (sad_dlist) ,intent(inout):: listp
       logical*4 ,intent(in):: f
-      if(f)then
-        write(*,*)'listmat1 ',f
-      endif
       itflistmat1=itflistmat(k,listp)
       return
       end
@@ -160,11 +157,8 @@ c      endif
       itfpatmat=-1
       call tflinkedpat(pat0,pat)
       kv1=pat%value
-c      call tfdebugprint(sad_descr(pat),'patmat',1)
-c      call tfdebugprint(kv1,'value:',1)
       if(pat%mat == 0)then
         itfpatmat=itfsinglepat(k,pat)
-c        write(*,*)'patmat-result ',itfpatmat,pat%mat
       elseif(ktfrefq(kv1,kav1) .and. kav1 > 3)then
         if(ktflistq(k,list))then
           if(list%head%k == ktfoper+mtfnull)then
@@ -198,7 +192,7 @@ c        write(*,*)'patmat-result ',itfpatmat,pat%mat
         itfseqmatseq=0
       else
         itfseqmatseq=itfseqmatstk21(isp1,isp2,kl%dbody(1),
-     $     kl%nl,mp1,ktfreallistq(kl),i00,.false.)
+     $       kl%nl,mp1,ktfreallistq(kl),i00,.false.)
       endif        
 c      itfseqmatseq=merge(0,
 c     $     itfseqmatstk21(isp1,isp2,kl%dbody(1),
@@ -229,9 +223,6 @@ c$$$      end
       type (sad_descriptor) ,intent(inout):: kp
       integer*4 ,intent(in):: isp10,isp20
       logical*4 ,intent(in):: f
-      if(.not. f)then
-        write(*,*)'seqmatstk11 '
-      endif
       itfseqmatstk11=itfseqmatstk1(isp10,isp20,kp)
       return
       end
@@ -246,9 +237,7 @@ c$$$      end
       iop0=iordless
       ispm0=ispm
       do
-c        write(*,*)'itfsqms1-1 ',isp10,isp20,ispm,isps,isp20
         i=itfseqm(isp10,isp20,kp,ispm,isps,isp20)
-c        write(*,*)'itfsqms1-2 ',i
         if(i .ge. 0)then
           if(isp20 .lt. isps)then
             itfseqmatstk1=min(1,i)
@@ -281,9 +270,6 @@ c        write(*,*)'itfsqms1-2 ',i
       integer*8 ,intent(in):: kpp
       integer*4 ,intent(in):: isp10,isp20,map,mp1
       logical*4 ,intent(in):: realp,f
-      if(f)then
-        write(*,*)'seqmatstk21 '
-      endif
       ix=itfseqmatstk(isp10,isp20,kp0,map,mp1,realp,kpp)
       return
       end
@@ -304,10 +290,14 @@ c        write(*,*)'itfsqms1-2 ',i
         ix=merge(1,-1,isp20 .lt. isp10)
         return
       endif
-      kp%k=merge(i00,kp0(mp1)%k,realp)
+      if(realp)then
+        kp%k=i00
+      else
+        kp=kp0(mp1)
+      endif
+c      kp%k=merge(i00,kp0(mp1)%k,realp)
       mstk0=mstk
       ispf=isp20
-c      write(*,*)'itfsqmsk-1 ',isp10,isp20,map,mp1
       if(kpp == 0)then
         isp1a=isp10
         isp2a=isp20
@@ -478,9 +468,6 @@ c     $               realp,i00),map == mp1+1))
         k1=dtastk(ispp)
         dtastk(ispp)=dtastk(ispp+1)
         dtastk(ispp+1)=k1
-c     call tfdebugprint(k1,'seqmatstk',1)
-c     call tfdebugprint(ktastk(ispp),'<->',1)
-c     write(*,*)'at ',ispp,' with ',mop,np
         ispf=isp20
       enddo
       end
@@ -496,9 +483,6 @@ c     write(*,*)'at ',ispp,' with ',mop,np
           pat%value=dxnull
         elseif(isp2 == isp1+1)then
           pat%value=dtastk(isp2)
-c          call tfdebugprint(sad_descr(pat),'stkstk',1)
-c          call tfdebugprint(ktastk(isp),'stkstk',1)
-c          write(*,*)'at ',sad_loc(pat%value)
         else
           pat%value%k=ktfref+isp1+ispbase
           itastk2(1,isp1)=isp2
@@ -615,8 +599,6 @@ c        nullify(pat%equiv)
               if(kas == ktastk(i+1) .and.
      $             ktastk(i) /= k%k)then
                 call loc_pat(ktfaddr(ktastk(i)),pat%equiv)
-c                call tfdebugprint(sad_descr(pat%equiv),'initpat-e',1)
-c                write(*,*)':',ktfaddr(ktastk(i))
                 exit loop10
               endif
             enddo
@@ -673,9 +655,10 @@ c                write(*,*)':',ktfaddr(ktastk(i))
         call c_f_pointer(c_loc(klist(klist(ifunbase+ktfaddrd(k))-9)),
      $       fun)
         tfordlessq=iand(iattrorderless,fun%def%sym%attr) /= 0
+      elseif(ktfsymbolq(k,sym))then
+        tfordlessq=iand(iattrorderless,sym%attr) /= 0
       else
-        tfordlessq=merge(iand(iattrorderless,sym%attr) /= 0,.false.,
-     $       ktfsymbolq(k,sym))
+        tfordlessq=.false.
       endif
       return
       end

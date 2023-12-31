@@ -588,8 +588,7 @@
         k1=dtastk(isp1+1)
         k =dtastk(isp)
         if(ktfrealq(k1,v1) .and. ktfrealq(k,v))then
-          kx=merge(dfromr(v1+v),dfromr(v1*v),
-     $         iopc == mtfplus)    
+          kx=merge(dfromr(v1+v),dfromr(v1*v),iopc == mtfplus)    
           irtc=0
         else
           if(tfnumberq(k) .and. tfnumberq(k1))then
@@ -621,8 +620,7 @@
         do i=isp1+2,isp
           ki=dtastk(i)
           if(ktfrealq(ki,vi) .and. ktfrealq(kx,vx))then
-            kx=merge(dfromr(vx+vi),dfromr(vx*vi),
-     $           iopc == mtfplus)    
+            kx=merge(dfromr(vx+vi),dfromr(vx*vi),iopc == mtfplus)    
           else
             k1=kx
             if(tfnumberq(k1) .and. tfnumberq(ki))then
@@ -749,9 +747,6 @@
         return
       endif
       if(isp == isp1+2)then
-c        call tfdebugprint(dtastk(isp1+1),'tfrelation',1)
-c        call tfdebugprint(dtastk(isp),'and',1)
-c        write(*,*)'with: ',iopc
         if(tfnumberq(dtastk(isp1+1)) .and.
      $       tfnumberq(dtastk(isp)))then
           kx=tfcmplx(dtastk(isp1+1),dtastk(isp),iopc,irtc)
@@ -1170,16 +1165,20 @@ c      include 'DEBUG.inc'
                 if(ktfrealq(ky1))then
                   if(iopc == mtfplus)then
                     if(ky1%k == 0 .or. ky1%k == ktfmzero)then
-                      ke=merge(listy%dbody(2),
-     $                     tftake(ky,dfromr(dble(-m+1)),
-     $                     .true.,.false.,irtc),m== 2)
+                      if(m == 2)then
+                        ke=listy%dbody(2)
+                      else
+                        ke=tftake(ky,dfromr(dble(-m+1)),.true.,.false.,irtc)
+                      endif
                       return
                     endif
                   else
                     if(ky1%k == ktftrue)then
-                      ke=merge(listy%dbody(2),
-     $                     tftake(ky,dfromr(dble(-m+1)),
-     $                     .true.,.false.,irtc),m == 2)
+                      if(m == 2)then
+                        ke=listy%dbody(2)
+                      else
+                        ke=tftake(ky,dfromr(dble(-m+1)),.true.,.false.,irtc)
+                      endif
                       return
                     elseif((ky1%k == 0 .or. ky1%k == ktfmzero) .and.
      $                     redmath%value%k /= 0)then
@@ -1267,8 +1266,11 @@ c      include 'DEBUG.inc'
         else
           ks=1
         endif
-        ke=merge(dlist(iaxslotnull+(ks-1)*2),
-     $       dlist(iaxslotnull+(ks-1)*2+1),iopc == mtfslot)
+        if(iopc == mtfslot)then
+          ke=dlist(iaxslotnull+(ks-1)*2)
+        else
+          ke=dlist(iaxslotnull+(ks-1)*2+1)
+        endif
         return
       case (mtfflag)
         go to 5000
@@ -1314,9 +1316,11 @@ c      include 'DEBUG.inc'
               if(m == 1)then
                 kx=ky
               else
-                k2=merge(list1%dbody(2),
-     $               tftake(k1,dfromr(dble(-m+1)),.true.,.false.,irtc),
-     $               m == 2)
+                if(m == 2)then
+                  k2=list1%dbody(2)
+                else
+                  k2=tftake(k1,dfromr(dble(-m+1)),.true.,.false.,irtc)
+                endif
                 if(ktfrealq(k2,v2) .and. ktfrealq(ky,vy))then
                   kx=dfromr(v2*vy)
                 else
@@ -1348,7 +1352,6 @@ c      include 'DEBUG.inc'
                     else
                       kx2=tfeexpr(kx2,kx,mtftimes)
                     endif
-c                    call tfdebugprint(kx2,'eexpr-kx2',1)
                     isp=isp-1
                   endif
                 endif
@@ -1368,7 +1371,6 @@ c                    call tfdebugprint(kx2,'eexpr-kx2',1)
                 else
                   ke=tfeexpr(kx2,ke,mtftimes)
                 endif
-c                call tfdebugprint(ke,'eexpr-ke',1)
                 if(vx1 /= 1.d0)then
                   kx=tfcmplx(sad_descr(vx1),ky,mtfpower,irtc)
                   ke=tfeexpr(kx,ke,mtftimes)
@@ -1406,8 +1408,6 @@ c                call tfdebugprint(ke,'eexpr-ke',1)
         ke=tfeexpr(k,k1,mtfpower)
         return
       case (mtfatt)
-c        call tfdebugprint(k1,'eexpr',1)
-c        call tfdebugprint(ky,'@',1)
         if(ktfnonrealq(k1))then
           if(ktfrealq(k,x))then
             ke=kxavaloc(-1,1,kle)
@@ -1463,13 +1463,8 @@ c        call tfdebugprint(ky,'@',1)
       ktastk(isp-2)=ktfoper+iopc
       dtastk(isp-1)=k1
       dtastk(isp  )=ky
-c      call tfdebugprint(ktfoper+iopc,'tfeexpr',1)
-c      call tfdebugprint(k1,'tfeexpr',1)
-c      call tfdebugprint(ky,'tfeexpr',1)
-c      write(*,*)isp
       ke=kxcompose(isp-2)
       isp=isp-3
-c      call tfdebugprint(ke,'eexpr-4900',1)
       return
  5000 if(ktfrealq(ky))then
         ke=kxavaloc(-1,1,kle)
@@ -1513,9 +1508,6 @@ c$$$          exit
 c$$$        endif
 c$$$        return
 c$$$      endif
-c      call tfdebugprint(k1,'earray',1)
-c      call tfdebugprint(k,'and',1)
-c      write(*,*)'with ',iopc1
       irtc=0
       do
         select case(iopc1)
@@ -1670,11 +1662,7 @@ c      write(*,*)'with ',iopc1
         endif
         return
       enddo
-c      call tfdebugprint(k1,'earray-expr',1)
-c      call tfdebugprint(k,'and',1)
-c      write(*,*)'with ',iopc1
       kx=tfeexpr(k1,k,iopc1)
-c      call tfdebugprint(kx,': ',1)
       return
       end
 
@@ -1845,8 +1833,7 @@ c        if(ka1 > 0 .and. ktfrealq(k2))then
       endif
       kx=dtastk(isp)
       if(.not. tfcontextqk(kx))then
-        irtc=itfmessage(9,'General::wrongtype',
-     $       '"Context (Symbol ending `)"')
+        irtc=itfmessage(9,'General::wrongtype','"Context (Symbol ending `)"')
         return
       endif
       call loc_sad(ktfaddr(kx),symd)
@@ -1870,7 +1857,6 @@ c        if(ka1 > 0 .and. ktfrealq(k2))then
         return
       endif
       kx=dtastk(isp)
-c      call tfdebugprint(kx,'setcpath',1)
       if(.not. tflistq(kx,kl) .or. ktfreallistq(kl))then
         go to 9000
       endif
@@ -1889,11 +1875,9 @@ c      call tfdebugprint(kx,'setcpath',1)
       ka1=ktaloc(m)
       ilist(2,ka1-1)=m
       klist(ka1:ka1+m-1)=ktastk(isp0+1:isp0+m)
-c      call tmov(ktastk(isp0+1),klist(ka1),m)
       isp=isp0
       call tfree(itfcontextpath)
       itfcontextpath=ka1
-c      call tfdebugprint(kx,'setcontextpath',1)
       irtc=0
       return
  9000 irtc=itfmessage(9,'General::wrongtype','"List of Contexts"')
@@ -2105,11 +2089,7 @@ c
             call tfefun3ep(isp1,id,kx,irtc)
             go to 6900
           elseif(id .le. 5000) then
-c            call tfdebugprint(ktastk(isp1),'tfefun-ctbl8',1)
-c            call tfdebugprint(ktastk(isp),'with',1)
             call tfefunctbl8(isp1,id,kx,irtc)
-c            call tfdebugprint(kx,'result',1)
-c            write(*,*)'irtc: ',irtc
             go to 6900
           endif
         endif
@@ -2117,7 +2097,6 @@ c            write(*,*)'irtc: ',irtc
  90     irtc=itfmessage(999,'General::unregister',' ')
         go to 6900
  100    write(*,*)'Function implementation error: ',id
-        call tfdebugprint(k1,'tfefun',1)
         irtc=0
         go to 7000
  110    if(narg == 1)then
@@ -2246,7 +2225,11 @@ c            write(*,*)'irtc: ',irtc
  300    if(narg /= 1)then
           go to 6811
         endif
-        kx%x(1)=merge(dble(kl%nl),0.d0,ktflistq(k,kl))
+        if(ktflistq(k,kl))then
+          kx%x(1)=dble(kl%nl)
+        else
+          kx%x(1)=0.d0
+        endif
         go to 8000
  310    call tfdimensions(isp1,kx,irtc)
         go to 6900
@@ -2894,8 +2877,7 @@ c        go to 6900
         endif
         irtc=0
         kx%k=merge(ktftrue,ktffalse,
-     $       tfnearlysameqf(dtastk(isp1+1),dtastk(isp1+2),
-     $       rtastk(isp1+3),rtastk(isp)))
+     $       tfnearlysameqf(dtastk(isp1+1),dtastk(isp1+2),rtastk(isp1+3),rtastk(isp)))
         go to 6900
  2260   kx=tfopenshared(isp1,irtc)
         go to 6900
@@ -3081,8 +3063,6 @@ c        go to 6900
  2570   if(narg == 3)then
           kx=kxhg(dtastk(isp1+2),dtastk(isp),dtastk(isp),dtastk(isp1+1),
      $         .false.,4,irtc)
-c          call tfdebugprint(kx,'efun-kxhg-4',1)
-c          write(*,*)'with ',irtc
         else
           go to 6812
         endif
@@ -3956,8 +3936,12 @@ c              enddo
               dtastk(isp0)=kf
               do concurrent (i=1:m)
                 kai=ktastk(isp3+i)
-                dtastk(isp0+i)=merge(list%dbody(i),dlist(kai+j),
-     $               kai == ktfref)
+                if(kai == ktfref)then
+                  dtastk(isp0+i)=list%dbody(i)
+                else
+                  dtastk(isp0+i)=dlist(kai+j)
+                endif
+c                  dtastk(isp0+i)=merge(list%dbody(i),dlist(kai+j),kai == ktfref)
               enddo
               isp=isp0+m
               dtastk(isp0)=kxcompose(isp0)
@@ -3973,8 +3957,12 @@ c              enddo
           do i=1,m
             isp=isp+1
             kai=ktastk(isp3+i)
-            dtastk(isp)=merge(list%dbody(i),dlist(kai+j),
-     $           kai == ktfref)
+            if(kai == ktfref)then
+              dtastk(isp)=list%dbody(i)
+            else
+              dtastk(isp)=dlist(kai+j)
+            endif
+c            dtastk(isp)=merge(list%dbody(i),dlist(kai+j),kai == ktfref)
           enddo
           call tfefunrefstk(isp0,isp0,irtc)
           if(irtc /= 0)then
@@ -3989,8 +3977,12 @@ c              enddo
           dtastk(isp0)=kf
           do concurrent (i=1:m)
             kai=ktastk(isp3+i)
-            dtastk(isp0+i)=merge(list%dbody(i),dlist(kai+j),
-     $           kai == ktfref)
+            if(kai == ktfref)then
+              dtastk(isp0+i)=list%dbody(i)
+            else
+              dtastk(isp0+i)=dlist(kai+j)
+            endif
+c            dtastk(isp0+i)=merge(list%dbody(i),dlist(kai+j),kai == ktfref)
           enddo
           isp=isp0+m
           kj=tfefunref(isp0,.true.,irtc)
@@ -4063,13 +4055,13 @@ c              enddo
           endif
         case (1)
           if(v .eq. -1.d0)then
-            lfni=6
+            lfno=6
           else
             lfno=int(v)
           endif
         case (2)
           if(v .eq. -1.d0)then
-            lfni=6
+            lfnm=6
           else
             lfnm=int(v)
           endif
@@ -4405,7 +4397,6 @@ c     DOUBLE COMPLEX proxy of ZTAN vendor extension
           go to 9000
         endif
         nc=str%nch
-c        write(*,*)'tftocontext ',str%str(1:nc)
         if(i /= isp2 .and. ic%k /= 0)then
           if(str%str(nc:nc) /= '`')then
             str%str(nc+1:nc+1)='`'

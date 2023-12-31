@@ -44,6 +44,7 @@ c     end   initialize for preventing compiler warning
       irtc=0
       eol=.false.
  1    continue
+c      write(*,*)'eval-1 ',string(istart:l)
       call tfetok(string(istart:l),istop,kx,itfcontext,irt)
       istop=min(l+1,istop+istart-1)
       if(irt >= 0)then
@@ -56,7 +57,7 @@ c
       case (-1)
         mopc=int(ktfaddrd(kx))
  2101   if(ktastk(isp) == ktfoper+mtfnull)then
-          if(isp .gt. isp0)then
+          if(isp > isp0)then
             m1=itastk2(1,isp-1)
             select case(m1)
             case(mtfslot,mtfslotseq)
@@ -82,8 +83,7 @@ c
             end select
             select case (mopc)
             case (mtfminus)
-              mopc=merge(mtfneg,mtftimes,
-     $             m1 == mtfpower .or. m1 == mtfrevpower)
+              mopc=merge(mtfneg,mtftimes,m1 == mtfpower .or. m1 == mtfrevpower)
               rtastk(isp)=-1.d0
             case (mtfplus)
               go to 1010
@@ -106,8 +106,7 @@ c
               endif
             end select
           else
-            if(mopc == mtfcomp .and.
-     $           itastk2(1,isp) == mtfnull)then
+            if(mopc == mtfcomp .and. itastk2(1,isp) == mtfnull)then
               kx%k=ktfoper+mtfnull
               irtc=-1
               if(re)then
@@ -149,9 +148,9 @@ c
             go to 2
           endif
         endif
- 910    if(mopc .gt. 0)then
+ 910    if(mopc > 0)then
           itastk2(1,isp)=mopc
-          if(isp .gt. isp0)then
+          if(isp > isp0)then
             call tfestk(isp0,iprior,lastfirst,irtc)
             if(irtc /= 0)then
               go to 8900
@@ -177,22 +176,20 @@ c
             isp=isp+1
             rtastk(isp)=-1.d0
             itastk2(1,isp)=mtfrevpower
-          case (mtfunset,mtfrepeated,mtfrepeatednull,
-     $           mtfincrement,mtfdecrement)
+          case (mtfunset,mtfrepeated,mtfrepeatednull,mtfincrement,mtfdecrement)
             if(ktastk(isp) /= ktfoper+mtfnull)then
               dtastk(isp)=kxmakelist(isp-1,kla)
               kla%head%k=ktfoper+mopc
               itastk2(1,isp)=mtfnull
             endif
           case default
-            if(itastk2(1,isp) == mtfrightbrace
-     $           .or. itastk2(1,isp) == mtfrightparen)then
+            if(itastk2(1,isp) == mtfrightbrace .or. itastk2(1,isp) == mtfrightparen)then
               go to 8050
             endif
           end select
           if(itastk2(1,isp) /= mtfnull)then
             isp=isp+1
-            if(isp .gt. mstk)then
+            if(isp > mstk)then
               go to 8110
             endif
             itastk2(1,isp)=mtfnull
@@ -207,7 +204,7 @@ c
           if(isp == isp0 .and.
      $         itastk2(1,isp) == mtfnull)then
             irtc=-1
-          elseif(isp .gt. isp0)then
+          elseif(isp > isp0)then
             iop1=itastk2(1,isp-1)
             if(iop1 == mtffun)then
               isp=isp-1
@@ -216,12 +213,10 @@ c
               go to 3
             endif
             if(re)then
-c              if(string(istop-1:istop-1) == char(10))then
                 if(tfreadevalbuf(istart,istop,l,iop1))then
                   eol=.true.
                   go to 1
                 endif
-c              endif
             elseif(iop1 == mtfcomp .or. iop1 == mtfleftparen)then
               go to 3
             endif
@@ -230,7 +225,7 @@ c              endif
           kx=dtastk(isp0)
           go to 9000
         endif
- 3      if(isp .gt. isp0)then
+ 3      if(isp > isp0)then
           if(.not. re)then
             itastk2(1,isp)=mtfrightparen
             call tfestk(isp0,iprior,lastfirst,irtc)
@@ -355,7 +350,6 @@ c
           sav=savep
           ipoint=istop
         endif
-c        call tfdebugprint(dtastk(isp),'tfeval-8',3)
         kx=tfeevalref(dtastk(isp),irtc)
         if(re)then
           savep=sav
@@ -407,7 +401,7 @@ c        call tfdebugprint(dtastk(isp),'tfeval-8',3)
  8800 if(re .and. icslfni() == 5)then
         go to 8910
       endif
- 8900 if(irtc .lt. -1 .and. irtc .gt. irtcabort)then
+ 8900 if(irtc .lt. -1 .and. irtc > irtcabort)then
         modethrow=-1
         if(irtc .le. irtcret)then
           call tfreseterror
@@ -427,7 +421,7 @@ c        call tfdebugprint(dtastk(isp),'tfeval-8',3)
       if(istop .le. 1)then
         istop=l+1
       endif
- 9000 if(levele .gt. 1)then
+ 9000 if(levele > 1)then
         call tfconnect(kx,irtc)
       endif
       isp=isp0-1

@@ -44,12 +44,13 @@ WCONTINUED=4;
 SetAttributes[{WNOHANG,WUNTRACED,WCONTINUED},Constant];
 
 (* Probably it is better to place Context as early as possible. *)
-Off[General::unprotconst];
-Unprotect[ToContext];
+!Off[General::unprotconst];
+!Unprotect[ToContext];
 !ToContext[`x_]:=x;
 !ToContext[x_String]:=ToExpression[x];
 $ContextStack={`};
 $PackageStack={{`,System`}};
+
 $Context=`;
 $ContextPath={`,System`};
 ($Context=`a_)^:=With[{`b=Check[$SetContext[`a],$Context]},$Context:=`b];
@@ -191,8 +192,7 @@ With[{cmd = ReExec$Path, argv = $GetCommandLine[]},
   If[Length[argv] > 1 && argv[[1]] === "-c",
     ReExec$Argv = Drop[argv, 2]; ReExec$Arg0 = {cmd, "-c", argv[[2]]},
     ReExec$Argv =      argv;     ReExec$Arg0 = {cmd}]];
-SetAttributes[{ReExec$Env, ReExec$Dir, ReExec$Path,
-  ReExec$Argv, ReExec$Arg0},Constant];
+SetAttributes[{ReExec$Env, ReExec$Dir, ReExec$Path, ReExec$Argv, ReExec$Arg0},Constant];
 ReExec[] := ReExec[ReExec$Argv];
 ReExec[argv__String] := ReExec[{argv}];
 ReExec[argv_List] := (SetDirectory[ReExec$Dir];
@@ -271,6 +271,7 @@ SetAttributes[MessageString,HoldRest];
 MessageString[a_]:=a;
 MessageString[a_,`arg__]:=Module[
   {`al,`r,`pw=PageWidth/2},
+  arg00={arg};
   StandardForm[
     al=Function[{b},ToString[b,HoldForm]]/@Hold[`arg];
     al=If[StringLength[#]>pw,#[1,pw-4]//" ...",#]&/@al;
@@ -356,7 +357,9 @@ $Input:=Set$IO[0];
 $Output:=Set$IO[1];
 ($Messages=n_Real)^:=Set$IO[2,n];
 $Messages:=Set$IO[2];
-$Input=$Output=$Messages=-1;
+$Input=-1;
+$Output=-1;
+$Messages=-1;
 
 (Environment[x_]=s_)^:=SetEnv[x,s];
 Environment[x_,s_]:=SetEnv[x,s];
@@ -372,7 +375,6 @@ $System=$OperatingSystem=Environment$["OSTYPE"];
 Protect[$Input,$Output];
 SetAttrubutes[{Environment,Environment$,HomeDirectory,
   $MachineName,$MachineType,$System,$OperatingSystem},Constant];
-
 Expand[Times[a__,(c:_Plus)]]:=(Expand[Times[a,Expand[#]]])&/@c;
 Expand[c:_Plus]:=Expand/@c;
 Expand[a_]:=a;

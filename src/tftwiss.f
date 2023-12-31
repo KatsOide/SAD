@@ -20,7 +20,7 @@
       character*(MAXPNAME+16) keyword,tfgetstrs
       narg=isp-isp1
       keyword=tfgetstrs(ktastk(isp1+1),nc)
-      if(nc .le. 0)then
+      if(nc <= 0)then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"Keyword-string for #1"')
         return
@@ -31,7 +31,7 @@
       kx%k=0
       call capita(keyword(1:nc))
       if(keyword == 'LENGTH')then
-        if(narg .gt. 1)then
+        if(narg > 1)then
           irtc=itfmessage(9,'General::narg','"1"')
           return
         endif
@@ -148,7 +148,7 @@
         enddo findkey
         if(narg == 1)then
           kax=ktavaloc(-1,nlat,kll)
-          if(kt .le. ntwissfun)then
+          if(kt <= ntwissfun)then
             if(dref)then
               select case (kt)
               case (mfitbx,mfitby,mfitbz)
@@ -166,8 +166,8 @@
                 klist(kax+1:kax+nlat)=
      $             (/(ktfref+itoff+i-1,i=1,nlat)/)
             endif
-          elseif(kt .ge. mfitpex .and. kt .le. mfitpepy .or.
-     $           kt .ge. mfitpzx .and. kt .le. mfito)then
+          elseif(kt .ge. mfitpex .and. kt <= mfitpepy .or.
+     $           kt .ge. mfitpzx .and. kt <= mfito)then
             do i=1,nlat
               call tfgettwiss1(i,icol,kt,kll%dbody(i),dref,ref)
             enddo
@@ -194,7 +194,7 @@ c     $             itastk(2,isp),vstk2(isp)
             m=isp-isp0
             kax=ktavaloc(-1,m,kll)
             kx%k=ktflist+kax
-            if(kt .le. ntwissfun)then
+            if(kt <= ntwissfun)then
               if(ref)then
                 do i=1,m
                   if(vstk2(isp0+i) == 0.d0)then
@@ -238,13 +238,13 @@ c                    kll%rbody(i)=twiss(itastk(2,isp0+i),icol,kt)
           isp=isp0
         elseif(narg == 3)then
           keyword=tfgetstrs(ktastk(isp-1),nc)
-          if(nc .le. 0)then
+          if(nc <= 0)then
             irtc=itfmessage(9,'General::wrongtype',
      $           '"name of component for #2"')
             return
           endif
           call capita(keyword(1:nc))
-          if(kt .le. ntwissfun)then
+          if(kt <= ntwissfun)then
             if(keyword == 'SET')then
               kx=dtastk(isp)
               if(ktflistq(kx,klx))then
@@ -346,10 +346,10 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       integer*4 ,intent(in):: kt
       real*8 ,intent(in):: ftwiss(ntwissfun)
       tfgettwiss=0.d0
-      if(kt .le. ntwissfun)then
+      if(kt <= ntwissfun)then
         tfgettwiss=ftwiss(kt)
-      elseif(kt .ge. mfitpex .and. kt .le. mfitpepy .or.
-     $       kt .ge. mfitpzx .and. kt .le. mfito)then
+      elseif(kt .ge. mfitpex .and. kt <= mfitpepy .or.
+     $       kt .ge. mfitpzx .and. kt <= mfito)then
         tfgettwiss=tphysdisp(kt,ftwiss)
       endif
       if(ktfenanq(tfgettwiss))then
@@ -373,19 +373,19 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       logical*4 saved
       narg=isp-isp1
       irtc=0
-      if(narg .le. 0)then
+      if(narg <= 0)then
         irtc=itfmessage(9,'General::narg','"1, 2, or 3"')
         return
       endif
       keyword=tfgetstrs(ktastk(isp1+1),nc)
-      if(nc .le. 0)then
+      if(nc <= 0)then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"Keyword for #1"')
         return
       endif
       call capita(keyword(1:nc))
       if(keyword == 'LENGTH')then
-        if(narg .gt. 1)then
+        if(narg > 1)then
           go to 9010
         endif
         kx=dfromr(dble(nele))
@@ -396,7 +396,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
         call tffsadjust
         kx=dxnullo
       else
-        if(narg .gt. 2)then
+        if(narg > 2)then
           if(narg == 3)then
             call tfgetoption('Saved',dtastk(isp),kx,irtc)
             if(irtc /= 0)then
@@ -463,10 +463,15 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
         kx=kxsalocb(-1,pname(id),lpname(id))
       elseif(keyword == 'VALUE')then
         iv=nelvx(it)%ival
-        if(iv .gt. 0)then
+        if(iv > 0)then
           if(saved)then
             iax=idvalc(ia)+iv
-            kx%k=merge(klist(iax),ktfref+iax,ref)
+            if(ref)then
+              kx=dlist(iax)
+            else
+              kx%k=ktfref+iax
+            endif
+c            kx%k=merge(klist(iax),ktfref+iax,ref)
           else
             iax=latt(ia)+iv
             if(ref)then
@@ -474,7 +479,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
             else
               kx%k=ktfref+iax
               call compelc(ia,cmp)
-              cmp%update=cmp%nparam .le. 0
+              cmp%update=cmp%nparam <= 0
             endif
           endif
         else
@@ -517,7 +522,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
         if(.not. ref)then
           kx%k=ktfref+iax
           if(.not. saved)then
-            cmp%update=cmp%nparam .le. 0
+            cmp%update=cmp%nparam <= 0
           endif
         endif
       endif
@@ -541,7 +546,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
         if(iv .lt. 0)then
           iv=nele+iv+1
         endif
-        if(iv .le. 0 .or. iv .gt. nele)then
+        if(iv <= 0 .or. iv > nele)then
           irtc=itfmessage(9,'General::wrongnum',
      $         '"positive and less than length of beam line"')
           return
@@ -557,7 +562,7 @@ c        itastk(2,isp)=ilist(iv,ifklp)
           nc=1
         else
           call tfgetstrns(k,name,nc)
-          if(nc .le. 0)then
+          if(nc <= 0)then
             irtc=itfmessage(9,'General::wrongtype',
      $           '"Name of component"')
             return
@@ -568,7 +573,7 @@ c        itastk(2,isp)=ilist(iv,ifklp)
         endif
         irtc=0
         if(name(1:nc) /= '***' .and.
-     $       ifany1(name(1:nc),nc,'*%{<|',1) .gt. 0)then
+     $       ifany1(name(1:nc),nc,'*%{<|',1) > 0)then
           do i=1,nele
 c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
             if(tmatch(pnamec(nelvx(i)%klp),
@@ -607,7 +612,7 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
       logical*4 ,intent(in):: ref
       narg=isp-isp1
       keyword=tfgetstrs(ktastk(isp1+1),nc)
-      if(nc .le. 0)then
+      if(nc <= 0)then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"Keyword for #1"')
         return
@@ -615,7 +620,7 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
       irtc=0
       call capita(keyword(1:nc))
       if(keyword == 'LENGTH')then
-        if(narg .gt. 1)then
+        if(narg > 1)then
           irtc=itfmessage(9,'General::narg','"1"')
         endif
         kx=dfromr(dble(nlat))
@@ -625,10 +630,10 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
         endif
         do i=1,nlat-1
           ie=ilist(icomp(i),ifele1)
-          if(ie .gt. 0)then
+          if(ie > 0)then
             iv=nelvx(ie)%ival
 c            iv=ilist(ie,ifival)
-            if(iv .gt. 0)then
+            if(iv > 0)then
               k=nelvx(ie)%klp
 c              k=ilist(ie,ifklp)
               rlist(latt(i)+iv)=
@@ -840,13 +845,17 @@ c        write(*,'(a,i5,1p10g12.4)')'ogeo ',lxp,gv(:,4),ogv(:,4),cod(1:4)
           else
             kx%k=ktfref+latt(ia)+1
             call compelc(ia,cmp)
-            cmp%update=cmp%nparam .le. 0
+            cmp%update=cmp%nparam <= 0
           endif
         else
           kx%k=ktftrue
         endif
       elseif(keyword == 'BZS')then
-        kx=merge(dfromr(tfbzs(ia,ibz)),dxzero,ref)
+        if(ref)then
+          kx=dfromr(tfbzs(ia,ibz))
+        else
+          kx=dxzero
+        endif
       elseif(keyword == 'UPDATE')then
         if(ia .lt. nlat)then
           call compelc(ia,cmp)
@@ -861,7 +870,7 @@ c        write(*,'(a,i5,1p10g12.4)')'ogeo ',lxp,gv(:,4),ogv(:,4),cod(1:4)
         else
           kx%k=ktfref+kax
           call compelc(ia,cmp)
-          cmp%update=cmp%nparam .le. 0
+          cmp%update=cmp%nparam <= 0
         endif
       else
         nc=len(keyword)
@@ -874,7 +883,7 @@ c        write(*,'(a,i5,1p10g12.4)')'ogeo ',lxp,gv(:,4),ogv(:,4),cod(1:4)
         if(ia .lt. nlat)then
           kx=tfkeyv(int(ia),key1(1:nc),ip,cmp,ref,.false.)
           if(.not. ref)then
-            cmp%update=cmp%nparam .le. 0
+            cmp%update=cmp%nparam <= 0
             kx%k=ktfref+ip
           endif
           tparaed=.false.
@@ -970,7 +979,7 @@ c        write(*,'(a,i5,1p10g12.4)')'ogeo ',lxp,gv(:,4),ogv(:,4),cod(1:4)
           nc=1
         else
           call tfgetstrns(k,name,nc)
-          if(nc .le. 0)then
+          if(nc <= 0)then
             irtc=itfmessage(9,'General::wrongtype',
      $           '"name of component"')
             return
@@ -1017,7 +1026,7 @@ c        write(*,'(a,i5,1p10g12.4)')'ogeo ',lxp,gv(:,4),ogv(:,4),cod(1:4)
           if(irtc /= 0)then
             return
           endif
-          if(nl .gt. 0)then
+          if(nl > 0)then
             itastk(2,isp+1:isp+nl)=int(rlist(kav+1:kav+nl))+ioff
             itastk(1,isp+1:isp+nl)=iele1(itastk(2,isp+1:isp+nl))
             vstk2(isp+1:isp+nl)=fr
@@ -1027,7 +1036,7 @@ c        write(*,'(a,i5,1p10g12.4)')'ogeo ',lxp,gv(:,4),ogv(:,4),cod(1:4)
         else
           call tfevals(name(ipoff:nc),kx%k,irtc)
           if(irtc /= 0 .or. ktfnonrealq(kx,r))then
-            if(irtc .gt. 0 .and. ierrorprint /= 0)then
+            if(irtc > 0 .and. ierrorprint /= 0)then
               call tfreseterror
             endif
             return
@@ -1038,7 +1047,7 @@ c        write(*,'(a,i5,1p10g12.4)')'ogeo ',lxp,gv(:,4),ogv(:,4),cod(1:4)
           return
         endif
       endif
-      if(nc .gt. 2 .and. name(nc-1:nc) == '.*' .and.
+      if(nc > 2 .and. name(nc-1:nc) == '.*' .and.
      $     ifany1(name(1:nc),nc-2,'*%{|',1) == 0)then
         name2(1:nc-2)=name(1:nc-2)
         ka=itehash(name2(1:nc-2),nc-2)*2
@@ -1056,7 +1065,7 @@ c        write(*,'(a,i5,1p10g12.4)')'ogeo ',lxp,gv(:,4),ogv(:,4),cod(1:4)
         endif
         irtc=0
       elseif(name(1:nc) /= '***' .and. name(1:nc) /= '^^^' .and.
-     $       ifany1(name(1:nc),nc,'*%{|',1) .gt. 0)then
+     $       ifany1(name(1:nc),nc,'*%{|',1) > 0)then
         do i=1,nlat
           if(temat(i,name1,name(1:nc)))then
             isp=isp+1
@@ -1183,7 +1192,7 @@ c        write(*,'(a,i5,1p10g12.4)')'ogeo ',lxp,gv(:,4),ogv(:,4),cod(1:4)
       logical*4 exist
       irtc=0
       if(ktfrealq(k,itfloc))then
-        if(itfloc .le. 0 .or. itfloc .gt. nlat)then
+        if(itfloc <= 0 .or. itfloc > nlat)then
           irtc=itfmessage(9,'General::wrongval',
      $         '"Component number",'//
      $         '"positive and less than length of beam line"')
@@ -1191,7 +1200,7 @@ c        write(*,'(a,i5,1p10g12.4)')'ogeo ',lxp,gv(:,4),ogv(:,4),cod(1:4)
         endif
       else
         name=tfgetstrs(k%k,nc)
-        if(nc .le. 0)then
+        if(nc <= 0)then
           irtc=itfmessage(9,'General::wrongtype',
      $         '"name of component"')
           itfloc=0
