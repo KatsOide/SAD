@@ -6,10 +6,17 @@
       implicit none
       type (sad_descriptor) kx
       integer*4 ,intent(in):: isp1,isp2
-      kx=merge(dxnull,merge(dtastk(isp2),
-     $     kxcrelistm(isp2-isp1,ktastk(isp1+1:isp2),
-     $     k_descr(ktfoper+mtfnull)),isp1+1 .eq. isp2),
-     $     isp1 .ge. isp2)
+      if(isp1 .ge. isp2)then
+        kx=dxnull
+      elseif(isp1+1 .eq. isp2)then
+        kx=dtastk(isp2)
+      else
+        kx=kxcrelistm(isp2-isp1,ktastk(isp1+1:isp2),k_descr(ktfoper+mtfnull))
+      endif
+c      kx=merge(dxnull,merge(dtastk(isp2),
+c     $     kxcrelistm(isp2-isp1,ktastk(isp1+1:isp2),
+c     $     k_descr(ktfoper+mtfnull)),isp1+1 .eq. isp2),
+c     $     isp1 .ge. isp2)
       return
       end
 
@@ -82,8 +89,13 @@
       isp2=isp
       do i=isp0+1,isp2
         isp=isp+1
-        dtastk(isp)=merge(kli%dbody(1),dtastk(i),
-     $       ktflistq(ktastk(i),kli))
+        if(ktflistq(ktastk(i),kli))then
+          dtastk(isp)=kli%dbody(1)
+        else
+          dtastk(isp)=dtastk(i)
+        endif
+c        dtastk(isp)=merge(kli%dbody(1),dtastk(i),
+c     $       ktflistq(ktastk(i),kli))
       enddo
       n=isp-isp2
       isp3=isp
@@ -105,8 +117,7 @@
       isp=isp0-1
       irtc=0
       return
- 9000 irtc=itfmessage(9,'General::wrongtype',
-     $     '"List, Rule, Symbol, String, Real"')
+ 9000 irtc=itfmessage(9,'General::wrongtype','"List, Rule, Symbol, String, Real"')
       isp=isp0-1
       return
       end

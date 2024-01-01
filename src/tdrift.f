@@ -141,7 +141,12 @@ c      write(*,'(a,106g15.7)')'td_sol ',x(1),px(1),y(1),py(1),z(1),g(1)
           call xsincos(phi,sinphi,xsinphi,cosphi,dcosphi)
           s=plz*xsinphi+pz0*sinphi-pbz*dcosphi
           u=-plz*dcosphi+pz0*cosphi+pbz*sinphi
-          dphi=merge((bpr-s)/u,(bpr-s)/pz0,abs(u) /= 0.d0)
+          if(abs(u) /= 0.d0)then
+            dphi=(bpr-s)/u
+          else
+            dphi=(bpr-s)/pz0
+          endif
+c          dphi=merge((bpr-s)/u,(bpr-s)/pz0,abs(u) /= 0.d0)
           phi0=phi
           phi=phi+dphi
           if(phi0 == phi .or. abs(dphi) <= conv*abs(phi))then

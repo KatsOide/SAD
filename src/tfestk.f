@@ -16,13 +16,12 @@
       do while(isp > isp0)
         iop=itastk2(1,isp)
 c        call tfdebugprint(dtastk(isp),'estk',1)
-c        write(*,*)'with ',isp,isp0,iop
-        if(iop == mtfnull .or.
-     $       iop == mtfleftparen .or. iop == mtflist)then
+        if(iop == mtfnull .or. iop == mtfleftparen .or. iop == mtflist)then
           return
         endif
         isp1=isp-1
         iop1=itastk2(1,isp1)
+c        write(*,*)'with ',isp,isp0,iop,iop1
         if(iop == mtfrightbra)then
           if(iop1 == mtfrightbra)then
             if(ktastk(isp) == ktfoper+mtfnull)then
@@ -38,8 +37,7 @@ c        write(*,*)'with ',isp,isp0,iop
               enddo
             endif
             go to 9010
-          elseif(iop1 == mtfcomma .or.
-     $           iop1 == mtfleftbra)then
+          elseif(iop1 == mtfcomma .or. iop1 == mtfleftbra)then
             do i=isp1,isp0,-1
               if(itastk2(1,i) == mtfleftparen
      $             .or. itastk2(1,i) == mtflist)then
@@ -48,8 +46,7 @@ c        write(*,*)'with ',isp,isp0,iop
                 return
               elseif(itastk2(1,i) == mtfleftbra)then
                 isp1=i
-                if(isp == isp1+1 .and.
-     $               ktastk(isp) == ktfoper+mtfnull)then
+                if(isp == isp1+1 .and. ktastk(isp) == ktfoper+mtfnull)then
                   isp=isp1
                 endif
                 kh=dtastk(i)
@@ -65,8 +62,7 @@ c        write(*,*)'with ',isp,isp0,iop
           elseif(iop1 == mtfpart)then
             return
           endif
-        elseif(iop == mtfrightbrace .and.
-     $         (iop1 == mtfcomma .or. iop1 == mtflist))then
+        elseif(iop == mtfrightbrace .and. (iop1 == mtfcomma .or. iop1 == mtflist))then
           do i=isp1,isp0,-1
             if(itastk2(1,i) == mtfleftparen
      $           .or. itastk2(1,i) == mtfleftbra
@@ -80,21 +76,18 @@ c        write(*,*)'with ',isp,isp0,iop
             endif
           enddo
           go to 9010
-        elseif(iop == mtfrightparen
-     $         .and. iop1 == mtfleftparen)then
+        elseif(iop == mtfrightparen .and. iop1 == mtfleftparen)then
           ktastk(isp1)=ktastk(isp)
           itastk2(1,isp1)=mtfnull
           isp=isp1
           return
-        elseif(iop1 == mtffun .and.
-     $         ktastk(isp) == ktfoper+mtfnull)then
+        elseif(iop1 == mtffun .and. ktastk(isp) == ktfoper+mtfnull)then
           kx=kxpfaloc(dtastk(isp-1))
           go to 1010
         endif
         if(iprior(iop) < iprior(iop1))then
           return
-        elseif(iprior(iop) == iprior(iop1) .and.
-     $         lastfirst(iop))then
+        elseif(iprior(iop) == iprior(iop1) .and. lastfirst(iop))then
           return
         endif
         if(iop1 == mtfcomma)then
@@ -110,8 +103,7 @@ c        write(*,*)'with ',isp,isp0,iop
           return
         endif
         if(ineq(iop1))then
-          call tfeinequal(dtastk(isp1),dtastk(isp),kx,iop1,
-     $         ineq(iop))
+          call tfeinequal(dtastk(isp1),dtastk(isp),kx,iop1,ineq(iop))
         else
           if(iop1 == mtfneg)then
             iop1=mtftimes
@@ -134,14 +126,17 @@ c        write(*,*)'with ',isp,isp0,iop
               return
             endif
           else
+c            call tfmemcheckprint1('estk-eexpr',1,.true.)
+c            call tfdebugprint(dtastk(isp1),'estk-eexpr',1)
+c            write(*,*)iop1
+c            call tfdebugprint(dtastk(isp),':',1)
             kx=tfeexpr(dtastk(isp1),dtastk(isp),iop1)
+c            call tfdebugprint(kx,'estk-eexpr-end',1)
           endif
         endif
  1010   isp=isp1
         itastk2(1,isp)=iop
         dtastk(isp)=kx
-c        call tfdebugprint(kx,'tfestk-enddo',1)
-c        write(*,*)'isp, iop: ',isp,iop
       enddo
       return
  9010 irtc=itfmessage(9999,'General::mismatch',
@@ -222,7 +217,6 @@ c      write(*,*)'with ',iop1,nextrel
           kx=tfleval(klx,.true.,irtc)
         endif
       endif
-c      call tfdebugprint(kx,'resulting:',1)
       return
       end
 
@@ -255,9 +249,6 @@ c      call tfdebugprint(kx,'resulting:',1)
      $         ineq(int(ktfaddr(ktastk(i-1)))))then
             ka=ktfaddr(ktastk(i-1))
           else
-c$$$            call tfdebugprint(dtastk(i-1),'ineq',1)
-c$$$            write(*,*)ka,mtfunsame,.not. ineq(int(ka)),
-c$$$     $           ktfnonoperq(dtastk(i-1))
             irtc=itfmessage(9,'General::wrongtype',
      $           '"==, <>, <, >, <=, >=, ===, <=>"')
             return
@@ -271,8 +262,6 @@ c$$$     $           ktfnonoperq(dtastk(i-1))
             return
           elseif(ktfnonrealq(kxi))then
             kx=tfeval1(kx,kxi,mtfand,irtc)
-c            call tfdebugprint(kxi,'eineq-kxi',1)
-c            call tfdebugprint(kx,'eineq-kx',1)
             if(irtc /= 0)then
               return
             endif
@@ -296,9 +285,11 @@ c      include 'DEBUG.inc'
       if(rlist(iaximmediate) /= 0.d0)then
         if(ktfoperq(kh,kah))then
           iah=int(kah)
-          kx=merge(tfcomposefun(isp1,iah,.false.,irtc),
-     $         tfcomposeoper(isp1,iah,.true.,isp0,irtc),
-     $         iah > mtfend)    
+          if(iah > mtfend)then
+            kx=tfcomposefun(isp1,iah,.false.,irtc)
+          else
+            kx=tfcomposeoper(isp1,iah,.true.,isp0,irtc)
+          endif
           if(irtc == 0)then
             return
           endif
@@ -862,22 +853,17 @@ c      include 'DEBUG.inc'
           elseif(tfconstq(ktastk(isp)))then
             if(ktflistq(ktastk(isp)))then
               if(ilist(2,ktfaddr(ktastk(isp))-1) <= 15)then
-c                call tfdebugprint(ktastk(isp),'composefun-a',1)
                 kx=tfefunrefu(isp1,irtc)
               endif
             else
-c              call tfdebugprint(ktastk(isp),'composefun-b',1)
               kx=tfefunrefu(isp1,irtc)
             endif
           endif
         else
           re=.false.
-c          call tfdebugprint(ktastk(isp1),'composefun-c',1)
-c          write(*,*)'with ',isp1,isp
           do i=isp1+1,isp
             if(ktfrealq(ktastk(i)))then
             elseif(tfconstq(ktastk(i)))then
-c              call tfdebugprint(ktastk(i),'composefun-c-i',1)
               re=.true.
             else
               rlist(iaximmediate)=rimmediate0
@@ -885,7 +871,6 @@ c              call tfdebugprint(ktastk(i),'composefun-c-i',1)
             endif
           enddo
           kx=tfefunreff(isp1,re,irtc)
-c          call tfdebugprint(kx,'==>',1)
         endif
         rlist(iaximmediate)=rimmediate0
       endif

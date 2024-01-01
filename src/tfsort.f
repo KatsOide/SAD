@@ -5,7 +5,7 @@
       type (sad_dlist), pointer :: kl,klx
       integer*4 isp1,mode,irtc,narg,m,isp0,itfmessage
       narg=isp-isp1
-      if(narg .gt. 2)then
+      if(narg > 2)then
         irtc=itfmessage(9,'General::narg','"1 or 2"')
         return
       endif
@@ -15,7 +15,7 @@
       endif
       irtc=0
       m=kl%nl
-      if(m .le. 1)then
+      if(m <= 1)then
         kx=dtastk(isp1+1)
         return
       endif
@@ -64,12 +64,12 @@
         do i=1,n
           j=itab(i)
           isp=isp+1
-          ktastk(isp)=merge(j,0,j .ge. 0)
+          ktastk(isp)=merge(j,0,j >= 0)
         enddo
       else
         do i=1,n
           j=itab(i)
-          if(j .ge. 0)then
+          if(j >= 0)then
             isp=isp+1
             dtastk(isp)=kl%dbody(j)
           endif
@@ -90,7 +90,7 @@
       real*8 v1,v2
       logical*4 ,intent(in):: av
       irtc=0
-      if(n .le. 1)then
+      if(n <= 1)then
         return
       endif
       i1=itab(1)
@@ -98,9 +98,9 @@
       if(av .and. kf%k == ktfref)then
         v1=kl%rbody(i1)
         v2=kl%rbody(i2)
-        l=merge(1,merge(0,-1,v1 == v2),v1 .gt. v2)
+        l=merge(1,merge(0,-1,v1 == v2),v1 > v2)
         if(mode == 0 .or. l /= 0)then
-          if(l .gt. 0)then
+          if(l > 0)then
             is=i1
             i1=i2
             i2=is
@@ -120,14 +120,14 @@
         im=itab(m)
         v1=kl%rbody(i1)
         v2=kl%rbody(im)
-        l=merge(1,merge(0,-1,v1 == v2),v1 .gt. v2)
+        l=merge(1,merge(0,-1,v1 == v2),v1 > v2)
         if(mode == 0 .or. l /= 0)then
-          if(l .lt. 0)then
+          if(l < 0)then
             v1=kl%rbody(im)
             v2=kl%rbody(i2)
-            l=merge(1,merge(0,-1,v1 == v2),v1 .gt. v2)
+            l=merge(1,merge(0,-1,v1 == v2),v1 > v2)
             if(mode == 0 .or. l /= 0)then
-              if(l .gt. 0)then
+              if(l > 0)then
                 is=im
                 im=i2
                 i2=is
@@ -160,24 +160,24 @@
         ip1=3
         ip2=n-1
         if(mode == 0)then
-          do while(ip1 .le. ip2)
+          do while(ip1 <= ip2)
             l1=0
-            do while(l1 .le. 0 .and. ip1 .le. ip2)
-              if(kl%rbody(itab(ip1)) .le. kl%rbody(im))then
+            do while(l1 <= 0 .and. ip1 <= ip2)
+              if(kl%rbody(itab(ip1)) <= kl%rbody(im))then
                 ip1=ip1+1
               else
                 l1=1
               endif
             enddo
             l2=0
-            do while(l2 .le. 0 .and. ip1 .le. ip2)
-              if(kl%rbody(im) .le. kl%rbody(itab(ip2)))then
+            do while(l2 <= 0 .and. ip1 <= ip2)
+              if(kl%rbody(im) <= kl%rbody(itab(ip2)))then
                 ip2=ip2-1
               else
                 l2=1
               endif
             enddo
-            if(ip2 .gt. ip1)then
+            if(ip2 > ip1)then
               is=itab(ip1)
               itab(ip1)=itab(ip2)
               itab(ip2)=is
@@ -186,14 +186,14 @@
             endif
           enddo
         else
-          do while(ip1 .le. ip2)
+          do while(ip1 <= ip2)
             l1=0
-            do while(l1 .le. 0 .and. ip1 .le. ip2)
+            do while(l1 <= 0 .and. ip1 <= ip2)
               v1=kl%rbody(itab(ip1))
               v2=kl%rbody(im)
-              l=merge(1,merge(0,-1,v1 == v2),v1 .gt. v2)
+              l=merge(1,merge(0,-1,v1 == v2),v1 > v2)
               if(l1 /= 0)then
-                if(l1 .le. 0)then
+                if(l1 <= 0)then
                   ip1=ip1+1
                 endif
               else
@@ -204,12 +204,12 @@
               endif
             enddo
             l2=0
-            do while(l2 .le. 0 .and. ip1 .le. ip2)
+            do while(l2 <= 0 .and. ip1 <= ip2)
               v1=kl%rbody(im)
               v2=kl%rbody(itab(ip2))
-              l2=merge(1,merge(0,-1,v1 == v2),v1 .gt. v2)
+              l2=merge(1,merge(0,-1,v1 == v2),v1 > v2)
               if(l2 /= 0)then
-                if(l2 .le. 0)then
+                if(l2 <= 0)then
                   ip2=ip2-1
                   if(ip2 == 2)then
                     call tfsortql(itab(3),kl,av,n-2,mode,kf,irtc)
@@ -223,7 +223,7 @@
                 return
               endif
             enddo
-            if(ip2 .gt. ip1)then
+            if(ip2 > ip1)then
               is=itab(ip1)
               itab(ip1)=itab(ip2)
               itab(ip2)=is
@@ -238,7 +238,7 @@
           return
         endif
         if(mode == 0 .or. l /= 0)then
-          if(l .gt. 0)then
+          if(l > 0)then
             is=i1
             i1=i2
             i2=is
@@ -261,10 +261,10 @@
           return
         endif
         if(mode == 0 .or. l /= 0)then
-          if(l .lt. 0)then
+          if(l < 0)then
             l=itforderl(kl,av,im,i2,kf,irtc)
             if(mode == 0 .or. l /= 0)then
-              if(l .gt. 0)then
+              if(l > 0)then
                 is=im
                 im=i2
                 i2=is
@@ -299,28 +299,28 @@
         ip1=3
         ip2=n-1
         if(mode == 0)then
-          do while(ip1 .le. ip2)
+          do while(ip1 <= ip2)
             l1=0
-            do while(l1 .le. 0 .and. ip1 .le. ip2)
+            do while(l1 <= 0 .and. ip1 <= ip2)
               l1=itforderl(kl,av,itab(ip1),im,kf,irtc)
               if(irtc /= 0)then
                 return
               endif
-              if(l1 .le. 0)then
+              if(l1 <= 0)then
                 ip1=ip1+1
               endif
             enddo
             l2=0
-            do while(l2 .le. 0 .and. ip1 .le. ip2)
+            do while(l2 <= 0 .and. ip1 <= ip2)
               l2=itforderl(kl,av,im,itab(ip2),kf,irtc)
               if(irtc /= 0)then
                 return
               endif
-              if(l2 .le. 0)then
+              if(l2 <= 0)then
                 ip2=ip2-1
               endif
             enddo
-            if(ip2 .gt. ip1)then
+            if(ip2 > ip1)then
               is=itab(ip1)
               itab(ip1)=itab(ip2)
               itab(ip2)=is
@@ -329,15 +329,15 @@
             endif
           enddo
         else
-          do while(ip1 .le. ip2)
+          do while(ip1 <= ip2)
             l1=0
-            do while(l1 .le. 0 .and. ip1 .le. ip2)
+            do while(l1 <= 0 .and. ip1 <= ip2)
               l1=itforderl(kl,av,itab(ip1),im,kf,irtc)
               if(irtc /= 0)then
                 return
               endif
               if(l1 /= 0)then
-                if(l1 .le. 0)then
+                if(l1 <= 0)then
                   ip1=ip1+1
                 endif
               else
@@ -349,13 +349,13 @@
               endif
             enddo
             l2=0
-            do while(l2 .le. 0 .and. ip1 .le. ip2)
+            do while(l2 <= 0 .and. ip1 <= ip2)
               l2=itforderl(kl,av,im,itab(ip2),kf,irtc)
               if(irtc /= 0)then
                 return
               endif
               if(l2 /= 0)then
-                if(l2 .le. 0)then
+                if(l2 <= 0)then
                   ip2=ip2-1
                   if(ip2 == 2)then
                     call tfsortql(itab(3),kl,av,n-2,mode,kf,irtc)
@@ -370,7 +370,7 @@
                 return
               endif
             enddo
-            if(ip2 .gt. ip1)then
+            if(ip2 > ip1)then
               is=itab(ip1)
               itab(ip1)=itab(ip2)
               itab(ip2)=is
@@ -411,7 +411,7 @@ c            2 Merge union with dropped index list (for Override[])
       logical*4 ,intent(in):: av
 
       irtc=0
-      if(n .le. 1)then
+      if(n <= 1)then
         return
       endif
 
@@ -426,7 +426,7 @@ c     Special case: n = 2
       if(n == 2)then
         l=itforderl(kl,av,1,2,kf,irtc)
         if(irtc /= 0)return
-        if(l .gt. 0)then
+        if(l > 0)then
           itab(1)=2
           itab(2)=1
         elseif(mode /= 0 .and. l == 0)then
@@ -443,7 +443,7 @@ c     Initialize Array Index
       p2=p0
       im=0
       i1=1
-      do while(i1 .le. n)
+      do while(i1 <= n)
         im=im+1
         itab(im)=p2-p0+1
 
@@ -452,14 +452,14 @@ c     Initialize Array Index
         itastk(p2,isp0)=i1
 
         i2=i1+1
-        do while(i2 .le. n)
+        do while(i2 <= n)
           l=itforderl(kl,av,i2-1,i2,kf,irtc)
           if(irtc /= 0)then
             isp=isp0
             return
           endif
-          if(l .gt. 0)then
-            if(p2-p1 .lt. 2)then
+          if(l > 0)then
+            if(p2-p1 < 2)then
               itastk(p2,isp0)=i2
               p2=p2+1
               itastk(p2,isp0)=i1
@@ -468,7 +468,7 @@ c     Initialize Array Index
               i1=i2
             endif
             exit
-          elseif(l .lt. 0)then
+          elseif(l < 0)then
             p2=p2+1
             itastk(p2,isp0)=i2
           elseif(mode == 0)then
@@ -477,7 +477,7 @@ c     Initialize Array Index
           endif
           i2=i2+1
         enddo
-        if(i2 .gt. n)exit
+        if(i2 > n)exit
       enddo
       itab(im+1)=p2-p0+1
       m=im
@@ -485,11 +485,11 @@ c     Initialize Array Index
 c     Merge
       p1=2
       isp=isp0+p2-p0
-      do while(m .gt. 1)
+      do while(m > 1)
         p0=p2
         im=0
         is=1
-        do while(is+1 .le. m)
+        do while(is+1 <= m)
           i1=itab(is)
           i2=itab(is+1)
           l1=i2
@@ -507,24 +507,24 @@ c     Merge
               isp=isp0
               return
             endif
-            if(l .lt. 0)then
+            if(l < 0)then
               p2=p2+1
               itastk(p2,isp0)=j1
               i1=i1+1
-              if(i1 .ge. l1)then
-                do while(i2 .lt. l2)
+              if(i1 >= l1)then
+                do while(i2 < l2)
                   p2=p2+1
                   itastk(p2,isp0)=itastk(p1+i2,isp0)
                   i2=i2+1
                 enddo
                 exit
               endif
-            elseif(l .gt. 0)then
+            elseif(l > 0)then
               p2=p2+1
               itastk(p2,isp0)=j2
               i2=i2+1
-              if(i2 .ge. l2)then
-                do while(i1 .lt. l1)
+              if(i2 >= l2)then
+                do while(i1 < l1)
                   p2=p2+1
                   itastk(p2,isp0)=itastk(p1+i1,isp0)
                   i1=i1+1
@@ -536,8 +536,8 @@ c     Merge
                 p2=p2+1
                 itastk(p2,isp0)=j1
                 i1=i1+1
-                if(i1 .ge. l1)then
-                  do while(i2 .lt. l2)
+                if(i1 >= l1)then
+                  do while(i2 < l2)
                     p2=p2+1
                     itastk(p2,isp0)=itastk(p1+i2,isp0)
                     i2=i2+1
@@ -546,8 +546,8 @@ c     Merge
                 endif
               else
                 i2=i2+1
-                if(i2 .ge. l2)then
-                  do while(i1 .lt. l1)
+                if(i2 >= l2)then
+                  do while(i1 < l1)
                     p2=p2+1
                     itastk(p2,isp0)=itastk(p1+i1,isp0)
                     i1=i1+1
@@ -592,7 +592,7 @@ c        enddo
         i1=l1
         do im=1,n
           i2=itastk(im,isp0+1)
-          if(i2 .lt. 0)then
+          if(i2 < 0)then
             itab(i1)=i2
             i1=i1+1
           endif
@@ -617,7 +617,7 @@ c     Special case: n = 2
       if(n == 2)then
         v1=kl%rbody(1)
         v2=kl%rbody(2)
-        if(v1 .gt. v2)then
+        if(v1 > v2)then
           itab(1)=2
           itab(2)=1
         elseif(mode /= 0 .and. v1 == v2)then
@@ -633,7 +633,7 @@ c     Initialize Array Index
       p2=p0
       im=0
       i1=1
-      do while(i1 .le. n)
+      do while(i1 <= n)
         im=im+1
         itab(im)=p2-p0+1
 
@@ -642,11 +642,11 @@ c     Initialize Array Index
         itastk(p2,isp0)=i1
 
         i2=i1+1
-        do while(i2 .le. n)
+        do while(i2 <= n)
           v1=kl%rbody(i2-1)
           v2=kl%rbody(i2)
-          if(v1 .gt. v2)then
-            if(p2-p1  .lt. 2)then
+          if(v1 > v2)then
+            if(p2-p1  < 2)then
               itastk(p2,isp0)=i2
               p2=p2+1
               itastk(p2,isp0)=i1
@@ -666,18 +666,18 @@ c     Initialize Array Index
           endif
           i2=i2+1
         enddo
-        if(i2 .gt. n)exit
+        if(i2 > n)exit
       enddo
       itab(im+1)=p2-p0+1
       m=im
 
 c     Merge
       p1=2
-      do while(m .gt. 1)
+      do while(m > 1)
         p0=p2
         im=0
         is=1
-        do while(is+1 .le. m)
+        do while(is+1 <= m)
           i1=itab(is)
           i2=itab(is+1)
           l1=i2
@@ -691,12 +691,12 @@ c     Merge
             j2=itastk(p1+i2,isp0)
             v1=kl%rbody(j1)
             v2=kl%rbody(j2)
-            if(v1 .gt. v2)then
+            if(v1 > v2)then
               p2=p2+1
               itastk(p2,isp0)=j2
               i2=i2+1
-              if(i2 .ge. l2)then
-                do while(i1 .lt. l1)
+              if(i2 >= l2)then
+                do while(i1 < l1)
                   p2=p2+1
                   itastk(p2,isp0)=itastk(p1+i1,isp0)
                   i1=i1+1
@@ -708,8 +708,8 @@ c     Merge
                 p2=p2+1
                 itastk(p2,isp0)=j1
                 i1=i1+1
-                if(i1 .ge. l1)then
-                  do while(i2 .lt. l2)
+                if(i1 >= l1)then
+                  do while(i2 < l2)
                     p2=p2+1
                     itastk(p2,isp0)=itastk(p1+i2,isp0)
                     i2=i2+1
@@ -718,8 +718,8 @@ c     Merge
                 endif
               else
                 i2=i2+1
-                if(i2 .ge. l2)then
-                  do while(i1 .lt. l1)
+                if(i2 >= l2)then
+                  do while(i1 < l1)
                     p2=p2+1
                     itastk(p2,isp0)=itastk(p1+i1,isp0)
                     i1=i1+1
@@ -731,8 +731,8 @@ c     Merge
               p2=p2+1
               itastk(p2,isp0)=j1
               i1=i1+1
-              if(i1 .ge. l1)then
-                do while(i2 .lt. l2)
+              if(i1 >= l1)then
+                do while(i2 < l2)
                   p2=p2+1
                   itastk(p2,isp0)=itastk(p1+i2,isp0)
                   i2=i2+1
@@ -776,7 +776,7 @@ c        enddo
         i1=l1
         do im=1,n
           i2=itastk(im,isp0+1)
-          if(i2 .lt. 0)then
+          if(i2 < 0)then
             itab(i1)=i2
             i1=i1+1
           endif
@@ -820,7 +820,7 @@ c        enddo
         return
       endif
       isp0=isp
-      if(narg .gt. 2)then
+      if(narg > 2)then
         do i=isp1+2,isp
           isp=isp+1
           dtastk(isp)=kx
@@ -856,7 +856,7 @@ c        enddo
             if(ktfrealq(ktastk(il)))then
               if(vj == rtastk(il))then
                 go to 110
-              elseif(vj .lt. rtastk(il))then
+              elseif(vj < rtastk(il))then
                 cycle LOOP_J_1
               endif
             else
@@ -866,16 +866,16 @@ c        enddo
             if(ktfrealq(ktastk(ih)))then
               if(vj == rtastk(ih))then
                 go to 110
-              elseif(vj .gt. rtastk(ih))then
+              elseif(vj > rtastk(ih))then
                 cycle LOOP_J_1
               endif
             endif
-            do while(ih .gt. il+1)
+            do while(ih > il+1)
               kk=il+(ih-il)/2
               if(ktfrealq(ktastk(kk)))then
                 if(vj == rtastk(kk))then
                   go to 110
-                elseif(vj .lt. rtastk(kk))then
+                elseif(vj < rtastk(kk))then
                   ih=kk
                 else
                   il=kk
@@ -895,22 +895,22 @@ c        enddo
             i=itfcanonicalorder(kj,dtastk(il))
             if(i == 0)then
               go to 210
-            elseif(i .lt. 0)then
+            elseif(i < 0)then
               cycle LOOP_J_2
             endif
             ih=isp2
             i=itfcanonicalorder(kj,dtastk(ih))
             if(i == 0)then
               go to 210
-            elseif(i .gt. 0)then
+            elseif(i > 0)then
               cycle LOOP_J_2
             endif
-            do while(ih .gt. il+1)
+            do while(ih > il+1)
               kk=il+(ih-il)/2
               i=itfcanonicalorder(kj,dtastk(kk))
               if(i == 0)then
                 go to 210
-              elseif(i .lt. 0)then
+              elseif(i < 0)then
                 ih=kk
               else
                 il=kk
@@ -929,7 +929,7 @@ c        enddo
             if(ktfrealq(ktastk(il)))then
               if(vj == rtastk(il))then
                 cycle LOOP_J_3
-              elseif(vj .lt. rtastk(il))then
+              elseif(vj < rtastk(il))then
                 go to 310
               endif
             else
@@ -939,16 +939,16 @@ c        enddo
             if(ktfrealq(ktastk(ih)))then
               if(vj == rtastk(ih))then
                 cycle LOOP_J_3
-              elseif(vj .gt. rtastk(ih))then
+              elseif(vj > rtastk(ih))then
                 go to 310
               endif
             endif
-            do while(ih .gt. il+1)
+            do while(ih > il+1)
               kk=il+(ih-il)/2
               if(ktfrealq(ktastk(kk)))then
                 if(vj == rtastk(kk))then
                   cycle LOOP_J_3
-                elseif(vj .lt. rtastk(kk))then
+                elseif(vj < rtastk(kk))then
                   ih=kk
                 else
                   il=kk
@@ -967,22 +967,22 @@ c        enddo
             i=itfcanonicalorder(kj,dtastk(il))
             if(i == 0)then
               cycle LOOP_J_4
-            elseif(i .lt. 0)then
+            elseif(i < 0)then
               go to 410
             endif
             ih=isp2
             i=itfcanonicalorder(kj,dtastk(ih))
             if(i == 0)then
               cycle LOOP_J_4
-            elseif(i .gt. 0)then
+            elseif(i > 0)then
               go to 410
             endif
-            do while(ih .gt. il+1)
+            do while(ih > il+1)
               kk=il+(ih-il)/2
               i=itfcanonicalorder(kj,dtastk(kk))
               if(i == 0)then
                 cycle LOOP_J_4
-              elseif(i .lt. 0)then
+              elseif(i < 0)then
                 ih=kk
               else
                 il=kk
@@ -1018,7 +1018,7 @@ c        enddo
         if(kf%k == ktfref)then
           v1=kl%rbody(i1)
           v2=kl%rbody(i2)
-          itforderl=merge(1,merge(0,-1,v1 == v2),v1 .gt. v2)
+          itforderl=merge(1,merge(0,-1,v1 == v2),v1 > v2)
           return
         endif
       endif
@@ -1103,7 +1103,7 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
       ix=-1
       if(ktfrealq(k1,v1))then
         if(ktfrealq(k2,v2))then
-          if(v1 .gt. v2)then
+          if(v1 > v2)then
             ix=1
           elseif(v1 == v2)then
             ix=0
@@ -1121,11 +1121,11 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
       if(tfcomplexq(k1,cx1))then
         if(tfcomplexq(k2,cx2))then
           d=cx1%re-cx2%re
-          if(d .gt. 0.d0)then
+          if(d > 0.d0)then
             ix=1
           elseif(d == 0.d0)then
             d=cx1%im-cx2%im
-            if(d .gt. 0.d0)then
+            if(d > 0.d0)then
               ix=1
             elseif(d == 0.d0)then
               ix=0
@@ -1159,9 +1159,9 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
           if(icont1 == icont2)then
             ix=itfstringorder(loc1%str,loc2%str)
             if(ix == 0)then
-              if(sym1c%gen .gt. sym2c%gen)then
+              if(sym1c%gen > sym2c%gen)then
                 ix=1
-              elseif(sym1c%gen .lt. sym2c%gen)then
+              elseif(sym1c%gen < sym2c%gen)then
                 ix=-1
               endif
             endif
@@ -1182,16 +1182,16 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
           endif
           m1=kl1c%nl
           m2=kl2c%nl
-          if(m1 .gt. m2)then
+          if(m1 > m2)then
             ix=1
           elseif(m1 == m2)then
             if(ktfreallistq(kl1c))then
               if(ktfreallistq(kl2c))then
                 do i=1,m1
-                  if(kl1c%rbody(i) .gt. kl2c%rbody(i))then
+                  if(kl1c%rbody(i) > kl2c%rbody(i))then
                     ix=1
                     return
-                  elseif(kl1c%rbody(i) .lt. kl2c%rbody(i))then
+                  elseif(kl1c%rbody(i) < kl2c%rbody(i))then
                     ix=-1
                     return
                   endif
@@ -1227,7 +1227,7 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
       elseif(ktfpatq(k2c))then
         ix=1
       else
-        ix=merge(1,-1,ktftype(k1c%k) .gt. ktftype(k2c%k))
+        ix=merge(1,-1,ktftype(k1c%k) > ktftype(k2c%k))
       endif
       return
       end
@@ -1238,7 +1238,12 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
       type (sad_descriptor) ,intent(in):: k
       type (sad_descriptor) ,intent(out):: kx
       integer*8 ka
-      kx%k=merge(ktfsymbol+klist(ifunbase+ka),k%k,ktfoperq(k,ka))
+      if(ktfoperq(k,ka))then
+        kx%k=ktfsymbol+klist(ifunbase+ka)
+      else
+        kx=k
+      endif
+c      kx%k=merge(ktfsymbol+klist(ifunbase+ka),k%k,ktfoperq(k,ka))
       return
       end
 
@@ -1254,7 +1259,7 @@ c        write(*,*)'itforderl ',i1,i2,itforderl
         ic1=ichar(str1%str(i:i))
         ic2=ichar(str2%str(i:i))
         if(ic1 /= ic2)then
-          itfstringorder=merge(1,-1,ichorder(ic1) .gt. ichorder(ic2))
+          itfstringorder=merge(1,-1,ichorder(ic1) > ichorder(ic2))
           return
         endif
       enddo

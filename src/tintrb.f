@@ -76,7 +76,12 @@ c     real*8  vmin/0.d0/
       hi=p2h(p0*pr)
       trans1(5,6)=h0/hi**3*alx+s*alz
       if(wspac)then
-        bmi=merge(beamsize(:,ll),beam(22:42)+beam(1:21),optics)
+        if(optics)then
+          bmi=beamsize(:,ll)
+        else
+          bmi=beam(22:42)+beam(1:21)
+        endif
+c        bmi=merge(beamsize(:,ll),beam(22:42)+beam(1:21),optics)
         call tmulbs(bmi,trans1,.false.)
         call twspace(transsp,cod,al,bmi,ll)
         trans2=matmul(tinv6(trans1),matmul(transsp,trans1))

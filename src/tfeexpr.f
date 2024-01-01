@@ -462,8 +462,15 @@ c              write(*,*)'tfecmplx-rl*2 '
               if(tfnumberq(k1i,cx1) .and. tfnumberq(k2i,cx2))then
                 if(imag(cx1) == 0.d0)then
                   ix1=int8(cx1)
-                  cx=merge(merge(1.d0/cx2,cx2**ix1,ix1 == -1),
-     $                 cx2**dble(cx1),dble(ix1) == dble(cx1))
+                  if(dble(ix1) == dble(cx1))then
+                    if(ix1 == -1)then
+                      cx=1.d0/cx2
+                    else
+                      cx=cx2**ix1
+                    endif
+                  else
+                    cx=cx2**dble(cx1)
+                  endif
                 else
                   cx=cx2**cx1
                 endif

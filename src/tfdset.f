@@ -42,8 +42,7 @@
         ktastk(isp-1)=ktfsymbol+ktastk(i+1)
         ivstk2(2,isp-1)=0
         dtastk(isp  )=kxargsym(ipsbase)
-        same=same .and.
-     $       ktastk(i+1) == klist(ktfaddr(ktastk(isp)))
+        same=same .and. ktastk(i+1) == klist(ktfaddr(ktastk(isp)))
       enddo
 c      call tfresetpat(karg)
       if(same)then
@@ -54,8 +53,7 @@ c      call tfresetpat(karg)
         return
       endif
       nrule=(isp-ispr)/2
-      call tfreplacesymbolstk(karg,ispr,nrule,kx1,
-     $     .false.,rep,irtc)
+      kx1=tfreplacesymbolstk(karg,ispr,nrule,.false.,rep,irtc)
       if(irtc /= 0)then
         isp=isp0
         return
@@ -63,8 +61,6 @@ c      call tfresetpat(karg)
       kargr=kx1
       kr=tfreplacesymbolstk1(k,ispr,nrule,.false.,rep,irtc)
       isp=isp0
-c      call tfinitpat(isp0,kargr)
-c      isp=isp0
       return
       end
 
@@ -128,10 +124,7 @@ c      isp=isp0
         endif
       endif
       dtbl%compile=0.d0   ! compile level
-c      do i=1,npat
       dtbl%pattbl(1:npat)=dtastk(isp0+1:isp0+npat*2-1:2)
-c        write(*,*)'loc.cont ',klist(klist(ktfaddr(klist(kan+7+i))+7)-3)
-c      enddo
       isp=isp0
       ktdaloc=kan
       return
@@ -301,8 +294,10 @@ c      enddo
       elseif(ktfstringq(k))then
         ka=ktfaddrd(k)
         ih=ilist(1,ka)+ilist(1,ka+1)+ilist(2,ka+1)
+      elseif(ktfsymbolq(k,sym))then
+        ih=int(sym%loc)
       else
-        ih=merge(int(sym%loc),0,ktfsymbolq(k,sym))
+        ih=0
       endif
       ih1=ih
       ih=(h(1)+h(2))
@@ -336,8 +331,10 @@ c      enddo
       elseif(ktfstringq(k))then
         ka=ktfaddrd(k)
         ih=ilist(1,ka)+ilist(1,ka+1)+ilist(2,ka+1)
+      elseif(ktfsymbolq(k,sym))then
+        ih=int(sym%loc)
       else
-        ih=merge(int(sym%loc),0,ktfsymbolq(k,sym))
+        ih=0
       endif
       return
       end
@@ -370,34 +367,23 @@ c      enddo
         call loc_deftbl(kad,dtbl)
         kap=ktfaddr(dtbl%argc)
         call loc_sad(kap,larg)
-c        call tfdebugprint(sad_descr(larg),'tfdeval1-kap',1)
         kh=larg%head
         mat=itfpmat(dtastk(isp1),kh)
-c        call tfdebugprint(dtastk(isp1),'tfdeval1-kh ',1)
-        if(mat .ge. 0)then
-c          write(*,*)'mat, nl: ',mat,larg%nl
+        if(mat >= 0)then
           if(larg%nl == 1)then
             if(itfseqmatstk1(im,isp0,larg%dbody(1)) < 0)then
               go to 30
             endif
           else
-c            call tfdebugprint(larg%dbody(1),'teval1-sqmlarg',1)
-c            write(*,*)'tfdeval1-seqm00 ',im,isp0,ordless
             irs=itfseqmatstk(im,isp0,larg%dbody(1),
      $           larg%nl,1,ktfreallistq(larg),merge(kap,i00,ordless))
-c            write(*,*)'tfdeval1-seqm01',irs
             if(irs < 0)then
-c              write(*,*)'tfdeval1-seqm0-false '
               go to 30
             endif
           endif
-c          write(*,*)'tfdeval1-seqm1 ',levelcompile
-c          write(*,*)': ',dtbl%compile,rlist(levelcompile)
           ev=.true.
           if(dtbl%compile < rlist(levelcompile))then
-c            write(*,*)'deval1-setarg-0 '
             call tfsetarg(dtbl,irtc)
-c            write(*,*)'deval1-setarg ',irtc
             if(irtc /= 0)then
               call tfunsetpattbl(dtbl)
               isp=isp0
@@ -408,17 +394,12 @@ c            write(*,*)'deval1-setarg ',irtc
           endif
           iordless=iop0
           mstk=mstk0
-c          write(*,*)'tfdeval1-npat ',dtbl%npat
           if(dtbl%npat /= 0)then
             kal=dtfcopy1(dtbl%argc)
-c            write(*,*)'tfdeval1-a0'
             kx=tfevalwitharg(dtbl,dtbl%bodyc,irtc)
             call tflocal1d(kal)
-c            call tfdebugprint(kx,'tfdeval1-a',1)
           else
-c            write(*,*)'tfdeval1-b0'
             kx=tfeevalref(dtbl%bodyc,irtc)
-c            call tfdebugprint(kx,'tfdeval1-b',1)
           endif
           if(irtc /= 0)then
             call tfcatchreturn(irtcret,kx,irtc)
@@ -454,10 +435,6 @@ c            call tfdebugprint(kx,'tfdeval1-b',1)
       if(irtc /= 0)then
         return
       endif
-c      call tfmemcheckprint('evalwitharg',.false.,irtc)
-c      if(irtc /= 0)then
-c        call tfdebugprint(k,'evwa-seval',1)
-c      endif
       if(kx%k == ktfref)then
         call tfseval(ks,m,kh,kx,.true.,av,.true.,irtc)
       else
@@ -538,9 +515,7 @@ c      endif
           dtastk(isp)=kh
           ks=isp+ispbase
           do i=1,m
-c            call tfdebugprint(list%body(i),'evwarg1',3)
             rep1=tfreplaceargstk(list%dbody(i),irtc)
-c            call tfdebugprint(list%body(i),'==> ',3)
             if(irtc /= 0)then
               return
             endif
@@ -612,7 +587,6 @@ c            call tfdebugprint(list%body(i),'==> ',3)
       elseif(ktfsymbolqdef(k%k,symdef))then
         if(symdef%sym%override == 1)then
           kx=symdef%value
-c          call tfdebugprint(kx,'evalwarg-symdef',1)
           kts=ktftype(kx%k)
           if(kts == ktflist .or. kts == ktfref)then
             call tfgetstkstk(kx,rep)
@@ -630,7 +604,6 @@ c          call tfdebugprint(kx,'evalwarg-symdef',1)
       integer*4 ,intent(out):: irtc
       integer*4 isp0
       isp0=isp
-c      call tfdebugprint(k,'tfreparg-in',1)
       tfreplacearg=tfreplaceargstk(k,irtc)
       if(irtc /= 0)then
         isp=isp0
@@ -730,12 +703,10 @@ c      call tfdebugprint(k,'tfreparg-in',1)
             endif
           else
             do i=1,list%nl
-c              call tfdebugprint(list%body(i),'repargstk',3)
               rep1=tfreplaceargstk(list%dbody(i),irtc)
               if(irtc /= 0)then
                 return
               endif
-c              call tfdebugprint(list%dbody(i),'==>',3)
               rep=rep .or. rep1
             enddo
           endif
@@ -777,8 +748,6 @@ c              call tfdebugprint(list%dbody(i),'==>',3)
               endif
             endif
           endif
-c          call tfdebugprint(kh,'repargstk',1)
-c          write(*,*)isp-isp1-1
           dtastk(isp1+1)=kxcrelistm(isp-isp1-1,
      $         ktastk(isp1+2:isp),kh)
           isp=isp1+1
@@ -829,8 +798,6 @@ c          endif
       elseif(ktfsymbolqdef(k%k,symd))then
         if(symd%sym%override == 1)then
           ks=symd%value
-c          call tfdebugprint(k,'tfrepargstk-symbol',1)
-c          call tfdebugprint(ks,':= ',1)
           if(ktflistq(ks) .or. ktfrefq(ks))then
             call tfgetstkstk(ks,rep)
           else
@@ -839,8 +806,6 @@ c          call tfdebugprint(ks,':= ',1)
           endif
           rep=.true.
         else
-c          call tfdebugprint(k,'tfrepargstk-symbol-reject',1)
-c          write(*,*)'with ',symd%sym%override
           isp=isp+1
           dtastk(isp)=k
         endif
@@ -984,7 +949,6 @@ c          write(*,*)'with ',symd%sym%override
       np=dtbl%npat
       if(np /= maxgeneration)then
         do i=1,np
-c          call tfdebugprint(dtbl%pattbl(i),'unsetptbl',1)
           call descr_sad(dtbl%pattbl(i),pat)
           pat%mat=0
           pat%value%k=ktfref
@@ -1012,7 +976,6 @@ c          call tfdebugprint(dtbl%pattbl(i),'unsetptbl',1)
           return
         endif
       elseif(tfconstq(kx%k))then
-c        call tfdebugprint(kx,'setarg-const',3)
         dtbl%compile=1.d100
         return
       endif
@@ -1020,14 +983,10 @@ c        call tfdebugprint(kx,'setarg-const',3)
         if(dtbl%npat /= 0)then
           isp0=isp
           do i=1,dtbl%npat
-c            write(*,*)'setarg-b ',i,dtbl%npat
             call descr_pat(dtbl%pattbl(i),pat)
-c            call tfdebugprint(sad_descr(pat),'setarg-0',1)
             do while(associated(pat%equiv))
               pat=>pat%equiv
             enddo
-c            call tfdebugprint(sad_descr(pat),'setarg-1',1)
-c            call tflinkedpat(pat0,pat)
             isp=isp+2
             ktastk(isp-1)=ktfaddr(pat%sym%alloc%k)
             dtastk(isp  )=sad_descr(pat%sym)
@@ -1114,8 +1073,13 @@ c            call tflinkedpat(pat0,pat)
           klr%rbody(1:m)=list%rbody(1:m)
           klr%attr=ior(larglist,list%attr)
           klr%head=dtfcopy(k1)
-          klr%attr=merge(ior(lmemberlist,klr%attr),
-     $         iand(-lmemberlist-1,klr%attr),member)
+          if(member)then
+            klr%attr=ior(lmemberlist,klr%attr)
+          else
+            klr%attr=iand(-lmemberlist-1,klr%attr)
+          endif
+c          klr%attr=merge(ior(lmemberlist,klr%attr),
+c     $         iand(-lmemberlist-1,klr%attr),member)
           return
         endif
         isp1=isp
@@ -1151,8 +1115,13 @@ c            call tflinkedpat(pat0,pat)
             endif
           endif
         endif
-        klx%attr=merge(ior(lmemberlist,klx%attr),
-     $       iand(-lmemberlist-1,klx%attr),member)
+        if(member)then
+          klx%attr=ior(lmemberlist,klx%attr)
+        else
+          klx%attr=iand(-lmemberlist-1,klx%attr)
+        endif
+c        klx%attr=merge(ior(lmemberlist,klx%attr),
+c     $       iand(-lmemberlist-1,klx%attr),member)
         isp=isp1
       elseif(ktfpatq(k,pat))then
         rep=.false.
@@ -1207,7 +1176,7 @@ c            call tflinkedpat(pat0,pat)
       parameter (maxhash=32767)
       call loc_defhash(kad0,dhash0)
       n0=dhash0%nhash
-      if(n0 .ge. maxhash)then
+      if(n0 >= maxhash)then
         ktfrehash=kad0
         return
       endif
@@ -1240,7 +1209,11 @@ c            call tflinkedpat(pat0,pat)
       logical*4 function tfmaxgenerationq(kad)
       implicit none
       integer*8 ,intent(in):: kad
-      tfmaxgenerationq=merge(ilist(1,kad+2) == maxgeneration,.false.,kad /= 0)
+      if(kad /= 0)then
+        tfmaxgenerationq=ilist(1,kad+2) == maxgeneration
+      else
+        tfmaxgenerationq=.false.
+      endif
       return
       end
 
@@ -1338,8 +1311,7 @@ c
             kih=ktdhtaloc(kad1,kad,minhash)
             call loc_defhash(kih,dhash)
             kad1=sad_loc(dhash%dhash(ihash))
-            kap=ktdaloc(i00,kad1,i00,sad_descr(ktfref),
-     $           karg,k,karg,.false.)
+            kap=ktdaloc(i00,kad1,i00,sad_descr(ktfref),karg,k,karg,.false.)
             dhash%attr=ior(dhash%attr,1)
             kx=k
           else
@@ -1355,7 +1327,7 @@ c
           do while(kad /= 0)
             call loc_deftbl(kad,dtbl)
             call descr_sad(dtbl%arg,largd)
-            if(larg%nl ==largd%nl)then
+            if(larg%nl == largd%nl)then
               if(tfsamelistqo(larg,largd))then
                 if(k%k == ktfref)then
                   go to 8000
@@ -1397,12 +1369,11 @@ c
         iop0=iordless
         iordless=0
         do while(kad > 0)
-c          write(*,*)'tfdset ',kad
           call loc_deftbl(kad,dtbl)
           call descr_sad(dtbl%argc,largl)
           m=itflistmat(kargr,largl)
           isp=isp0
-          if(m .ge. 0)then
+          if(m >= 0)then
             call tfunsetpattbl(dtbl)
           endif
  1        if(m == 1)then
@@ -1453,8 +1424,6 @@ c$$$          enddo
           kad1=kad10
           kad=kad0
         endif
-c        call tfdebugprint(kargr,'tfdset-7',3)
-c        call tfdebugprint(kr,':= ',3)
         kan=ktdaloc(i00,kad1,kad,k,karg,kr,kargr,.true.)
         kx=k
       else
@@ -1524,7 +1493,7 @@ c        call tfdebugprint(kr,':= ',3)
                   mstk0=mstk
                   if(.not. itfseqmatstk(im,isp0,larg%dbody(1),
      $                 m,is,ktftype(larg%dbody(1)%k) == ktfoper,
-     $                 kap) .ge. 0)then
+     $                 kap) >= 0)then
                     iordless=iord0
                     mstk=mstk0
                     isp=isp0
@@ -1578,7 +1547,6 @@ c        call tfdebugprint(kr,':= ',3)
                 return
               endif
               kx=dtbl%bodyc
-c              call tfdebugprint(kx,'tfdeval-1',1)
               if(dtbl%pat /= -1)then
                 if(ktflistq(kx,klx))then
                   kx=tfleval(klx,.true.,irtc)
@@ -1615,7 +1583,6 @@ c$$$            call tfdebugprint(sad_descr(pat%equiv),'ktdaloc-equiv',1)
 c$$$          endif
 c$$$        enddo
         call tfdeval1(isp1,kad,kx,ev,ordless,ns,irtc)
-c        call tfdebugprint(kx,'deval',1)
       else
         irtc=-1
       endif

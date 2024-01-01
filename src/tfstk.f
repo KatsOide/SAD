@@ -3262,7 +3262,11 @@ c        k=kfromr(x)
       integer*8 ka
       tfconstheadqk=.true.
       if(ktfoperq(k,ka))then
-        tfconstheadqk=merge(constop(ka),.false.,ka <= mtfend)
+        if(ka <= mtfend)then
+          tfconstheadqk=constop(ka)
+        else
+          tfconstheadqk=.false.
+        endif
       elseif(ktfstringq(k))then
         tfconstheadqk=.false.
       elseif(ktfsymbolqdef(k%k,symd))then
@@ -3356,16 +3360,27 @@ c        k=kfromr(x)
       type (sad_descriptor) ,intent(in):: k
       type (sad_dlist), pointer :: kl
       integer*8 ka
-      lx=merge(.false.,
-     $     merge(ka /= mtfalt .and. ka /= mtfrepeated .and.
-     $     ka /= mtfrepeatednull,
-     $     merge(tfconstpatternheadqk(kl%head) .and.
-     $     tfconstpatternlistbodyqo(kl),
-     $     merge(.not. tfsamesymbolqk(k%k,kxliteral),.true.,
-     $     ktfsymbolq(k)),
-     $     ktflistq(k,kl)),
-     $     ktfoperq(k,ka)),
-     $     ktfpatq(k))
+      if(ktfpatq(k))then
+        lx=.false.
+      elseif(ktfoperq(k,ka))then
+        lx=ka /= mtfalt .and. ka /= mtfrepeated .and. ka /= mtfrepeatednull
+      elseif(ktflistq(k,kl))then
+        lx=tfconstpatternheadqk(kl%head) .and. tfconstpatternlistbodyqo(kl)
+      elseif(ktfsymbolq(k))then
+        lx= .not. tfsamesymbolqk(k%k,kxliteral)
+      else
+        lx=.true.
+      endif
+c      lx=merge(.false.,
+c     $     merge(ka /= mtfalt .and. ka /= mtfrepeated .and.
+c     $     ka /= mtfrepeatednull,
+c     $     merge(tfconstpatternheadqk(kl%head) .and.
+c     $     tfconstpatternlistbodyqo(kl),
+c     $     merge(.not. tfsamesymbolqk(k%k,kxliteral),.true.,
+c     $     ktfsymbolq(k)),
+c     $     ktflistq(k,kl)),
+c     $     ktfoperq(k,ka)),
+c     $     ktfpatq(k))
       return
       end
 
@@ -4498,16 +4513,21 @@ c        type (sad_symbol), pointer, intent(out) :: symx
         l=lenw(string)
         ip=index(string(1:l),'_')
         if(ip > 0)then
-          k=merge(3,merge(2,1,string(ip:min(l,ip+1)) == '__'),
-     $         string(ip:min(l,ip+2)) == '___')
+          if(string(ip:min(l,ip+2)) == '___')then
+            k=3
+          else
+            k=merge(2,1,string(ip:min(l,ip+1)) == '__')
+          endif
         else
           k=0
           ip=l+1
         endif
         ipk=ip+k
-        kh%k=merge(ktfref,
-     $       ktfsymbol+ktfsymbolz(string(ipk:l),int(l-ipk+1)),
-     $       ipk > l)
+        if(ipk > l)then
+          kh%k=ktfref
+        else
+          kh%k=ktfsymbol+ktfsymbolz(string(ipk:l),int(l-ipk+1))
+        endif
         kxpaloc=kxpalocb(string(1:ip-1),ip-1,transfer(ktfref+k,kh),kh)
         return
         end function
@@ -4517,9 +4537,11 @@ c        type (sad_symbol), pointer, intent(out) :: symx
         type (sad_descriptor) , intent(in)::kp,kh
         integer*4 , intent(in)::ls
         character , intent(in)::symb(ls)
-        kxpalocb=kxpcopyss(kp,kh,
-     $       merge(kxsymbolz(symb,ls),dfromk(i00),ls > 0),
-     $       transfer(ktfref,kp))
+        if(ls > 0)then
+          kxpalocb=kxpcopyss(kp,kh,kxsymbolz(symb,ls),transfer(ktfref,kp))
+        else
+          kxpalocb=kxpcopyss(kp,kh,dfromk(i00),transfer(ktfref,kp))
+        endif
         return
         end function
 

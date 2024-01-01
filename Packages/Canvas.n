@@ -1844,22 +1844,22 @@ CanvasGraphics=Class[{},
 
   Primitive[Point[{},___]]:=Null;
 
-  With[{def={PlotColor->Null,FillColor->Null,MeshStyle->Null,Tags->False,
+  With[{def={PlotColor->"",FillColor->Null,MeshStyle->Null,Tags->False,
     BelowFrame->False}},
     RectOpt[opt___]:=(RectOpt[opt]=
       MapThread[If[StringQ[#],#2->#,Null[]]&,
         {{FillColor,MeshStyle,PlotColor,Tags}/.Override[opt,def],
           {Fill,Stipple,OutLine,Tag}}]);
 
-    Primitive[Rectangle[min_,max_,
-      opt:((_Rule|_RuleDelayed)...)]]:=(
-        CanvasWidget[Create$Rectangle]={
-          CoordLimited[min],
-          CoordLimited[max],
-          Null@@RectOpt[opt]};
-        If[BelowFrame/.{opt}/.def,
-          The$Canvas[Lower]={CanvasLastID,StartID}]
-        )];
+    Primitive[Rectangle[min_,max_,opt:((_Rule|_RuleDelayed)...)]]:=(
+      CanvasWidget[Create$Rectangle]={
+        CoordLimited[min],
+        CoordLimited[max],
+        Print[{opt,RectOpt[opt]}];
+        RectOpt[opt]};
+      If[BelowFrame/.{opt}/.def,
+        The$Canvas[Lower]={CanvasLastID,StartID}]
+      )];
 
   With[{def={Position->Default}},
     Primitive[Rectangle[min0_,max0_,g__,opt:((_Rule|_RuleDelayed)..)]]:=

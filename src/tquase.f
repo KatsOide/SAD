@@ -53,9 +53,11 @@ c
         call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0,0.d0)
       endif
       if(krad)then
-        ndiv=min(ndivmax,max(1,merge(itgetqraddiv(cod,ak1,al,bzs*.5d0),
-     $       int(dble(itgetqraddiv(cod,ak1,al,bzs*.5d0))/eps0),
-     $       eps0 .eq. 0.d0)))
+        if(eps0 .eq. 0.d0)then
+          ndiv=min(ndivmax,max(1,merge(itgetqraddiv(cod,ak1,al,bzs*.5d0)
+        else
+          ndiv=int(dble(itgetqraddiv(cod,ak1,al,bzs*.5d0))/eps0)
+        endif
       else
         ndiv=1
       endif

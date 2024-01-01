@@ -171,9 +171,18 @@ c              enddo
 c              write(*,*)'tfecmplx-rl*2 '
             case (mtfrevpower)
               ir=int8(v1)
-              klr%rbody(1:m2)=merge(merge(1.d0/klr2%rbody(1:m2),
-     $             klr2%rbody(1:m2)**ir,ir == -1),
-     $             klr2%rbody(1:m2)**v1,dble(ir) == v1)
+              if(dble(ir) == v1)then
+                if(ir == -1)then
+                  klr%rbody(1:m2)=1.d0/klr2%rbody(1:m2)
+                else
+                  klr%rbody(1:m2)=klr2%rbody(1:m2)**ir
+                endif
+              else
+                klr%rbody(1:m2)=klr2%rbody(1:m2)**v1
+              endif
+c              klr%rbody(1:m2)=merge(merge(1.d0/klr2%rbody(1:m2),
+c     $             klr2%rbody(1:m2)**ir,ir == -1),
+c     $             klr2%rbody(1:m2)**v1,dble(ir) == v1)
             case (mtfpower)
               do concurrent (i=1:m2)
                 ir=int8(klr2%rbody(i))
@@ -482,17 +491,35 @@ c!$OMP END PARALLEL WORKSHARE
           case (mtfrevpower)
             do concurrent (i=1:m1)
               ir=int8(klr1%rbody(i))
-              klr%rbody(i)=merge(merge(1.d0/klr2%rbody(i),
-     $             klr2%rbody(i)**ir,ir == -1),
-     $             klr2%rbody(i)**klr1%rbody(i),ir == klr1%rbody(i))
+              if(ir == klr1%rbody(i))then
+                if(ir == -1)then
+                  klr%rbody(i)=1.d0/klr2%rbody(i)
+                else
+                  klr%rbody(i)=klr2%rbody(i)**ir
+                endif
+              else
+                klr%rbody(i)=klr2%rbody(i)**klr1%rbody(i)
+              endif
+c              klr%rbody(i)=merge(merge(1.d0/klr2%rbody(i),
+c     $             klr2%rbody(i)**ir,ir == -1),
+c     $             klr2%rbody(i)**klr1%rbody(i),ir == klr1%rbody(i))
             enddo
           case (mtfpower)
             do concurrent (i=1:m1)
               ir=int8(klr2%rbody(i))
-              klr%rbody(i)=merge(merge(1.d0/klr1%rbody(i),
-     $             klr1%rbody(i)**ir,ir == -1),
-     $             klr1%rbody(i)**klr2%rbody(i),
-     $             ir == klr2%rbody(i))
+              if(ir == klr2%rbody(i))then
+                if(ir == -1)then
+                  klr%rbody(i)=1.d0/klr1%rbody(i)
+                else
+                  klr%rbody(i)=klr1%rbody(i)**ir
+                endif
+              else
+                klr%rbody(i)=klr1%rbody(i)**klr2%rbody(i)
+              endif
+c              klr%rbody(i)=merge(merge(1.d0/klr1%rbody(i),
+c     $             klr1%rbody(i)**ir,ir == -1),
+c     $             klr1%rbody(i)**klr2%rbody(i),
+c     $             ir == klr2%rbody(i))
             enddo
           case (mtfcomplex)
             d=.false.

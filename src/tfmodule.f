@@ -45,8 +45,7 @@
           return
         endif
       elseif(module)then
-        call tfreplacesymbolstk(dtastk(isp0),isp0,(isp2-isp0)/2,ke,
-     $     .false.,rep,irtc)
+        ke=tfreplacesymbolstk(dtastk(isp0),isp0,(isp2-isp0)/2,.false.,rep,irtc)
         if(irtc /= 0)then
           isp=isp2
           go to 9200
@@ -490,8 +489,7 @@ c        write(*,*)'mlocalv-1'
         enddo
         if(eval)then
           if(symbol)then
-            call tfreplacesymbolstk(dtastk(isp2),isp2,list%nl,kx,
-     $           .true.,rep,irtc)
+            kx=tfreplacesymbolstk(dtastk(isp2),isp2,list%nl,.true.,rep,irtc)
           else
             call tfinitrule(isp2,list%nl)
             kx=tfreplacestk(dtastk(isp2),
@@ -506,11 +504,9 @@ c        write(*,*)'mlocalv-1'
           if(isp > isp2)then
             n=(isp-isp2)/2;
             isp=isp+1
-            call tfreplacesymbolstk(dtastk(isp1+1),isp2,n,dtastk(isp),
-     $           .true.,rep,irtc)
+            dtastk(isp)=tfreplacesymbolstk(dtastk(isp1+1),isp2,n,.true.,rep,irtc)
             isp=isp+1
-            dtastk(isp)=tfreplacesymbolstk1(dtastk(isp1+2),isp2,n,
-     $           .true.,rep,irtc)
+            dtastk(isp)=tfreplacesymbolstk1(dtastk(isp1+2),isp2,n,.true.,rep,irtc)
             kx=kxmakelist(isp-2,klx);
             klx%head=dtastk(isp1)
           else

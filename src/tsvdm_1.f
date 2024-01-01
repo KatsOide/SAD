@@ -254,7 +254,11 @@ c            an=max(abs(x(i)),abs(x(i+1)))
           w=x(ibegin)
           z=x(iend)
           y=x(iend-1)
-          g=merge(v(iend-2),0.d0,ibegin < iend-1)
+          if(ibegin < iend-1)then
+            g=(iend-2)
+          else
+            g=0.d0
+          endif
           h=v(iend-1)
           f=((y-z)*(y+z)+(g-h)*(g+h))*.5d0
           if(w == 0.d0)then

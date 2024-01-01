@@ -543,7 +543,11 @@ c     print *,'tturn l sspac2',l,sspac2
      $         dx,dy,rot,int(anbunch),
      $         fw,nwak,p0,h0,.false.)
           nwak=nwak+1
-          nextwake=merge(0,iwakeelm(nwak),nwak > nwakep)
+          if(nwak > nwakep)then
+            nextwake=0
+          else
+            nextwake=iwakeelm(nwak)
+          endif
         endif
       enddo
       call tapert(x,px,y,py,z,g,dv,sx,sy,sz,

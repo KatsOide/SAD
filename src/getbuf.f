@@ -51,13 +51,12 @@
           else
             lrecl=lrecl0+nc-1
           endif
-          if(lfnm .gt. 0)then
-            write(lfnm,'(1x,a)')buffer(lrecl0:lrecl)
-          endif
+c          if(lfnm .gt. 0)then
+c            write(lfnm,'(1x,a)')buffer(lrecl0:lrecl)
+c          endif
           ipoint=lrecl1
           ios=0
-          if(lrecl .lt. lrecl0 .or.
-     $         trim .and. (buffer(lrecl0:lrecl) == ' '))then
+          if(lrecl .lt. lrecl0 .or. trim .and. (buffer(lrecl0:lrecl) == ' '))then
             lrecl=max(lrecl0-1,0)
             exit
           else
@@ -118,7 +117,7 @@
       character*80 pr
       character*10 n,autofg
       integer*4 l,nc
-      if(lfni == 5 .and. lfno == 6 .and. lfnm == 0)then
+      if(lfni == 5 .and. lfno == 6 .and. lfnm == 6)then
         if(ipr == 0)then
           if(ffsprmpt)then
             call elname(mfpnt,pr)
