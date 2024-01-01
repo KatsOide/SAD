@@ -476,6 +476,7 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
           {h1,s1}={h,si1};
           yoff=If[h>yoff0*1.1, Sign[v]*yoff0, 0.0];
           Rectangle[{(si+off)*ss,yoff-h/2},{(si1+off)*ss,yoff+h/2},
+            PlotColor->"black",
             FillColor->Element$Color[type,v],
             If[tag,Tags->"C$"//LINE["NAME",i],Null[],Null[]]],
           Null[],Null[]],

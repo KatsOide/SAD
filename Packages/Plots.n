@@ -113,7 +113,6 @@ With[{CP$def={
         If[ld<3,
           {Rectangle[{ref,#[[1,1]]},{Second[#],#[[1,2]]},
             FillColor->Third[#],
-            PlotColor->Third[#],
             MeshStyle->#[[4,1]],
             If[#[[6]]<=>Null,
               Tags->#[[6]],
@@ -126,7 +125,7 @@ With[{CP$def={
             With[{x=First[#],c=Third[#],t=#[[6]]},
               {MapThread[
                 Rectangle[{y,First[x]},{y+=#,Second[x]},
-                FillColor->c,PlotColor->c,MeshStyle->#2,
+                FillColor->c,MeshStyle->#2,
                 If[t<=>Null,
                   Tags->t,
                   Null[]]]&,{Second[#],#[[4]]}],
@@ -136,7 +135,7 @@ With[{CP$def={
                   Null[]]}])&/@cx],
         If[ld<3,
           {Rectangle[{#[[1,1]],ref},{#[[1,2]],Second[#]},
-            FillColor->Third[#],PlotColor->Third[#],MeshStyle->#[[4,1]],
+            FillColor->Third[#],MeshStyle->#[[4,1]],
             If[#[[6]]<=>Null,
               Tags->#[[6]],
               Null[]]],
@@ -149,7 +148,7 @@ With[{CP$def={
             With[{x=First[#],c=Third[#],t=#[[6]]},
               {MapThread[
                 Rectangle[{First[x],y},{Second[x],y+=#},
-                FillColor->c,PlotColor->c,MeshStyle->#2,
+                FillColor->c,MeshStyle->#2,
                 If[t<=>Null,
                   Tags->t,
                   Null[]]]&,{Second[#],#[[4]]}],
@@ -513,8 +512,7 @@ With[{def={PlotRange->Automatic,MeshRange->Default,
             PlotColor->mc[l1[[i,j]]],BelowFrame->bf],
           {i,nx},{j,ny}],
         Table[
-          Rectangle[mesh[{i,j}],mesh[{i+1,j+1}],FillColor->cf[l1[[i,j]]],
-            PlotColor->cf[l1[[i,j]]],BelowFrame->bf],
+          Rectangle[mesh[{i,j}],mesh[{i+1,j+1}],FillColor->cf[l1[[i,j]]],BelowFrame->bf],
           {i,nx},{j,ny}]];
       If[cs,
         fl=Take[Join[fl,{"","","",""}],4];
@@ -574,7 +572,7 @@ CP$FindContour[l_,pr_,n_,cf_,cfs_,lc_,bf_]:=Module[
     {gp,gl}=CP$GetLine[n,cf];
     g=Flatten[{
       If[cf<=>Null,
-        {Rectangle[mesh[{1,1}],mesh[{nx,ny}],PlotColor->"",FillColor->cf[0],
+        {Rectangle[mesh[{1,1}],mesh[{nx,ny}],FillColor->cf[0],
           BelowFrame->bf],
           Polygon[Thread[mesh[Thread[#2]]],
             BelowFrame->bf,
