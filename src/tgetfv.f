@@ -8,7 +8,7 @@
       use tffitcode
       use tfcsi,only:ipoint
       implicit none
-      integer*4 nfc,lfno,i,l,lenw,ix2,kp,j,next,ncalc
+      integer*4 nfc,i,l,lenw,ix2,kp,j,next,ncalc
       real*8 sc,x1,x,getva,sig
       character*8 name1
       character*(MAXPNAME) tname

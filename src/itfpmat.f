@@ -218,15 +218,6 @@ c$$$     $     isp1 > isp2 .and. mp1 > mp)
 c$$$      return
 c$$$      end
 
-      integer*4 function itfseqmatstk11(isp10,isp20,kp,f)
-      implicit none
-      type (sad_descriptor) ,intent(inout):: kp
-      integer*4 ,intent(in):: isp10,isp20
-      logical*4 ,intent(in):: f
-      itfseqmatstk11=itfseqmatstk1(isp10,isp20,kp)
-      return
-      end
-
       integer*4 function itfseqmatstk1(isp10,isp20,kp)
       implicit none
       type (sad_descriptor) ,intent(inout):: kp
