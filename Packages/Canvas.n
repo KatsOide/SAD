@@ -1855,7 +1855,6 @@ CanvasGraphics=Class[{},
       CanvasWidget[Create$Rectangle]={
         CoordLimited[min],
         CoordLimited[max],
-        Print[{opt,RectOpt[opt]}];
         RectOpt[opt]};
       If[BelowFrame/.{opt}/.def,
         The$Canvas[Lower]={CanvasLastID,StartID}]
