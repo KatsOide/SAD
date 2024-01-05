@@ -986,9 +986,11 @@ c      parameter (a=sqrt(0.75d0))
       use convstr,only:ktrsaloc
       use macmath
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
       integer*8 ks,ka,kad,kad1,kad2,kat,kavx,kavy,ka2
-      integer*4 isp1,irtc,itfmessage,isp0,m,i
+      integer*4 itfmessage,isp0,m,i,isym
       real*8 x,y,s,a,xmin,xmax,ymin,ymax,yoff,wmin,sa,sh,s1
       logical*4 ol
       type (sad_descriptor), save ::
@@ -1021,35 +1023,30 @@ c      parameter (a=sqrt(0.75d0))
         endif
       endif
       if(ktfnonlistq(ktastk(isp1+8)))then
-        irtc=itfmessage(9,'General::wrongtype',
-     $       '"Canvas$Range for #8"')
+        irtc=itfmessage(9,'General::wrongtype','"Canvas$Range for #8"')
         return
       endif
       if(ktfnonlistq(ktastk(isp1+9)))then
-        irtc=itfmessage(9,'General::wrongtype',
-     $       '"Canvas$Offset for #9"')
+        irtc=itfmessage(9,'General::wrongtype','"Canvas$Offset for #9"')
         return
       endif
       if(ktfnonlistq(ktastk(isp1+3)))then
         go to 9000
       endif
       ka=ktfaddr(ktastk(isp1+3))
-      if(klist(ka) /= ktfoper+mtflist .or.
-     $     ilist(2,ka-1) < 2 .or. ilist(2,ka-1) > 4)then
+      if(klist(ka) /= ktfoper+mtflist .or. ilist(2,ka-1) < 2 .or. ilist(2,ka-1) > 4)then
         go to 9000
       endif
       if(ktfreallistq(ka))then
         m=1
         kavx=ka
         kavy=kavx+1
-      elseif(ktfnonlistq(klist(ka+1)) .or.
-     $       ktfnonlistq(klist(ka+2)))then
+      elseif(ktfnonlistq(klist(ka+1)) .or. ktfnonlistq(klist(ka+2)))then
         go to 9000
       else
         kavx=ktfaddr(klist(ka+1))
         kavy=ktfaddr(klist(ka+2))
-        if(klist(kavx) /= ktfoper+mtflist .or.
-     $       klist(kavy) /= ktfoper+mtflist .or.
+        if(klist(kavx) /= ktfoper+mtflist .or. klist(kavy) /= ktfoper+mtflist .or.
      $       ktfnonreallistq(kavx) .or. ktfnonreallistq(kavy))then
           go to 9000
         else
@@ -1101,23 +1098,44 @@ c      endif
       endif
       ol=.true.
       isp0=isp
-      if(sym == "BA" .and. s < wmin)then
+      if((sym == "BA" .or. sym == "BR") .and. s < wmin)then
         ka2=ktrsaloc(-1,anint(max(1.d0,s/wmin*2)))
         ol=.false.
       endif
       isp=isp0
+      isym=1
+      if(sym == "1O" .or. sym == "CI" .or. sym == "CL")then
+        isym=1
+      elseif(sym == "6O" .or. sym == "LT")then
+        isym=2
+      elseif(sym == "7O" .or. sym == "RT")then
+        isym=3
+      elseif(sym == "8O" .or. sym == "DT")then
+        isym=4
+      elseif(sym == "9O" .or. sym == "UT")then
+        isym=5
+      elseif(sym == "BX" .or. sym == "SQ")then
+        isym=6
+      elseif(sym == "RH" .or.  sym == "DM" .or. sym == "DI")then
+        isym=7
+      elseif(sym == "PL")then
+        isym=8
+      elseif(sym == "TI" .or. sym == "ML" .or. sym == "MU")then
+        isym=9
+      elseif(sym == "BA" .or. sym == "BR")then
+        isym=99
+      endif
       do i=1,m
         x=rlist(kavx+i)
         y=rlist(kavy+i)
         if(x < xmin .or. x > xmax)then
           cycle
-        elseif(sym /= "BA")then
+        elseif(isym == 99)then
           if(y < ymin .or. y > ymax)then
             cycle
           endif
         else
-          if(max(y,yoff) < ymin .or.
-     $         min(y,yoff) > ymax)then
+          if(max(y,yoff) < ymin .or. min(y,yoff) > ymax)then
             cycle
           endif
         endif
@@ -1125,52 +1143,54 @@ c      endif
         rtastk(isp)=rtastk(isp1+1)
         rtastk(isp)=rtastk(isp1+1)
         isp=isp+1
-        if(sym == "1O")then
+        select case (isym)
+        case (1)
           rtastk(isp)=rtastk(isp1+10)
           rtastk(isp+1:isp+4)=(/x-s,y-s,x+s,y+s/)
           isp=isp+5
-        elseif(sym(2:2) == "O")then
+        case (2,3,4,5)
           s1=s*sqrt(m_pi/a/1.5d0)
           sa=s1*a
           sh=s1*.5d0
           rtastk(isp)=rtastk(isp1+11)
-          if(sym(1:1) == "6")then
+          select case (isym)
+          case (2)
             rtastk(isp+1:isp+6)=(/x-s1,y,x+sh,y-sa,x+sh,y+sa/)
-          elseif(sym(1:1) == "7")then
+          case (3)
             rtastk(isp+1:isp+6)=(/x+s1,y,x-sh,y-sa,x-sh,y+sa/)
-          elseif(sym(1:1) == "8")then
+          case (4)
             rtastk(isp+1:isp+6)=(/x,y+s1,x-sa,y-sh,x+sa,y-sh/)
-          elseif(sym(1:1) == "9")then
+          case (5)
             rtastk(isp+1:isp+6)=(/x,y-s1,x-sa,y+sh,x+sa,y+sh/)
-          endif
+          end select
           isp=isp+7
-        elseif(sym == "BX")then
+        case (6)
           s1=s*sqrt(m_pi_4)
           rtastk(isp)=rtastk(isp1+11)
           rtastk(isp+1:isp+8)=
      $         (/x+s1,y-s1,x+s1,y+s1,x-s1,y+s1,x-s1,y-s1/)
           isp=isp+9
-        elseif(sym == "RH")then
+        case (7)
           s1=s*sqrt(m_pi_2)
           rtastk(isp)=rtastk(isp1+11)
           rtastk(isp+1:isp+8)=
      $         (/x+s1,y,x,y+s1,x-s1,y,x,y-s1/)
           isp=isp+9
-        elseif(sym == "PL")then
+        case (8)
           s1=s*1.2d0
           rtastk(isp)=rtastk(isp1+11)
           rtastk(isp+1:isp+24)=(/x+s1,y-1,x+s1,y+1,x+1,y+1,x+1,y+s1,
      $         x-1,y+s1,x-1,y+1,x-s1,y+1,x-s1,y-1,x-1,y-1,
      $         x-1,y-s1,x+1,y-s1,x+1,y-1/)
           isp=isp+25
-        elseif(sym == "TI")then
+        case(9)
           rtastk(isp)=rtastk(isp1+11)
           rtastk(isp+1:isp+24)=(/x+s+1,y+s-1,x+s-1,y+s+1,
      $         x,y+1,x-s+1,y+s+1,x-s-1,y+s-1,x-1,y,
      $         x-s-1,y-s+1,x-s+1,y-s-1,x,y-1,x+s-1,y-s-1,
      $         x+s+1,y-s+1,x+1,y/)
           isp=isp+25
-        elseif(sym == "BA")then
+        case (99)
           if(ol)then
             rtastk(isp)=rtastk(isp1+12)
             rtastk(isp+1)=x-s/wmin
@@ -1185,7 +1205,7 @@ c      endif
             rtastk(isp+4)=min(max(ymin,yoff),ymax)
           endif
           isp=isp+5
-        endif
+        end select
         if(ol)then
           dtastk(isp)=ioutline
           isp=isp+1

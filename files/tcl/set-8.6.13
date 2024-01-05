@@ -1,4 +1,4 @@
 #patch-generic+tcl.h+8.4.14
 #patch-tools+installData.tcl+8.5a5
-patch-unix+configure+8.6.13
-patch-macosx+tclMacOSXNotify.c+8.6.11
+#patch-unix+configure+8.6.13
+#patch-macosx+tclMacOSXNotify.c+8.6.11

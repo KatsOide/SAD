@@ -3737,7 +3737,7 @@ Detach           False           True to run tdr asynchronously\n\
 Epilog           {}              List of primitives\n\
 Frame            True            False to erase outline, ticks, ticklabels.\n\
 FrameClick       True            to allow click on frame to change options.\n\
-FrameLabel       {\"\",\"\",\"\",\"\"}   List of strings\n\
+FrameLabel       {\"\",\"\",\"\",\"\"}   List of strings, can be a LaTeX input\n\
 FrameTicks       {Both,Both,Ticks,Ticks}\n\
                                  None to turn off ticks and labels\n\
                                  Both to turn on ticks and labels\n\
@@ -3763,13 +3763,13 @@ GridLines        Automatic       Automatic to draw grid lines at major ticks\n\
                                  {Automatic,None} for only x\n\
                                  {None,Automatic} for only y\n\
                                  Both, Minor, and Major can be also used.\n\
-PlotLabel        \"\"              string\n\
+PlotLabel        \"\"              string, can be a LaTeX input\n\
 PlotRange        Automatic       {ymin,ymax} or {{xmin,xmax},{ymin,ymax}}\n\
 Prolog           {}              List of promitives\n\
 Scale            {Linear,Linear} Log, Date\n\
 TickSize         1               relative size of ticks.\n\
 FrameThickness   Automatic       thickness of the frame line incl. ticks.\n\
-Legend           \"\"              shows legend-string.\n\
+Legend           \"\"              shows legend-string, can be a LaTeX input\n\
 FontScale        1               Relative size of fonts for FrameLabel, FrameTicks.\n\
 FrameFontScale   1               Relative size of fonts for FrameLabel.\n\
                                  If Real, applied to all frames. If List, applied to\n\
@@ -3786,22 +3786,16 @@ TextAlign        \"\"              \"CENTER\"\n\
 TextCases        \"\"              string to represent CASES of TopDrawer\n\
 TextPosition     \"\"              \"DATA\" to represent the position by data\n\
                                  coordinates\n\
-TextRotate       0\n\
+TextRotate       0               clockwise rotation angle in degree\n\
 TextSize         1               relative size of a character\n\
-PlotColor        \"Black\"         one of \"White\", \"Black\", \"Red\",\n\
-                                 \"Green\",\"Blue\",\"Yellow\",\n\
-                                 \"Magenta\",\"Cyan\"\n\n\
+PlotColor        \"Black\"       name of the color\n\n\
 For Point\n\
 option           default         optional values\n\
 ------------------------------------------------\n\
 PointSize        1               relative size of a point\n\
-PointSymbol      \"1O\"            Symbol for PLOT of TopDrawer, or Bar\n\
-                                 \"6O\",\"7O\",\"8O\",\"9O\" are triangles\n\
-                                 in CanvasDrawer.\n\
-PlotColor        \"Black\"         one of \"White\", \"Black\", \"Red\",\n\
-                                 \"Green\",\"Blue\",\"Yellow\",\n\
-                                 \"Magenta\",\"Cyan\"\n\
-ErrorBarTickSize 1               length of error bar ticks.\n\n\
+PointSymbol      \"1O\"            Symbol, see PointSymbol below.\n\
+PlotColor        \"Black\"       name of the color\n\
+ErrorBarTickSize 1               length of error bar ticks\n\n\
 For Line\n\
 option           default         optional values\n\
 ------------------------------------------------\n\
@@ -3810,11 +3804,17 @@ Dashing          \"1\"             character string or a list of numbers to\n\
 Plot             True            whether plot symbols at data points.\n\
                                  If True, PointSize and PointSymbol are\n\
                                  effective (see above).\n\
-PlotColor        \"Black\"         one of \"White\", \"Black\", \"Red\",\n\
-                                 \"Green\",\"Blue\",\"Yellow\",\n\
-                                 \"Magenta\",\"Cyan\"\n\
+PlotColor        \"Black\"         name of color\n\
 ErrorBarTickSize 1               length of error bar ticks.\n\
 Thickness        1               thickness of line\n\n\
+For Rectangle\n\
+option           default         optional values\n\
+------------------------------------------------\n\
+MeshStyle        Null            character string to describe the stipple of\n\
+                                 outline.\n\
+PlotColor        \"\"              name of color of the outline.\n\
+FillColor        Null            name of color inside of the rectabgle\n\
+BelowFrame       False           If True, the rectangle is place behind the frame of plot.\n\n\
 For Polygon\n\
 option           default         optional values\n\
 ------------------------------------------------\n\
@@ -3822,15 +3822,13 @@ Plot             False           whether plot symbols at data points.\n\
                                  If True, PointSize and PointSymbol are\n\
                                  effective (see above).\n\
 PointSize        1               relative size of a point\n\
-PointSymbol      \"1O\"            Symbol for PLOT of TopDrawer, or Bar\n\
-                                 \"6O\",\"7O\",\"8O\",\"9O\" are triangles\n\
-                                 in CanvasDrawer.\n\
+PointSymbol      \"1O\"            Symbol, see PointSymbol below.\n\
 PointColor       \"forest green\"  point fill color.\n\
 PointBorderColor Automatic       point border color.\n\
                                  Automatic measn PointColor.\n\
 PointTags        Null            points tag string or list of tag strings.\n\
 PlotJoined       True            whether plot border line of polygon.\n\
-Thickness        1               thickness of border line\n\n\
+Thickness        1               thickness of border line\n\
 Dashing          \"1\"             character string or a list of numbers to\n\
                                  represent the dashing of the line.\n\
 PlotColor        \"black\"         border line color.\n\
@@ -3851,8 +3849,51 @@ Examples:\n\
     DisplayFunction->Identity];\n\
   Show[g1,g2,g3,FrameLabel->{\"X (mm)\",\"Log(Y)\"},PlotLabel->\"Test Plot\",\n\
       AspectRatio->1];",
-      "",
-      Sort[{{"ListPlot",
+      "PointSymbol LaTeX",
+
+      Sort[{
+        {"PointSymbol","\
+Notations for symols to be plotted:\n\
+------------------------------------------\n\
+\"1O\", \"CI\", \"CL\"        circle\n\
+\"6O\", \"LT\"              left triangle\n\
+\"7O\", \"RT\"              right triangle\n\
+\"8O\", \"DT\"              down triangle\n\
+\"9O\", \"UT\"              up triangle\n\
+\"SQ\", \"BX\"              square\n\
+\"DI\", \"DM\", \"RH\"        diamond\n\
+\"CR\", \"PL\"              plus)\n\
+\"DC\", \"TI\", \"MU\", \"ML\"  times, multiply)\n\
+Bar, \"BA\". \"BR\"         bar from axis\n\n\
+Example:\n\
+sym={\n\
+  {\"CI\",\"CL\",\"1O\",},{\"LT\",\"6O\"},{\"RT\",\"7O\"},{\"DT\",\"8O\"},{\"UT\",\"9O\"},\n\
+  {\"SQ\",\"BX\"},{\"DI\",\"RH\",\"DM\"},{\"PL\"},{\"TI\", \"ML\", \"MU\"},{Bar,\"BA\",\"BR\"}};\n\
+Show[\n\
+  Graphics[Join[\n\
+    Table[Point[{1+Floor[(k-1)/5]*0.5,5-Mod[k-1,5]},PointSymbol->sym[[k]][[1]],\n\
+      PointSize->3],{k,Length[sym]}],\n\
+    Table[Text[{(sym[[k]]//\"\")[2,-2],\n\
+      {Scaled[1.1+Floor[(k-1)/5]*0.5],Scaled[5-Mod[k-1,5]]}}],{k,Length[sym]}]],\n\
+    FrameLabel->{\"\",\"\",\"\\\\@{\\\\tt PointSymbol} in CanvasDrawer\"},\n\
+    FrameTicks->{None,Both,None,None},\n\
+    DataRange->{{0.9,1.9},{0,5.5}},GridLines->{None,Axis}]];\n\n\
+<PointSymbol.png",
+          "",
+          {}},
+
+        {"LaTeX","\
+Some Graphics options and the Text primitive accept a LaTeX input, if the string\n\
+starts with \"\\\\@\". The following character string is interpreted by latex, in text mode.\n\
+Thus a $ sign is necessary to enter the math mode.\n\
+ Several packages are included by default: color, amssymb, amsmath, bm, mathtools, txfonts.\n\
+ To use LaTeX in SAD, pdflatex and convert by ImageMagick must be installed in the system,\n\
+or anywhere accecible. SAD tries to locate them, then set a variable $HaveLaTeX to contain\n\
+their location. $HaveLaTeX can be set to \"\" to disable LaTeX.",
+          "OpticsPlot",
+          {}},
+
+        {"ListPlot",
         "\
 Usage: ListPlot[{{x1,y1},..,{xn,yn}}, options]\n\n\
 makes a graphic with points.\n\
@@ -3875,7 +3916,7 @@ Example:\n\
   Update[];\n\n\
 <ListPlot.png",
         "Graphics Plot",
-        {}},
+          {}},
 
        {"ColumnPlot",
         "\
@@ -4047,14 +4088,14 @@ Tags          False               True to attach tags \"C$\"//(component name)\n
                                   \"L$\"//(component name) to the component \n\
                                   label (CanvasDrawer only).\n\
 Legend        False               If Automatic, Legend is composed from FrameLabel\n\
-                                  Automatically.\n\n\
+                                  Automatically, can be a LaTeX input.\n\n\
 options in a fun_list element:\n\
 options       defaults\n\
 -----------------------------------------\n\
 Unit          1                  Unit of the object. \"Meter\", \"InvMeter\",etc.\n\
-FrameLabel    \"\"                 Left frame label.\n\
+FrameLabel    \"\"                 Left frame label, can be a LeTeX input\n\
 Legend        False               If Automatic, Legend is composed from FrameLabel\n\
-                                  Automatically.\n\n\
+                                  Automatically, can be a LaTeX input.\n\n\
 Example:\n\
    p2=OpticsPlot[{{\"BX\",\"BY\"}, {\"DX\",{{{10,0.001},{20,0.002}}, FrameLabel->\"DX meas.\", Unit->Meter, Thickness->2, Names->\"Q*\"}}}];\n\
    Update[];\n\n\
