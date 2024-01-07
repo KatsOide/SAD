@@ -4936,7 +4936,11 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         real*8, intent(in), optional:: xl
         real*8, intent(inout) ::a(:)
         real*8 x
-        x=merge(xl,0.d0,present(xl))
+        if(present(xl))then
+          x=xl
+        else
+          x=0.d0
+        endif
         a=merge(x,a,ktfenanq(a))
         return
         end subroutine

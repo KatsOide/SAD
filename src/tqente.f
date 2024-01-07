@@ -11,7 +11,7 @@
      $     z0,f,g,fx,fy,dpz,rpz
       real*8, parameter ::ptmin=0.999999d0
       pr=1.d0+cod(6)
-      if(bz .eq. 0.d0)then
+      if(bz == 0.d0)then
         pxi=cod(2)
         pyi=cod(4)
         a=pxi**2+pyi**2

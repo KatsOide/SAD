@@ -176,7 +176,7 @@
      $       g1=>tz%tz1%g1,g2=>tz%tz1%g2,cxs1=>tz%tz1%cxs1,
      $       cxs2=>tz%tz1%cxs2,aw1=>tz%tz1%aw1,aw2=>tz%tz1%aw2,
      $       wr1=>tz%tz1%wr1,wr2=>tz%tz1%wr2,dxs=>tz%tz1%dxs)
-        if(bz .eq. 0.d0)then
+        if(bz == 0.d0)then
           call tzsetparam0(tz%tz0,dp,aln0,akk)
         else
           aln=aln0
@@ -268,7 +268,7 @@ c        phi1=aln*w1
      $       aw1p=>tzp%aw1p,aw2p=>tzp%aw2p,
      $       cxs1p=>tzp%cxs1p,cxs2p=>tzp%cxs2p)
 
-        if(bzp .eq. 0.d0)then
+        if(bzp == 0.d0)then
           w1p=-.5d0*w1/pr
         else
           w1p=-w1**3/pr*wss
@@ -325,7 +325,7 @@ c        phi1=aln*w1
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 trans1(6,6)
       real*8 ,intent(in):: al,ak,eps0,ak0x,ak0y,bz0
-      real*8 bw,dw,dx0,dy0,
+      real*8 bw,dw,dx0,dy0,aln1,
      $     xi0,yi0,dy,dpy,bz,a,b,c,d,akk,eps,bzh,
      $     adx,adpy,adp,bdy,bdpx,bdp,bwdy,bwdpx,bwdp,
      $     cdx,cdpy,cdp,ddy,ddpx,ddp,dwdy,dwdpx,dwdp,cwdp,
@@ -367,7 +367,7 @@ c        phi1=aln*w1
      $     cr2p=>tz%tzp%cr2p, cr3p=>tz%tzp%cr3p,dxsp=>tz%tzp%dxsp,
      $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,
      $       cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
-      if(ak .eq. 0.d0)then
+      if(ak == 0.d0)then
         call tdrife(trans,cod,beam,srot,al,bz0,ak0x,ak0y,al,.true.,enarad,irad)
         return
 c      elseif(ak .lt. 0.d0)then
@@ -375,9 +375,13 @@ c        write(*,*)'tsolque-implementation error ',ak
 c        stop
       endif
       bz=bz0
-      eps=merge(0.1d0,0.1d0*eps0,eps0 .eq. 0.d0)
+      if(eps0 == 0.d0)then
+        eps=0.1d0
+      else
+        eps=0.1d0*eps0
+      endif
       ndiv=min(ndivmax,1+int(abs(al*hypot(ak,bz))/eps))
-      aln=al/ndiv
+      aln1=al/ndiv
       dx0=ak0x/ak
       dy0=ak0y/ak
       akk=ak/al
@@ -385,7 +389,8 @@ c        stop
       b1=br*akk
       call tinitr(trans1)
 c     end   initialize for preventing compiler warning
-      call tzsetparam(tz,cod(6),aln,akk,bz)
+      call tzsetparam(tz,cod(6),aln1,akk,bz)
+c      write(*,'(a,i5,1p10g12.4)')'tzs0 ',ndiv,al,aln1,aln,akk,phi1,w1,c1,s1
       call tzsetparamp(tz%tzp,tz)
       call tgetdv(cod(6),dv,dvdp)
       al1=aln*.5d0
@@ -396,7 +401,7 @@ c     end   initialize for preventing compiler warning
         xi=xi0+dx0
         yi=yi0+dy0
         bzh=bz*.5d0
-        if(bzh .eq. 0.d0)then
+        if(bzh == 0.d0)then
           pxi=cod(2)/pr
           pyi=cod(4)/pr
           u1 =   xi*dc1 +pxi*s1/w1
@@ -439,7 +444,7 @@ c     end   initialize for preventing compiler warning
      $         -(pxi*trans1(1:4,2)+pyi*trans1(1:4,4))
           trans1(2,1:6)=trans1(2,1:6)*pr
           trans1(4,1:6)=trans1(4,1:6)*pr
-c          write(*,'(a,i5,1p10g12.4)')'tsolque-n ',n,xi,yi,w1p,trans1(5,6)
+c          write(*,'(a,i5,1p10g12.4)')'tsolque-n ',n,w1,w1p,trans1(1:2,1:2)
         else
 c cod has canonical momenta!
           pxi=(cod(2)+yi0*bzh)/pr

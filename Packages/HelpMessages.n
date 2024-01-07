@@ -4097,10 +4097,14 @@ FrameLabel    \"\"                 Left frame label, can be a LeTeX input\n\
 Legend        False               If Automatic, Legend is composed from FrameLabel\n\
                                   Automatically, can be a LaTeX input.\n\n\
 Example:\n\
-   p2=OpticsPlot[{{\"BX\",\"BY\"}, {\"DX\",{{{10,0.001},{20,0.002}}, FrameLabel->\"DX meas.\", Unit->Meter, Thickness->2, Names->\"Q*\"}}}];\n\
-   Update[];\n\n\
+  p2=OpticsPlot[{{\"BX\",\"BY\"}, \n\
+     {\"EX\",{{{11,0.1,0.02},{21,0.12,0.02}}, \n\
+       FrameLabel->\"\\\\@$\\\\varDelta \\\\eta_{x,{\\\\rm  meas.}}$\", Unit->Meter},\n\
+       PlotRange->{0,Automatic}}},\n\
+     Thickness->2, Names->\"Q*\"];\n\
+   Update[];\n\
 <OpticsPlot.png",
-         "Graphics ListPlot Twiss reference-optics",
+         "Graphics ListPlot Twiss reference-optics LaTeX",
          {}},
 
         {"FitPlot",

@@ -13,7 +13,7 @@ eqs img{
 <BODY>
 <CENTER><H2>Welcome to SAD/FFS & SADScript
 </H2></CENTER>
-<CENTER> SAD/FFS SADScript Version: 1.3.3.2k64,      Updated: 01/05/2024</CENTER>
+<CENTER> SAD/FFS SADScript Version: 1.3.3.2k64,      Updated: 01/07/2024</CENTER>
 
 <PRE> Please use browser's search to find an item.
 
@@ -5905,15 +5905,17 @@ Legend        False               If Automatic, Legend is composed from FrameLab
                                   Automatically, can be a LaTeX input.
 
 Example:
-   p2=OpticsPlot[{{"BX","BY"}, {"DX",{{{10,0.001},{20,0.002}}, FrameLabel->"DX meas.", Unit->Meter,
-Thickness->2, Names->"Q*"}}}];
+  p2=OpticsPlot[{{"BX","BY"}, 
+     {"EX",{{{11,0.1,0.02},{21,0.12,0.02}}, 
+       FrameLabel->"\\@$\\varDelta \\eta_{x,{\\rm  meas.}}$", Unit->Meter},
+       PlotRange->{0,Automatic}}},
+     Thickness->2, Names->"Q*"];
    Update[];
-
 <img SRC="SADHelp_img/OpticsPlot.png" ALIGN="middle" WIDTH=540>
 
 </PRE>
 <PRE>See also:
- <A HREF=#L418>Graphics</A> <A HREF=#L427>ListPlot</A> <A HREF=#L414>Twiss</A> <A HREF=#L496>reference-optics</A></PRE>
+ <A HREF=#L418>Graphics</A> <A HREF=#L427>ListPlot</A> <A HREF=#L414>Twiss</A> <A HREF=#L496>reference-optics</A> <A HREF=#L424>LaTeX</A></PRE>
 <LI>
 <H3><A NAME=L429>
 Plot</A></H3>

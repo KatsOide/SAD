@@ -947,8 +947,11 @@ c        call tfdebugprint(kx,'varfun:',1)
       do i=1,nqcol
         s=sum(qu(i,:)*wlimit*dval)
         if(df(i) /= 0.d0)then
-          dg=merge(dg-df(i)*s,dg-abs(df(i))**wexponent/df(i)*s,
-     $         wexponent == 2.d0)
+          if(wexponent == 2.d0)then
+            dg=dg-df(i)*s
+          else
+            dg=dg-abs(df(i))**wexponent/df(i)*s
+          endif
         endif
         if(.not. fit(i))then
           if((s-df(i))*df(i) < 0.d0)then
