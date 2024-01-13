@@ -216,7 +216,6 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
       {lf,plt,pra,fl,frame,lfr,fropt,l,unit,v,opv,min,max,am,ru,
         del,del1,leg,fly,pu,pu1,ll,
         {fopt,f1}=SwitchCases[f,{_Rule|_RuleDelayed,_}]},
-!    Print["OP1$-0: ",{fopt,f1}];
       If[f1 === {} || f1[[1]]==={},Return[Graphics[{}]]];
       lf=Length[f1];
       fopt=Override[fopt,opt,def];
@@ -425,7 +424,6 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
           {Names,Tags,NameFilter,PlotRegion,ElementHeight,RemoveOverlap}/.
         Override[opt,def],
         yoff=-0.7,w,ltotal},
-      Print["LatticePlot ",{def,{opt},n}];
       w=pr[[1,2]]-pr[[1,1]];
       l=If[pr2<=pr1,
         ltotal=LINE["S",nlat]-LINE["S","^^^"];
@@ -448,7 +446,6 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
 
   LatticeNames[{pr1_,pr2_},n_,off_,w_,yoff_,tag_,nf_,ss_]:=Module[
     {s,s0=LINE["S",pr1]+off,e=""},
-    Print["LatticeNames ",n];
     Table[
       With[{l=LINE["NAME",i]},
         If[StringMatchQ[l,n] && e<>LINE["ELEMENT",i] &&
