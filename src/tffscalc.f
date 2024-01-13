@@ -550,7 +550,11 @@ c          endif
           ilist(1,ifvloc)=len_trim(name)
           call tfpadstr(nlist(k),ifvfun+1,len_trim(nlist(k)))
           ilist(1,ifvfun)=len_trim(nlist(k))
-          klid%rbody(1)=merge(dble(iuid(idp)),dble(kfam(idp)),inicond)
+          if(inicond)then
+            klid%rbody(1)=dble(iuid(idp))
+          else
+            klid%rbody(1)=dble(kfam(idp))
+          endif
           klid%rbody(2)=dp(idp)
           klv%rbody(4)=wfit(i)
           call tclrfpe

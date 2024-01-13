@@ -3286,7 +3286,6 @@ c        go to 6001
           call tfdeval(isp1,dlist(ifunbase+mtfmessagename),kx,1,.false.,euv,irtc)
           go to 6900
         case (mtfflag)
-c          write(*,*)'tfefun-mtfflag'
           call tfflagordef(isp1,kx,irtc)
           go to 6900
         case (mtfcomplex)
@@ -3847,8 +3846,9 @@ c        enddo
       type (sad_dlist), pointer :: list,klx,kli
       type (sad_rlist), pointer :: klj
       integer*8 kai
-      integer*4 narg,i,j,n,m,itfmessage,isp0,isp2,isp3
+      integer*4 narg,i,j,n,m,itfmessage,isp0,isp2,isp3,m1,m2
       logical*4 allv,ch
+      integer*4 ,parameter :: mth=2**16
       narg=isp-isp1
       if(mode == 0)then
         if(narg == 1)then
@@ -3917,14 +3917,30 @@ c        enddo
         if(mode /= 2)then
           if(allv)then
             kx=kxadaloc(-1,n,klx)
-            do j=1,n
-              klx%dbody(j)=kxavaloc(0,m,klj)
-c              do i=1,m
+            if(m < mth)then
+              do j=1,n
+                klx%dbody(j)=kxavaloc(0,m,klj)
                 klj%rbody(1:m)=rlist(ktastk(isp3+1:isp3+m)+j)
-c              enddo
-              klj%head=dtfcopy(kf)
-              klj%attr=ior(klj%attr,lconstlist)
-            enddo
+                klj%head=dtfcopy(kf)
+                klj%attr=ior(klj%attr,lconstlist)
+              enddo
+            else
+              do j=1,n
+                klx%dbody(j)=kxavaloc(0,m,klj)
+                m1=1
+                m2=mth
+                do while (m1 < m)
+                  klj%rbody(m1:m2)=rlist(ktastk(isp3+m1:isp3+m2)+j)
+                  m1=m1+mth
+                  m2=min(m2+mth,m)
+                enddo
+c                do i=1,m
+c                  klj%rbody(i)=rlist(ktastk(isp3+i)+j)
+c                enddo
+                klj%head=dtfcopy(kf)
+                klj%attr=ior(klj%attr,lconstlist)
+              enddo
+            endif
             klx%attr=ior(klx%attr,lconstlist)
             irtc=0
             isp=isp2-1

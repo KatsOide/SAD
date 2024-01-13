@@ -52,10 +52,19 @@ c cod has canonical momenta!
       else
         call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0,0.d0)
       endif
-      ndiv=min(ndivmax,max(1,merge(
-     $     merge(itgetqraddiv(cod,ak1,al,bzs*.5d0),
-     $     int(dble(itgetqraddiv(cod,ak1,al,bzs*.5d0)/eps0)),
-     $     eps0 .eq. 0.d0),1,krad)))
+      if(krad)then
+        if(eps0 .eq. 0.d0)then
+          ndiv=min(ndivmax,max(1,itgetqraddiv(cod,ak1,al,bzs*.5d0)))
+        else
+          ndiv=min(ndivmax,max(1,int(dble(itgetqraddiv(cod,ak1,al,bzs*.5d0)/eps0))))
+        endif
+      else
+        ndiv=1
+      endif
+c      ndiv=min(ndivmax,max(1,merge(
+c     $     merge(itgetqraddiv(cod,ak1,al,bzs*.5d0),
+c     $     int(dble(itgetqraddiv(cod,ak1,al,bzs*.5d0)/eps0)),
+c     $     eps0 .eq. 0.d0),1,krad)))
       aln=al/ndiv
       akn=ak1/ndiv
       do i=1,ndiv

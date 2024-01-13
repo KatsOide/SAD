@@ -20,7 +20,7 @@
       character*(MAXPNAME) ,intent(out):: ename
       type (sad_descriptor) , save:: kxbl=sad_descriptor(1,i00)
       integer*4 ,save :: lid=0
-      if(kxbl%k .eq. 0)then
+      if(kxbl%k == 0)then
         kxbl=kxsymbolz('BeamLine',8)
       endif
       idx=0
@@ -42,10 +42,10 @@
         ki=kl%dbody(i)
         idir=1
  1      if(ktflistq(ki,kli))then
-          if(kli%head%k .eq. ktfoper+mtfmult)then
+          if(kli%head%k == ktfoper+mtfmult)then
             k1=kli%dbody(1)
             if(ktfrealq(k1))then
-              if(k1%x(1) .eq. -1.d0)then
+              if(k1%x(1) == -1.d0)then
                 idir=-idir
                 ki=kli%dbody(2)
                 go to 1
@@ -64,10 +64,10 @@
           if(nc .gt. 0)then
             idxi=hsrchz(ename)
             idti=idtype(idxi)
-            if(idti .eq. icNULL .or. idti .gt. icMXEL)then
+            if(idti == icNULL .or. idti .gt. icMXEL)then
               irtc=itfmessagestr(9,'MAIN::wrongtype',ename(1:nc))
               go to 9000
-            elseif(i .eq. 1 .and. idti .ne. icMARK)then
+            elseif(i == 1 .and. idti /= icMARK)then
               irtc=itfmessage(9,'FFS::firstmark',' ')
               go to 9000
             endif
@@ -83,7 +83,7 @@
       lid=lid+1
       write(ename,'(''L'',i6.6,''$'')')lid
       idx=hsrchz(ename)
-      if(idtype(idx) .ne. icNULL)then
+      if(idtype(idx) /= icNULL)then
         lid=lid-1
         irtc=itfmessagestr(9,'MAIN::exist',ename(1:lenw(ename)))
         go to 9000
@@ -108,7 +108,7 @@
       integer*8 kdx1,idxm1,idxd1
       integer*4 itfdummyptr,idx,hsrchz,idxm,n,idxd
       data itfdummyptr /0/
-      if(itfdummyptr .eq. 0)then
+      if(itfdummyptr == 0)then
         idx=hsrchz('$DUMMYLINE')
         idtype(idx)=icLINE
         pname(idx)='$DUMMYLINE'
@@ -169,7 +169,7 @@
       idx=hsrchz(ename)
       itype=idtype(idx)
       if(narg .le. 1)then
-        if(itype .eq. icNULL)then
+        if(itype == icNULL)then
           type=' '
         else
           type=pname(kytbl(0,itype))(2:)
@@ -178,8 +178,8 @@
         type=tfgetstrs(ktastk(isp1+2),nc)
         call capita(type(1:nc))
  1      if(nc .le. 0)then
-          if(ktastk(isp1+2) .eq. ktfoper+mtfnull .or.
-     $         ktastk(isp1+2) .eq. kxnulls)then
+          if(ktastk(isp1+2) == ktfoper+mtfnull .or.
+     $         ktastk(isp1+2) == kxnulls)then
             type=pname(kytbl(0,itype))(2:)
           elseif(ktfrealq(ktastk(isp1+2)))then
             idt=int(rtastk(isp1+2))
@@ -193,15 +193,15 @@
           endif
         else
           idt=hsrchz('$'//type)
-          if(idtype(idt) .ne. icDEF)then
+          if(idtype(idt) /= icDEF)then
             irtc=itfmessagestr(9,'MAIN::wrongtype',type(1:lenw(type)))
             return
           endif
-          if(idval(idt) .eq. icNULL)then
-          elseif(itype .eq. icNULL)then
+          if(idval(idt) == icNULL)then
+          elseif(itype == icNULL)then
             itype=int(idval(idt))
             idtype(idx)=itype
-            if(itype .ne. icNULL)then
+            if(itype /= icNULL)then
               n=kytbl(kwMAX,itype)
               kdx1=ktcaloc(n+1)
               idval(idx)=kdx1
@@ -209,16 +209,23 @@
               ilist(1,kdx1)=n
               ilist(2,kdx1)=0
             endif
-          elseif(idval(idt) .ne. itype)then
+          elseif(idval(idt) /= itype)then
             irtc=itfmessagestr(9,'FFS::equaltype',type(1:lenw(type)))
             return
           endif
         endif
       endif
       ka1=ktfaddr(ktastk(isp1+1))
-      kas=merge(ka1,merge(klist(klist(ifunbase+ka1)),klist(ka1),
-     $     ktfoperq(ktastk(isp1+1))),ktfstringq(ktastk(isp1+1)))
-      if(itype .eq. icNULL)then
+      if(ktfstringq(ktastk(isp1+1)))then
+        kas=ka1
+      elseif(ktfoperq(ktastk(isp1+1)))then
+        kas=klist(klist(ifunbase+ka1))
+      else
+        kas=klist(ka1)
+      endif
+c      kas=merge(ka1,merge(klist(klist(ifunbase+ka1)),klist(ka1),
+c     $     ktfoperq(ktastk(isp1+1))),ktfstringq(ktastk(isp1+1)))
+      if(itype == icNULL)then
         if(narg .gt. 2)then
           irtc=itfmessage(9,'General::narg','"1 or 2"')
           return
@@ -229,13 +236,13 @@
       else
         if(isp .gt. isp1+2)then
           kr=tfoverride(isp1+2,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
           levele=levele+1
           call tfsetelementkey(idx,kr,irtc)
           l=itfdownlevel()
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
         endif
@@ -247,7 +254,7 @@
           isp0=isp
           do i=1,m
             key=tfkwrd(itype,i)
-            if(key .ne. ' ' .and. key .ne. '-')then
+            if(key /= ' ' .and. key /= '-')then
               isp=isp+1
               dtastk(isp)=kxadaloc(-1,2,klxi)
               klxi%head%k=ktfoper+mtfrule
@@ -277,7 +284,7 @@
         do i=1,kl%nl
           ki=kl%dbody(i)
           call tfsetelementkey(idx,ki,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
         enddo
@@ -291,13 +298,13 @@
         idt=idtype(idx)
         do ioff=1,kytbl(kwMAX,idt)-1
           i=kyindex(ioff,idt)
-          if(i .ne. 0)then
-            if(pname(kytbl(i,0))(2:) .eq. key(1:nc))then
+          if(i /= 0)then
+            if(pname(kytbl(i,0))(2:) == key(1:nc))then
               go to 10
             endif
             i=kyindex1(ioff,idt)
-            if(i .ne. 0 .and.
-     $           pname(kytbl(i,0))(2:) .eq. key(1:nc))then
+            if(i /= 0 .and.
+     $           pname(kytbl(i,0))(2:) == key(1:nc))then
               go to 10
             endif
           endif
@@ -305,9 +312,9 @@
         irtc=itfmessagestr(9,'FFS::undefkey',key(1:nc))
         return
  10     kv=kr%dbody(2)
-        if(kr%head%k .eq. ktfoper+mtfruledelayed)then
+        if(kr%head%k == ktfoper+mtfruledelayed)then
           kv=tfeevalref(kv,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
         endif
@@ -338,7 +345,7 @@
       type (sad_descriptor) kx
       integer*4 isp1,irtc,itfmessage
       if(isp .gt. isp1+1 .or.
-     $     ktastk(isp) .ne. ktfoper+mtfnull)then
+     $     ktastk(isp) /= ktfoper+mtfnull)then
         irtc=itfmessage(9,'General::wrongtype','"[]"')
         return
       endif
@@ -380,7 +387,7 @@
       kx=dxnullo
       if(eval)then
         kx=tfsyeval(kxsymbolz('BeamLine',8),irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
         eval=.false.
@@ -389,18 +396,18 @@
         irtc=itfmessage(9,'General::narg','"0 or 1"')
         return
       endif
-      if(ktastk(isp) .eq. ktfoper+mtfnull)then
+      if(ktastk(isp) == ktfoper+mtfnull)then
         idx=itfilattp()
       else
         ename=tfgetstrs(ktastk(isp),nc)
         if(nc .lt. 0)then
           irtc=itfmessage(9,'General::wrongtype','"Character-string"')
           return
-        elseif(nc .eq. 0 .or. ename .eq. '*')then
+        elseif(nc == 0 .or. ename == '*')then
           idx=itfilattp()
         else
           idl=hsrchz(ename)
-          if(idtype(idl) .ne. icLINE)then
+          if(idtype(idl) /= icLINE)then
             irtc=itfmessagestr(9,'MAIN::wrongtype',ename(1:lenw(ename)))
             return
           endif
@@ -410,12 +417,10 @@
         endif
       endif
       call loc_el(idx,el)
-c      write(*,*)'extractbeamline-0 ',idx,idl,el%comp(1),el%comp(2),ename
       n=el%nlat0
       kx=kxadaloc(-1,n,klx)
       klx%head=dtfcopy1(kxsymbolz('BeamLine',8))
       do i=1,n
-c        write(*,*)'extractbeamline ',i,n,el%comp(i)
         ename=pname(idcomp(el,i))
         if(dircomp(el,i) .ge. 0.d0)then
           klx%dbody(i)=dtfcopy1(kxsymbolf(ename,lenw(ename),.true.))
@@ -442,9 +447,9 @@ c        write(*,*)'extractbeamline ',i,n,el%comp(i)
       integer*4 i,j,isp0,m,n,isp2
       integer*8 ifbeamline
       data ifbeamline/0/
-      if(ifbeamline .eq. 0)then
+      if(ifbeamline == 0)then
         call tfevals('BeamLine',kx,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
         ifbeamline=ktfaddrd(kx)
@@ -453,11 +458,11 @@ c        write(*,*)'extractbeamline ',i,n,el%comp(i)
       LOOP_I: do i=isp1+1,isp
         if(ktflistq(ktastk(i),kl))then
           m=kl%nl
-          if(m .eq. 2 .and. kl%head%k .eq. ktfoper+mtftimes)then
+          if(m == 2 .and. kl%head%k == ktfoper+mtftimes)then
             if(ktfnonreallistqo(kl))then
               do j=1,2
                 if(ktfrealq(kl%dbody(j)))then
-                  if(kl%rbody(j) .ne. -1.d0)then
+                  if(kl%rbody(j) /= -1.d0)then
                     n=int(kl%rbody(j))
 c                    write(*,*)'expandbeamline ',j,kl%rbody(j),n
                     if(n .gt. 0)then
@@ -484,11 +489,11 @@ c                      enddo
                 endif
               enddo
             endif
-          elseif(kl%head%k .eq. ktfsymbol+ifbeamline)then
+          elseif(kl%head%k == ktfsymbol+ifbeamline)then
             isp2=isp
             call tfgetllstkall(kl)
             call tfexpandbeamline(isp2,kx1,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               isp=isp0
               return
             endif

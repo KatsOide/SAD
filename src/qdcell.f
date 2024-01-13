@@ -138,7 +138,6 @@ c     $             .or. inicond .and. idp /= 0))then
                         vf1=vf
                       endif
                       df1(i)=tdfun1(vf1,ve,kf,maxfit,idp,ttrans(idp))
-c                      write(*,'(a,3i5,l2,1p10g12.4)')'tdfun ',ka,j,kf,maxfit,vf1,ve,df1(i)
                       if(cell .and. ka > nfc0 .and. ka <= nfc0+2 .and. abs(df1(i)) < abmax)then
                         cycle
                       endif
@@ -479,7 +478,6 @@ c
         else
           tdfun1=vf-v
         endif
-c        write(*,'(a,i5,l2,1p10g12.4)')'tdfun1 ',kf,maxfit,vf,v,tdfun1
       end select
       return
 

@@ -216,7 +216,6 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
       {lf,plt,pra,fl,frame,lfr,fropt,l,unit,v,opv,min,max,am,ru,
         del,del1,leg,fly,pu,pu1,ll,
         {fopt,f1}=SwitchCases[f,{_Rule|_RuleDelayed,_}]},
-!    Print["OP1$-0: ",{fopt,f1}];
       If[f1 === {} || f1[[1]]==={},Return[Graphics[{}]]];
       lf=Length[f1];
       fopt=Override[fopt,opt,def];

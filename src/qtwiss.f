@@ -135,7 +135,7 @@ c        call tfmemcheckprint1('qtwiss',l,.false.)
         endif
 c        if(l .gt. 20200 .and. l < 20300)then
 c        if(l .gt. 20200 .and. mod(l,100) == 0)then
-c          write(*,'(a,2i5,1p6g15.7)')'qtwiss1 ',l,ltyp,cod
+c        write(*,'(a,2i5,1p6g15.7)')'qtwiss1 ',l,ltyp,cod
 c        endif
         if(ltyp .gt. icMARK)then
           if(.not. mat)then
@@ -312,6 +312,7 @@ c          endif
      $           cmp%value(ky_KIN_QUAD) == 0.d0,
      $           cmp%value(ky_CHRO_QUAD) /= 0.d0,
      $           coup)
+c            write(*,'(a,1p10g12.4)')'qtwiss-quad ',al,ak1,trans(1:2,1:2)
             go to 20
 
           case (icSEXT, icOCTU, icDECA, icDODECA)
