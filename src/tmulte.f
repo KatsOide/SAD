@@ -1,3 +1,68 @@
+      module multe
+      integer*4 nmmax,nmmin,ndiv
+
+      contains
+
+      subroutine tmulke(trans1,cod,aln,akn,apsi,w1n,m)
+      use temw,only:bsir0,tsetr0,tmulbs
+      use kyparam, only:nmult
+      use multa, only:fact,aninv
+      implicit none
+      real*8 ,intent(inout):: trans1(6,6),cod(6)
+      complex*16 ,intent(in):: akn(0:nmult)
+      real*8 ,intent(in):: aln,apsi,w1n
+      integer*4 ,intent(in):: m
+      integer*4 kord
+      real*8 fe
+      complex*16 cx0,cx,cx2
+      real*8 ,parameter::pmax=0.9999d0
+      cx0=dcmplx(cod(1),cod(3))
+      cx=(0.d0,0.d0)
+      cx2=(0.d0,0.d0)
+      if(m /= 0)then
+        do kord=nmmax,nmmin,-1
+          cx=(cx+akn(kord))*cx0*aninv(kord)
+          cx2=cx2*cx0*aninv(kord)+akn(kord)
+        enddo
+        if(nmmin == 2)then
+          cx=cx*cx0
+          cx2=cx2*cx0
+        else
+          cx=cx+akn(0)
+        endif
+        cx=dcmplx(min(pmax,max(-pmax,dble(cx))),
+     $       min(pmax,max(-pmax,imag(cx))))
+        trans1(2,1)=-dble(cx2)+w1n
+        trans1(2,3)=imag(cx2)
+        trans1(4,1)=imag(cx2)
+        trans1(4,3)= dble(cx2)+w1n
+        cod(2)=cod(2)-dble(cx)+w1n*cod(1)
+        cod(4)=cod(4)+imag(cx)+w1n*cod(3)
+        bsir0=merge(bsir0+imag(cx)/aln,0.d0,m == 1)
+        if(m == ndiv)then
+          bsir0=bsir0-imag(cx)/aln
+        endif
+      else
+        fe=-tan(apsi)/aln
+        do kord=nmmax,1,-1
+          cx=(cx+akn(kord))*cx0*aninv(kord)
+          cx2=cx2*cx0*aninv(kord)+akn(kord)
+        enddo
+        cx=cx+akn(0)
+        cx2=fe*(cx2*cx0+cx)
+        cx=fe*cx*cx0
+        cx=dcmplx(min(pmax,max(-pmax,dble(cx))),min(pmax,max(-pmax,imag(cx))))
+        trans1(2,1)=-dble(cx2)+w1n
+        trans1(2,3)=imag(cx2)
+        trans1(4,1)=imag(cx2)
+        trans1(4,3)= dble(cx2)+w1n
+        cod(2)=cod(2)-dble(cx)+w1n*cod(1)
+        cod(4)=cod(4)+imag(cx)+w1n*cod(3)
+      endif
+      return
+      end
+      end module
+
       subroutine tmulte(trans,cod,beam,srot,l,al,ak,bz,
      $     phia,psi1,psi2,apsi1,apsi2,
      1     dx,dy,dz,chi1,chi2,theta,dtheta,alg,phig,
@@ -5,12 +70,13 @@
      $     f1in,f2in,f1out,f2out,mfring,
      $     fb1,fb2,bfrm,vc,harm,phi,freq,wakew1,
      $     rtaper,autophi)
+      use multe
       use ffs_flag, only:calpol,radcod,rfsw,trpt
       use ffs_pointer , only:gammab
       use kyparam, only:nmult
       use tmacro, only:amass,c,charge,ddvcacc,dvcacc,e,h0,hvc0,
      $     irad,omega0,p0,pbunch,pgev,trf0,vc0,vcacc,eps00m
-      use temw,only:bsir0,tsetr0,tmulbs,code
+      use temw,only:tsetr0,tmulbs,code
       use sol, only:tsolrote
       use kradlib, only:tradke
       use mathfun
@@ -34,10 +100,9 @@
      $     dhg,rg2,dgb,w1n,theta2,v10a,v11a,v02a,v20a,offset1,va,sp,cp,
      $     av,dpxa,dpya,dpx,dpy,dav,davdz,davdp,ddhdx,ddhdy,ddhdp,
      $     ddhdz,wi,dv,s0
-      integer*4 n,ndiv,m,kord,nmmax,nmmin,itgetqraddiv
+      integer*4 n,m,itgetqraddiv
       real*8 trans1(6,6)
-      complex*16 cx,cx0,cx2,cr,cr1
-      complex*16 akn(0:nmult),ak0n,akn0
+      complex*16 cr,cr1,akn(0:nmult),ak0n,akn0
       logical*4 acc,krad
       if(phia /= 0.d0)then
         call tmultae(trans,cod,beam,srot,al,ak,
@@ -105,8 +170,7 @@
         endif
         if(rfsw)then
           v=vc/amass*abs(charge)
-          ndiv=min(ndivmax,max(ndiv,1+int(min(abs(w*al),
-     $         sqrt((v*(1.d0/h0+1.d0/h1))**2/3.d0/eps)))))
+          ndiv=min(ndivmax,max(ndiv,1+int(min(abs(w*al),sqrt((v*(1.d0/h0+1.d0/h1))**2/3.d0/eps)))))
           aln=al/ndiv
           vn=v/ndiv
           vcn=vc/ndiv
@@ -177,6 +241,14 @@
       endif
       call tinitr(trans1)
       w1n=pbunch*abs(charge)*e*wakew1/amass/p0/ndiv
+      if(apsi1 /= 0.d0)then
+        call tinitr(trans1)
+        call tmulke(trans1,cod,aln,akn,apsi1,w1n,0)
+        trans(:,1:irad)=matmul(trans1,trans(:,1:irad))
+        if(irad > 6)then
+          call tmulbs(beam ,trans1,.true.)
+        endif
+      endif
       dgb=0.d0
       do m=1,ndiv
         if(nmmin == 2)then
@@ -189,31 +261,32 @@
         ak1=dble(akn(1))
         al1=aln
         ak0n=akn(0)
-        cx0=dcmplx(cod(1),cod(3))
-        cx=(0.d0,0.d0)
-        cx2=(0.d0,0.d0)
-        do kord=nmmax,nmmin,-1
-          cx=(cx+akn(kord))*cx0*aninv(kord)
-          cx2=cx2*cx0*aninv(kord)+akn(kord)
-        enddo
-        if(nmmin == 2)then
-          cx=cx*cx0
-          cx2=cx2*cx0
-        else
-          cx=cx+akn(0)
-        endif
-        cx=dcmplx(min(pmax,max(-pmax,dble(cx))),
-     $       min(pmax,max(-pmax,imag(cx))))
-        trans1(2,1)=-dble(cx2)+w1n
-        trans1(2,3)=imag(cx2)
-        trans1(4,1)=imag(cx2)
-        trans1(4,3)= dble(cx2)+w1n
-        cod(2)=cod(2)-dble(cx)+w1n*cod(1)
-        cod(4)=cod(4)+imag(cx)+w1n*cod(3)
-        bsir0=merge(bsir0+imag(cx)/al1,0.d0,m == 1)
-        if(m == ndiv)then
-          bsir0=bsir0-imag(cx)/al1
-        endif
+        call tmulke(trans1,cod,aln,akn,0.d0,w1n,m)
+c$$$        cx0=dcmplx(cod(1),cod(3))
+c$$$        cx=(0.d0,0.d0)
+c$$$        cx2=(0.d0,0.d0)
+c$$$        do kord=nmmax,nmmin,-1
+c$$$          cx=(cx+akn(kord))*cx0*aninv(kord)
+c$$$          cx2=cx2*cx0*aninv(kord)+akn(kord)
+c$$$        enddo
+c$$$        if(nmmin == 2)then
+c$$$          cx=cx*cx0
+c$$$          cx2=cx2*cx0
+c$$$        else
+c$$$          cx=cx+akn(0)
+c$$$        endif
+c$$$        cx=dcmplx(min(pmax,max(-pmax,dble(cx))),
+c$$$     $       min(pmax,max(-pmax,imag(cx))))
+c$$$        trans1(2,1)=-dble(cx2)+w1n
+c$$$        trans1(2,3)=imag(cx2)
+c$$$        trans1(4,1)=imag(cx2)
+c$$$        trans1(4,3)= dble(cx2)+w1n
+c$$$        cod(2)=cod(2)-dble(cx)+w1n*cod(1)
+c$$$        cod(4)=cod(4)+imag(cx)+w1n*cod(3)
+c$$$        bsir0=merge(bsir0+imag(cx)/al1,0.d0,m == 1)
+c$$$        if(m == ndiv)then
+c$$$          bsir0=bsir0-imag(cx)/al1
+c$$$        endif
         if(acc)then
           p1=p0*(1.d0+cod(6))
           h1=p2h(p1)
@@ -320,6 +393,14 @@ c$$$     $         +trans1(4,3)*trans(3,6)
           call tmulbs(beam ,trans1,.true.)
         endif
       enddo
+      if(apsi2 /= 0.d0)then
+        call tinitr(trans1)
+        call tmulke(trans1,cod,aln,akn,apsi2,w1n,0)
+        trans(:,1:irad)=matmul(trans1,trans(:,1:irad))
+        if(irad > 6)then
+          call tmulbs(beam ,trans1,.true.)
+        endif
+      endif
       if(nmmin == 2)then
         call tsolque(trans,cod,beam,srot,al1*.5d0,ak1*.5d0,
      $       bzs,dble(ak0n)*.5d0,imag(ak0n)*.5d0,

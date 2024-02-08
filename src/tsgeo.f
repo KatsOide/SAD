@@ -75,8 +75,8 @@
         idir=-1
       endif
       cmpp%value(ky_DZ_SOL)=0.d0
-      chi1=cmpp%value(ky_DPX_SOL)
-      chi2=cmpp%value(ky_DPY_SOL)
+      chi1=cmpp%value(ky_DPX_SOL)*merge(1.d0,-1.d0,cmpp%ori)
+      chi2=cmpp%value(ky_DPY_SOL)*merge(1.d0,-1.d0,cmpp%ori)
       xi=cmpp%value(ky_DX_SOL)
       yi=cmpp%value(ky_DY_SOL)
       pxi=-sin(chi1)*cos(chi2)

@@ -6,9 +6,9 @@ BeginPackage[tws$`,`];
 
 Begin[tws$`];
 
-NormalCoordinates[i_]:=NormalCoordinatesPrimitive[Twiss['*',i]];
+NormalCoordinates[i_Real|i_String]:=NormalCoordinatesPrimitive[Twiss['*',i]];
 
-NormalCoordinates[i_,param_]:=NormalCoordinatesPrimitive[param[i]];
+NormalCoordinates[param_List]:=NormalCoordinatesPrimitive[param];
 
 NormalCoordinatesPrimitive[param_]:=If[?CALC6D,
   {NormalCoordinate6[param],Take[param,{mfdx,mfddp}]},
