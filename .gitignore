@@ -5,6 +5,7 @@ arch/*
 obj/*
 sad/*
 contrib/*
+distfiles/*
 .DS_Store
 .svn/*
 /CVS

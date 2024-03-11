@@ -74,6 +74,14 @@ EndPackage[___]:=(
   $ContextPath=Last[$PackageStack];
   If[Length[$PackageStack]>1,$PackageStack=Drop[$PackageStack,-1]];
   $ContextPath);
+WithContext[{c__},body_]:=(
+  First[{BeginPackage[c];
+    Begin[First[{c}]];
+    body,
+    End[];
+    EndPackage[]}]);
+SetAttributes[WithContext,{HoldRest,Constant}];
+
 SetAttributes[{Begin,End,BeginPackage,EndPackage,ToContext,Wrap},Constant];
 
 (* Signal numbers for Kill[] *)

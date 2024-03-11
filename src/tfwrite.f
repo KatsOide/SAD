@@ -485,7 +485,7 @@ c      call tfdebugprint(k,'tfget',1)
       levele=levele+1
       kx%k=ktfoper+mtfnull
       call trbassign(lfn)
-      lfnm=0
+      lfne=0
       call skiplnget
       itf=0
       do while(itf .ge. 0)

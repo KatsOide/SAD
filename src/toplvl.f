@@ -162,14 +162,14 @@ c
         type csiparam
           sequence
           integer*4 isav(1:0)
-          integer*4 lfni,lfnm,lfno,ios
+          integer*4 lfni,lfnm,lfno,lfne,ios
           logical*4 rep
         end type
         type (csiparam) , target :: savep
         character*16 delim,cmnt
         integer*8 ibcloc
         integer*4, pointer:: ipoint,lrecl,lfni=>savep%lfni,
-     $       lfnm=>savep%lfnm,lfno=>savep%lfno,ios=>savep%ios
+     $       lfnm=>savep%lfnm,lfno=>savep%lfno,lfne=>savep%lfne,ios=>savep%ios
         logical*4 , pointer :: rep=>savep%rep
         integer*4 iconv,ldel,lcmnt,lastln,ibegt,lastt
         character*(nbmax) , target  :: buffer0
