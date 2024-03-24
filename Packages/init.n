@@ -216,7 +216,7 @@ $CommandLine=Module[{`s=$GetCommandLine[]},
     True,
     s]];
 
-NPARA=2;
+NPARA=4;
 AutoLoad[`x__,`f_]:=(Scan[
   Function[`a,`a:=(Unprotect[x];Clear[x];Get[f];`a)],{x}];
   Protect[x]);

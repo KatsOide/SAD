@@ -197,8 +197,8 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
   With[{tdr:=TopDrawer,cdr:=System`CanvasDrawer},
     SetAttributes[PlotColorDefault,HoldAll];
     PlotColorDefault[tdr]={"black"};
-    PlotColorDefault[cdr]=
-      {"dark slate blue","red3","forest green","goldenrod","purple"};
+    PlotColorDefault[cdr]=Plot$DefaultColor;
+!      {"dark slate blue","red3","forest green","goldenrod","purple"};
     SetAttributes[PlotColorDefault,HoldNone]];
 
   With[{def={PlotRange->Automatic,

@@ -195,7 +195,7 @@ c
       call csrst(lfno)
       lfne=0
       if(lfni /= 5)then
-        if(lfnb == 1 .or. lfnb>1 .and. igetgl('$LOG$') /= 0)then
+        if(lfnb>1 .and. igetgl('$LOG$') /= 0)then
           lfne=lfno
         endif
       endif

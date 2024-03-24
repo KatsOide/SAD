@@ -23,8 +23,8 @@ Graphics$Options=AspectRatio|FrameLabel|PlotRange|GridLines|Alignment|DataRange|
     InfoBind|FrameUnitLabel|FontScale|TickFontScale|FrameFontScale|LegendFontScale|
       TitleFontScale|FrameColor|TickColor|LegendBG|LegendRaise|BelowFrame;
 
-Plot$DefaultColor={"dodger blue","tomato2","forest green","dark goldenrod",
-      "royal blue","orange3","blue violet","lime green","hot pink","yellow4"};
+Plot$DefaultColor={"royal blue","tomato3","forest green","dark goldenrod",
+      "dodger blue","orange3","blue violet","lime green","hot pink","yellow4"};
 
 With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
   AspectRatio->Automatic,PlotJoined->False,StepRatio->1,
