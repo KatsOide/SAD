@@ -15,16 +15,16 @@
       use iso_c_binding
       implicit none
       logical*4 ,intent(in):: trim
-      integer*4 lrecl0,lrecl1,nc
+      integer*4 lrecl0,lrecl1,nc,igetgl
       logical*4 unmapped
-      if(lfni .le. 0)then
+      if(lfni <= 0)then
         ios=99999
         return
       else
         ios=0
       endif
-      unmapped=itbuf(lfni) .le. moderead
-      do while (ipoint .le. lrecl)
+      unmapped=itbuf(lfni) <= moderead
+      do while (ipoint <= lrecl)
         call skipline
       enddo
       call tprmpt(lfni,lfno,lfnm)
@@ -35,7 +35,7 @@
         lrecl1=lrecl0
         do while (ios == 0)
           ios=irbnofile
-          if(lrecl0 .gt. nbmax-256)then
+          if(lrecl0 > nbmax-256)then
             ios=999999
             go to 10
           endif
@@ -44,19 +44,20 @@
             go to 20
           elseif(nc ==  irbnofile)then
             go to 10
-          elseif(nc .le. 0)then
+          elseif(nc <= 0)then
             lrecl=max(lrecl0-1,0)
           elseif(trim)then
             lrecl=len_trim(buffer(1:lrecl0+nc-1))
           else
             lrecl=lrecl0+nc-1
           endif
-c          if(lfnm .gt. 0)then
-c            write(lfnm,'(1x,a)')buffer(lrecl0:lrecl)
-c          endif
+          if(lfne > 0 .and. lfni /= 5)then
+            write(*,*)'getbuf0-1 ',lfne,lfni
+            write(lfne,'(1x,a)')buffer(lrecl0:lrecl)
+          endif
           ipoint=lrecl1
           ios=0
-          if(lrecl .lt. lrecl0 .or. trim .and. (buffer(lrecl0:lrecl) == ' '))then
+          if(lrecl < lrecl0 .or. trim .and. (buffer(lrecl0:lrecl) == ' '))then
             lrecl=max(lrecl0-1,0)
             exit
           else
@@ -68,7 +69,7 @@ c          endif
             endif
           endif
         enddo
-        if(lrecl .gt. 0)then
+        if(lrecl > 0)then
           buffer(lrecl:lrecl)=char(10)
         endif
       else
@@ -79,16 +80,17 @@ c          endif
         elseif(nc ==  irbnofile)then
           go to 10
         endif
-        if(lfnm .gt. 0)then
+        if(lfne > 0 .and. lfni /= 5)then
+          write(*,*)'getbuf0-2 ',lfne,lfni
           if(buffer(lrecl:lrecl) == char(10))then
-            write(lfnm,'(1x,a)')buffer(ipoint:lrecl-1)
+            write(lfne,'(1x,a)')buffer(ipoint:lrecl-1)
           else
-            write(lfnm,'(1x,a)')buffer(ipoint:lrecl)
+            write(lfne,'(1x,a)')buffer(ipoint:lrecl)
           endif
         endif
       endif
       return
- 10   if(ios .le. 0)then
+ 10   if(ios <= 0)then
         ios=9999
       endif
       if(lfni == 5)then
@@ -96,7 +98,7 @@ c          endif
         stop
       endif
       return
- 20   if(ios .le. 0)then
+ 20   if(ios <= 0)then
         ios=99999
       endif
       if(lfni == 5)then
@@ -122,7 +124,7 @@ c          endif
           if(ffsprmpt)then
             call elname(mfpnt,pr)
             l=len_trim(pr)
-            if(mfpnt .ne. mfpnt1)then
+            if(mfpnt /= mfpnt1)then
               pr(l+1:l+1)=':'
               call elname(mfpnt1,pr(l+2:80))
               l=len_trim(pr)
@@ -130,7 +132,7 @@ c          endif
             pr(l+1:l+1)='/'
             call elname(id1,pr(l+2:80))
             l=len_trim(pr)
-            if(id1 .ne. id2)then
+            if(id1 /= id2)then
               pr(l+1:l+1)=':'
               call elname(id2,pr(l+2:80))
               l=len_trim(pr)
@@ -141,7 +143,7 @@ c          endif
             n=autofg(rlist(iaxline)+1.d0,'S10.0')
             write(lfno,'('' In['',a,'']:= '',$)')n(1:len_trim(n))
           endif
-        elseif(ipr .gt. 0)then
+        elseif(ipr > 0)then
           nc=len_trim(opcode(ipr))
           pr(1:9)=' ...'//opcode(ipr)(1:nc)//'    '
           write(lfno,'(a,$)')pr(1:9)

@@ -9,8 +9,11 @@
       type (sad_namtbl),pointer :: loc
       type (sad_descriptor) kx
       integer*8 kax
-      integer*4 itx,nc,lfno,itfpeeko,next,next1,ip0
-      logical*4 exist,force
+      integer*4 ,intent(in):: lfno
+      integer*4 ,intent(out):: itx,next
+      integer*4 nc,itfpeeko,next1,ip0
+      logical*4 ,intent(out):: exist
+      logical*4 ,intent(in):: force
       character*(*) ,intent(inout):: word
       character peekch
       integer*4 l,lenw,irtc
@@ -19,7 +22,7 @@
       itx=-1
       ip0=ipoint
       call unreadbuf(word,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         call skipline
         exist=.true.
         return
@@ -36,7 +39,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
           go to 9100
         case (-2)
           call getwrd(word)
-          exist=word(1:1) .eq. ' '
+          exist=word(1:1) == ' '
           go to 9100
         case (-3)
           call getwrd(word)
@@ -48,7 +51,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
             exist=.true.
           else
             if(ktfoperq(kx,kax))then
-              if(kx%k .eq. ktfoper+mtfnull)then
+              if(kx%k == ktfoper+mtfnull)then
                 go to 8000
               endif
               kx%k=ktfsymbol+klist(ifunbase+kax)
@@ -62,35 +65,35 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
               word1=loc%str%str(1:nc)
               call capita(word0(1:l))
               call capita(word1(1:nc))
-              if(word0 .eq. word1)then
+              if(word0 == word1)then
                 ipoint=next1
-                exist=word0(1:1) .eq. ' '
+                exist=word0(1:1) == ' '
                 exit
               elseif(l .gt. nc)then
-                if(word0(1:nc) .eq. word1 .and.
-     $               (word0(nc+1:nc+1) .eq. '{' .or.
-     $               word0(nc+1:nc+1) .eq. '(' .or.
-     $               word0(nc+1:nc+1) .eq. '~' .or.
-     $               word0(nc+1:nc+1) .eq. '.'))then
+                if(word0(1:nc) == word1 .and.
+     $               (word0(nc+1:nc+1) == '{' .or.
+     $               word0(nc+1:nc+1) == '(' .or.
+     $               word0(nc+1:nc+1) == '~' .or.
+     $               word0(nc+1:nc+1) == '.'))then
                   ipoint=next1
                   exist=.false.
                   exit
                 endif
               endif
             elseif(ktflistq(kx,klx))then
-              if(klx%head%k .ne. ktfoper+mtfcomplex .and.
-     $             klx%head%k .ne. ktfoper+mtflist .and.
+              if(klx%head%k /= ktfoper+mtfcomplex .and.
+     $             klx%head%k /= ktfoper+mtflist .and.
      $             ktfoperq(klx%head) .and. klx%ref .le. 0)then
                 call getwrd(word)
-                exist=word(1:1) .eq. ' '
+                exist=word(1:1) == ' '
                 exit
               endif
             endif
           endif
         end select
  8000   ipoint=next
-        if((force .or. peekch(next) .ne. ';') .and.
-     $       kx%k .ne. ktfoper+mtfnull)then
+        if((force .or. peekch(next) /= ';') .and.
+     $       kx%k /= ktfoper+mtfnull)then
           call tfsetout(kx,lfno,amaxline)
         endif
         l=itfdownlevel()
@@ -120,7 +123,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
       klarg%rbody(1)=al
       call loc_symdef(iaxout,sdout)
       kad=sdout%downval
-      if(kad .eq. 0)then
+      if(kad == 0)then
         kad=ktdhtaloc(iaxout-5,i00,15)
       endif
       ilist(2,kad-1)=ior(ilist(2,kad-1),1)
@@ -129,7 +132,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
       rlist(kan+7)=1.d100
       if(lfno .gt. 0)then
         call tfprintout(amaxline,irtc)
-        if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
+        if(irtc .gt. 0 .and. ierrorprint /= 0)then
           call tfreseterror
         endif
       endif
@@ -156,7 +159,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
       data iaxshort%k /0/
       al=rlist(iaxline)
       if(al .gt. 0.d0)then
-        if(iaxshort%k .eq. 0)then
+        if(iaxshort%k == 0)then
           iaxshort=tfsyeval(kxsymbolf('System`Short',12,.true.),irtc)
         endif
         isp=isp+1
@@ -172,17 +175,16 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
         l=lenw(n)
         write(prolog,'(''Out['',a,'']:= '',$)')n(1:l)
         ncprolog=l+8
-        do while(kad .ne. 0)
-          if(al .eq. rlist(ktfaddr(klist(kad+3))+1))then
+        do while(kad /= 0)
+          if(al == rlist(ktfaddr(klist(kad+3))+1))then
             k=dlist(kad+6)
             ka=ktfaddr(k%k)
             kt=k%k-ka
-            if(ktflistq(k,kl) .and. ktfsymbolq(kl%head%k,sym) .and.
-     $           sym%gen .eq. -3)then
+            if(ktflistq(k,kl) .and. ktfsymbolq(kl%head%k,sym) .and. sym%gen == -3)then
               call tfclassmember(k,iaxshort,k1,.true.,irtc)
-              if(irtc .gt. 0)then
+              if(irtc > 0)then
                 return
-              elseif(irtc .ne. 0)then
+              elseif(irtc /= 0)then
                 go to 10
               endif
               isp=isp+1
@@ -222,7 +224,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
         l=len_trim(str)
         i1=1
         do
-          if(i1+lrecl .gt. l)then
+          if(i1+lrecl > l)then
             if(l .lt. i1)then
               if(null)then
                 write(lfno,*)
@@ -272,17 +274,17 @@ c      write(*,*)'unreadbuf ',ipoint,lrecl,l,ip1,word(1:l)
         if(convcase)then
           call capita(word1(1:l))
         endif
-        if(word1(1:l) .eq. word2(1:l))then
+        if(word1(1:l) == word2(1:l))then
 c          write(*,*)'unreadbuf ',i,l,ip1,' ',buffer(i+l:i+l),
 c     $         ' ',word(1:l),
 c     $         index(delim(1:ldel),buffer(i+l:i+l))
-          if((i .eq. ip1 .or.
-     $         index(delim(1:ldel),buffer(i+l:i+l)) .gt. 0) .and.
-     $         (i .eq. ipbase .or.
-     $         index(delim(1:ldel),buffer(i-1:i-1)) .gt. 0 .or.
-     $         index('0123456789.',buffer(i-1:i-1)) .gt. 0 .or.
-     $         ichar(buffer(i-1:i-1)) .eq. 0 .or.
-     $         word(1:1) .eq. '.'))then
+          if((i == ip1 .or.
+     $         index(delim(1:ldel),buffer(i+l:i+l)) > 0) .and.
+     $         (i == ipbase .or.
+     $         index(delim(1:ldel),buffer(i-1:i-1)) > 0 .or.
+     $         index('0123456789.',buffer(i-1:i-1)) > 0 .or.
+     $         ichar(buffer(i-1:i-1)) == 0 .or.
+     $         word(1:1) == '.'))then
             ipoint=i
             return
           endif

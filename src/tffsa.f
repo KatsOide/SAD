@@ -47,11 +47,11 @@
       type (sad_descriptor) kx,tfvars
       real*8 ,allocatable,dimension(:)::vparams
       integer*8 itwisso,kax,ildummy
-      integer*4 kk,i,lfnb,ia,iflevel,j,ielm,ielme,igelme,k1,k,
-     $     irtc0,it,itt,lfn,
-     $     iuse,l,levelr,lfnl0,lpw,meas0,mfpnta,igetgl,lenw,
-     $     mphi2,next,nextt,nfp,
-     $     nrpt1,itfpeeko,itfgetrecl,nl
+      integer*4 ,intent(in):: lfn,lfnb
+      integer*4 ,intent(out):: irtcffs
+      integer*4 kk,i,ia,iflevel,j,ielm,ielme,igelme,k1,k,igetgl,
+     $     irtc0,it,itt,iuse,l,levelr,lfnl0,lpw,meas0,mfpnta,lenw,
+     $     mphi2,next,nextt,nfp,nrpt1,itfpeeko,itfgetrecl,nl
       real*8 rmax,amus0,amus1,amusstep,apert,axi,ayi,ctime1,
      $     dpm2,dpxi,dpyi,em,emxe,emye,epxi,epyi,pspan,r2i,r3i,
      $     trval,rese,v,wa,wd,wl,xa,ya,xxa,xya,yya,getva,rgetgl1,
@@ -66,7 +66,7 @@
       character*(MAXPNAME+8) name
       character*16 autofg
       character*20 str
-      integer*4 irtcffs,irtc,nc,nrpt(maxrpt),irptp(maxrpt)
+      integer*4 irtc,nc,nrpt(maxrpt),irptp(maxrpt)
       real*8 chi0(3),trdtbl(3,6),df(maxcond)
       logical*4 err,new,cmd,open98,abbrev,ftest,
      $     frefix,exist,init,expnd,chguse,visit,byeall,geocal0,busy
@@ -192,9 +192,16 @@ c
       endif
       lfno=outfl
  2    lfnm=6
-c 2    lfnm=merge(merge(lfno,merge(0,lfno,igetgl('$LOG$') == 0),
-c     $     lfni /= 5),6,lfnb==1)
-      call csrst(lfnm)
+      call csrst(lfno)
+      lfne=0
+      if(lfni /= 5)then
+        if(lfnb>1 .and. igetgl('$LOG$') /= 0)then
+          lfne=lfno
+        endif
+      endif
+c      if(lfne /= 0)then
+c        write(*,*)'tffsa-1 ',lfni,lfno,lfnb,igetgl('$LOG$'),lfne
+c      endif
       kffs=dxnullo
  10   continue
       if(iffserr /= 0)then
@@ -1177,8 +1184,7 @@ c        dpm2=rlist(ktlookup('DPM'))
         enddo
         em=abs(emx)+abs(emy)
         call tffamsetup(1,em)
-        nfam1=merge(1-nfam,-nfam,
-     $       nfam > nfr .and. kfam(-nfam) == 0)
+        nfam1=merge(1-nfam,-nfam,nfam > nfr .and. kfam(-nfam) == 0)
       endif
       wake=(twake .or. lwake) .and. trpt .and. wakeopt
       kwakep=0
@@ -1773,13 +1779,15 @@ c$$$      flv%mfitp(flv%nfc)=mfc
       use tfcsi
       use readbuf, only:trbopen,trbopenmap
       use tfrbuf, only:modestring,trbassign,trbclose
-      use iso_c_binding
       use ffsfile, only:lfnp
+      use iso_c_binding
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_string), pointer :: str
       type (csiparam) sav
-      integer*4 outfl1,irtc,narg,lfn,isp1,itfmessage,itfmessagestr
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 outfl1,narg,lfn,itfmessage,itfmessagestr
       character*10 strfromis
       narg=isp-isp1
       if(narg > 2)then
@@ -1807,8 +1815,7 @@ c$$$      flv%mfitp(flv%nfc)=mfc
       endif
       levele=levele+1
       sav=savep
-      call trbopen(lfn,ktfaddr(ktastk(isp1+1)),
-     $     int8(modestring),str%nch)
+      call trbopen(lfn,ktfaddr(ktastk(isp1+1)),int8(modestring),str%nch)
       if(lfn <= 0)then
         irtc=itfmessagestr(9,'FFS::lfn',str%str(1:str%nch))
         kx%k=ktfoper+mtfnull

@@ -74,6 +74,14 @@ EndPackage[___]:=(
   $ContextPath=Last[$PackageStack];
   If[Length[$PackageStack]>1,$PackageStack=Drop[$PackageStack,-1]];
   $ContextPath);
+WithContext[{c__},body_]:=(
+  First[{BeginPackage[c];
+    Begin[First[{c}]];
+    body,
+    End[];
+    EndPackage[]}]);
+SetAttributes[WithContext,{HoldRest,Constant}];
+
 SetAttributes[{Begin,End,BeginPackage,EndPackage,ToContext,Wrap},Constant];
 
 (* Signal numbers for Kill[] *)
@@ -208,7 +216,7 @@ $CommandLine=Module[{`s=$GetCommandLine[]},
     True,
     s]];
 
-NPARA=2;
+NPARA=4;
 AutoLoad[`x__,`f_]:=(Scan[
   Function[`a,`a:=(Unprotect[x];Clear[x];Get[f];`a)],{x}];
   Protect[x]);

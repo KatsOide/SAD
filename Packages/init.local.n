@@ -17,6 +17,19 @@ If[`$HaveLaTeX==="",
 DocumentsDirectory=Environment["SAD_ROOTPATH"]//"/Documents/";
 ExamplesDirectory=Environment["SAD_ROOTPATH"]//"/script/";
 
+SetNPARA[]:=Module[{np=ToExpression[Environment["SLURM_CPUS_ON_NODE"]],f},
+  NPARA=If[RealQ[np],
+    np,
+    f=OpenRead["!sysctl -n hw.ncpu"];
+    np=Read[f];
+    Close[f];
+    If[RealQ[np],
+      Max[4,np],
+      8]];
+!  Print["NPARA: ",NPARA];
+  ];
+SetNPARA[];
+
 !KBF$ScreenShotDirectory = "/ldata/KEKB/KCG/ScrShot";
 
 !Get[PackagesDirectory//"init.kekb.n"];

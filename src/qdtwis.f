@@ -457,11 +457,9 @@ c      return
       logical*4 over
       logical*4 ,intent(in):: trpt1
 c      equivalence (trans2,trans2s)
-      write(*,*)'qdtwis-0 ',k,k1,l
       itwk=itwissp(k)
       itwk1=itwissp(k1)
       itwl=itwissp(l)
-      write(*,*)'qdtwis-1 ',itwk,itwk1,itwl
       w=eps/(abs(dcod(1))+abs(dcod(2))+abs(dcod(3))+abs(dcod(4))
      $     +abs(dcod(5)))
       cod2(6)=utwiss(mfitddp,idp,itwk1)

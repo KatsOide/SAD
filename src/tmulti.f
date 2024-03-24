@@ -1,3 +1,37 @@
+      module multi
+
+      contains
+      subroutine tmulk(np,x,px,y,py,g,aln,akn,apsi,nmmax)
+      use kyparam, only:nmult
+      use multa, only:aninv
+      implicit none
+      integer*4 ,intent(in):: np,nmmax
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),g(np)
+      complex*16 ,intent(in):: akn(0:nmult)
+      real*8 ,intent(in):: aln,apsi
+      integer*4 kord,i
+      real*8 fe,pr
+      complex*16 cx0,cx
+      real*8 ,parameter::pmax=0.9999d0
+      fe=-tan(apsi)/aln
+      do i=1,np
+        cx0=dcmplx(x(i),y(i))
+        cx=(0.d0,0.d0)
+        do kord=nmmax,1,-1
+          cx=(cx+akn(kord))*cx0*aninv(kord)
+        enddo
+        cx=fe*(cx+akn(0))*cx0
+        cx=dcmplx(min(pmax,max(-pmax,dble(cx))),min(pmax,max(-pmax,imag(cx))))
+        pr=1.d0+g(i)
+        px(i)=px(i)-dble(cx)/pr
+        py(i)=py(i)+imag(cx)/pr
+      enddo
+c      write(*,'(a,1p10g12.4)')'tmulk ',apsi,aln,akn(0:2)
+      return
+      end subroutine
+
+      end module
+
       subroutine tmulti(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $     al,ak,akr0,bz,phia,psi1,psi2,
      $     dx,dy,dz,chi1,chi2,theta,dtheta,theta2,alg,phig,
@@ -16,6 +50,7 @@
       use mathfun
       use multa, only:fact,aninv
       use kyparam, only:nmult
+      use multi
 c      use ffs_pointer, only:inext,iprev
       implicit none
       integer*4 , parameter ::itmax=10,ndivmax=1000
@@ -123,6 +158,9 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
         sv=0.d0
         ibsi=1
         akrm(0:nmmax)=akr(0:nmmax)*wi
+        if(nzleng .and. psi1 /= 0.d0)then
+          call tmulk(np,x,px,y,py,g,al,akr,psi1,nmmax)
+        endif
         do m=1,ndiv
           if(nzleng)then
             if(krad)then
@@ -201,6 +239,9 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
      $            al1,ak1,bzs,dble(ak01),imag(ak01),-1,eps0,
      $           tzs1,.false.)
           endif
+          if(psi2 /= 0.d0)then
+            call tmulk(np,x,px,y,py,g,al,akr,psi2,nmmax)
+          endif
           if(mfring == 2 .or. mfring == 3)then
             if(f1out /= 0.d0 .or. f2out /= 0.d0)then
               do concurrent (i=1:np)
@@ -252,15 +293,8 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
      $         0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
         endif
       endif
-c      if(allocated(tzs1))then
-c        deallocate(tzs1)
-c      endif
-c      if(allocated(tzs))then
-c        deallocate(tzs)
-c      endif
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
-     $     alg-al,bz,dx,dy,dz,
-     $     -chi1,-chi2,theta2,bxs,bys,bzs,.false.)
+     $     alg-al,bz,dx,dy,dz,-chi1,-chi2,theta2,bxs,bys,bzs,.false.)
 c      write(*,'(a,1p10g12.4)')'tmulti-9 ',x(1),px(1),y(1),py(1),z(1),g(1)
       return
       end
@@ -284,6 +318,7 @@ c      write(*,'(a,1p10g12.4)')'tmulti-9 ',x(1),px(1),y(1),py(1),z(1),g(1)
       use mathfun
       use multa, only:fact,aninv
       use kyparam, only:nmult
+      use multi
 c      use ffs_pointer, only:inext,iprev
       implicit none
       integer*4 , parameter ::itmax=10,ndivmax=1000
@@ -407,6 +442,9 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
       al1=al*ws(1)*.5d0
       ak01=akr(0)*ws(1)*.5d0
       if(nzleng)then
+        if(psi1 /= 0.d0)then
+          call tmulk(np,x,px,y,py,g,al,akr,psi1,nmmax)
+        endif
         if(fringe)then
           if(mfring /= 2)then
             call tcavfrin(np,x,px,y,py,z,g,dv,al,v,w,p0,h0,
@@ -572,6 +610,9 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
           if(fb2 /= 0.d0 .and. akr(0) /= (0.d0,0.d0))then
             call tblfri(np,x,px,y,py,z,g,al,-akr(0),fb2)
           endif
+        endif
+        if(psi2 /= 0.d0)then
+          call tmulk(np,x,px,y,py,g,al,akr,psi2,nmmax)
         endif
         if(fringe .and. mfring /= 1)then
           do n=nmmax,0,-1

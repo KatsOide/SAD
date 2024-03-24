@@ -1,23 +1,24 @@
       character*(*) function autofg(x,form1)
       use tfcbk
-      use tfstk, only:ktfenanq,sad_descriptor,ktfrealq
+      use tfstk, only:ktfenanq,sad_descriptor,ktfrealq,ktfstringq,sad_string
       implicit none
-      character*(*) form1
+      character*(*) ,intent(in):: form1
       character*16 form
       character*5 expstr
-      character*32 buff,buf1,autos1
+      character*32 buff,buf1,autos1,repexp
       character*32 zero
       parameter (zero='0000000000000000000000000000000')
       character*32 ovfl
       parameter (ovfl='$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
       logical*4 tzero,math,canv
-      integer*4 idot,lf1,notspace,lenw,lc2,irtc,
-     $     lf,lc,lc1,lm,i,li1,is,iexp,ifromstr,isign
-      real*8 x,ax,xl
+      integer*4 idot,lf1,notspace,lenw,lc2,irtc,lf,lc,lc1,lm,i,li1,is,iexp,ifromstr,isign
+      real*8 ,intent(in):: x
+      real*8 ax
       logical*4 shift,lat
       type (sad_descriptor) kx
+      type (sad_string) ,pointer :: str
       if(form1 == ' ' .or. form1 == 'S')then
-        autofg=autos1(x)
+        autofg=repexp(autos1(x))
         return
       elseif(form1(1:1) == 'F' .or. form1(1:1) == 'G')then
         form='('//form1(:lenw(form1))//')'
@@ -122,7 +123,7 @@
       else
         lm=lc2-6
       endif
-      if(lm .lt. 0)then
+      if(lm < 0)then
         if(iexp .ge. 1)then
           buf1='***'
           is=3
@@ -133,7 +134,7 @@
         go to 1000
       endif
       buff(1:1)='0'
-      if(iexp .le. min(10,lc2) .and. iexp .gt. -min(3,lf))then
+      if(iexp <= min(10,lc2) .and. iexp > -min(3,lf))then
         call roundnumstr(buff(1:19),min(lc1,iexp+lf)+2,shift)
         if(shift)then
           iexp=iexp+1
@@ -188,7 +189,7 @@
         endif
       endif
  1000 if(tzero)then
-        if(index(buf1,'.') .gt. 0)then
+        if(index(buf1,'.') > 0)then
           do i=is,2,-1
             if(buf1(i:i) == '.')then
               buf1(i:)=expstr
@@ -220,20 +221,14 @@
       endif
       if(math)then
         i=index(autofg,'E')
-        if(i .gt. 0)then
+        if(i > 0)then
           autofg=autofg(1:i-1)//' 10^'//autofg(i+1:)
         endif
       elseif(canv)then
         i=index(autofg,'E')
-        if(i .gt. 0)then
+        if(i > 0)then
           call tfevals('`$HaveLaTeX',kx,irtc)
-          if(irtc /= 0)then
-            lat=.false.
-          elseif(ktfrealq(kx,xl))then
-            lat=xl /= 0.d0
-          else
-            lat = .false.
-          endif
+          lat = irtc == 0 .and. ktfStringq(kx,str) .and. str%nch > 0
           if(lat)then
             autofg=autofg(1:i-1)//'\\times10^{'//
      $           autofg(i+1:len_trim(autofg))//'}'
@@ -303,12 +298,12 @@ c      parameter (ich0=ichar('0'))
       if(string(l+1:l+1) == '0')then
         l=l+1
       endif
-      if(n .lt. 0)then
+      if(n < 0)then
         string(l:l)='-'
         l=l-1
       endif
       if(l .ne. 0)then
-        if(l .lt. 0)then
+        if(l < 0)then
           string='***'
           leng=3
         else
@@ -345,7 +340,7 @@ c      parameter (ich0=ichar('0'))
         return
       endif
       a=abs(x)
-      if(a .lt. 2.d0**31)then
+      if(a < 2.d0**31)then
         ai=aint(x)
         if(ai == x)then
           ix=int(x)
@@ -377,15 +372,15 @@ c      parameter (ich0=ichar('0'))
           string='INF'
           return
         endif
-      elseif(a .lt. xl)then
+      elseif(a < xl)then
         do i=9,1,-1
           a1=a*xm(i)
-          if(a1 .lt. xh)then
+          if(a1 < xh)then
             a=a1
             iae=iae-mexp(i)
           endif
         enddo
-        if(a .lt. xl)then
+        if(a < xl)then
           a=a*10.d0
           iae=iae-1
         endif
@@ -393,10 +388,10 @@ c      parameter (ich0=ichar('0'))
       iexp=iae
       iam=int(a)
       iaf=int((a-iam)*1.d9+.5d0)
-      if(iaf .gt. 999999999)then
+      if(iaf > 999999999)then
         iaf=0
         iam=iam+1
-        if(iam .gt. 999999999)then
+        if(iam > 999999999)then
           iam=iam/10
           iexp=iexp+1
         endif
@@ -407,7 +402,7 @@ c      parameter (ich0=ichar('0'))
       else
         call strfromifixed(iaf,string(10:18))
       endif
- 1    if(x .lt. 0)then
+ 1    if(x < 0)then
         isign=-1
       else
         isign=0
@@ -447,7 +442,7 @@ c      parameter (icharzero=ichar('0'))
       logical*4 shift,inc
       l=len(string)
       shift=.false.
-      if(icol .gt. l)then
+      if(icol > l)then
         return
       endif
       ch=string(icol:icol)
@@ -457,7 +452,7 @@ c      parameter (icharzero=ichar('0'))
       string(1:1)='0'
       do while(inc)
         string(j:j)=char(ichar(string(j:j))+1)
-        inc=string(j:j) .gt. '9'
+        inc=string(j:j) > '9'
         if(inc)then
           string(j:j)='0'
           j=j-1
@@ -486,7 +481,7 @@ c      parameter (icharzero=ichar('0'))
         elseif(string(i:i) == '+')then
         else
           k=ichar(string(i:i))-ichar('0')
-          if(k .lt. 0 .or. k .gt. 9)then
+          if(k < 0 .or. k > 9)then
             ifromstr=is*n
             return
           else
@@ -511,7 +506,7 @@ c      parameter (icharzero=ichar('0'))
         elseif(string(i:i) == '+')then
         else
           k=ichar(string(i:i))-ichar('0')
-          if(k .lt. 0 .or. k .gt. 9)then
+          if(k < 0 .or. k > 9)then
             ifromstrb=is*n
             return
           else
@@ -535,7 +530,7 @@ c
       s1=autos(x)
       l=len_trim(s1)
       ic=index(s1(1:l),':')
-      if(ic .le. 0)then
+      if(ic <= 0)then
         return
       endif
 c      write(*,*)'autos1 ',s1(1:l)
@@ -547,7 +542,7 @@ c      write(*,*)'autos1 ',s1(1:l)
         elseif(s1(i:i) == '-')then
           s1='-1'//s1(i+1:l)
           return
-        elseif(ichar(s1(i:i)) .le. ichar('8'))then
+        elseif(ichar(s1(i:i)) <= ichar('8'))then
           s1(i:i)=char(ichar(s1(i:i))+1)
           return
         else
@@ -558,3 +553,24 @@ c      write(*,*)'autos1 ',s1(1:l)
       s1='1'//s1(1:l)
       return
       end
+
+      character*(*) function repexp(s) result(r)
+      implicit none
+      character*(*) ,intent(in):: s
+      integer*4 i,l,iexp,ifany
+      l=len_trim(s)
+      r=s
+      i=ifany(s(1:l),'eE',1)
+      if(i <= 0)then
+        return
+      endif
+c      read(s(i+1:l),'(i4)')iexp
+      if(s(i+1:i+2) == '+0')then
+        r=s(1:i-1)//'e'//s(i+3:l)
+      elseif(s(i+1:i+2) == '-0')then
+        r=s(1:i-1)//'e-'//s(i+3:l)
+      endif
+      return
+      end
+        
+      
