@@ -308,7 +308,7 @@ tfeval.o: tfeval.f tfeeval.o tfstk.o toplvl.o
 tffamsetup.o: tffamsetup.f tfeeval.o tffscalc.o tffs.o tfstk.o
 tffile.o: tffile.f tffsa.o tffs.o tfstk.o toplvl.o
 tffindroot.o: tffindroot.f gamma.o itfmaloc.o tfeeval.o tfmodule.o tfpart.o tfreplace.o tfsameq.o tfstk.o
-tffsa.o: tffsa.f INTGRL.o tfeeval.o tffscalc.o tffsmatch.o tffs.o tfmodule.o tfstk.o tgrot.o toplvl.o
+tffsa.o: tffsa.f INTGRL.o tfeeval.o tffscalc.o tffsmatch.o tffs.o tfmodule.o tfsetparam.o tfstk.o tgrot.o toplvl.o
 tffscalc.o: tffscalc.f qcell.o qdcell.o tfeeval.o tffs.o tfloor.o tfstk.o toplvl.o
 tffs.o: tffs.f initb1.o tfefun.o tfloor.o tfstk.o toplvl.o
 tffsfreefix.o: tffsfreefix.f tffs.o tfstk.o toplvl.o

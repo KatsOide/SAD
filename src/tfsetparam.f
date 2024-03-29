@@ -1,4 +1,39 @@
+      module param
+
+      contains
+      subroutine tfsetdp(dpmax)
+      use tfstk
+      implicit none
+      real*8 ,intent(in):: dpmax
+      type (sad_symdef),pointer:: symdp
+      if(.not. ktfrealq(kxsymbolv('`DP',3,symdp)))then
+        call tflocal(symdp%value)
+      endif
+      symdp%value=dfromr(dpmax)
+      return
+      end subroutine
+
+      subroutine tfgetdp(dpmax,tag,symdp)
+      use tfstk
+      implicit none
+      real*8 ,intent(out):: dpmax
+      character*(*),intent(in):: tag
+      type (sad_symdef),pointer ,intent(out):: symdp
+      type (sad_rlist), pointer :: kldp
+      if(.not. ktfrealq(kxsymbolv('`DP',3,symdp),dpmax))then
+        if(tfreallistq(symdp%value,kldp))then
+          dpmax=maxval(abs(kldp%rbody(1:kldp%nl)))
+        else
+          call termes('?'//tag//'-DP has a wrong value, use 0.01 instead.',' ')
+          call tfdebugprint(symdp%value,'DP = ',1)
+          dpmax=0.01
+        endif
+      endif
+      end subroutine
+      end module
+
       subroutine tfsetparam
+      use param
       use kyparam
       use tfstk
       use ffs
@@ -6,6 +41,7 @@
       use ffs_pointer, only:idelc,latt,idtypec,gammab
       use mathfun
       implicit none
+      type (sad_symdef),pointer:: symdp
       integer*8 ix
       real*8 rgetgl1,df
       logical*4 calgeo
@@ -14,7 +50,8 @@
       emz   =rgetgl1('EMITZ')
       sigzs =rgetgl1('SIGZ')
       sizedp=rgetgl1('SIGE')
-      dpmax =rfromd(kxsymbolv('DP',2))
+      call tfgetdp(dpmax,'setparam',symdp)
+c      dpmax =rfromd(kxsymbolv('DP',2))
       if(idtypec(1) .eq. icMARK)then
         ix=latt(1)
         rlist(ix+ky_EMIX_MARK)=emx

@@ -524,7 +524,7 @@ c      use ffs_flag, only:cell
           case (mfitbmagx,mfitbmagy,mfitbmagz)
             wfit(i)=3.d0
           case (mfitgx,mfitgy,mfitgz)
-            wfit(i)=0.01d0*sqrt(
+            wfit(i)=1.d-3*sqrt(
      $           max(twiss(maxf,0,mfitnx),twiss(maxf,0,mfitny))
      $           /em/max(almin,pos(maxf)-pos(1)))
           case (mfitchi1,mfitchi2,mfitchi3)

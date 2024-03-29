@@ -271,7 +271,6 @@
         else
           dc=c-1.d0
         endif
-c        dc=merge(-s**2/(1.d0+c),c-1.d0,c > 0.d0)
       endif
       return
       end
