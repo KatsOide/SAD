@@ -528,7 +528,7 @@ c      call tfdebugprint(kx,'tfget-r',1)
       openf=lfn /= sav%lfni
       if(openf)then
         call trbassign(lfn)
-        lfnm=0
+        lfne=0
       endif
       levele=levele+1
       itf=-1

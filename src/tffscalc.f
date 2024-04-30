@@ -448,8 +448,7 @@ c      use ffs_flag, only:cell
       use eeval
       use tfcsi,only:icslfnm
       implicit none
-      integer*4 ,intent(in):: nqcola,maxf,
-     $     kfit(*),ifitp(*),kfitp(*),kdp(*),iqcol(nqcola)
+      integer*4 ,intent(in):: nqcola,maxf,kfit(*),ifitp(*),kfitp(*),kdp(*),iqcol(nqcola)
       logical*4 ,intent(in):: wcal
       integer*4 i,j,k,iq
       real*8 coum,emxx,emyy,dpm,coup,em

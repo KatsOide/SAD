@@ -18,10 +18,9 @@ c      parameter (sqrt3=sqrt(3.d0))
       integer*4 ,intent(in):: ll
       integer*8 lp
       real*8 ,intent(in):: em
-      real*8 twissi(50),trans(4,4),
-     $     dx(4,maxnfp*2),dxp(4,maxnfp*2)
-      integer*4 m,nfa,i,j,irtc,l,nfp
-      real*8 dpw,x0,px0,y0,py0,dpi,x,y,dp0,c,s
+      real*8 twissi(50),trans(4,4),dx(4,maxnfp*2),dxp(4,maxnfp*2),dpm(-nfr:nfr+1)
+      integer*4 m,nfa,i,j,irtc,l,nfp,k
+      real*8 dpw,x0,px0,y0,py0,dpi,x,y,c,s
       data kxmamp%k /0/
       lp=elatt%comp(ll)
       kfam(-nfr:nfr)=0
@@ -35,7 +34,7 @@ c      parameter (sqrt3=sqrt(3.d0))
       call tclrfpe
       levele=levele+1
       kx=tfeeval(kxmamp,.true.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         write(*,*)'Error in MatchingAmplitude, code =',irtc
         go to 9000
       endif
@@ -55,7 +54,7 @@ c      parameter (sqrt3=sqrt(3.d0))
       nfp=min(maxnfp,nfp)
       nfa=nfr+1
       dpw=dp(nfr)-dp(-nfr)
-      dp0=(dp(nfr)+dp(-nfr))*.5d0
+c      dp0=(dp(nfr)+dp(-nfr))*.5d0
       call twmov(ll,twissi,1,0,.true.)
       x0 =sqrt(twissi(mfitbx)*em)
       px0=x0/twissi(mfitbx)
@@ -81,36 +80,42 @@ c      parameter (sqrt3=sqrt(3.d0))
         dxp(4,i)=trans(4,1)*dx(1,i)+trans(4,2)*dx(2,i)
      $       +trans(4,3)*dx(3,i)+trans(4,4)*dx(4,i)
       enddo
+      do i=-nfr,nfr-1
+        dpm(i+1)=(dp(i)+dp(i+1))*.5d0
+      enddo
+      dpm(-nfr)=dp(-nfr)
+      dpm(nfr+1)=dp(nfr)
       do i=1,m
         ki=kl%dbody(i)
-        if(.not. tfreallistq(ki,kli) .or. kli%nl .ne. 3)then
+        if(.not. tfreallistq(ki,kli) .or. kli%nl /= 3)then
           go to 9000
         endif
-        dpi=kli%rbody(1)+dp0
-        if(dpi .ge. dp(-nfr) .and. dpi .le. dp(nfr))then
-          x=kli%rbody(2)
-          y=kli%rbody(3)
-          if(x .ne. 0.d0)then
-            do j=1,nfp
-              jfam(nfa)=merge(0,nint(2*nfr*(dpi-dp(-nfr))/dpw-nfr),
-     $             dpw .eq. 0.d0)
-              dfam(1:4,nfa)=dxp(1:4,j)*x
-              dp(nfa)=dp(jfam(nfa))
-              kfam(nfa)=j
-              nfa=merge(-nfa,-nfa+1,nfa .ge. 0)
-            enddo
+        dpi=kli%rbody(1)
+        do k=-nfr,nfr
+          if(dpi >= dpm(k) .and. dpi < dpm(k+1))then
+            x=kli%rbody(2)
+            y=kli%rbody(3)
+            if(x /= 0.d0)then
+              do j=1,nfp
+                jfam(nfa)=k
+                dfam(1:4,nfa)=dxp(1:4,j)*x
+                dp(nfa)=dp(k)
+                kfam(nfa)=j
+                nfa=merge(-nfa,-nfa+1,nfa .ge. 0)
+              enddo
+            endif
+            if(y /= 0.d0)then
+              do j=nfp+1,nfp*2
+                jfam(nfa)=k
+                dfam(1:4,nfa)=dxp(1:4,j)*y
+                dp(nfa)=dp(k)
+                kfam(nfa)=nfp-j
+                nfa=merge(-nfa,-nfa+1,nfa .ge. 0)
+              enddo
+            endif
+            exit
           endif
-          if(y .ne. 0.d0)then
-            do j=nfp+1,nfp*2
-              jfam(nfa)=merge(0,nint(2*nfr*(dpi-dp(-nfr))/dpw-nfr),
-     $             dpw .eq. 0.d0)
-              dfam(1:4,nfa)=dxp(1:4,j)*y
-              dp(nfa)=dp(jfam(nfa))
-              kfam(nfa)=nfp-j
-              nfa=merge(-nfa,-nfa+1,nfa .ge. 0)
-            enddo
-          endif
-        endif
+        enddo
       enddo
       if(nfa .lt. 0)then
         nfam=-nfa
