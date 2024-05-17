@@ -59,10 +59,10 @@ TransferMatrix[from_,to_,param1_List,opt___]:=
 TransferMatrix[from_,to_,opt___]:=
   TransferMatrixPrimitive[Twiss["*",{from,to}],LINE["GAMMABETA",{from,to}],opt];
 
-With[{def={Fold->False,Symplectic->False}},
+With[{def={Fold->False,Symplectic->False,Calc6D->False}},
   TransferMatrixPrimitive[param_,g_List:LINE["GAMMABETA",{"^^^","$$$"}],opt___]:=Module[
     {dpsix,dpsiy,cospsix,cospsiy,sinpsix,sinpsiy,m4,rmatrix,det,a1,gr,
-      {fold,symp}={Fold,Symplectic}/.opt/.def,dpsiz,cospisz,sinpsiz,m6,m},
+      {fold,symp,c6d}={Fold,Symplectic,Calc6D}/.opt/.def,dpsiz,cospisz,sinpsiz,m6,m},
     gr=If[symp,
       1,
       Sqrt[g[[1]]/g[[2]]]];
@@ -77,7 +77,7 @@ With[{def={Fold->False,Symplectic->False}},
     sinpsix=Sin[dpsix];
     cospsiy=Cos[dpsiy];
     sinpsiy=Sin[dpsiy];
-    If[?CALC6D,
+    If[?CALC6D || Calc6D,
       dpsiz=param[[2,mfnz]]-param[[1,mfnz]];
       cospsiz=Cos[dpsiz];
       sinpsiz=Sin[dpsiz];

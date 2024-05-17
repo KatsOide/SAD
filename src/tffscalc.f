@@ -186,25 +186,9 @@ c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
      $                 uini(mfitdx:mfitddp,ii)
                 else
                   if(fam)then
-                    twiss(1,1,mfitdx:mfitdpy )=
-     $                   utwiss(mfitdx:mfitdpy ,i2,1)+dfam(1:4,ii)
+                    twiss(1,1,mfitdx:mfitdpy )=utwiss(mfitdx:mfitdpy ,i2,1)+dfam(1:4,ii)
                   else
-c                    call tgetphysdispu(utwiss(1,i2,1),physd)
-c                    physd1=(utwiss(mfitdx:mfitdpy,i2,1)
-c     $                     -utwiss(mfitdx:mfitdpy,i3,1))/(dp(i2)-dp(i3))
-c                    do i=1,4
-c                      if(abs(physd(i)) > abs(physd1(i)))then
-c                        physd(i)=physd1(i)
-c                      endif
-c                    enddo
-                    twiss(1,1,mfitdx:mfitdpy)=
-     $                   utwiss(mfitdx:mfitdpy,i2,1)
-c     $                   +(dp(ii)-dp(i2))*physd
-c                    if(ii == nfr)then
-c                      write(*,'(a,1p10g12.4)')'tffscalc ',
-c     $                     twiss(1,1,mfitdx:mfitdpy),
-c     $                     utwiss(mfitex:mfitepy,i2,1),dp(ii),dp(i2)
-c                    endif
+                    twiss(1,1,mfitdx:mfitdpy)=utwiss(mfitdx:mfitdpy,i2,1)
                   endif
                   twiss(1,1,mfitdz )=utwiss(mfitdz ,i2,1)
                   twiss(1,1,mfitddp)=twiss(1,0,mfitddp)+dp(ii)
@@ -358,8 +342,7 @@ c                    endif
         avebeta=(pos(maxf)-pos(1))/
      $       max(twiss(maxf,0,mfitnx),twiss(maxf,0,mfitny))
       endif
-      call twfit(flv%kfit,
-     1     flv%ifitp,flv%kfitp,kdp,nqcola,iqcol,maxf,wcal)
+      call twfit(flv%kfit,flv%ifitp,flv%kfitp,kdp,nqcola,iqcol,maxf,wcal)
       wcal=.false.
       rw=0.d0
       residual1(nfam1:nfam)=ffs_res(0.d0,0)

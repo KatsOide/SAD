@@ -474,7 +474,7 @@ Range[`n1_Real,`n2_Real]:=(Range[n1,n2]=Range[n1,n2,1]);
 Range[x__Real]:=(Range[x]=Range$[x]);
 
 (TimeZoneOffset = tz_) ^:= SetTimeZone[tz];
-TimeZoneOffset=Block[{f=OpenRead["!date +\"%z\""]},{Read[f]*0.6,Close[f]}[[1]]]; (* Use local time *)
+TimeZoneOffset=Block[{f=OpenRead["!date +\"%z\""]},{Read[f,Real]*0.6,Close[f]}[[1]]]; (* Use local time *)
 !TimeZoneOffset = SetTimeZone[];
 Protect[TimeZoneOffset];
 	(* Switch to Local TimeZone *)

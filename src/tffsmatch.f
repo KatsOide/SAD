@@ -44,8 +44,7 @@ c      include 'DEBUG.inc'
      $     dg,f1,f2,g1,g2,valvar0,rp0,dv,vl,dvkc
       real*8 twisss(ntwissfun)
       real*8 , pointer :: qu(:,:),quw(:,:)
-      logical*4 chgmod,newton,imprv,limited,over,wcal,
-     $     parallel,nderiv,outt,nderiv0,dlim
+      logical*4 chgmod,newton,imprv,limited,over,wcal,parallel,nderiv,outt,nderiv0,dlim
       integer*4 kkk,kkkk,npa
       integer*4 , external :: itfgetrecl
       character ch
@@ -154,8 +153,7 @@ c          write(*,'(a,i5,7l2,i5,1p8g12.4)')'tffsmatch-21 ',iter,chgmod,newton,w
             sexp='  NOCALEXP'
           endif
           if(convgo)then
-            write(lfno,9501)' Matched. (',res2r(r),')',
-     $           dpmax,dp01,wexponent,ch,offmw,sexp
+            write(lfno,9501)' Matched. (',res2r(r),')',dpmax,dp01,wexponent,ch,offmw,sexp
  9501       format(a,1pG11.4,a,
      $           ' DP =',0pf8.5,'  DP0 =',f8.5,
      $           '  ExponentOfResidual =',f4.1,a,
@@ -166,9 +164,19 @@ c          write(*,'(a,i5,7l2,i5,1p8g12.4)')'tffsmatch-21 ',iter,chgmod,newton,w
             endif
             exit do9000
           elseif(.not. fitflg)then
-            write(lfno,9501)' Residual =',res2r(r),' ',
-     $           dpmax,dp01,wexponent,ch,offmw,sexp
-            exit do9000
+            if(r%nstab == 0)then
+              write(lfno,9501)' Residual =',r%r,' ',
+     $             dpmax,dp01,wexponent,ch,offmw,sexp
+              exit do9000
+            else
+              write(lfno,9502)'Unstable = ',r%nstab,' Residual =',r%r,' ',
+     $             dpmax,dp01,wexponent,ch,offmw,sexp
+              exit do9000
+ 9502         format(a,i5,a,1pG11.4,a,
+     $           ' DP =',0pf8.5,'  DP0 =',f8.5,
+     $           '  ExponentOfResidual =',f4.1,a,
+     $           ' OffMomentumWeight =',f8.3,a)
+            endif
           else
             if(chgini .and. cell)then
               call twmov(1,twisss,1,0,.true.)
@@ -198,8 +206,7 @@ c                  write(*,'(a,1p10g12.4)')'tffsmatch-imprv ',r%r,r0%r,r00%r
                   if(resle(r,r00,rtol1))then
                     lout=lfno
                     if(outt)then
-                      write(lfno,*)
-     $     'Iterations  Residual    Method     Reduction  Variables'
+                      write(lfno,*)'Iterations  Residual    Method     Reduction  Variables'
                       outt=.false.
                     endif
                     if(newton)then
