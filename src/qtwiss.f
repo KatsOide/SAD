@@ -133,11 +133,11 @@ c        call tfmemcheckprint1('qtwiss',l,.false.)
           cod=twiss(ip1,mfitdx:mfitddp)
           call tesetdv(cod(6))
         endif
-c        if(l .gt. 20200 .and. l < 20300)then
-c        if(l .gt. 20200 .and. mod(l,100) == 0)then
+c        if(l > 20200 .and. l < 20300)then
+c        if(l > 20200 .and. mod(l,100) == 0)then
 c        write(*,'(a,2i5,1p6g15.7)')'qtwiss1 ',l,ltyp,cod
 c        endif
-        if(ltyp .gt. icMARK)then
+        if(ltyp > icMARK)then
           if(.not. mat)then
             twiss(ip,1:ntfun)=twiss(ip1,1:ntfun)
           endif
@@ -146,11 +146,13 @@ c        endif
             if(itgetfpe() /= 0)then
               call tclrfpe
               over=.true.
+c              write(*,*)'qtwis1-getfpe',
               go to 9000
             endif
             trtr=tr(1,1)+tr(2,2)+tr(3,3)+tr(4,4)
             if(ktfenanq(trtr))then
               over=.true.
+c              write(*,*)'qtwis1-enanq',
               go to 9000
             endif
             if(insmat)then
@@ -162,13 +164,12 @@ c        endif
           else
             bx0=twiss(ip1,mfitbx)
             by0=twiss(ip1,mfitby)
-            if(bx0 .gt. 0.d0 .and. by0 .gt. 0.d0 .and.
-     $           itgetfpe() == 0)then
+            if(bx0 > 0.d0 .and. by0 > 0.d0 .and. itgetfpe() == 0)then
             else
 c              write(*,'(a,4i8,1p2g15.7)')'qtwiss-over 3 ',l,ip1,ip0,l1,bx0,by0
               do j=ip1-1,ip0+la,-1
-                if(twiss(j,mfitbx) .gt. 0.d0
-     $               .and. twiss(j,mfitby) .gt. 0.d0)then
+                if(twiss(j,mfitbx) > 0.d0
+     $               .and. twiss(j,mfitby) > 0.d0)then
                   ip1=j
                   go to 12
                 endif
@@ -185,7 +186,7 @@ c              write(*,'(a,4i8,1p2g15.7)')'qtwiss-over 3 ',l,ip1,ip0,l1,bx0,by0
             ay0=twiss(ip1,mfitay)
           endif
           call tfbndsol(l1,ibg,ibb)
-          if(ibg .gt. 0)then
+          if(ibg > 0)then
             call qsol(trans,cod,l1,coup)
             go to 20
           endif
@@ -257,7 +258,7 @@ c          endif
             endif
 
           case (icBEND)
-            if(dir .gt. 0.d0)then
+            if(dir > 0.d0)then
               psi1=cmp%value(ky_E1_BEND)
               psi2=cmp%value(ky_E2_BEND)
               apsi1=cmp%value(ky_AE1_BEND)
@@ -617,7 +618,7 @@ c            write(*,'(a,i8,2l2,106g15.7)')'qtwiss1-8 ',ip,coup,normal,twiss(ip,
      $         +trans(4,4)*r45+trans(4,5)
         endif
         detp=(u11*u22-u21*u12+u33*u44-u43*u34)*.5d0
-        normal=detp .gt. xyth
+        normal=detp > xyth
         if(normal)then
           sqrdet=sqrt(detp)
           u11=u11/sqrdet
@@ -822,7 +823,7 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       type (ffs_bound) fbound
       real*8 conv,cx,sx,ax,bx,cy,sy,ay,by,r0,dcod(6)
       integer*4 , parameter :: itmax=10
-      real*8 , parameter :: conv0=1.d-19,conv1=1.d-10,
+      real*8 , parameter :: conv0=1.d-18,conv1=1.d-10,
      $     factmin=1.d-3,orbmax=1.d10,trmax=1.d10
       integer*4 ,intent(in)::  idp
       integer*4 it
@@ -831,8 +832,7 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       real*8 ,intent(out) :: trans(4,5)
       real*8 , target :: tr1(4,5)
       real*8 , pointer :: ptwiss(:,:),tr1v(:)
-      real*8 cod(6),trans1(4,5),transb(4,5),
-     $     transe(4,5),ftwiss(ntwissfun),trans2(4,5),cod00(6)
+      real*8 cod(6),trans1(4,5),transb(4,5),transe(4,5),ftwiss(ntwissfun),trans2(4,5),cod00(6)
       logical*4 ,intent(out):: over,codfnd
       logical*4 stab
       it=0
@@ -846,7 +846,7 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
      $     ptwiss,[nlat*(2*ndim+1),ntwissfun])
       do while(it <= itmax)
         cod=cod0
-        if(fbound%fb .gt. 0.d0)then
+        if(fbound%fb > 0.d0)then
           call qtwissfrac1(ftwiss,transb,cod,idp,
      $         fbound%lb,fbound%fb,1.d0,.true.,.true.,over)
           call qtwiss1(ptwiss,idp,fbound%lb+1,fbound%le,
@@ -867,11 +867,10 @@ c          do i=1,5
 c          enddo
           trans2(:,5)=trans2(:,5)+trans1(:,5)
         else
-          call qtwiss1(ptwiss,idp,fbound%lb,fbound%le,
-     $         trans2,cod,.true.,over)
-c          write(*,'(a,2l3,1p6g15.7)')'qcod-qt1 ',over,cod
+          call qtwiss1(ptwiss,idp,fbound%lb,fbound%le,trans2,cod,.true.,over)
+c          write(*,'(a,l3,1p6g15.7)')'qcod-qt1 ',over,cod
         endif
-        if(fbound%fe .gt. 0.d0)then
+        if(fbound%fe > 0.d0)then
           call qtwissfrac1(ftwiss,transe,cod,idp,
      $         fbound%le,0.d0,fbound%fe,.true.,.true.,over)
           tr1(1,1:5)=
@@ -896,18 +895,18 @@ c          write(*,'(a,2l3,1p6g15.7)')'qcod-qt1 ',over,cod
         if(.not. orbitcal)then
           codfnd=.true.
         endif
-c        write(*,'(a,2l3,1p6g15.7)')'qcod-1 ',codfnd,over,cod
         if(codfnd)then
           cod0=cod
           return
         endif
         if(over)then
+c          write(*,'(a,2l3,1p6g15.7)')'qcod-1 ',codfnd,over,cod
           codfnd=.false.
           return
         endif
         cx=.5d0*(trans(1,1)+trans(2,2))
         cy=.5d0*(trans(3,3)+trans(4,4))
-        if(abs(cx) .gt. 1.d0)then
+        if(abs(cx) > 1.d0)then
 c          if(stab)then
 c            it=it+1
 c            cod0=(2.d0*cod0+cod00)/3.d0
@@ -915,7 +914,7 @@ c            cycle
 c          endif
           cx=1.d0/cx
         endif
-        if(abs(cy) .gt. 1.d0)then
+        if(abs(cy) > 1.d0)then
 c          if(stab)then
 c            it=it+1
 c            cod0=(2.d0*cod0+cod00)/3.d0
@@ -943,7 +942,7 @@ c          endif
         endif
 c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
         it=it+1
-        if(r .gt. r0)then
+        if(r > r0)then
           if(fact < factmin)then
             fact=fact*16.d0
             cod0=(1.d0+fact)*cod00-fact*cod0
@@ -1202,7 +1201,7 @@ c        write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6)
           cmp%value(ky_FRMD_BEND)=-f1-2.d0*f2
         endif
         if(r /= 0.d0)then
-c          if(cmp%orient .gt. 0.d0)then
+c          if(cmp%orient > 0.d0)then
           if(cmp%ori)then
             cmp%value(ky_E1_BEND)=
      $           cmp%value(ky_E1_BEND)*f1/r
@@ -1464,7 +1463,7 @@ c     $     cmp%value(ky_K0_BEND)
           r1=0.d0
           r2=1.d0
         endif
-        j=i+1-merge(i1,i2,is .gt. 0)
+        j=i+1-merge(i1,i2,is > 0)
         call qputfracseg(lsegp1,j,r2-r1,lsegp,i)
 c fringes are not taken into account yet...
       enddo

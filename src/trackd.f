@@ -135,7 +135,6 @@ c      write(*,*)'trackd-muls: ',nturn,muls,nturn/6200
      $'     N'//label(ivar1)//
      $     '     0----|----1----|----2----|----3----|----4----|----5'
       kv=kxsymbolv(vname,len(vname),symd)
-c      kv=ktfsymbolz(vname,len(vname))-4
       call tflocald(symd%value)
       symd%value=kxadaloc(0,2,kal)
       kal%dbody(1)=kxadaloc(0,3,kal1)
@@ -149,7 +148,6 @@ c      kv=ktfsymbolz(vname,len(vname))-4
       kal13%rbody(1)=a1min
       kal13%rbody(2)=a1max
       kal%dbody(2)=kxadalocnull(0,n1p,kal2)
-c      lp0=latt(1)+kytbl(kwmax,idtype(idelc(1)))+1
       emx=sqrt(abs(rgetgl1('EMITX'))+abs(rgetgl1('EMITY')))
       emz=merge(sqrt(abs(rgetgl1('EMITZ'))),abs(rgetgl1('SIGE')),rfsw)
       ntloss(1:n1p,1:n2p)=maxturn
@@ -187,8 +185,7 @@ c      lp0=latt(1)+kytbl(kwmax,idtype(idelc(1)))+1
       np0=npz
       allocate(x(npz),px(npz),y(npz),py(npz),z(npz),g(npz),dv(npz),
      $     spx(npz),spy(npz),spz(npz),aenox(npz),aenoy(npz),aenoz(npz))
-      call tfevals('`ExtMap$@InitMap['//autos(dble(npz))//',1]',
-     $     kxm,irtc)
+      call tfevals('`ExtMap$@InitMap['//autos(dble(npz))//',1]',kxm,irtc)
       allocate(kptbl(npmax,6))
       allocate(mturn(npmax))
       allocate(kzx(2,npmax))

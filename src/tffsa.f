@@ -738,8 +738,7 @@ c End of the lines added by N. Yamamoto Apr. 25, '93
         call tfinitvar
         go to 10
       elseif(abbrev(word,'REJ_ECT','_'))then
-        call tfrej
-     1   (word,nlist,flv%nfc,mfpnt,mfpnt1,
+        call tfrej(word,nlist,flv%nfc,mfpnt,mfpnt1,
      1    flv%kfit,flv%mfitp,flv%ifitp,flv%ifitp1,exist)
         go to 30
       elseif(abbrev(word,'COUP_LE','_'))then
@@ -760,38 +759,24 @@ c End of the lines added by N. Yamamoto Apr. 25, '93
       elseif(word == 'SBUNCH')then
         call termes('?SBUNCH is obsolete.',' ')
         go to 10
-c        iwakepold=ifwakep
-c        call tfgetr(rlist(iwakepold+1),1.d0,word,lfno,exist)
-c        go to 31
       elseif(word == 'DBUNCH')then
         call termes('?DBUNCH is obsolete.',' ')
         go to 10
-c        iwakepold=ifwakep
-c        call tfdbun(word,rlist(ilist(2,iwakepold)),ilist(1,iwakepold),
-c     1              err)
-c        go to 32
       elseif(word == 'SLICE')then
         call termes('?SLICE is obsolete.',' ')
         go to 10
-c        iwakepold=ifwakep
-c        ns=ilist(1,iwakepold+2)
-c        call tfgeti(ns,1.d0,word,lfno,exist)
-c        if(ns <= 0)then
-c          call termes('?Parameter out of range in SLICE.',' ')
-c          go to 2
-c        endif
-c        ilist(1,iwakepold+2)=ns
-c        go to 31
       elseif(abbrev(word,'ORI_GIN','_') .or. word == 'ORG')then
         iorgr=igelme(word,exist,lfno)
         if(.not. exist)then
           iorgr=1
+          geo0=geoini
+          call termes('?ORG-Reset to the initial setting.',' ')
           go to 12
         endif
         do i=1,3
           geo0(i,4)=getvad(exist,word,geo0(i,4))
           if( .not. exist)then
-            go to 12
+            go to 5010
           endif
         enddo
         do i=1,3
@@ -801,11 +786,11 @@ c        go to 31
           endif
         enddo
         geo0(:,1:3)=tfrotgeo(geo0(:,1:3),-chi0*scale(mfitchi1:mfitchi3))
-c        geo0(:,1:3)=tfchitogeo(-chi0*scale(mfitchi1:mfitchi3))
-        if(.not. exist)then
-          go to 12
+        if(exist)then
+          go to 10
         endif
-        go to 10
+ 5010   call termes('?ORG-Missing parameters: ORG dgx dgy dgz dchi1 dchi2 dch3.',' ')
+        go to 12
       elseif(word == 'SHOW')then
         call tshow(kffs,irtcffs,lfnb > 1,lfno)
         go to 10

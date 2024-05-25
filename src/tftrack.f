@@ -42,18 +42,17 @@
       nend=1
       mt=1
       if(narg >= 3)then
-        if(ktastk(isp1+3) .eq. ktfoper+mtfnull)then
+        if(ktastk(isp1+3) == ktfoper+mtfnull)then
         elseif(ktfrealq(ktastk(isp1+3),nt))then
           nend=nt
         else
           go to 9100
         endif
-        if(narg .eq. 4)then
-          if(ktastk(isp) .eq. ktfoper+mtfnull)then
+        if(narg == 4)then
+          if(ktastk(isp) == ktfoper+mtfnull)then
           elseif(ktfrealq(ktastk(isp),nend))then
             if(nend < nt)then
-              irtc=itfmessage(9,'General::wrongval',
-     $             '"#4 >= #3"')
+              irtc=itfmessage(9,'General::wrongval','"#4 >= #3"')
               return
             endif
             mt=nend-nt+1
@@ -65,7 +64,7 @@
 
       ld=nlat
       if(narg >= 2)then
-        if(ktastk(isp1+2) .eq. ktfoper+mtfnull)then
+        if(ktastk(isp1+2) == ktfoper+mtfnull)then
         else
           ld=itfloc(ktastk(isp1+2),irtc)
           if(irtc /= 0)then
@@ -121,7 +120,7 @@
         if(irtc /= 0)then
           return
         endif
-        if(nwakep .eq. 0)then
+        if(nwakep == 0)then
           wake=.false.
         else
           npara=1
@@ -164,15 +163,15 @@ c     $       ne,npnlatmin
           irtc=1
           ikptblm=ktfallocshared(npz*int((nkptbl+1)/2))
           npr=npara-1
-          np1=npz/npara+1
+          np1=npz/npara
           ipn=0
           npr=0
-          do while(ipn+np1 < npz)
+          do while(ipn+np1 < npz .and. npr < npara)
             kseed=kseed+2
             npri=npr
             npr=npr+1
             iprid=itffork()
-            if(iprid .eq. 0)then
+            if(iprid == 0)then
               call tfaddseed(kseed,irtc)
               if(irtc /= 0)then
                 write(*,*)'addseed-error ',irtc
@@ -381,12 +380,12 @@ c      return
         endif
       enddo
       irtc=0
-      if(npx .eq. np)then
+      if(npx == np)then
         kx=dtastk(isp)
         return
       endif
       kx=kxadalocnull(-1,kll%nl,klx)
-      if(npx .eq. 0)then
+      if(npx == 0)then
         do i=1,kll%nl
           klx%dbody(i)=dtfcopy1(dxnulll)
         enddo
@@ -441,7 +440,7 @@ c      return
       do i=1,np
         k=iptbl(i,1)
         rlist(kaj(1:6)+i)=zx(k,1:6)
-        rlist(kaj(mcf)+i)=merge(1.d0,0.d0,iptbl(k,4) .eq. 0)
+        rlist(kaj(mcf)+i)=merge(1.d0,0.d0,iptbl(k,4) == 0)
       enddo
       if(calpol)then
         do i=1,np
@@ -497,7 +496,7 @@ c       Initialize map between particle ID and array index
         iptbl(i,1)=i
         iptbl(i,2)=i
 c       Initialize particle lost position[0:alive, -nlat-1:initial-dead]
-        if(zx(i,mcf) .eq. 0.d0)then
+        if(zx(i,mcf) == 0.d0)then
           iptbl(i,4)=-nlat-1
           iptbl(i,5)=tbegin-1
         else
@@ -536,7 +535,7 @@ c           Search avlive particle from tail: (i, npa]
             do while((i < npa) .and. (iptbl(npa,4) /= 0))
                npa=npa-1
             enddo
-            if(iptbl(npa,4) .eq. 0)then
+            if(iptbl(npa,4) == 0)then
 c              Swap dead particle slot[i] with tail alive particle slot[npa]
 c              - Update maps between partice ID and array index
 c                Note: maps is initialized and slot swapping MUST be once

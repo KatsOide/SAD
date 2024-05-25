@@ -54,7 +54,7 @@
       real*8 pure function tround(x)
       implicit none
       real*8 ,intent(in)::x
-      tround=sign(aint(abs(x)+0.5d0),x)
+      tround=sign(anint(abs(x)),x)
       return
       end
 
@@ -62,6 +62,20 @@
       implicit none
       complex*16 ,intent(in)::z
       tcround=dcmplx(tround(dble(z)),tround(imag(z)))
+      return
+      end
+
+      real*8 pure function tround2(x,a)
+      implicit none
+      real*8 ,intent(in)::x,a
+      tround2=sign(anint(abs(x/a))*a,x)
+      return
+      end
+
+      complex*16 pure function tcround2(z,a)
+      implicit none
+      complex*16 ,intent(in)::z,a
+      tcround2=tcround(z/a)*a
       return
       end
 
@@ -1283,7 +1297,7 @@ c!$OMP END PARALLEL DO
       return
       end
 
-      recursive function tfeintf2(fun,cfun,k,k1,cmpl,ir)
+      recursive function tfeintf2(fun,cfun,k,k1,irtc)
      $     result(kx)
       use tfstk
       use cfunc
@@ -1293,64 +1307,104 @@ c      use tmacro
       type (sad_descriptor),intent(in):: k,k1
       type (sad_dlist), pointer ::klx,kl,kl1
       type (sad_rlist), pointer ::klr
-      integer*4 ,intent(out):: ir
+      integer*4 ,intent(out):: irtc
       integer*4 i,m,m1,isp0
-      logical*4 ,intent(in):: cmpl
       external fun,cfun
-      real*8 fun,v,v1
+      real*8 fun
       complex*16 cv,cv1,cfun
+      logical*4 nreal
       kx%k=ktfoper+mtfnull
-      ir=0
-      if(ktfrealq(k,v) .and. ktfrealq(k1,v1))then
-        kx=dfromr(fun(v,v1))
-      elseif(tfnumberq(k,cv) .and. tfnumberq(k1,cv1))then
-        if(cmpl)then
-          cv=cfun(cv,cv1)
-          kx=kxcalocc(-1,cv)
-          return
-        else
-          icrtc=0
-          kx=dfromr(dble(cfun(cv,cv1)))
-          ir=icrtc
-        endif
-      elseif(tflistq(k,kl) .and. tflistq(k1,kl1))then
-        m=kl%nl
-        m1=kl1%nl
-        if(m /= m1)then
-          ir=8
-          return
-        endif
-        if(iand(kl%attr,lnonreallist) == 0 .and.
-     $       iand(kl1%attr,lnonreallist) == 0)then
-          kx=kxavaloc(-1,m,klr)
-          call descr_sad(kx,klx)
-          klr%attr=ior(klr%attr,lconstlist)
-          do i=1,m
-            klr%rbody(i)=fun(kl%rbody(i),kl1%rbody(i))
-          enddo
-        else
-          isp0=isp
-          do i=1,m
-            ki=kl%dbody(i)
-            k1i=kl1%dbody(i)
-            if(ktfrealq(ki) .and.
-     $           ktfrealq(k1i))then
-              rtastk(isp)=fun(kl%rbody(i),kl1%rbody(i))
-            elseif(tflistq(ki) .and. tflistq(k1i))then
-              dtastk(isp)=tfeintf2(fun,cfun,ki,k1i,cmpl,ir)
-              if(ir /= 0.d0)then
-                return
-              endif
+      irtc=0
+      if(tfnumberq(k,cv))then
+        if(tfnumberq(k1,cv1))then
+          if(imag(cv) == 0.d0 .and. imag(cv1) == 0.d0)then
+            kx=dfromr(fun(dble(cv),dble(cv1)))
+          else
+            cv=cfun(cv,cv1)
+            if(imag(cv) == 0.d0)then
+              kx=dfromr(dble(cv))
             else
-              ir=-1
+              kx=kxcalocc(-1,cv)
+            endif
+          endif
+        elseif(tflistq(k1,kl1))then
+          m1=kl1%nl
+          nreal=.false.
+          kx=kxadaloc(-1,m1,klx)
+          klx%attr=ior(klx%attr,lconstlist)
+          do i=1,m1
+            klx%dbody(i)=tfeintf2(fun,cfun,k,kl1%dbody(i),irtc)
+            if(irtc /= 0)then
               return
             endif
+            if(ktfnonrealq(klx%dbody(i)))then
+              klx%dbody(i)=dtfcopy(klx%dbody(i))
+              nreal=.true.
+            endif
           enddo
-          kx=kxmakelist(isp0)
-          isp=isp0
+          if(.not. nreal)then
+            klx%attr=klx%attr-lnonreallist
+          endif
+        else
+          irtc=-1
+        endif
+        return
+      elseif(tflistq(k,kl))then
+        m=kl%nl
+        if(tfnumberq(k1))then
+          nreal=.false.
+          kx=kxadaloc(-1,m,klx)
+          klx%attr=ior(klx%attr,lconstlist)
+          do i=1,m
+            klx%dbody(i)=tfeintf2(fun,cfun,kl%dbody(i),k1,irtc)
+            if(irtc /= 0)then
+              return
+            endif
+            if(ktfnonrealq(klx%dbody(i)))then
+              klx%dbody(i)=dtfcopy(klx%dbody(i))
+              nreal=.true.
+            endif
+          enddo
+          if(.not. nreal)then
+            klx%attr=klx%attr-lnonreallist
+          endif
+        elseif(tflistq(k1,kl1))then
+          m1=kl1%nl
+          if(m /= m1)then
+            irtc=-1
+            return
+          endif
+          if(iand(kl%attr,lnonreallist) == 0 .and.
+     $         iand(kl1%attr,lnonreallist) == 0)then
+            kx=kxavaloc(-1,m,klr)
+            do i=1,m
+              klr%rbody(i)=fun(kl%rbody(i),kl1%rbody(i))
+            enddo
+          else
+            isp0=isp
+            do i=1,m
+              ki=kl%dbody(i)
+              k1i=kl1%dbody(i)
+              if(ktfrealq(ki) .and. ktfrealq(k1i))then
+                rtastk(isp)=fun(kl%rbody(i),kl1%rbody(i))
+              elseif(tflistq(ki) .and. tflistq(k1i))then
+                dtastk(isp)=tfeintf2(fun,cfun,ki,k1i,irtc)
+                if(irtc /= 0.d0)then
+                  return
+                endif
+              else
+                irtc=-1
+                return
+              endif
+            enddo
+            kx=kxmakelist(isp0)
+            isp=isp0
+          endif
+        else
+          irtc=-1
         endif
       else
-        ir=-1
+        irtc=-1
       endif
       return
       end

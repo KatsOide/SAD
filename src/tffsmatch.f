@@ -154,8 +154,7 @@ c          write(*,'(a,i5,7l2,i5,1p8g12.4)')'tffsmatch-21 ',iter,chgmod,newton,w
           endif
           if(convgo)then
             write(lfno,9501)' Matched. (',res2r(r),')',dpmax,dp01,wexponent,ch,offmw,sexp
- 9501       format(a,1pG11.4,a,
-     $           ' DP =',0pf8.5,'  DP0 =',f8.5,
+ 9501       format(a,1pG11.4,a,' DP =',0pf8.5,'  DP0 =',f8.5,
      $           '  ExponentOfResidual =',f4.1,a,
      $           ' OffMomentumWeight =',f8.3,a)
             fitflg=.false.
@@ -206,14 +205,14 @@ c                  write(*,'(a,1p10g12.4)')'tffsmatch-imprv ',r%r,r0%r,r00%r
                   if(resle(r,r00,rtol1))then
                     lout=lfno
                     if(outt)then
-                      write(lfno,*)'Iterations  Residual    Method     Reduction  Variables'
+                      write(lfno,*)'Iterations Unstable Residual    Method     Reduction  Variables'
                       outt=.false.
                     endif
                     if(newton)then
-                      write(lfno,9701)iter,res2r(r),'  (NEWTON)  ',fact,nvara
- 9701                 format(i8,3x,1pG11.4,a,1pG11.4,i7)
+                      write(lfno,9701)iter,r%nstab,r%r,'  (NEWTON)  ',fact,nvara
+ 9701                 format(i8,3x,i6,2x,1pG11.4,a,1pG11.4,i7)
                     else
-                      write(lfno,9701)iter,res2r(r),'  (DESCEND) ',fact,nvara
+                      write(lfno,9701)iter,r%nstab,r%r,'  (DESCEND) ',fact,nvara
                     endif
                     nmes=0
                     r00=r

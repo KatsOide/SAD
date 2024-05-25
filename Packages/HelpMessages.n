@@ -534,7 +534,9 @@ prints out the values of elements which match element-pattern in the SAD MAIN in
 
    {"ORG",
     "Usage: ORG location, dgx, dgy, dgz, dchi1, dchi2, dch3\n\n\
-sets the origin of the geometrical coordinate relative to the location with a relative shift (dgx, dgy, dgz) and rotation (dchi1, dchi2, dchi3).",
+sets the origin of the geometrical coordinate relative to the location with a relative shift (dgx, dgy, dgz) and rotation (dchi1, dchi2, dchi3).\n\
+ If location is omitted, reset geometrical coordinate to the original setting.\n\
+ CALC is necessary to reflect the setting to the geometry at each point.",
     "",
     {}},
 
@@ -1736,7 +1738,8 @@ Example: \n\
                  dp/p0 = {-0.01,-0.0075,-0.005,-0.0025,0,\n\
                           0.0025,0.005,0.0075,0.01} + DP0 .\n\
    GO starts the matching.\n\n\
-As this example, the off-momentum points are chosen with equal separation. If the off-momentum point n is an even number, the chosen points are same as the case of n+1, but the on-momentum point (==DP0) is excluded.",
+As this example, the off-momentum points are chosen with equal separation. If the off-momentum point n is an even number, the chosen points are same as the case of n+1, but the on-momentum point (==DP0) is excluded.\n\
+ If a list {min, max} is set to DP, the off-momentum matching is performed at dp/p(k) = min*Sin[k Pi/2/n], max*Sin[k Pi/2/n], {k,0,fitp/2}, where fitp is the number of off-momentum points given by FITP.",
      "matching-function-commands DP DP0",
      {}},
 
@@ -2198,8 +2201,10 @@ EMITZE specifies the minimum longitudinal emittance for EMITTANCE(EMIT) and Emit
 
      {"DP",
       "\
-DP represents the relative momentum spread of the beam. It is automatically set by the keyword DP of the MARK element at the beginning of the beam line. The value of EMITY affects the default weight of variables in the matching. In the off-momentum matching, the range DP0 - DP < dp/p0 < DP0 + DP is used for the matching. The assumed momentum-distribution in the BEAMSIZE(BEAM), MEASURE(MEA), etc. commands, is Gaussian with the standard deviation DP and the mean DP0 if the flag GAUSS is on, otherwise uniform (square) in the range DP0 - DP < dp/p0 < DP0 + DP.",
-      "DP0 off-momentum-matching GAUSS UNIFORM elements MARK",
+DP represents the relative momentum spread of the beam. It is automatically set by the keyword DP of the MARK element at the beginning of the beam line. The value of EMITY affects the default weight of variables in the matching. In the off-momentum matching, the range DP0 - DP < dp/p0 < DP0 + DP is used for the matching.\n\
+ If DP is set to a list {min, max}, the off-momentum matching is performed at dp/p= min*Sin[k Pi/2/n], max*Sin[k Pi/2/n], {k,0,fitp/2}, where fitp is the number of off-momentum points given by FITP.\n\
+ The assumed momentum-distribution in the BEAMSIZE(BEAM), MEASURE(MEA), etc. commands, is Gaussian with the standard deviation DP and the mean DP0 if the flag GAUSS is on, otherwise uniform (square) in the range DP0 - DP < dp/p0 < DP0 + DP.",
+      "DP0 off-momentum-matching FITP GAUSS UNIFORM elements MARK",
       {}},
 
      {"DP0",

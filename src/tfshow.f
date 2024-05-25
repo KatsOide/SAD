@@ -116,8 +116,7 @@
           write(lfno,'(A)')buf1(1:len_trim(buf1))
         endif
         do m=1,nn
-          buf0((m-1)*lf+1:m*lf)=
-     $         autofg(res2r(residual(jshow(m))),form)
+          buf0((m-1)*lf+1:m*lf)=autofg(residual(jshow(m))%r,form)
         enddo
         vout(1:lfs+3)=' Res.'
         if(lfs .gt. 6)then
@@ -197,7 +196,7 @@
           rlist(kax2+i-mf+1)=dble(merge(iuid(i),kfam(i),inicond))
           kax3i=ktavaloc(0,3)
           klist(kax3+i-mf+1)=ktflist+kax3i
-          rlist(kax3i+1)=res2r(residual(i))
+          rlist(kax3i+1)=residual(i)%r
           rlist(kax3i+2)=merge(1.d0,0.d0,optstat(i)%stabx)
           rlist(kax3i+3)=merge(1.d0,0.d0,optstat(i)%staby)
         enddo

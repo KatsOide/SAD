@@ -37,6 +37,12 @@
       is=len(buf1)
       math=form1(1:1) == 'M'
       canv=form1(1:1) == 'C'
+      if(canv)then
+        call tfevals('`$HaveLaTeX',kx,irtc)
+        lat = irtc == 0 .and. ktfStringq(kx,str) .and. str%nch > 0
+      else
+        lat=.false.
+      endif
       tzero=form1(1:1) == 'S' .or. math .or. canv
       if(tzero)then
         form=form1(2:)
@@ -75,7 +81,9 @@
         endif
         return
       elseif(x == dinfinity)then
-        if(tzero)then
+        if(lat)then
+          autofg='\\infty'
+        elseif(tzero)then
           autofg='INF'
         else
           autofg(:lc-3)=' '
@@ -83,7 +91,9 @@
         endif
         return
       elseif(x == -dinfinity)then
-        if(tzero)then
+        if(lat)then
+          autofg='-\\infty'
+        elseif(tzero)then
           autofg='-INF'
         else
           autofg(:lc-4)=' '
@@ -227,8 +237,6 @@
       elseif(canv)then
         i=index(autofg,'E')
         if(i > 0)then
-          call tfevals('`$HaveLaTeX',kx,irtc)
-          lat = irtc == 0 .and. ktfStringq(kx,str) .and. str%nch > 0
           if(lat)then
             autofg=autofg(1:i-1)//'\\times10^{'//
      $           autofg(i+1:len_trim(autofg))//'}'
@@ -557,7 +565,7 @@ c      write(*,*)'autos1 ',s1(1:l)
       character*(*) function repexp(s) result(r)
       implicit none
       character*(*) ,intent(in):: s
-      integer*4 i,l,iexp,ifany
+      integer*4 i,l,ifany
       l=len_trim(s)
       r=s
       i=ifany(s(1:l),'eE',1)
