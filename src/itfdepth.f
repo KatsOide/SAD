@@ -335,7 +335,6 @@ c      write(*,*)mode,n1,n2,ihead,indf
           elseif(mode == 4)then
             dtastk(ispf)=kf
             isp=isp+1
-c            dtastk(isp)=merge(dxnulll,kxm2l(rind,0,ind,1,.false.),ind == 0)
             if(ind == 0)then
               dtastk(isp)=dxnulll
             else

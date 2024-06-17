@@ -404,7 +404,11 @@ c        write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),
           dxfr1=fb1**2/rhob/24.d0
           dyfr1=fb1/rhob**2/6.d0
           dzfr1=dxfr1*sinp1
-          dyfra1=merge(4.d0*dyfr1/fb1**2,0.d0,fringe)
+          if(fringe)then
+            dyfra1=4.d0*dyfr1/fb1**2
+          else
+            dyfra1=0.d0
+          endif
         else
           dxfr1=0.d0
           dyfr1=0.d0
@@ -415,15 +419,22 @@ c        write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),
           dxfr2=fb2**2/rhob/24.d0
           dyfr2=fb2/rhob**2/6.d0
           dzfr2=dxfr2*sinp2
-          dyfra2=merge(4.d0*dyfr2/fb2**2,0.d0,fringe)
+          if(fringe)then
+            dyfra2=4.d0*dyfr2/fb2**2
+          else
+            dyfra2=0.d0
+          endif
         else
           dxfr2=0.d0
           dyfr2=0.d0
           dyfra2=0.d0
           dzfr2=0.d0
         endif
-        dcosp=merge((sinp2-sinp1)*(sinp2+sinp1)/(cosp1+cosp2),
-     $       cosp1-cosp2,cosp1*cosp2 .gt. 0.d0)
+        if(cosp1*cosp2 .gt. 0.d0)then
+          dcosp=(sinp2-sinp1)*(sinp2+sinp1)/(cosp1+cosp2)
+        else
+          dcosp=cosp1-cosp2
+        endif
         sinp2wp1=sinp2+sinwp1
         sinp2p1=sinp2+sinp1
         cosp1p2=cosp1*cosp2

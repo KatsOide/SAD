@@ -83,7 +83,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
             elseif(ktflistq(kx,klx))then
               if(klx%head%k /= ktfoper+mtfcomplex .and.
      $             klx%head%k /= ktfoper+mtflist .and.
-     $             ktfoperq(klx%head) .and. klx%ref .le. 0)then
+     $             ktfoperq(klx%head) .and. klx%ref <= 0)then
                 call getwrd(word)
                 exist=word(1:1) == ' '
                 exit
@@ -235,7 +235,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
             return
           else
             i2=i1+lrecl-1
-            do while(index(delim,str(i2:i2)) .le. 0)
+            do while(index(delim,str(i2:i2)) <= 0)
               i2=i2-1
               if(i2 .lt. i1)then
                 i2=i1+lrecl-1
@@ -255,12 +255,13 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
       use tmacro
       use tfcsi
       implicit none
-      integer*4 l,lenw,ip1,i,irtc
-      character*(*) word
+      integer*4 l,lenw,ip1,i
+      integer*4 ,intent(out):: irtc
+      character*(*) ,intent(inout):: word
       character*256 word1,word2
       irtc=0
       l=lenw(word)
-      if(l .le. 0)then
+      if(l <= 0)then
         return
       endif
       word2(1:l)=word(1:l)

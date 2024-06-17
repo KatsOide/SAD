@@ -21,10 +21,10 @@ Shared[`n_Real]:=ReadShared[`n];
 (--Shared[n_])^:=With[{x=ReadShared[n]-1},
   WriteShared[n,x];x];
 CloseShared=Close;
-With[{`tfork=0.01,`tsupdate=0.1,`nwu=100,`twcomp=1, nos=32,
+With[{`tfork=0.01,`tsupdate=0.1,`nwu=100,`twcomp=1, `nos=32,
   def={`Timeout->2000}},
   Parallelize[`f_,`n_,`lshare_,`npara_,`opt0___]:=
-      Module[{`shared,`sharedpid,`l={},`fk,`r,`k,`i,`np,`w,
+      Module[{`shared,`sharedpid,`l={},`fk,`r,`k,`i,`np,`w,`wp,`kw,
         `nw, `nwm, {`opt, `fcomp}=SwitchCases[{opt0}, {_Rule|_RuleDelayed,_}]},
         {nwm,fcomp}={`Timeout,`Competion}/.opt/.Completion->fcomp/.def;
 !        Print[{nwm,{fcomp,opt}}];

@@ -1,3 +1,4 @@
+ON ECHO;
 FFS;
 (* A program to check results of variaous functions
  test1: 1d list operations

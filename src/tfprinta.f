@@ -4,16 +4,18 @@
       use tfcsi
       use eeval
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_symbol), pointer :: symf,symp
       type (sad_symdef), pointer :: symfd,sympd
       integer*8 kf1,kp1
-      integer*4 isp1,irtc,itfmessage
-      if(isp .ne. isp1+1)then
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage
+      if(isp /= isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
-      if(iaxform%k .eq. 0)then
+      if(iaxform%k == 0)then
         call tfforminit
       endif
       symf=>tfsydef(symform)
@@ -41,16 +43,16 @@ c      call tfdebugprint(sympd%value,'standardform',1)
       type (sad_descriptor) ks
       type (sad_string) , pointer :: str
       integer*4 nc,irtc
-      if(iaxform%k .eq. 0)then
+      if(iaxform%k == 0)then
         call tfforminit
       endif
       ks=tfsyeval(iaxform,irtc)
-      if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
+      if(irtc > 0 .and. ierrorprint /= 0)then
         call tfreseterror
         tfgetform=' '
       else
         if(ktfstringq(ks,str))then
-          if(str%nch .le. 0)then
+          if(str%nch <= 0)then
             tfgetform=' '
           else
             nc=min(str%nch,len(tfgetform))
@@ -71,17 +73,17 @@ c      call tfdebugprint(sympd%value,'standardform',1)
       implicit none
       type (sad_descriptor) ks
       integer*4 irtc
-      if(iaxform%k .eq. 0)then
+      if(iaxform%k == 0)then
         call tfforminit
       endif
       ks=tfsyeval(iaxpagewidth,irtc)
-      if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
+      if(irtc > 0 .and. ierrorprint /= 0)then
         call tfreseterror
         itfgetrecl=131
       elseif(ktfnonrealq(ks,itfgetrecl))then
         itfgetrecl=131
       else
-        if(itfgetrecl .le. 0)then
+        if(itfgetrecl <= 0)then
           itfgetrecl=131
         endif
       endif
@@ -112,8 +114,8 @@ c      call tfdebugprint(sympd%value,'standardform',1)
       logical*4 indent
       icr=strb%column
       lcr=strb%indw
-      if(icr .gt. 0 .and.
-     $     (.not. indent .or. min(32,lcr) .lt. icr))then
+      if(icr > 0 .and.
+     $     (.not. indent .or. min(32,lcr) < icr))then
         m=strb%nch
         strb%nch=icr
         call writestringbuf(strb,cr,lfno)
@@ -127,7 +129,7 @@ c      call tfdebugprint(sympd%value,'standardform',1)
       strb%maxllevel=lcr
       strb%column=0
       strb%remlines=strb%remlines-1
-      if(strb%remlines .le. 0)then
+      if(strb%remlines <= 0)then
         if(cr)then
           write(lfno,*,ERR=100)'...'
         else
@@ -142,10 +144,10 @@ c        irtc=itfmessage(9,'General::longstr',' ')
         strb%nch=min(lcr,32)
         strb%str(1:strb%nch)=' '
       endif
-      if(icr .gt. 0)then
+      if(icr > 0)then
         strb%str(strb%nch+1:strb%nch+m-icr)=strb%str(icr+1:icr+m)
         strb%nch=strb%nch+m-icr
-        if(strb%str(strb%nch:strb%nch) .eq. '\')then
+        if(strb%str(strb%nch:strb%nch) == '\')then
           strb%nch=strb%nch-1
         endif
       endif
@@ -168,14 +170,14 @@ c        irtc=itfmessage(9,'General::longstr',' ')
       integer*1 string(l)
       logical*4 nl
       parameter (maxlen=1024)
-      if(l .gt. 0)then
+      if(l > 0)then
 c
 c       I hope the below works for all compilers... but not for DEC
 c      write(lfno,'(a,$)')string(1:l)
 c
 c        write(form,*)l
 c        do i=12,1,-1
-c          if(form(i:i) .eq. ' ')then
+c          if(form(i:i) == ' ')then
 c            form(i:i)='a'
 c            exit
 c          endif
@@ -184,7 +186,7 @@ c        write(lfno,'($,'//form//')',ERR=100)string
 c     parameter maxlen is a maximum array size for input of WRITE statement
 c     maxlen = 1024 for Interl Fortran
          j=1
-         do while(j .le. l)
+         do while(j <= l)
             write(lfno,'($,1024a1)',ERR=100)(string(i),
      $           i=j,min(l,j+maxlen-1))
             j=j+maxlen

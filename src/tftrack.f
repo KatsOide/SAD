@@ -80,9 +80,16 @@
       if(irtc /= 0)then
         return
       endif
-      ls=merge(mod(ls-1,nlat-1)+1,nlat-mod(1-ls,nlat-1),ls > 0)
-      ld=merge(mod(ld-2,nlat-1)+2,nlat+1-mod(2-ld,nlat-1),
-     $     ld > 1)
+      if(ls > 0)then
+        ls=mod(ls-1,nlat-1)+1
+      else
+        ls=nlat-mod(1-ls,nlat-1)
+      endif
+      if(ld > 1)then
+        ld=mod(ld-2,nlat-1)+2
+      else
+        ld=nlat+1-mod(2-ld,nlat-1)
+      endif
       if(ld <= ls)then
         mt=mt+1
       endif
@@ -149,11 +156,8 @@
         call tlinit(npz,h0,rlist(ifgeo+12*(ls-1)))
       endif
       call tfevals('`ExtMap$@InitMap['//autos(dble(npz))//']',kx,irtc)
-c      call omp_set_num_threads(1)
       if(npara > 1)then
         kseed=0
-c        write(*,*)'tftrack ',nparallel,npz,npparamin,
-c     $       ne,npnlatmin
         ne=ld-ls
         if(ne <= 0)then
           ne=ne+nlat
@@ -209,9 +213,7 @@ c     $       ne,npnlatmin
         kpsz=ktaloc(npz)
       endif
       p00=pgev
-c      pgev=rgetgl1('MOMENTUM')
       pgev=rlist(ifgamm+ls-1)*amass
-c      call tclrparaall
       call tphyzp
       call tsetdvfs
       call c_f_pointer(c_loc(rlist(kzp)),zx,[npz,mc])
@@ -264,8 +266,6 @@ c      call tclrparaall
      $         zx(1:npa,5),zx(1:npa,6),
      $         rlist(kdv),rlist(kpsx),rlist(kpsy),rlist(kpsz),
      $         iptbl,nt,normal)
-c          write(*,'(a,4i5,1p6g15.7)')'tftrack-5 ',npa,np0,npz,ipn,
-c     $         zx(npa,3)
         endif
         np0=np00
         outfl=outfl0

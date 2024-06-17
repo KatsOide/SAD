@@ -23,9 +23,9 @@
         irtc=itfmessage(9,'General::wrongtype','"List"')
         return
       endif
-      if(module .and. eval)then
-        lgeneration=lgeneration+1
-      endif
+c      if(module .and. eval)then
+c        lgeneration=lgeneration+1
+c      endif
       isp0=isp
       call tfmlocalv(lvlist,module,eval,irtc)
       if(irtc /= 0)then
@@ -95,11 +95,12 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       use dset,only:tfcleardaloc
       implicit none
       type (sad_symdef) ,intent(inout):: def
-      type (sad_symdef), pointer :: def1
+      type (sad_symdef), pointer :: def1,def0
       type (sad_defhash), pointer :: dhash
       type (sad_descriptor) kx,tfefunrefu
+      type (sad_namtbl), pointer::loc
       integer*8 ka1,ka10,kp1,kadi,kadi0,kp0
-      integer*4 i,kk,irtc,isp0
+      integer*4 i,kk,irtc,isp0,lgen0
       logical*4 ,intent(in):: del,unset
       if(unset)then
         if(def%upval /= 0)then
@@ -153,6 +154,17 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
           endif
         endif
         klist(kp0)=kp1
+        call loc_namtbl(def%sym%loc,loc)
+        If(loc%str%gen <= def%sym%gen)then
+          lgen0=0
+          kp1=loc%symdef
+          do while (kp1 /= 0)
+            call loc1_symdef(kp1,def1)
+            lgen0=max(lgen0,def1%sym%gen)
+            kp1=def1%next
+          enddo
+          loc%str%gen=lgen0
+        endif
         def%sym%override=0
         def%sym%attr=def%len-6
         def%len=6
@@ -201,13 +213,13 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
         go to 100
       endif
       if(eval)then
-c        write(*,*)'mlocalv-1'
         do i=1,m
           ki=list%dbody(i)
           if(ktfsymbolq(ki,symi))then
             lgi=symi%gen
             if(module)then
-              lg=lgeneration
+c              lg=lgeneration
+              lg=-1
             else
               lg=max(0,lgi)
             endif
@@ -256,7 +268,8 @@ c        write(*,*)'mlocalv-1'
                     if(ktfsymbolq(ki1i,symi1i))then
                       lgi=symi1i%gen
                       if(module)then
-                        lg=lgeneration
+                        lg=-1
+c                        lg=lgeneration
                       else
                         lg=max(0,lgi)
                       endif
@@ -278,7 +291,8 @@ c        write(*,*)'mlocalv-1'
             elseif(ktfsymbolqdef(ki1%k,symdi1))then
               lgi=symdi1%sym%gen
               if(module)then
-                lg=lgeneration
+                lg=-1
+c                lg=lgeneration
               else
                 lg=max(0,lgi)
               endif
