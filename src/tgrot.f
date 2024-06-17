@@ -12,16 +12,16 @@
       implicit none
       real*8 , intent(in)::geo(3,3)
       integer*4 ,intent(in):: i
-      if(i .eq. 2)then
+      if(i == 2)then
         tfchi=asinz(geo(3,3))
-      elseif(i .eq. 1)then
-        if(geo(2,3) .eq. 0.d0)then
+      elseif(i == 1)then
+        if(geo(2,3) == 0.d0)then
           tfchi=0.d0
         else
           tfchi=atan(geo(2,3),geo(1,3))
         endif
       else
-        if(geo(3,1) .eq. 0.d0)then
+        if(geo(3,1) == 0.d0)then
           tfchi=0.d0
         else
           tfchi=atan(geo(3,1),-geo(3,2))
@@ -126,7 +126,7 @@
       a(2)=asinz(
      1     -geo0(1,2)*geo1(1,3)-geo0(2,2)*geo1(2,3)-geo0(3,2)*geo1(3,3))
       a13= geo0(1,1)*geo1(1,3)+geo0(2,1)*geo1(2,3)+geo0(3,1)*geo1(3,3)
-      if(a13 .eq. 0.d0)then
+      if(a13 == 0.d0)then
         a(1)=0.d0
       else
         a(1)=-atan(a13,
@@ -134,7 +134,7 @@
      $       +geo0(3,3)*geo1(3,3))
       endif
       a21= geo0(1,2)*geo1(1,1)+geo0(2,2)*geo1(2,1)+geo0(3,2)*geo1(3,1)
-      if(a21 .eq. 0.d0)then
+      if(a21 == 0.d0)then
         a(3)=0.d0
       else
         a(3)=atan(-a21,
@@ -194,7 +194,7 @@ c      write(*,'(a,1p10g12.4)')'tfogeo ',geo(:,4),geo(:,1),cod
       integer*4 ,intent(out):: irtc
       real*8 , intent(in)::fr
       logical*4 chg
-      if(fr .eq. 0.d0)then
+      if(fr == 0.d0)then
         gv=geo(:,:,l)
       else
         call qfracsave(l,dsave,nvar,.true.)

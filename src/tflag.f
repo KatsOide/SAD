@@ -8,26 +8,26 @@
       logical ,intent(out):: exist
       character*(*) ,intent(in):: word
       do i=1,nflag
-        if(fname(i) .eq. ' ')then
+        if(fname(i) == ' ')then
           cycle
         endif
-        if(word .eq. fname(i))then
+        if(word == fname(i))then
           flags(i)=.true.
           exist=.true.
           return
-        elseif(word .eq. 'NO'//fname(i))then
+        elseif(word == 'NO'//fname(i))then
           flags(i)=.false.
           exist=.true.
           return
         endif
-        if(sino(i) .eq. ' ')then
+        if(sino(i) == ' ')then
           cycle
         endif
-        if(word .eq. sino(i))then
+        if(word == sino(i))then
           flags(i)=.false.
           exist=.true.
           return
-        elseif(word .eq. 'NO'//sino(i))then
+        elseif(word == 'NO'//sino(i))then
           flags(i)=.true.
           exist=.true.
           return

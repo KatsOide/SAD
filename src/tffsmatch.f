@@ -375,7 +375,7 @@ c     $             .and. dble(nvar*nfam*nlat) < aloadmax
                 enddo
                 call tffswait(ipr,npa,npr,iuta1,1000 000,'tffsmatch-NumDerv',irtc)
               else
-                call tffsqu(nqcol,nqcol1,nvar,nqumax,ifquw,ifqu,free,lfno,irtc)
+                call tffsqu(nqcol,nqcol1,nvar,nqumax,ifquw,ifqu,free,irtc)
                 if(irtc /= 0)then
                   irtc=20003
                   exit do9000

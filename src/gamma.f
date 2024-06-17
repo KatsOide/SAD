@@ -216,7 +216,7 @@ c      write(*,*)'agint ',itmaxg,ag(itmaxg)
       real*8 recursive  function bernb(n) result(f1)
       implicit none
       real*8 ,intent(in):: n
-      if(dble(n) .ne. anint(n))then
+      if(dble(n) /= anint(n))then
         f1=1.d0/0.d0
       else
         f1=bernbf(nint(n))*factorial(n)
@@ -2056,11 +2056,11 @@ c     write(*,'(1p5g21.10)')f1
       real*8 k
       integer*4 no
       lz=log(zeroim(z))
+      s1=1.d0-s
       if(abs(lz) > pllzth)then
         z1=sqrt(z)
         f=(cpolylog(s,z1)+cpolylog(s,-z1))/2.d0**s1
       else
-        s1=1.d0-s
         f=cgamma(s1)/(-lz)**s1+czeta(s)
         no=nocgam+nolog+nozt
         v=cone

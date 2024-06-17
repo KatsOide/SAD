@@ -9,7 +9,7 @@
       do i=1,n-1
         di=a(i,i)
         do j=i+1,n
-          if(a(j,i) .ne. 0.d0)then
+          if(a(j,i) /= 0.d0)then
             if(di .eq. 0.d0)then
               do k=i+1,n
                 x=a(j,k)
@@ -51,7 +51,7 @@ c              u=1.d0/sqrt(1.d0+p**2)
       do i=1,n-1
         di=a(i,i)
         do j=i+1,n
-          if(a(j,i) .ne. (0.d0,0.d0))then
+          if(a(j,i) /= (0.d0,0.d0))then
             if(di .eq. (0.d0,0.d0))then
               do k=i+1,n
                 x=a(j,k)

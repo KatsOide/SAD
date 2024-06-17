@@ -742,7 +742,7 @@ c End of the lines added by N. Yamamoto Apr. 25, '93
      1    flv%kfit,flv%mfitp,flv%ifitp,flv%ifitp1,exist)
         go to 30
       elseif(abbrev(word,'COUP_LE','_'))then
-        call tfcoup(lfnm,exist)
+        call tfcoup(exist)
         call tffsadjustvar
         if(.not. exist)then
           go to 2

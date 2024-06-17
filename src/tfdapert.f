@@ -57,7 +57,7 @@
       if(ktfnonrealq(dtastk(isp1+2),lfno))then
         return
       endif
-      if(lfno .eq. -1)then
+      if(lfno == -1)then
         lfno=icslfno()
       endif
       if(.not. tfreallistq(dtastk(isp1+4),klp))then

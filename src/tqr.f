@@ -46,7 +46,7 @@ c     end   initialize for preventing compiler warning
       anorm=anorm*2/n**2
       do1:do
         if(ie .le. ib+1)then
-          if(ib .eq. 1)then
+          if(ib == 1)then
             exit
           else
             ie=ib-1
@@ -63,9 +63,9 @@ c     write(*,'(1P4G15.7)')((vx(i)/vx(j)*a(i,j),j=1,4),i=1,4)
           do i=ie-1,ib,-1
             i1=i+1
             s=max(anorm,abs(a(i1,i1))+abs(a(i,i)))
-            if(abs(vx(i1)/vx(i)*a(i1,i))+s .eq. s)then
+            if(abs(vx(i1)/vx(i)*a(i1,i))+s == s)then
               a(i1,i)=0.d0
-              if(i1 .eq. ie)then
+              if(i1 == ie)then
                 ie=ie-1
                 cycle do1
               endif
@@ -92,17 +92,17 @@ c     write(*,'(1P4G15.7)')((vx(i)/vx(j)*a(i,j),j=1,4),i=1,4)
             a2=a(ie1,ie1)-a(is,is)
             w1=((a1*a2-a(ie1,ie)*a(ie,ie1))/a(is1,is)+a(is,is1))
      1           *vx(is)/vx(is1)
-            if(w1 .eq. 0.d0)then
+            if(w1 == 0.d0)then
               w1=-alpha*a(ie1,ie)*a(ie,ie1)/a(is1,is)*vx(is)/vx(is1)
             endif
             w2=a(is1,is1)-a(is,is)-a1-a2
             w3=a(is2,is1)*vx(is2)/vx(is1)
-            if(is .eq. ib)then
+            if(is == ib)then
               exit
             endif
             u=abs(a(is,is-1)*vx(is)/vx(is-1))*(abs(w2)+abs(w3))
             v=abs(w1)*(abs(a(is-1,is-1))+abs(a(is,is))+abs(a(is1,is1)))
-            if(u+v .eq. v)then
+            if(u+v == v)then
               a(is1,is-1)=0.d0
               a(is2,is-1)=0.d0
               exit
@@ -299,7 +299,7 @@ c     write(*,'(1P4G15.7)')((vx(ii)/vx(j)*a(ii,j),j=1,4),ii=1,4)
             w(1:n,i)=w(1:n,i1)
             w(1:n,i1)=aa
           endif
-          if(a(i1,i) .eq. 0.d0)then
+          if(a(i1,i) == 0.d0)then
             eig(1,i)=a(i,i)
             eig(2,i)=0.d0
             cycle
@@ -347,13 +347,13 @@ c     write(*,'(1P4G15.7)')((vx(ii)/vx(j)*a(ii,j),j=1,4),ii=1,4)
           cycle
         endif
         i1=i+1
-        if(eig(2,i) .eq. 0.d0)then
+        if(eig(2,i) == 0.d0)then
           jm=0
           do  j=i-1,1,-1
             if(a(j+1,j) .ne. 0.d0)then
               cycle
             endif
-            if(eig(2,j) .eq. 0.d0)then
+            if(eig(2,j) == 0.d0)then
               da=a(j,j)-a(i,i)
               sa=abs(a(j,j))+abs(a(i,i))
               if(abs(da) .gt. threj*sa)then
@@ -382,7 +382,7 @@ c     write(*,'(1P4G15.7)')((vx(ii)/vx(j)*a(ii,j),j=1,4),ii=1,4)
             if(a(j+1,j) .ne. 0.d0)then
               cycle
             endif
-            if(eig(2,j) .eq. 0.d0)then
+            if(eig(2,j) == 0.d0)then
               x=a(i,i)-a(j,j)
               y=a(i,i1)
               r=x**2+y**2
@@ -416,13 +416,13 @@ c     write(*,'(1P4G15.7)')((vx(ii)/vx(j)*a(ii,j),j=1,4),ii=1,4)
       enddo
       if(jordan)then
         do i=n,2,-1
-          if(eig(2,i) .eq. 0.d0)then
+          if(eig(2,i) == 0.d0)then
             jm=0
             do j=i-1,1,-1
-              if(eig(1,j) .eq. eig(1,i) .and. eig(2,j) .eq. 0.d0)then
+              if(eig(1,j) == eig(1,i) .and. eig(2,j) == 0.d0)then
                 r=a(j,i)
                 if(abs(r) .gt. amth)then
-                  if(jm .eq. 0)then
+                  if(jm == 0)then
                     r1=sqrt(abs(r))
                     r2=r/r1
                     a(j,j:n)=a(j,j:n)/r1
@@ -452,7 +452,7 @@ c     do 1010 k=1,n
 c       write(*,'(1X,:1P10G13.6)')(w(k,j),j=1,n)
 c1010  continue
 c     write(*,*)
-      if(mod(n,2) .eq. 0)then
+      if(mod(n,2) == 0)then
         ii=0
         do i=1,n
           if(eig(2,i) .gt. 0.d0 .and. ii .ne. 0)then

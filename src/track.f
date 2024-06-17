@@ -82,39 +82,39 @@ c      use tfcsi, only:ipoint,lrecl,lfni
       nlat  =elatt%nlat0+1
       df    =rgetgl1('FSHIFT')
       isynch=IgetGL('$RFSW$'  )
-      intra =IgetGL('$INTRA$' ) .ne. 0
-      calpol=IgetGL('$POL$'   ) .ne. 0
-      rad   =IgetGL('$RAD$'   ) .ne. 0
-      calcod=IgetGL('$COD$'   ) .ne. 0
-      trpt  =IgetGL('$TRPT$'  ) .ne. 0
-      radcod=IgetGL('$RADCOD$') .ne. 0
-      radpol=IgetGL('$RADPOL$') .ne. 0
-      emiout=IgetGL('$EMIOUT$') .ne. 0
-      dapert=IgetGL('$DAPERT$') .ne. 0
-      rfluct=IgetGL('$FLUC$'  ) .ne. 0
-      k64   =IgetGL('$K64$'   ) .ne. 0
-      fourie=IgetGL('$FOURIE$') .ne. 0
-      smearp=IgetGL('$SMEAR$' ) .ne. 0
-      geocal=IgetGL('$GEOCAL$' ) .ne. 0
-      calc6d=IgetGL('$CALC6D$') .ne. 0
-      intres=IgetGL('$INTRES$') .ne. 0
-      halfres=IgetGL('$HALFRES$') .ne. 0
-      sumres=IgetGL('$SUMRES$') .ne. 0
-      diffres=IgetGL('$DIFFRES$') .ne. 0
-      photons=IgetGL('$PHOTONS$' ) .ne. 0
+      intra =IgetGL('$INTRA$' ) /= 0
+      calpol=IgetGL('$POL$'   ) /= 0
+      rad   =IgetGL('$RAD$'   ) /= 0
+      calcod=IgetGL('$COD$'   ) /= 0
+      trpt  =IgetGL('$TRPT$'  ) /= 0
+      radcod=IgetGL('$RADCOD$') /= 0
+      radpol=IgetGL('$RADPOL$') /= 0
+      emiout=IgetGL('$EMIOUT$') /= 0
+      dapert=IgetGL('$DAPERT$') /= 0
+      rfluct=IgetGL('$FLUC$'  ) /= 0
+      k64   =IgetGL('$K64$'   ) /= 0
+      fourie=IgetGL('$FOURIE$') /= 0
+      smearp=IgetGL('$SMEAR$' ) /= 0
+      geocal=IgetGL('$GEOCAL$' ) /= 0
+      calc6d=IgetGL('$CALC6D$') /= 0
+      intres=IgetGL('$INTRES$') /= 0
+      halfres=IgetGL('$HALFRES$') /= 0
+      sumres=IgetGL('$SUMRES$') /= 0
+      diffres=IgetGL('$DIFFRES$') /= 0
+      photons=IgetGL('$PHOTONS$' ) /= 0
       nparallel=max(1,int(rgetgl1('NPARA')))
       keepexp=.true.
       calexp=.true.
       calc6d=.false.
       radlight=.false.
       ffsprmpt=.false.
-      rfsw  =isynch .ne. 0
+      rfsw  =isynch /= 0
       suspend=.true.
       call tsetgcut
       call tphyzp
       call tsetdvfs
       ol=rlist(elatt%aux+1)
-      if(nturn .lt. 0 .and. np0 .eq. 0)then
+      if(nturn .lt. 0 .and. np0 == 0)then
         if(ol .le. 0.d0)then
           omega0=0.d0
         else
@@ -143,21 +143,21 @@ c      use tfcsi, only:ipoint,lrecl,lfni
      1             intra,calpol,calcod,dapert,emiout,k64,fourie,
      1             smearp
 9001  format(1x,12(L3,3X))
-      if(nturn .eq. 0)then
+      if(nturn == 0)then
         write(*,*)'Use EMIT_TANCE or Emittance[] within FFS.'
         go to 8001
       endif
       if(nturn .lt. 0)then
-        if(np0 .eq. 0)then
+        if(np0 == 0)then
           trpt=.false.
           rfsw=.true.
           call tffs
           title='FFS'
           go to 8001
-        elseif(np0 .eq. -1)then
+        elseif(np0 == -1)then
           title='UNDEFINED'
           go to 8001
-        elseif(nturn .eq. -1)then
+        elseif(nturn == -1)then
           nturn=1
           trpt=.true.
           rfsw=.true.

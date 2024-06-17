@@ -78,7 +78,7 @@
       integer*4 n1,n2,isp1
       real*8 rind(1)
       call tflevelspec(kl,n1,n2,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
       if(n2 >= 0 .and. n1 .gt. n2 .or.
@@ -139,7 +139,7 @@ c          Positio   Cases DeCases
       ind1=ind
 c      call tfdebugprint(k,'tflevelstk',1)
 c      write(*,*)mode,n1,n2,ihead,indf
-      if(n2 .ne. 0 .and. ktflistq(k,kl))then
+      if(n2 /= 0 .and. ktflistq(k,kl))then
         isp1=isp
         m=kl%nl
         if(stack .and. ihead == 1)then
@@ -171,7 +171,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
                 kxi=tflevelstk(kl%dbody(i),kf,
      $                 max(0,n1-1),n2-1,mode,ind+1,rind,
      $                 ihead,ispmax,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   go to 9000
                 endif
                 if(isp >= ispmax)then
@@ -183,7 +183,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
                 kxi=tflevelstk(kl%dbody(i),kf,
      $                 max(0,n1-1),n2-1,mode,0,rind,
      $                 ihead,ispmax,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   go to 9000
                 endif
                 if(isp >= ispmax)then
@@ -202,7 +202,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
                 kxi=tflevelstk(kl%head,kf,
      $             max(0,n1-1),n2,mode,ind1,rind,ihead,
      $               ispmax,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   go to 9000
                 endif
               elseif(stack)then
@@ -227,7 +227,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
                 kxi=tflevelstk(ki,kf,
      $               max(0,n1-1),n2,mode,ind1,rind,
      $               ihead,ispmax,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   go to 9000
                 endif
               elseif(stack)then
@@ -250,7 +250,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
             kxi=tflevelstk(ki,kf,
      $           max(0,idi+n1),min(n2,abs(n2)-1),
      $           mode,ind1,rind,ihead,ispmax,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               go to 9000
             endif
             if(isp >= ispmax)then
@@ -270,7 +270,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
             kxi=tflevelstk(ki,kf,
      $           max(0,idi+n1),min(n2,abs(n2)-1),
      $           mode,ind1,rind,ihead,ispmax,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               go to 9000
             endif
             if(isp >= ispmax)then
@@ -318,7 +318,7 @@ c      write(*,*)mode,n1,n2,ihead,indf
               endif
               kx=dxnull
             endif
-            if(mode .ne. 7)then
+            if(mode /= 7)then
               isp=isp-1
               return
             endif

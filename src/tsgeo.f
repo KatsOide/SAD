@@ -23,16 +23,16 @@
       sol=.false.
       call compelc(k,cmp1)
       kg=0
-      if(cmp1%value(ky_BND_SOL) .ne. 0.d0)then
-        if(cmp1%value(ky_GEO_SOL) .ne. 0.d0)then
+      if(cmp1%value(ky_BND_SOL) /= 0.d0)then
+        if(cmp1%value(ky_GEO_SOL) /= 0.d0)then
           kg=k
         endif
         do i=k+1,nlat-1
-          if(idtypec(i) .eq. icSOL)then
+          if(idtypec(i) == icSOL)then
             call compelc(i,cmp)
-            if(cmp%value(ky_BND_SOL) .ne. 0.d0)then
-              if(cmp%value(ky_GEO_SOL) .ne. 0.d0)then
-                if(kg .ne. 0)then
+            if(cmp%value(ky_BND_SOL) /= 0.d0)then
+              if(cmp%value(ky_GEO_SOL) /= 0.d0)then
+                if(kg /= 0)then
                   write(*,*)' Duplicated GEO of Solenoid ',
      $                 pname(idelc(k))(1:lpnamec(k))
                   return
@@ -51,7 +51,7 @@
      $       pname(idelc(k))(1:lpnamec(k))
         return
       endif
-      if(kg .eq. 0)then
+      if(kg == 0)then
         write(*,*)' Missing GEO of Solenoid ',
      $     pname(idelc(k))(1:lpnamec(k))
         sol=.false.
@@ -59,7 +59,7 @@
       endif
       call compelc(ke,cmp2)
       ke1=ke+1
-      if(kg .eq. k)then
+      if(kg == k)then
         k1=k
         k2=ke
         cmpp=>cmp1
@@ -103,7 +103,7 @@
       led=idvalc(k2)
       ds=0.d0
       gi=0.d0
-      if(cmpp%value(ky_FRIN_SOL) .eq. 0.d0)then
+      if(cmpp%value(ky_FRIN_SOL) == 0.d0)then
         call tsfrin(1,xi,pxi,yi,pyi,ds,gi,bzs)
         ds=-ds*dir
       endif
@@ -168,7 +168,7 @@
       lt=idtypec(i)
       call compelc(i,cmp)
       seg=tcheckseg(cmp,lt,al,lsegp,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         call tffserrorhandle(i,irtc)
         return
       endif
@@ -180,7 +180,7 @@
         ak=bzs
         sinphi=sin(phi)
         a22= cos(phi)
-        if(ak .eq. 0.d0)then
+        if(ak == 0.d0)then
           a12=al/pzi*dir
           a14=0.d0
         else
@@ -239,7 +239,7 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         endif
         gf=0.d0
         dvf=0.d0
-        if(al .ne. 0.d0)then
+        if(al /= 0.d0)then
           call tsetfringep(cmp,icQUAD,ak1/al,ftable)
         else
           ftable=0.d0
@@ -249,7 +249,7 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
      $       al,ak1,bzs*dir,
      $       cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),theta,
      $       theta2,
-     1       .false.,.true.,cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
+     1       .false.,.true.,cmp%value(ky_FRIN_QUAD) == 0.d0,
      $       ftable(1),ftable(2),ftable(3),ftable(4),
      $       mfr,cmp%value(ky_EPS_QUAD),.true.)
         call setdirelc(i,direlc(i)*dir)
@@ -300,7 +300,7 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
      $       0.d0,0.d0,0.d0,
      $       cmp%value(ky_ROT_CAVI),
      $       0.d0,0.d0,.false.,
-     $       cmp%value(ky_FRIN_CAVI) .eq. 0.d0,
+     $       cmp%value(ky_FRIN_CAVI) == 0.d0,
      $       0.d0,0.d0,0.d0,0.d0,
      $       cmp%value(ky_FRMD_CAVI),0.d0,0.d0,
      $       .true.,
@@ -308,7 +308,7 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
      $       cmp%value(ky_HARM_CAVI),
      $       cmp%value(ky_PHI_CAVI),cmp%value(ky_FREQ_CAVI),
      $       0.d0,1.d0,
-     $       cmp%value(ky_APHI_CAVI) .ne. 0.d0,
+     $       cmp%value(ky_APHI_CAVI) /= 0.d0,
      $       i)
         call setdirelc(i,direlc(i)*dir)
         xf=cod(1)
@@ -325,11 +325,11 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         dx=0.d0
         dy=0.d0
         dl=0.d0
-        if(cmp%value(ky_BND_SOL) .eq. 0.d0)then
+        if(cmp%value(ky_BND_SOL) == 0.d0)then
           bzs0=bzs
           bzs=tfbzs(merge(i-1,i,idir .lt. 0),kbz)
           db=bzs-bzs0
-          if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
+          if(cmp%value(ky_FRIN_SOL) == 0.d0)then
             pxf=pxi-yi*bzs0*.5d0
             pyf=pyi+xi*bzs0*.5d0
             gi=0.d0
@@ -351,7 +351,7 @@ c     a14= 2.d0*sin(phi*.5d0)**2/ak
         else
           pxf=pxi-yi*bzs*.5d0
           pyf=pyi+xi*bzs*.5d0
-          if(cmp%value(ky_FRIN_SOL) .eq. 0.d0)then
+          if(cmp%value(ky_FRIN_SOL) == 0.d0)then
             gi=0.d0
             xf=xi
             yf=yi

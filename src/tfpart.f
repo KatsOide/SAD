@@ -31,7 +31,7 @@
           go to 9030
         endif
         kx=list%dbody(iv)
-        if(narg .ne. 1)then
+        if(narg /= 1)then
           if(ktflistq(kx,listi))then
             kx=tfpart1(listi,isp1+1,isp2,err,irtc)
           else
@@ -65,7 +65,7 @@
             if(ktflistq(ki,listi))then
               isp=isp+1
               dtastk(isp)=tfpart1(listi,isp1+1,isp2,err,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 isp=isp0
                 return
               endif
@@ -90,8 +90,8 @@
         endif
         kx=kxmakelist(isp0)
         isp=isp0
-      elseif(kl%k .eq. ktfoper+mtfnull)then
-        if(narg .eq. 1)then
+      elseif(kl%k == ktfoper+mtfnull)then
+        if(narg == 1)then
           kx=sad_descr(list)
         else
           if(ktfnonreallistqo(list))then
@@ -99,7 +99,7 @@
               if(ktflistq(list%dbody(i),listi))then
                 isp=isp+1
                 dtastk(isp)=tfpart1(listi,isp1+1,isp2,err,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   isp=isp0
                   return
                 endif
@@ -164,7 +164,7 @@
             ivi=iv
             go to 9030
           endif
-        elseif(last .and. iv .eq. ma+1)then
+        elseif(last .and. iv == ma+1)then
         elseif(iv .gt. ma)then
           ivi=iv
           go to 9030
@@ -227,7 +227,7 @@
                 endif
                 call tfpartrstk(lari,isp1+1,isp2,
      $               list1,last,write,eval1,err,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   return
                 endif
                 eval=eval .or. eval1
@@ -245,7 +245,7 @@
                   isp=isp0
                   go to 9030
                 endif
-              elseif(last .and. ivi .eq. ma+1)then
+              elseif(last .and. ivi == ma+1)then
               elseif(ivi .gt. ma)then
                 isp=isp0
                 go to 9030
@@ -263,7 +263,7 @@
                   isp=isp0
                   go to 9030
                 endif
-              elseif(last .and. ivi .eq. ma+1)then
+              elseif(last .and. ivi == ma+1)then
               elseif(ivi .gt. ma)then
                 isp=isp0
                 go to 9030
@@ -272,8 +272,8 @@
               dtastk(isp)=lar%dbody(ivi)
             enddo
           endif
-        elseif(kl%k .eq. ktfoper+mtfnull)then
-          if(narg .eq. 1)then
+        elseif(kl%k == ktfoper+mtfnull)then
+          if(narg == 1)then
             if(write)then
               ka=sad_loc(lar%head)
               ktastk(isp+1:isp+ma)=ka
@@ -298,7 +298,7 @@ c              enddo
                 endif
                 call tfpartrstk(lari,isp1+1,isp2,list1,
      $               last,write,eval1,err,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   isp=isp0
                   return
                 endif
@@ -344,12 +344,12 @@ c              enddo
         case (ktfoper+mtflist)
           do i=1,knl%nl
             call tfreprulestk(knl%dbody(i),irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               return
             endif
           enddo
         case (ktfoper+mtfrule,ktfoper+mtfruledelayed)
-          if(knl%nl .ne. 2)then
+          if(knl%nl /= 2)then
             go to 9000
           endif
           isp=isp+1
@@ -393,18 +393,18 @@ c              enddo
           dtastk(isp)=list%dbody(i)
           if(ktflistq(ktastk(isp),kli))then
             if(tfsameq(kli%head,kh))then
-              if(level .ne. 0)then
+              if(level /= 0)then
                 go to 100
               endif
               cycle LOOP_I
             endif
-            if(kli%head%k .eq. ktfoper+mtfnull)then
+            if(kli%head%k == ktfoper+mtfnull)then
               go to 100
             endif
           endif
         enddo LOOP_I
       endif
-      if(mstk .ne. mstk0)then
+      if(mstk /= mstk0)then
         mstk=mstk+1
         call loc_dlist(ktastk(mstk),list)
         i0=itastk2(1,mstk)+1
@@ -430,7 +430,7 @@ c              enddo
       integer*4 i,lattr
       logical*4 ,intent(out):: eval
       eval=.false.
-      if(iv .eq. 0)then
+      if(iv == 0)then
         call tflocald(list%head)
         list%head=dtfcopy(k)
         list%attr=iand(list%attr,lnonreallist+ktoberebuilt)
@@ -482,7 +482,7 @@ c              enddo
       integer*8 kai
       integer*4 isp1,ma,ne,no,i,mp,isp2,isp3,isp0,j,itfmessage
       data kxthread%k /0/
-      if(kxthread%k .eq. 0)then
+      if(kxthread%k == 0)then
         kxthread=kxsymbolz('`System`Thread',14)
       endif
       kx%k=ktfoper+mtfnull
@@ -506,7 +506,7 @@ c              enddo
       isp=isp+1
       dtastk(isp)=kl%head
       if(mp .gt. 0)then
-        if(isp1 .eq. isp2)then
+        if(isp1 == isp2)then
           do i=1,mp
             kai=(i-1)*no
             isp=isp+1
@@ -515,7 +515,7 @@ c              enddo
             dtastk(isp+1:isp+ne)=kl%dbody(kai+1:kai+ne)
             isp=isp+ne
             call tfefunrefstk(isp3,isp3,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               isp=isp0
               return
             endif
@@ -533,7 +533,7 @@ c              enddo
               dtastk(isp)=kl%dbody(kai+j)
               if(ktflistq(ktastk(isp),klj))then
                 kk=tfpartitionstk(isp1+1,isp2,klj,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   isp=isp0
                   return
                 endif
@@ -543,7 +543,7 @@ c              enddo
             dtastk(isp3+1)=kxcompose(isp3+1)
             isp=isp3+1
             call tfefunrefstk(isp3,isp3,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               isp=isp0
               return
             endif
@@ -571,7 +571,7 @@ c              enddo
         return
       endif
       kp=dtastk(isp1+2)
-      if(narg .eq. 2)then
+      if(narg == 2)then
         if(ktfrealq(kp,itastk(1,isp+1)))then
           isp=isp+1
           itastk(2,isp)=itastk(1,isp)
@@ -593,7 +593,7 @@ c          enddo
      $         '"Real or List of Reals for index"')
         endif
         return
-      elseif(narg .eq. 3)then
+      elseif(narg == 3)then
         ks=dtastk(isp)
         if(ktfrealq(kp,vp) .and. ktfrealq(ks,vs))then
           isp=isp+1
@@ -605,7 +605,7 @@ c          enddo
         elseif(tflistq(kp,klp) .and. ktfreallistq(klp))then
           m=klp%nl
           if(tflistq(ks,kls) .and. ktfreallistq(kls) .and.
-     $         kls%nl .eq. m)then
+     $         kls%nl == m)then
             itastk(1,isp+1:isp+m)=int(klp%rbody(1:m))
             itastk(2,isp+1:isp+m)=int(kls%rbody(1:m))
             isp=isp+m
@@ -664,7 +664,7 @@ c            enddo
       endif
       kh=kl%head
       kh0=kh
-      if(narg .eq. 1)then
+      if(narg == 1)then
         level=-1
       else
         if(ktfnonrealq(dtastk(isp1+2)))then
@@ -676,7 +676,7 @@ c            enddo
           irtc=itfmessage(9,'General::wrongnum','"Positive"')
           return
         endif
-        if(narg .eq. 3)then
+        if(narg == 3)then
           kh=dtastk(isp)
         endif
       endif
@@ -722,26 +722,26 @@ c            enddo
       logical*4 seq,rep,rule
       kx=dxnullo
       narg=isp-isp1
-      if(narg .eq. 1 .and. (mode .eq. 0 .or. mode .eq. 3)
-     $     .or. narg .eq. 2 .and. mode .eq. 2)then
+      if(narg == 1 .and. (mode == 0 .or. mode == 3)
+     $     .or. narg == 2 .and. mode == 2)then
         irtc=-1
         return
       endif
       rule=.false.
-      if(mode .eq. 0)then
-        if(narg .eq. 2)then
+      if(mode == 0)then
+        if(narg == 2)then
           rule=.true.
-        elseif(narg .ne. 3)then
+        elseif(narg /= 3)then
           irtc=itfmessage(9,'General::narg','"3"')
           return
         endif
       elseif(mode .lt. 3)then
-        if(narg .ne. 3)then
+        if(narg /= 3)then
           irtc=itfmessage(9,'General::narg','"3"')
           return
         endif
       else
-        if(narg .ne. 2)then
+        if(narg /= 2)then
           irtc=itfmessage(9,'General::narg','"2"')
           return
         endif
@@ -750,15 +750,15 @@ c            enddo
       isp0=isp
       if(rule)then
         call tfreprulestk(kn,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           isp=isp0
           return
-        elseif(isp .eq. isp0)then
+        elseif(isp == isp0)then
           kx=dtastk(isp0-1)
           return
         endif
       endif
-      if(mode .eq. 1)then
+      if(mode == 1)then
         k=dtastk(isp0-1)
         if(ktfnonlistq(k,list))then
           irtc=itfmessage(9,'General::wrongtype',
@@ -780,18 +780,18 @@ c            enddo
 c          call tfdebugprint(dtastk(i),'reppart',1)
 c          call tfdebugprint(dtastk2(i),' -> ',1)
           call tfreplacepart0(mode,list,dtastk(i),dtastk2(i),seq,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             isp=isp0
             go to 9000
           endif
         enddo
         isp=isp0
       else
-        if(mode .eq. 0)then
+        if(mode == 0)then
           kf=dtastk(isp0-1)
         endif
         call tfreplacepart0(mode,list,kn,kf,seq,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
       endif
@@ -802,7 +802,7 @@ c          call tfdebugprint(dtastk2(i),' -> ',1)
         klx=>list
       endif
       kx=tfleval(klx,.true.,irtc)
- 9000 if(mode .eq. 1)then
+ 9000 if(mode == 1)then
         call tflocald(kf)
       endif
       return
@@ -835,7 +835,7 @@ c          call tfdebugprint(dtastk2(i),' -> ',1)
       else
         do i=1,kln%nl
           call tfreplacepart1(mode,list,kln%dbody(i),kf,seq,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
         enddo
@@ -862,7 +862,7 @@ c          call tfdebugprint(dtastk2(i),' -> ',1)
         dtastk(isp)=kn
       elseif(tflistq(kn,kl))then
         call tfgetllstkall(kl)
-        if(isp .eq. isp0)then
+        if(isp == isp0)then
           irtc=0
           return
         endif
@@ -874,17 +874,17 @@ c          call tfdebugprint(dtastk2(i),' -> ',1)
       endif
       isp2=isp
       call tfpartrstk(kln,isp0,isp2,list,
-     $     mode .eq. 2,.true.,seq,.true.,irtc)
-      if(irtc .ne. 0)then
+     $     mode == 2,.true.,seq,.true.,irtc)
+      if(irtc /= 0)then
         go to 9000
       endif
-      if(mode .eq. 0)then
+      if(mode == 0)then
         do i=isp2+1,isp
           call loc_sad(ktastk(i),kli)
           call tfreplist(kli,itastk2(1,i),kf,seq1)
           seq=seq .or. seq1
         enddo
-      elseif(mode .eq. 1)then
+      elseif(mode == 1)then
         isp3=isp
         do i=isp2+1,isp3
           call loc_dlist(ktastk(i),kli)
@@ -894,20 +894,20 @@ c          call tfdebugprint(dtastk2(i),' -> ',1)
           isp=isp+1
           dtastk(isp)=kli%dbody(ivi)
           ki=tfefunrefu(isp3+1,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 9000
           endif
           call tfreplist(kli,ivi,ki,seq1)
           seq=seq .or. seq1
           isp=isp3
         enddo
-      elseif(mode .eq. 2)then
+      elseif(mode == 2)then
         isp3=isp
         do i=isp2+1,isp3
           call loc_dlist(ktastk(i),kli)
           ivi=itastk2(1,i)
           if(ivi .gt. kli%nl)then
-            if(ivi .eq. 1)then
+            if(ivi == 1)then
               kli%nl=1
               call tfreplist(kli,1,dtastk(isp0-1),seq1)
             else
@@ -932,13 +932,13 @@ c              call tfdebugprint(kxi,'reppart1-kxi',1)
           endif
           seq=seq .or. seq1
         enddo
-      elseif(mode .eq. 3)then
+      elseif(mode == 3)then
         do i=isp2+1,isp
           call loc_dlist(ktastk(i),kli)
           call tfreplist(kli,itastk2(1,i),dxnull,seq1)
           seq=seq .or. seq1
         enddo
-      elseif(mode .eq. 4)then
+      elseif(mode == 4)then
         isp3=isp
         do i=isp2+1,isp3
           call loc_dlist(ktastk(i),kli)
@@ -968,7 +968,7 @@ c              call tfdebugprint(kxi,'reppart1-kxi',1)
       type (sad_descriptor) k
       type (sad_dlist), pointer :: kl
       integer*4 itfmessage,m
-      if(isp .ne. isp1+1)then
+      if(isp /= isp1+1)then
         if(rlist(iaximmediate) .lt. 0.d0)then
           irtc=-1
         else

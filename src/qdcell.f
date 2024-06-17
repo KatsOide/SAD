@@ -1197,7 +1197,7 @@ c..........going back to 4*4 world
       return
       end
 
-      subroutine tffsqu(nqcol,nqcol1,nvar,nqumax,ifquw,ifqu,free,lfno,irtc)
+      subroutine tffsqu(nqcol,nqcol1,nvar,nqumax,ifquw,ifqu,free,irtc)
       use tfstk
       use ffs, only:flv,nvevx,nelvx,tsetintm,nlat,nele,nparallel
 c      use ffs, only: flv,dpmax,nele,ndim,nlat,maxcond,nvevx,nelvx,tsetintm
@@ -1212,7 +1212,7 @@ c      use match
       implicit none
       type (ffs_bound) fbound
       integer*8 ,intent(inout):: ifquw,ifqu
-      integer*4 ,intent(in):: nqcol,nqcol1,nvar,lfno
+      integer*4 ,intent(in):: nqcol,nqcol1,nvar
       integer*4 ,intent(out):: irtc,nqumax
       logical*4 ,intent(in):: free(nele)
       logical*4 , allocatable,dimension(:,:)::col

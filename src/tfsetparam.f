@@ -52,7 +52,7 @@
       sizedp=rgetgl1('SIGE')
       call tfgetdp(dpmax,'setparam',symdp)
 c      dpmax =rfromd(kxsymbolv('DP',2))
-      if(idtypec(1) .eq. icMARK)then
+      if(idtypec(1) == icMARK)then
         ix=latt(1)
         rlist(ix+ky_EMIX_MARK)=emx
         rlist(ix+ky_EMIY_MARK)=emy
@@ -90,7 +90,7 @@ c      dpmax =rfromd(kxsymbolv('DP',2))
       pspac_nturn =max(1,int(rgetgl1('PSPACNTURN')))
       pspac_nturncalc =max(0,int(rgetgl1('PSPACNTURNCALC')))
       call tphyzp
-      if(gammab(1) .ne. p0 .and. geocal)then
+      if(gammab(1) /= p0 .and. geocal)then
         gammab(1)=p0
         call tfgeo1(1,nlat,calgeo,.true.,.true.)
       endif
@@ -122,7 +122,7 @@ c      iwakepold=ifwakep
       anrad =5.d0/2.d0/sqrt(3.d0)*rcratio
       ccintr=(rclassic/h0**2)**2/8.d0/pi
       omega0=merge(pi2*cveloc*p0/h0/rlist(klist(ilattp)+1),
-     $     0.d0,rlist(klist(ilattp)+1) .ne. 0.d0)
+     $     0.d0,rlist(klist(ilattp)+1) /= 0.d0)
       call rsetgl1('OMEGA0',omega0)
       return
       end

@@ -11,21 +11,21 @@
       integer*4 narg,n1,n2,ispf,isp0,ind,itfmessage
       narg=isp-isp1
       kx%k=ktfoper+mtfnull
-      if(narg .eq. 2)then
-        if(mode .eq. 1 .or. mode .eq. 3)then
+      if(narg == 2)then
+        if(mode == 1 .or. mode == 3)then
           kx=tfmap1(isp1,mode,irtc)
           return
         endif
         n1=1
         n2=1
         ispf=isp-1
-      elseif(narg .eq. 3)then
+      elseif(narg == 3)then
         call tflevelspec(dtastk(isp),n1,n2,irtc)
         if(irtc /= 0)then
           return
         endif
         ispf=isp-2
-      elseif(narg .eq. 1)then
+      elseif(narg == 1)then
         if(mode /= 0 .and. mode /= 4)then
           irtc=-1
         else
@@ -50,9 +50,9 @@
       isp=isp0
       call tflocald(kf)
       call tflocald(kl)
-      if(mode .eq. 1)then
+      if(mode == 1)then
         kx%k=ktfoper+mtfnull
-        if(irtc .eq. -3 .or. irtc .eq. -2)then
+        if(irtc == -3 .or. irtc == -2)then
           irtc=0
         endif
       endif
@@ -69,7 +69,7 @@
       integer*4 isp0,isp2,l,i
       k=dtastk(isp)
       if(ktfnonlistq(k,kl))then
-        kx=merge(dxnullo,k,mode .eq. 1)
+        kx=merge(dxnullo,k,mode == 1)
         irtc=0
         return
       endif
@@ -77,7 +77,7 @@
       k=dtfcopy1(k)
       kf=dtfcopy(dtastk(isp1+1))
       kx%k=ktfoper+mtfnull
-      if(mode .eq. 1)then
+      if(mode == 1)then
         isp2=isp+1
         do i=1,kl%nl
           dtastk(isp2)=kf
@@ -87,9 +87,9 @@
           ki=tfefunrefu(isp2,irtc)
           l=itfdownlevel()
           if(irtc /= 0)then
-            if(irtc .eq. -3)then
+            if(irtc == -3)then
               exit
-            elseif(irtc .eq. -2)then
+            elseif(irtc == -2)then
               irtc=0
             else
               go to 9000
@@ -125,7 +125,7 @@
           isp=isp+1
           ki=dtastk(i)
           if(ktflistq(ki,kli))then
-            if(kli%head%k .eq. ktfoper+mtfnull)then
+            if(kli%head%k == ktfoper+mtfnull)then
               isp=isp-1
               call tfgetllstkall(kli)
             else
@@ -155,9 +155,9 @@
       integer*4 narg,ihead,itfmessage
       narg=isp-isp1
       ihead=1
-      if(narg .eq. 3)then
+      if(narg == 3)then
         call tfgetoption('Heads',dtastk(isp),kx,irtc)
-        if(irtc .eq. 0 .and. ktftrueq(kx%k))then
+        if(irtc == 0 .and. ktftrueq(kx%k))then
           ihead=0
         else
           irtc=itfmessage(9,'General::wrongopt',' ')
@@ -188,7 +188,7 @@
       integer*4 ,intent(out):: irtc
       integer*4 narg,n1,n2,ispf,itfmessage
       narg=isp-isp1
-      if(narg .eq. 2)then
+      if(narg == 2)then
         kx=dtastk(isp)
         if(ktflistq(kx,klx))then
           isp=isp-1
@@ -202,13 +202,13 @@
           irtc=0
         endif
         return
-      elseif(narg .eq. 3)then
+      elseif(narg == 3)then
         call tflevelspec(dtastk(isp),n1,n2,irtc)
         if(irtc /= 0)then
           return
         endif
         ispf=isp-2
-      elseif(narg .eq. 1)then
+      elseif(narg == 1)then
         irtc=-1
         return
       else
@@ -233,7 +233,7 @@
       type (sad_dlist), pointer :: klx
       integer*4 narg,isp0,i,itfmessage,itr
       narg=isp-isp1
-      if(narg .eq. 1)then
+      if(narg == 1)then
         irtc=-1
         return
       elseif(narg .lt. 2 .or. narg .gt. 4)then
@@ -292,19 +292,19 @@
       integer*4, parameter :: maxlevel=100000000
       type (sad_descriptor), save :: kxheads
       data kxheads%k /0/
-      if(kxheads%k .eq. 0)then
+      if(kxheads%k == 0)then
         kxheads=kxsymbolz('Heads',5)
       endif
       narg=isp-isp1
-      if(narg .eq. 1)then
+      if(narg == 1)then
         irtc=-1
         return
       endif
-      ihead=merge(0,1,icases .eq. 0)
+      ihead=merge(0,1,icases == 0)
       isp0=isp
       ispa=isp
- 1    if(narg .eq. 2)then
-        if(icases .eq. 0)then
+ 1    if(narg == 2)then
+        if(icases == 0)then
           n1=0
           n2=maxlevel
         else
@@ -318,31 +318,31 @@
           kx=tfgetoption1(kxheads%k,kla,rep)
           if(rep .and. ktfrealq(kx))then
             ispa=ispa-1
-            ihead=merge(1,0,kx%k .eq. 0)
+            ihead=merge(1,0,kx%k == 0)
             narg=narg-1
-            if(narg .eq. 2)then
+            if(narg == 2)then
               go to 1
             endif
           endif
         endif
-        if(narg .eq. 3 .or. narg .eq. 4)then
+        if(narg == 3 .or. narg == 4)then
           ispf=ispa-narg+2
           call tflevelspec(dtastk(ispf+1),n1,n2,irtc)
           if(irtc /= 0)then
             return
           endif
-          if(narg .eq. 3)then
+          if(narg == 3)then
             ispmax=mstk
           elseif(ktfrealq(ktastk(ispa)))then
             ispb=isp+int(rtastk(ispa))
-            if(n1 .eq. 1 .and. n2 .eq. 1 .and. icases /= 2)then
-              if(ispb .eq. isp+1)then
+            if(n1 == 1 .and. n2 == 1 .and. icases /= 2)then
+              if(ispb == isp+1)then
                 kl=dtastk(ispf-1)
                 if(ktflistq(kl,kll))then
                   kf=dtastk(ispf)
                   nl=kll%nl
                   if(.not. ktflistq(kf) .and. .not. ktfpatq(kf))then
-                    if(ihead .eq. 0)then
+                    if(ihead == 0)then
                       ki=kll%head
                       if(tfsameq(ki,kf))then
                         ii=0
@@ -352,7 +352,7 @@
                     if(ktfreallistq(kll))then
                       if(ktfrealq(kf))then
                         do i=1,nl
-                          if(kll%dbody(i)%k .eq. kf%k)then
+                          if(kll%dbody(i)%k == kf%k)then
                             ii=i
                             go to 200
                           endif
@@ -372,7 +372,7 @@
                     iop=iordless
                     iordless=0
                     call tfinitpat(isp0,kf)
-                    if(isp .eq. isp0)then
+                    if(isp == isp0)then
                       do i=ihead,nl
                         if(itfpmat(kll%dbody(i),kf) .ge. 0)then
                           ii=i
@@ -402,7 +402,7 @@
                   isp=isp0
                   iordless=iop
                   call tflocal(kf%k)
- 200              if(icases .eq. 0)then
+ 200              if(icases == 0)then
                     ki=kxavaloc(0,1,klir)
                     klir%rbody(1)=dble(ii)
                   else
@@ -438,7 +438,7 @@
       if(irtc /= 0)then
         return
       endif
-      if(icases .eq. 2)then
+      if(icases == 2)then
         kx=tfeevalref(kx,irtc)
       else
         kx=kxmakelist(isp0)
@@ -492,7 +492,7 @@
       integer*4 ,intent(out):: irtc
       type (sad_descriptor) kxi
       integer*4 i,itfmessage
-      if(mod(isp-isp1,2) .eq. 0)then
+      if(mod(isp-isp1,2) == 0)then
         irtc=itfmessage(9,'General::narg','"odd number"')
         return
       endif
@@ -564,10 +564,10 @@
         if(f)then
           kx=tfeevalref(ke,irtc)
           if(irtc /= 0)then
-            if(irtc .eq. -3)then
+            if(irtc == -3)then
               irtc=0
               go to 9000
-            elseif(irtc .eq. -2)then
+            elseif(irtc == -2)then
               irtc=0
             else
               go to 9000
@@ -602,7 +602,7 @@
       if(narg .gt. 1)then
         irtc=itfmessage(9,'General::narg','"0"')
         return
-      elseif(narg .eq. 1 .and.
+      elseif(narg == 1 .and.
      $       ktastk(isp) /= ktfoper+mtfnull)then
         irtc=itfmessage(9,'General::narg','"0"')
         return
@@ -655,7 +655,7 @@
       integer*4 ,intent(inout):: irtc
       if(irtc .lt. -1)then
 c        write(*,*)'tfcatchreturn ',mode,modethrow
-        if(modethrow .eq. mode)then
+        if(modethrow == mode)then
           modethrow=-1
           kx%k=kerror
           call tflocal(kerror)
@@ -678,10 +678,10 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
       real*8 amaxl
       parameter (amaxl=1.d10)
       narg=isp-isp1
-      if(narg .eq. 1)then
+      if(narg == 1)then
         irtc=-1
         return
-      elseif(narg .eq. 0 .or. narg .gt. 3)then
+      elseif(narg == 0 .or. narg .gt. 3)then
         irtc=itfmessage(9,'General::narg','"1 or 2 or 3"')
         return
       endif
@@ -693,7 +693,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
       irtc=-1
       m=kl%nl
       isp00=isp
-      if(narg .eq. 3)then
+      if(narg == 3)then
         if(ktfnonrealq(ktastk(isp)))then
           irtc=itfmessage(9,'General::wrongtype','"Real number"')
           return
@@ -707,7 +707,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
         isp=isp+1
       endif
       irtc=0
-      if(nmax .eq. 0)then
+      if(nmax == 0)then
         kx=dxnulll
         isp=isp00
         return
@@ -756,7 +756,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
       type (sad_dlist), pointer :: kl,kl2,klx
       integer*8 kak(4096)
       integer*4 mk(0:4096),km,isp4,i,j,isp2,isp3,m,kelm,isp0,itfmessage
-      if(isp .eq. isp1+1)then
+      if(isp == isp1+1)then
         irtc=-1
         return
       elseif(isp /= isp1+2)then
@@ -778,7 +778,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
         return
       endif
       kelm=isp-isp2
-      if(kelm .eq. 0)then
+      if(kelm == 0)then
         kx=dxnulll
         irtc=0
         return
@@ -788,7 +788,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
       call tfgetllstkall(kl2)
       isp3=isp
       m=isp-isp0
-      if(mode .eq. 0)then
+      if(mode == 0)then
         do i=isp0+1,isp
           do j=1,kelm
             if(itfpmatc(dtastk(i),dtastk(isp2+j)) .ge. 0)then
@@ -828,7 +828,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
       endif
       kx=kxadaloc(-1,kelm,klx)
       do km=1,kelm
-        if(mk(km) .eq. 0)then
+        if(mk(km) == 0)then
           kak(km)=ktfaddr(ktfcopy1(kxnulll))
         else
           kak(km)=ktaaloc(0,mk(km))
@@ -869,7 +869,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
           return
         endif
         pat=tfgetstr(dtastk(n),npat)
-        if(pat .eq. '*')then
+        if(pat == '*')then
           do l=0,nsymhash
             j=itfcontext+l+1
             i=klist(j)

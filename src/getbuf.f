@@ -15,7 +15,7 @@
       use iso_c_binding
       implicit none
       logical*4 ,intent(in):: trim
-      integer*4 lrecl0,lrecl1,nc,igetgl
+      integer*4 lrecl0,lrecl1,nc
       logical*4 unmapped
       if(lfni <= 0)then
         ios=99999

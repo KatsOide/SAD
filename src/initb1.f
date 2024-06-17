@@ -659,9 +659,9 @@ cc for spch
         integer*4 ,intent(in):: k,ic
         select case (ic)
         case (icMULT)
-          integv=k. eq. ky_L_MULT .or. k .eq. ky_ANGL_MULT .or.
-     $         k .eq. ky_VOLT_MULT .or. k .eq. ky_DVOLT_MULT .or.
-     $         k .ge. ky_K0_MULT .and. k .le. ky_SK21_MULT
+          integv=k. eq. ky_L_MULT .or. k == ky_ANGL_MULT .or.
+     $         k == ky_VOLT_MULT .or. k == ky_DVOLT_MULT .or.
+     $         k >= ky_K0_MULT .and. k <= ky_SK21_MULT
         case default
           integv=.false.
         end select

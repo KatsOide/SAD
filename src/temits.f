@@ -218,7 +218,7 @@ c        write(*,'(a,i5,1p10g12.4)')'te ',i,beams(1:10,i)
           call tevdif(hfb,hb,hc,hs,ha,amuj,cmu,smu,
      $         bd,hc,hs,
      $         ndp,mphi2,mphi,4,
-     $         dj,damp,sige,' ')
+     $         dj,damp,sige)
         enddo
 c        write(*,'(a,i5,1p6g15.7)')'temits-4.1 ',kk,damp,sige,hc(1,1,1:4)
         call tesolvd(bff,bfb,bfx,
@@ -241,11 +241,11 @@ c        write(*,'(a,i5,1p6g15.7)')'temits-4.1 ',kk,damp,sige,hc(1,1,1:4)
           call tevdif(hfb,hb,hc,hs,ha,amuj,cmu,smu,
      $         bd,hc,hs,
      $         ndp,mphi2,mphi,4,
-     $         dj,damp,sige,' ')
+     $         dj,damp,sige)
           call tevdif(bfb,bb,bc,bs,ba,amuj,cmu,smu,
      $         bd,hc,hs,
      $         ndp,mphi2,mphi,10,
-     $         dj,damp,sige,'b')
+     $         dj,damp,sige)
           call tesumb(bc,hc,mphi2,ndp,
      $         w,dj,sige,tws,ndims,beam,fj)
           beamr(1:21)=beam(1:21)
@@ -319,7 +319,7 @@ c      call tfdebugprint(kx,'temits1',1)
       subroutine tevdif(bfb,bb,bc,bs,ba,amuj,cmu,smu,
      $     bd,hc,hs,
      $     ndp,mphi2,mphi,nd,
-     $     dj,damp0,sige,tag)
+     $     dj,damp0,sige)
       use tfstk, only:ktfenanq
       implicit none
       integer*4 ndp,mphi2,mphi,nd
@@ -334,7 +334,6 @@ c      call tfdebugprint(kx,'temits1',1)
       integer*4 j,m,mb,ms,nsb,k1,k2,m1,m2,i1,nsbp
       real*8 diff,diff1,diff2,aj,bci1,bsi1,
      $     diff3,damp0,d,dcb(nd),dsb(nd)
-      character*(*) tag
       nsb=nd*mphi2
       nsbp=nsb*ndp
       eps=sige**2

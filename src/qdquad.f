@@ -10,10 +10,10 @@
      $     dtrans(4,5),dcod(6),cod(6),dx,dy,pr,xi,pxi,yi,pyi,
      $     akk,phi,dphi,sinphi,cosphi,a1,a2,a11,a12,a21,shphi,chphi,
      $     b1,b2,b11,b12,b21,b16,b26,a16,a26,x,y
-      if(iv .eq. 4)then
+      if(iv == 4)then
         call qdrotate(dtrans,dcod,k1,itwissp(k1),idp,dx,dy,nut)
-      elseif(iv .eq. 2)then
-        if(al .eq. 0.d0)then
+      elseif(iv == 2)then
+        if(al == 0.d0)then
           call qdthin(dtrans,dcod,4,al,ak,
      $         k1,idp,dx,dy,theta,iv,nfam,nut)
           return

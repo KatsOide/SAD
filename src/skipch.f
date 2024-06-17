@@ -6,7 +6,7 @@ c
       integer*4 slen,ttype,ival
       real*8 rval
 c
-      if (token(:slen) .eq. char) then
+      if (token(:slen) == char) then
         call gettok(token,slen,ttype,rval,ival)
         skipch=.true.
       else

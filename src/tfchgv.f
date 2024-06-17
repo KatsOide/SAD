@@ -25,13 +25,13 @@
           do while(ki .ne. ' ')
             j=j+1
             ki=tfkwrd(idtype(k),j)
-            if(ki .eq. key)then
+            if(ki == key)then
               apply=.true.
               nelvx(i)%ival=j
               cycle LOOP_I
             endif
             ki=tfkwrd1(idtype(k),j)
-            if(ki .eq. key)then
+            if(ki == key)then
               apply=.true.
               nelvx(i)%ival=j
               cycle LOOP_I

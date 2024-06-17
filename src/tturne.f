@@ -35,14 +35,14 @@
       call tffsbound(fbound)
       call tturneg(trans,cod,beam,srot,fbound,iae,plot,rt,optics)
       if(update)then
-        if(wrfeff .ne. 0.d0)then
+        if(wrfeff /= 0.d0)then
           alambdarf=pi2/wrfeff
           vceff=hypot(vcacc,dvcacc/wrfeff)
         else
           alambdarf=circ
           vceff=0.d0
         endif
-        if(vceff .ne. 0.d0)then
+        if(vceff /= 0.d0)then
           dzmax=alambdarf*.24d0
           phis=asinz(abs(vcacc1/vceff))
           if(radcod)then
@@ -63,7 +63,7 @@ c     trf0=-(cod(5)+z0)*0.5d0
         call RsetGL1('EFFVC',vceff)
         call RsetGL1('EFFRFFREQ',wrfeff*c/pi2)
       endif
-      if(pgev00 .ne. pgev)then
+      if(pgev00 /= pgev)then
         pgev=pgev00
         call tphyzp
       endif
@@ -98,37 +98,37 @@ c     trf0=-(cod(5)+z0)*0.5d0
       ddvcacc=0.d0
       normali=.true.
       call tturne0(trans,cod,beam,srot,fbound,iae,0,plot,rt,optics)
-c      if(ifsize .ne. 0)then
+c      if(ifsize /= 0)then
 c        write(*,*)'tturne0-end ',beamsize(1,nlat),beamsize(6,nlat),
 c     $       beamsize(21,nlat)
 c      endif
-      if(vcacc .ne. 0.d0)then
+      if(vcacc /= 0.d0)then
         wrfeff=sqrt(abs(ddvcacc/vcacc))
-      elseif(vc0 .ne. 0.d0)then
+      elseif(vc0 /= 0.d0)then
         wrfeff=abs(dvcacc/vc0)
       else
         wrfeff=0.d0
       endif
-      if(wrfeff .eq. 0.d0 .and. vc0 .ne. 0.d0)then
+      if(wrfeff == 0.d0 .and. vc0 /= 0.d0)then
         wrfeff=hvc0/vc0*omega0/c
       endif
-      if(wrfeff .ne. 0.d0)then
+      if(wrfeff /= 0.d0)then
         vceff=hypot(vcacc,dvcacc/wrfeff)
       else
         vceff=0.d0
       endif
-      if(vceff .eq. 0.d0)then
+      if(vceff == 0.d0)then
         vceff=vc0
       endif
       vcacc1=vcacc
-      if(vcacc1 .eq. 0.d0)then
+      if(vcacc1 == 0.d0)then
         vcacc1=vceff*sin(trf0*wrfeff)
       endif
       if(trpt)then
         trf0=0.d0
         vcalpha=1.d0
       else
-        vcalpha=merge(vceff/vc0,0.d0,vc0 .ne. 0.d0)
+        vcalpha=merge(vceff/vc0,0.d0,vc0 /= 0.d0)
       endif
       return
       end
@@ -163,11 +163,11 @@ c      endif
       sol=.false.
       levele=levele+1
 c      write(*,*)'tturne1-1 ',fbound%lb,fbound%fb,fbound%le,fbound%fe
-      if(fbound%fb .ne. 0.d0)then
+      if(fbound%fb /= 0.d0)then
         call compelc(fbound%lb,cmp)
         call qfracsave(fbound%lb,dsave,nvar,.true.)
         call qfracseg(cmp,cmp,fbound%fb,1.d0,chg,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           call tffserrorhandle(l,irtc)
         else
 c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
@@ -182,7 +182,7 @@ c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
       else
         ls=fbound%lb
       endif
-      if(fbound%fe .eq. 0.d0)then
+      if(fbound%fe == 0.d0)then
         le1=min(nlat-1,fbound%le)
         call tturne1(trans,cod,beam,srot,
      $       iae,idp,plot,sol,rt,optics,
@@ -191,7 +191,7 @@ c        call qfraccomp(fbound%lb,fbound%fb,1.d0,ideal,chg)
 c          write(*,*)'tturne0-le1+1 ',le1+1,nlat,beam(1),beam(6),beam(21)
           call tfsetplot(trans,cod,beam,fbound%lb,
      $         le1+1,iae%iatr,iae%iacod,.false.,idp)
-c          if(ifsize .ne. 0)then
+c          if(ifsize /= 0)then
 c            write(*,*)'tturne0-setplot ',codplt,
 c     $           beamsize(1,nlat),beamsize(6,nlat),
 c     $           beamsize(21,nlat)
@@ -206,7 +206,7 @@ c          endif
         call compelc(fbound%le,cmp)
         call qfracsave(fbound%le,dsave,nvar,.true.)
         call qfracseg(cmp,cmp,0.d0,fbound%fe,chg,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           call tffserrorhandle(fbound%le,irtc)
         else
           call tturne1(trans,cod,beam,srot,
@@ -228,11 +228,11 @@ c          endif
         xe=fbound%le+fbound%fe
         do l=1,nlat-1
           xp=min(xe,max(xb,tffselmoffset(l)))
-          if(xp .ne. dble(l))then
+          if(xp /= dble(l))then
             lx=int(xp)
             fr=xp-lx
- 8101       if(fr .eq. 0.d0)then
-              if(iae%iatr .ne. 0)then
+ 8101       if(fr == 0.d0)then
+              if(iae%iatr /= 0)then
                 if(iae%iatr .gt. 0)then
                   if(l .ge. fbound%lb .and. l .le. fbound%le)then
                     call tflocal(klist(iae%iatr+l))
@@ -255,17 +255,17 @@ c          endif
                 twiss(l,idp,mfitddp)=twiss(lx,idp,mfitddp)
               endif
             else
-              if(lx .eq. fbound%lb)then
+              if(lx == fbound%lb)then
                 fra=fbound%fb
                 frb=max(fr,fra)
-              elseif(lx .eq. fbound%le)then
+              elseif(lx == fbound%le)then
                 fra=0.d0
                 frb=min(fbound%fe,fr)
               else
                 fra=0.d0
                 frb=fr
               endif
-              if(fra .eq. frb)then
+              if(fra == frb)then
                 fr=0.d0
                 go to 8101
               endif
@@ -273,7 +273,7 @@ c     below is incorrect for fra <> 0
               call compelc(lx,cmp)
               call qfracsave(lx,dsave,nvar,.true.)
               call qfracseg(cmp,cmp,fra,frb,chg,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 call tffserrorhandle(l,irtc)
               else
                 if(.not. chg)then
@@ -281,7 +281,7 @@ c     below is incorrect for fra <> 0
                   go to 8101
                 endif
                 cod1=0.d0
-                if(iae%iatr .ne. 0)then
+                if(iae%iatr /= 0)then
                   if(iae%iatr .gt. 0 .and.
      $                 ktflistq(dlist(iae%iatr+lx),kli))then
                     call tfl2m(kli,trans1,6,6,.false.)
@@ -325,7 +325,7 @@ c     below is incorrect for fra <> 0
       elseif(radtaper .and. radcod)then
         twiss(fbound%le,idp,mfitddp)=cod(6)*
      $       merge(1.d0,gammab(fbound%le-1)/gammab(fbound%le),
-     $       fbound%le .eq. 1)
+     $       fbound%le == 1)
       endif
       lv=itfdownlevel()
       return
@@ -364,7 +364,7 @@ c     below is incorrect for fra <> 0
       logical*4 ,intent(inout):: sol
       logical*4 bmaccum,plotib,next,seg,coup,err,inin
       integer*8 ,save:: kbmz=0
-      if(kbmz .eq. 0)then
+      if(kbmz == 0)then
         kbmz=ktadaloc(0,6)
         kbmzi=ktraaloc(-1,6)
         do i=1,6
@@ -372,14 +372,14 @@ c     below is incorrect for fra <> 0
         enddo
       endif
       bmaccum=.false.
-      plotib=plot .and. iae%iabmi .ne. 0
+      plotib=plot .and. iae%iabmi /= 0
       alid=0.d0
       call tsetdvfs
       call tesetdv(cod(6))
       bradprev=0.d0
       do l=ibegin,iend
         call tsetr0(trans,cod,0.d0,0.d0)
-        next=inext(l) .ne. 0
+        next=inext(l) /= 0
         inin=.false.
         do i=1,6
           if(ktfenanq(cod(i)))then
@@ -400,7 +400,7 @@ c     below is incorrect for fra <> 0
           go to 1010
         endif
         if(plot)then
-          if(iae%iatr .ne. 0)then
+          if(iae%iatr /= 0)then
             if(iae%iatr .gt. 0)then
               dlist(iae%iatr+l)=
      $             dtfcopy1(kxm2l(trans,6,6,6,.false.))
@@ -410,7 +410,7 @@ c     below is incorrect for fra <> 0
      $             dtfcopy1(kxm2l(cod,0,6,1,.false.))
             endif
           endif
-c            if(l .eq. 1)then
+c            if(l == 1)then
 c              r=1.d0
 c            else
 c              r=gammab(l-1)/gammab(l)
@@ -420,22 +420,22 @@ c          write(*,*)'tturne1-setetwiss ',l,beamplt,idp,cod(5)
 c          write(*,*)'tturne1-setetwiss-end ',l,plot,cod(5)
         elseif(radtaper .and. radcod)then
           twiss(l,idp,mfitddp)=cod(6)*
-     $         merge(1.d0,gammab(l-1)/gammab(l),l .eq. 1)
+     $         merge(1.d0,gammab(l-1)/gammab(l),l == 1)
         endif
         ld=idelc(l)
         lele=idtype(ld)
         lp=merge(idval(ld),elatt%comp(l),ideal)
         call loc_comp(lp,cmp)
         seg=tcheckseg(cmp,lele,al,lsegp,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           call tffserrorhandle(l,irtc)
           go to 1010
         endif
         dir=direlc(l)
         if(calint)then
           als=al
-          if(als .ne. 0.d0)then
-            if(lele .eq. icDRFT)then
+          if(als /= 0.d0)then
+            if(lele == icDRFT)then
               alib=als*.25d0+alid
               alid1=als*.25d0
             else
@@ -445,7 +445,7 @@ c          write(*,*)'tturne1-setetwiss-end ',l,plot,cod(5)
             call tintrb(trans,cod,beam,bmi,alib,alid,optics,l)
             alid=alid1
             if(plotib)then
-              if(lele .eq. icDRFT)then
+              if(lele == icDRFT)then
                 bmh=merge(bmh+bmi,bmi,bmaccum)
                 bmaccum=.true.
               else
@@ -463,7 +463,7 @@ c          write(*,*)'tturne1-setetwiss-end ',l,plot,cod(5)
           endif
         endif
 c        WRITE(*,*)lele,' ',PNAME(ILIST(2,LATT(L)))(1:16)
-c        if(mod(l,100) .eq. 0)then
+c        if(mod(l,100) == 0)then
 c          write(*,*)'tturne1-l ',l,lele
 c        endif
 c        go to (1100,1200,1010,1400,1010,1600,1010,1600,1010,1600,
@@ -475,7 +475,7 @@ c        go to 5000
         select case (lele)
         case (icDRFT)
           if(calint)then
-            if(al .ne. 0.d0)then
+            if(al /= 0.d0)then
               al=al*.5d0
               call tdrife0(trans,cod,beam,srot,al,0.d0,0.d0,.true.,.false.,irad)
               call tintrb(trans,cod,beam,bmi,al,al*.5d0,optics,l)
@@ -517,7 +517,7 @@ c        go to 5000
           ak0=cmp%value(ky_K0_BEND)
      $         +cmp%value(ky_ANGL_BEND)
           ak1=cmp%value(ky_K1_BEND)
-c          if(l .eq. 4551)then
+c          if(l == 4551)then
 c            write(*,*)'ttrune-icBend ',ak0,cod(6),
 c     $           gettwiss(mfitddp,nextl(l))
 c          endif
@@ -546,9 +546,9 @@ c              rtaper=(1.d0-dp0+cod(6))
      $         cmp%value(p_LGEO_BEND),cmp%value(p_ANGLGEO_BEND),
      $         fb1,fb2,
      $         nint(cmp%value(ky_FRMD_BEND)),
-     $         cmp%value(ky_FRIN_BEND) .eq. 0.d0,
+     $         cmp%value(ky_FRIN_BEND) == 0.d0,
      $         cmp%value(ky_EPS_BEND),
-     1         cmp%value(ky_RAD_BEND) .eq. 0.d0,.true.,
+     1         cmp%value(ky_RAD_BEND) == 0.d0,.true.,
      $         next,l)
 
         case (icQUAD)
@@ -574,12 +574,12 @@ c              rtaper=1.d0-dp0+cod(6)
           call tquade(trans,cod,beam,srot,al,ak1,0.d0,
      $         cmp%value(ky_DX_QUAD),cmp%value(ky_DY_QUAD),
      1         cmp%value(ky_ROT_QUAD),
-     $         cmp%value(ky_RAD_QUAD) .eq. 0.d0 .and. al .ne. 0.d0,
-     1         cmp%value(ky_FRIN_QUAD) .eq. 0.d0,
+     $         cmp%value(ky_RAD_QUAD) == 0.d0 .and. al /= 0.d0,
+     1         cmp%value(ky_FRIN_QUAD) == 0.d0,
      $         ftable(1),ftable(2),ftable(3),ftable(4),
      $         mfr,cmp%value(ky_EPS_QUAD),
-     $         cmp%value(ky_KIN_QUAD) .eq. 0.d0,
-     $         cmp%value(ky_CHRO_QUAD) .ne. 0.d0)
+     $         cmp%value(ky_KIN_QUAD) == 0.d0,
+     $         cmp%value(ky_CHRO_QUAD) /= 0.d0)
 
         case (icSEXT,icOCTU,icDECA,icDODECA)
           ak1=cmp%value(ky_K_THIN)
@@ -645,8 +645,8 @@ c     $       kxx,irtc)
      $         cmp%value(ky_ROT_CAVI),
      $         cmp%value(ky_V1_CAVI),cmp%value(ky_V20_CAVI),
      $         cmp%value(ky_V11_CAVI),cmp%value(ky_V02_CAVI),
-     $         cmp%value(ky_FRIN_CAVI) .eq. 0.d0,mfr,
-     $         cmp%value(ky_APHI_CAVI) .ne. 0.d0,
+     $         cmp%value(ky_FRIN_CAVI) == 0.d0,mfr,
+     $         cmp%value(ky_APHI_CAVI) /= 0.d0,
      $         ld)
 
         case (icTCAV)
@@ -655,7 +655,7 @@ c     $       kxx,irtc)
      1         cmp%value(ky_PHI_TCAV),cmp%value(ky_FREQ_TCAV),
      1         cmp%value(ky_DX_TCAV),cmp%value(ky_DY_TCAV),
      $         cmp%value(ky_ROT_TCAV),
-     $         cmp%value(ky_RAD_TCAV) .eq. 0.d0)
+     $         cmp%value(ky_RAD_TCAV) == 0.d0)
 
         case (icMAP)
           if(optics)then
@@ -674,7 +674,7 @@ c            call tmultr(trans,trans1,6)
      1         cmp%value(ky_DX_COORD),cmp%value(ky_DY_COORD),
      $         cmp%value(ky_DZ_COORD),cmp%value(ky_CHI1_COORD),
      $         cmp%value(ky_CHI2_COORD),cmp%value(ky_CHI3_COORD),
-     1         cmp%value(ky_DIR_COORD) .eq. 0.d0)
+     1         cmp%value(ky_DIR_COORD) == 0.d0)
 
         case default
         end select
@@ -683,7 +683,7 @@ c            call tmultr(trans,trans1,6)
       enddo
 c      call tfmemcheckprint('tturne-7 ',0,.true.,irtc)
       if(calint)then
-        if(alid .ne. 0.d0)then
+        if(alid /= 0.d0)then
           call tintrb(trans,cod,beam,bmi,alid,alid,optics,iend+1)
           alid=0.d0
         else
@@ -750,7 +750,7 @@ c      call tfmemcheckprint('tturne-end1',0,.true.,irtc)
       integer*4 l,idp,lorg
       real*8 trans(6,12),cod(6),beam(42)
       logical*4 local
-      if(iatr .ne. 0)then
+      if(iatr /= 0)then
         if(iatr .gt. 0)then
           if(local)then
             call tflocal(klist(iatr+l))
@@ -806,7 +806,7 @@ c      call tfmemcheckprint('tturne-end1',0,.true.,irtc)
           ti=matmul(etwiss2ri(twi,norm),ti)
         endif
         twi=tfetwiss(ti,cod,norm)
-        if(l .eq. 1)then
+        if(l == 1)then
           twi(mfitnx)=0.d0
           twi(mfitny)=0.d0
           twi(mfitnz)=0.d0
@@ -891,7 +891,7 @@ c      h1=p1+1.d0/(sqrt(1.d0+p1**2)+p1)
       use mathfun
       implicit none
       real*8 dh,dv,h1,p1
-      if(dh .ne. 0.d0)then
+      if(dh /= 0.d0)then
         h1=h0+dh
         p1=h2p(h1)
 c        p1=h1*sqrt(1.d0-1.d0/h1**2)
@@ -947,7 +947,7 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
           kk=ktfaddr(lsegp%dbody(k))
           k1=ilist(1,kk+1)
           k2=ilist(2,kk+1)
-          if(k1 .eq. k2)then
+          if(k1 == k2)then
             cmp%value(k1)=0.d0
           endif
           cmp%value(k1)=cmp%value(k1)+rsave(k2)*lkv%rbody(i)
@@ -1010,16 +1010,16 @@ c        p1=h1-1.d0/(sqrt(h1**2-1.d0)+h1)
      $     cmp%value(ky_DROT_MULT),
      $     cmp%value(p_LGEO_MULT),cmp%value(p_ANGLGEO_MULT),
      $     cmp%value(ky_EPS_MULT),
-     $     enarad .and. cmp%value(ky_RAD_MULT) .eq. 0.d0,
-     $     cmp%value(ky_FRIN_MULT) .eq. 0.d0,
+     $     enarad .and. cmp%value(ky_RAD_MULT) == 0.d0,
+     $     cmp%value(ky_FRIN_MULT) == 0.d0,
      $     ftable(1),ftable(2),ftable(3),ftable(4),
      $     mfr,fb1,fb2,
-     $     cmp%value(ky_K0FR_MULT) .eq. 0.d0,
+     $     cmp%value(ky_K0FR_MULT) == 0.d0,
      $     cmp%value(ky_VOLT_MULT)+cmp%value(ky_DVOLT_MULT),
      $     cmp%value(ky_HARM_MULT),
      $     cmp%value(ky_PHI_MULT),cmp%value(ky_FREQ_MULT),
      $     cmp%value(ky_W1_MULT),rtaper,
-     $     cmp%value(ky_APHI_MULT) .ne. 0.d0)
+     $     cmp%value(ky_APHI_MULT) /= 0.d0)
       return
       end
 

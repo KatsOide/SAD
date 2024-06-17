@@ -23,14 +23,14 @@
       endif
       nc=0
       do i=1,flv%nfc
-        if(flv%mfitp(i) .ne. 0)then
+        if(flv%mfitp(i) /= 0)then
           if(lfno .gt. 0)then
             call elname(flv%ifitp(i),name)
             kf=flv%kfit(i)
             x=flv%fitval(i)/scale(kf)
             vout=autofg(x,'12.9')
             sout=autofg(scale(kf),'12.9')
-            if(flv%ifitp(i) .ne. flv%ifitp1(i))then
+            if(flv%ifitp(i) /= flv%ifitp1(i))then
               call elname(flv%ifitp1(i),name1)
             else
               name1=' '
@@ -50,11 +50,11 @@
         kx=kxadaloc(-1,nc,klx)
         j=0
         do i=1,flv%nfc
-          if(flv%mfitp(i) .ne. 0)then
+          if(flv%mfitp(i) /= 0)then
             call elname(flv%ifitp(i),namer)
             kf=flv%kfit(i)
             x=flv%fitval(i)/scale(kf)
-            if(flv%ifitp(i) .ne. flv%ifitp1(i))then
+            if(flv%ifitp(i) /= flv%ifitp1(i))then
               call elname(flv%ifitp1(i),name1r)
             else
               name1r=' '

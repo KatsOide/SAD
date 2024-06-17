@@ -146,7 +146,8 @@ CanvasGraphics=Class[{},
       RawWindowAspectRatio=StandardAspectRatio[];
       RotSym=If[TkAngle,`Angle,`Rotation,`Rotation];
       SetCanvas$Scale[Automatic];
-      If[`$HaveLaTeX<=>"",lt=LaTeX[`style->"standalone",`pt->12,`pw->"20 cm",`margins->"'0 1 0 1'",`dpi->600]]
+      If[`$HaveLaTeX<=>"",lt=LaTeX[`style->"standalone",`pt->11,
+        `tw->"24 cm",`pw->"25 cm",`margins->"'0 1 0 1'",`dpi->600]]
       ),
 
     Constructor[Widget[c_,__]]:=(
@@ -299,6 +300,7 @@ CanvasGraphics=Class[{},
 
   LTImg[text_,opt___]:=(LTImg[text,opt]=
     Module[{f},
+!      Print["LTImg: ",{text,opt}];
       f=lt@Typeset[text,opt];
       CreateImage[Image[The$Canvas,PhotoImage[f,File->f,Format->"png"]]];
       System["rm "//f];
@@ -513,8 +515,9 @@ CanvasGraphics=Class[{},
             FrameY[Second[ft],ft[[4]],
               Second[ts]/.Automatic->Max[0.15,wsfx^(.4)],Second[gr],wsfy^0.4,
               tkf,frt1,ful,frid,ftc,tkc[[{2,4}]]];
+!            Print["calling FrameX ",{wsfx,wsfy}];
             FrameX[First[ft],Third[ft],
-              First[ts]/.Automatic->Max[0.15,wsfy^(.4)],First[gr],Sqrt[wsfx],
+              First[ts]/.Automatic->Max[0.15,wsfy^(.4)],First[gr],wsfx^0.6,
               tkf,frt1,ful,ftc,tkc[[{1,3}]]];
             FrameBind[frid];
             fl=Take[Join[fl,nullsl],4];
@@ -1513,7 +1516,7 @@ CanvasGraphics=Class[{},
         Linear,
         logt=Ceiling[Log[10,Max[Abs[First[Mt]],
           Abs[Mt[[Min[2,Length[Mt]]]]]]]+1e-10];
-        Print["FTY ",{logdt,texp}];
+!        Print["FTY ",{logdt,texp}];
         fm=If[logdt<=texp,"S"//(Max[logt,1]-logdt+4)//"."//Max[-logdt+texp+1,0],""];
 	zero=1e-3*If[Length[Mt]>1,
           Min[Abs[Difference[Mt]]],
@@ -1595,7 +1598,7 @@ CanvasGraphics=Class[{},
     If[dt<=1e-100,{{},{},{},0},
       r=dt/(dtf=10^Floor[Log[10,dt]+1e-10]);
       {dtf,dmt}=dtf*AutoTick[w,r];
-      Print["CDT ",{dtf,dmt}];
+!      Print["CDT ",{dtf,dmt}];
       tmt=Range[Ceiling[t1/dtf]*dtf,t2,dtf];
       cmt=Complement[Range[Ceiling[t1/dmt]*dmt,t2,dmt],tmt];
       tsl1=ts1*Table[1,{Length[tmt]}];

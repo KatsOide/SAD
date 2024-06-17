@@ -14,13 +14,13 @@
         case (mtfplus,mtftimes,mtfpower,mtfrevpower)
           nv=0
           do i=isp1+2,isp
-            if(ktflistq(dtastk(i),kli) .and. (kli%head%k .eq. kxvect
-     $           .or. kli%head%k .eq. kxvect1))then
+            if(ktflistq(dtastk(i),kli) .and. (kli%head%k == kxvect
+     $           .or. kli%head%k == kxvect1))then
               dtastk(i)=kli%dbody(1)
               if(tflistq(dtastk(i),kli1))then
-                if(nv .eq. 0)then
+                if(nv == 0)then
                   nv=kli1%nl
-                elseif(nv .ne. kli1%nl)then
+                elseif(nv /= kli1%nl)then
                   irtc=itfmessage(999,'General::equalleng',
      $                 '"two Vectors"')
                   return
@@ -29,11 +29,11 @@
             endif
           enddo
           kx1=tfefunrefu(isp1+1,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
 c          call tfdebugprint(kx1,'vectorize',1)
-          if(tflistq(kx1,klx1) .and. klx1%nl .eq. nv)then
+          if(tflistq(kx1,klx1) .and. klx1%nl == nv)then
             go to 9000
           endif
           kx=kx1
@@ -41,7 +41,7 @@ c          call tfdebugprint(kx1,'vectorize',1)
         case (mtfset,mtfsetdelayed)
           do i=isp1+2,isp
             if(ktflistq(ktastk(i),kli) .and.
-     $           kli%head%k .eq. kxvect1)then
+     $           kli%head%k == kxvect1)then
               k1=kli%dbody(1)
               dtastk(i)=kxadaloc(-1,1,kli1)
               kli1%head%k=ktfcopy1(kxvect)
@@ -52,9 +52,9 @@ c          call tfdebugprint(kx1,'vectorize',1)
           return
         case (mtfend)
           kaf1=klist(ifunbase+kaf)+1
-          if(ilist(1,kaf1) .eq. 1 .and. ilist(1,kaf1+1) .ne. 0 .and.
-     $         isp .eq. isp1+2 .and. ktflistq(ktastk(isp),kl) .and.
-     $         (kl%head%k .eq. kxvect .or. kl%head%k .eq. kxvect1))then
+          if(ilist(1,kaf1) == 1 .and. ilist(1,kaf1+1) /= 0 .and.
+     $         isp == isp1+2 .and. ktflistq(ktastk(isp),kl) .and.
+     $         (kl%head%k == kxvect .or. kl%head%k == kxvect1))then
             dtastk(isp)=kl%dbody(1)
             if(tflistq(ktastk(isp)))then
               kx1=tfefunrefd(isp1+1,irtc)
@@ -71,11 +71,11 @@ c          call tfdebugprint(kx1,'vectorize',1)
       do i=isp1+2,isp
         ki=dtastk(i)
         if(ktflistq(ki,kli) .and.
-     $       (kli%head%k .eq. kxvect .or. kli%head%k .eq. kxvect1))then
+     $       (kli%head%k == kxvect .or. kli%head%k == kxvect1))then
           k1=kli%dbody(1)
           if(tflistq(k1,kli1))then
             if(nv .gt. 0)then
-              if(nv .ne. kli1%nl)then
+              if(nv /= kli1%nl)then
                 irtc=itfmessage(999,'General::equalleng',
      $               '"two Vectors"')
                 return
@@ -91,7 +91,7 @@ c          call tfdebugprint(kx1,'vectorize',1)
           endif
         endif
       enddo
-      if(nv .eq. 0)then
+      if(nv == 0)then
         kx=tfefunrefd(isp1+1,irtc)
         return
       endif
@@ -110,7 +110,7 @@ c          call tfdebugprint(kx1,'vectorize',1)
         enddo
         isp=isp2+idsp
         dtastk(isp2+j)=tfefunrefu(isp0,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
       enddo
@@ -118,7 +118,7 @@ c          call tfdebugprint(kx1,'vectorize',1)
       kx1=kxmakelist(isp2)
       isp=isp2
       irtc=0
- 9000 if(irtc .ne. 0)then
+ 9000 if(irtc /= 0)then
         return
       endif
       kx=kxadaloc(-1,1,klx)

@@ -25,8 +25,8 @@ c
      $       al,ak,dx,dy,theta,.false.)
         return
       endif
-      enarad=radlvl .ne. 1.d0
-      krad=enarad .and. al .ne. 0.d0
+      enarad=radlvl /= 1.d0
+      krad=enarad .and. al /= 0.d0
       cod(2)=cod(2)+.5d0*bz*dy
       cod(4)=cod(4)-.5d0*bz*dx
       if(ak*al .lt. 0.d0)then
@@ -41,13 +41,13 @@ c
       if(krad)then
         call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0,0.d0)
       endif
-      if(fringe .and. mfring .ge. 0 .and. mfring .ne. 2)then
+      if(fringe .and. mfring .ge. 0 .and. mfring /= 2)then
         call tqfrie(trans,cod,beam,ak1,al,bz)
       endif
       if(mfring .eq. 1 .or. mfring .eq. 3)then
         call tqlfre(trans,cod,beam,al,ak1,f1in,f2in,bz)
       endif
-      if(krad .and. f1in .ne. 0.d0)then
+      if(krad .and. f1in /= 0.d0)then
         call tradke(trans,cod,beam,srot,f1in,0.d0,bz*.5d0)
       else
         call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0,0.d0)
@@ -70,10 +70,10 @@ c
       if(mfring .eq. 2 .or. mfring .eq. 3)then
         call tqlfre(trans,cod,beam,al,ak1,-f1out,f2out,bz)
       endif
-      if(fringe .and. mfring .ge. 0 .and. mfring .ne. 1)then
+      if(fringe .and. mfring .ge. 0 .and. mfring /= 1)then
         call tqfrie(trans,cod,beam,-ak1,al,bz)
       endif
-      if(krad .and. f1out .ne. 0.d0)then
+      if(krad .and. f1out /= 0.d0)then
         call tradke(trans,cod,beam,srot,f1out,0.d0,bzs*.5d0)
       endif
       call tsolrote(trans,cod,beam,srot,0.d0,0.d0,dx,dy,0.d0,

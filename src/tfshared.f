@@ -35,7 +35,7 @@
           if(kstshare(i) .le. 0)then
             if(lshare(i) .gt. 0)then
               kstshare(i)=1
-              if(nsh1 .ne. 0)then
+              if(nsh1 /= 0)then
                 kstshare(nsh1)=1-kstshare(i)
               endif
               call tfreleaseshared(kashare(i))
@@ -57,14 +57,14 @@
       kpb=k+((kcp+1+lps)/lps)*lps-kcp
 c      write(*,*)'ktfallocshared-mmap ',nsh1,kpb,na-lps
       call mapallocshared8(klist(kpb),int8(na-lps),8,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         write(*,*)'ktfallocshared failed: ',kpb,na-lps
         call abort
       endif
       ktfallocshared=kpb+2
       klist(kpb)=k
       klist(kpb+1)=na-lps
-      if(nsh1 .ne. 0)then
+      if(nsh1 /= 0)then
         ishared(nsh1)=1
         kstshare(nsh1)=1
         kashare(nsh1)=kpb+2
@@ -106,7 +106,7 @@ c     $     transfer(c_loc(klist(kpb)),k)/8
       integer*4 irtc
       k=klist(kpb-2)
       call mapallocfixed8(klist(kpb-2),klist(kpb-1),8,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         write(*,*)'tffreecshared failed: ',kpb,klist(kpb-1)
         call abort
       endif
@@ -204,7 +204,7 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       implicit none
       integer*4 i
       do i=1,kstshare(0)
-        if(ishared(i) .ne. 0)then
+        if(ishared(i) /= 0)then
           kstshare(i)=-1
         endif
       enddo
@@ -257,7 +257,7 @@ c        call tfdebugprint(k,'recallshared',3)
         k0=kl%head
         if(ktfobjq(k0))then
           call tfrecallshared(isp0,k0,k0,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
         endif
@@ -271,7 +271,7 @@ c        call tfdebugprint(k,'recallshared',3)
             ki=kl%dbody(i)
             if(ktfobjq(ki))then
               call tfrecallshared(isp0,ki,ki,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 klist(kax+1:kax+m)=ktfoper+mtfnull
                 exit
               endif
@@ -390,7 +390,7 @@ c          enddo
           kh=klist(ka)
           if(ktfobjq(kh) .and. ktfnonsymbolq(kh))then
             call tfsharedsize(isp0,klist(ka),ni,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               return
             endif
             n=n+ni-1
@@ -400,7 +400,7 @@ c          enddo
               ki=klist(ka+i)
               if(ktfobjq(ki) .and. ktfnonsymbolq(ki))then
                 call tfsharedsize(isp0,ki,ni,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   return
                 endif
                 n=n+ni-1

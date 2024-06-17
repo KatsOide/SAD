@@ -21,11 +21,11 @@
  1    exist1=.false.
       if(cmd)then
         call peekwd(word,next)
-        if(word .eq. ' ')then
+        if(word == ' ')then
           if(exist)then
             return
           endif
-        elseif(word .eq. 'ALL')then
+        elseif(word == 'ALL')then
           ipoint=next
           all=.true.
           go to 1
@@ -48,8 +48,8 @@
             call tfvcopycmpall(cmp,cmpd,kytbl(kwMAX,lt)-1)
           endif
           call tfsavevar(i,ntou)
-          if(lt .eq. icMARK)then
-            if(l .eq. 1)then
+          if(lt == icMARK)then
+            if(l == 1)then
               rlist(j+1:j+ntwissfun)=cmp%value(1:ntwissfun)
             else
               rlist(j+1:j+ntwissfun)=twiss(l,0,1:ntwissfun)
@@ -119,15 +119,15 @@
  1    exist1=.false.
       if(cmd)then
         call peekwd(word,next)
-        if(word .eq. ' ')then
+        if(word == ' ')then
           if(exist)then
             go to 9000
           endif
-        elseif(word .eq. 'ALL')then
+        elseif(word == 'ALL')then
           ipoint=next
           all=.true.
           go to 1
-        elseif(word .eq. 'TOTAL')then
+        elseif(word == 'TOTAL')then
           ipoint=next
           call tffsresetall
           go to 9000
@@ -147,8 +147,8 @@
           cmp%update=cmp%nparam .le. 0
           j=idvalc(l)
           call loc_comp(j,cmps)
-          if(lt .eq. icMARK)then
-            if(l .eq. 1)then
+          if(lt == icMARK)then
+            if(l == 1)then
               cmp%value(1:ntwissfun)=cmps%value(1:ntwissfun)
             endif
           else
@@ -156,13 +156,13 @@
               call tfvcopycmpall(cmps,cmp,kytbl(kwMAX,lt)-1)
             endif
             do k=1,flv%nvar
-              if(nvevx(k)%ivarele .eq. i)then
+              if(nvevx(k)%ivarele == i)then
                 nvevx(k)%valvar=tfvalvar(l,nvevx(k)%ivvar)
 c                valvar(k)=rlist(j+ivvar(k))
               endif
             enddo
             do k=1,flv%ntouch
-              if(nvevx(k)%itouchele .eq. i)then
+              if(nvevx(k)%itouchele == i)then
 c                write(*,*)'tfrst-itouch ',k,i,itouchv(k)
                 call tfvcopycmp(cmps,cmp,nvevx(k)%itouchv,1.d0)
 c                cmp%value(itouchv(k))=rlist(j+itouchv(k))

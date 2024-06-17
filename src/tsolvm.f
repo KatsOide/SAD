@@ -41,7 +41,7 @@ c              do k=1,l
                 b(j,1:l)=b(j,1:l)-p*b(i,1:l)
                 b(i,1:l)=b(i,1:l)+q*b(j,1:l)
 c              enddo
-            elseif(a(j,i) .ne. 0.d0)then
+            elseif(a(j,i) /= 0.d0)then
               p=a(i,i)/a(j,i)
               h1=v(j)+v(i)*p**2
               q=v(i)*p/h1
@@ -67,7 +67,7 @@ c              enddo
             r1=x(i1,1)*a(i,i1)
             r2=x(j ,1)*a(i,j )
             r=sign(hypot(r1,r2),r1)
-            if(r .ne. 0.d0)then
+            if(r /= 0.d0)then
               c=r1/r
               s=r2/r
               if(abs(c) .gt. abs(s))then
@@ -106,7 +106,7 @@ C           if(j < ndim+2)then
             if(j < n+2)then
               a(j-1,i)=c
             else
-              if(c .le. abs(s) .and. c .ne. 0.d0)then
+              if(c .le. abs(s) .and. c /= 0.d0)then
                 a(i,j)=sign(1.d0/c,s)
               endif
             endif
@@ -131,7 +131,7 @@ c        enddo
         endif
         an=abs(x(i,1))+abs(v(i))
         anorm=max(anorm,an)
-        if(an .ne. 0.d0)then
+        if(an /= 0.d0)then
           xmin=min(xmin,abs(x(i,1)))
         endif
 20    continue
@@ -143,7 +143,7 @@ c          do k=1,l
 c          enddo
 4010    continue
         r=hypot(x(mn,1),v(mn))
-        if(r .ne. 0.d0)then
+        if(r /= 0.d0)then
           w=1.d0/r
           d=x(mn,1)*w
           v(mn)=v(mn)*w
@@ -168,7 +168,7 @@ c          do k=1,l
 c          enddo
         endif
         do 4020 i=mn-1,1,-1
-          if(x(i,1) .ne. 0.d0)then
+          if(x(i,1) /= 0.d0)then
             p=v(i)*d
             ra=abs(x(i,1))+abs(v(i))
             r=(x(i,1)/ra)**2+((v(i)-p)/ra)*((v(i)+p)/ra)
@@ -279,11 +279,11 @@ c      do 1510 i=1,mn
         v(mn+1:mn*2)=1.d0
 c1510  continue
       v(0)=0.d0
-1002  if(v(iend) .ne. 0.d0)then
+1002  if(v(iend) /= 0.d0)then
         f=v(iend)
         v(iend)=0.d0
         do 1110 i=iend,ibegin,-1
-          if(abs(f)+abs(x(i,1)) .ne. abs(x(i,1)))then
+          if(abs(f)+abs(x(i,1)) /= abs(x(i,1)))then
             p=hypot(x(i,1),f)
             vv=v(i-1)/p
             v(i-1)=vv*x(i,1)
@@ -339,7 +339,7 @@ c                do 1720 j=1,m
 c                  r=r+a(i,j)**2
 c                  s=s+a(i,j)*a(i-1,j)
 c 1720           continue
-                if(r .ne. 0.d0)then
+                if(r /= 0.d0)then
                   p=s/r
 c                  do 1730 j=1,m
                     a(i-1,1:m)=a(i-1,1:m)-p*a(i,1:m)
@@ -370,7 +370,7 @@ c                  enddo
           else
             g=h*y
             y=f+sign(hypot(f,g),f)
-            if(y .ne. 0.d0)then
+            if(y /= 0.d0)then
               f=((w-z)*(w+z)-h**2+g**2/y)/w
             else
               f=((w-z)*(w+z)-h**2)/w
@@ -383,7 +383,7 @@ c                  enddo
               i1=i+1
               z=hypot(f,g)
               v(i-1)=z
-              if(z .ne. 0.d0)then
+              if(z /= 0.d0)then
                 c=f/z
                 s=g/z
               else
@@ -397,7 +397,7 @@ c                  enddo
               y= x(i1,1)*c
               z=hypot(f,h)
               x(i,1)=z
-              if(z .ne. 0.d0)then
+              if(z /= 0.d0)then
                 c=f/z
                 s=h/z
               else

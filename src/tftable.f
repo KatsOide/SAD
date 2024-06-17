@@ -31,9 +31,9 @@
       endif
       ki=dtastk(isp2)
       if(ktflistq(ki,listi))then
-        if(listi%head%k .eq. ktfoper+mtflist)then
+        if(listi%head%k == ktfoper+mtflist)then
           m=listi%nl
-          if(m .eq. 1)then
+          if(m == 1)then
             kl=tfeevalref(listi%dbody(1),irtc)
             if(.not. ktfrealq(kl,x1))then
               irtc=itfmessage(9,'General::wrongtype','"Real number"')
@@ -53,29 +53,29 @@
               go to 9500
             endif
             k1=tfeevalref(listi%dbody(2),irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               return
             endif
             if(ktfnonrealq(k1,x1))then
               go to 9500
             endif
-            if(m .eq. 2)then
+            if(m == 2)then
               x0=1.d0
               xstep=1.d0
             else
               x0=x1
               k1=tfeevalref(listi%dbody(3),irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 return
               endif
               if(ktfnonrealq(k1,x1))then
                 go to 9500
               endif
-              if(m .eq. 3)then
+              if(m == 3)then
                 xstep=1.d0
               else
                 k1=tfeevalref(listi%dbody(4),irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   return
                 endif
                 if(ktfnonrealq(k1,xstep))then
@@ -90,7 +90,7 @@
       else
         go to 9500
       endif
-      if(xstep .eq. 0.d0)then
+      if(xstep == 0.d0)then
         irtc=itfmessage(9,'General::wrongnum','"non-zero"')
         return
       endif
@@ -104,9 +104,9 @@
         nullify(symd)
         var=.false.
       endif
-      if(x1 .eq. dinfinity .or. x0 .eq. -dinfinity)then
+      if(x1 == dinfinity .or. x0 == -dinfinity)then
         ls=merge(maxint,0,xstep .gt. 0.d0)
-      elseif(x1 .eq. -dinfinity .or. x0 .eq. dinfinity)then
+      elseif(x1 == -dinfinity .or. x0 == dinfinity)then
         ls=merge(0,maxint,xstep .gt. 0.d0)
       else
         xns=(x1-x0)/xstep*(1.d0+1.d-11)
@@ -119,16 +119,16 @@
       endif
       ns=int(ls)
       ispb=isp+1
-      if(mode .ne. 0)then
+      if(mode /= 0)then
         isp=ispb
       endif
       if(isp2 .lt. ispa)then
         do j=1,ns
           kj=tftable(isp1,isp2+1,ispa,mode,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 9000
           endif
-          if(mode .ne. 0)then
+          if(mode /= 0)then
             isp=isp+1
             dtastk(isp)=dtfcopy(kj)
           endif
@@ -140,14 +140,14 @@
       else
         ke=dtfcopy(dtastk(isp1+1))
         if(var)then
-          if(mode .eq. 0)then
+          if(mode == 0)then
             if(ktflistq(ke,kle))then
               do j=1,ns
                 levele=levele+1
                 kj=tfleval(kle,.true.,irtc)
                 lv=itfdownlevel()
-                if(irtc .ne. 0)then
-                  if(irtc .eq. -2)then
+                if(irtc /= 0)then
+                  if(irtc == -2)then
                     irtc=0
                   else
                     go to 9200
@@ -161,8 +161,8 @@
                 levele=levele+1
                 kj=tfeevalref(ke,irtc)
                 lv=itfdownlevel()
-                if(irtc .ne. 0)then
-                  if(irtc .eq. -2)then
+                if(irtc /= 0)then
+                  if(irtc == -2)then
                     irtc=0
                   else
                     go to 9200
@@ -175,12 +175,12 @@
           else
             if(ktfrealq(ke,ve))then
               irtc=0
-              if(mode .eq. 1)then
+              if(mode == 1)then
                 kx=kxavaloc(-1,ns,klr)
                 klr%rbody(1:ns)=ve
-              elseif(mode .eq. 2)then
+              elseif(mode == 2)then
                 kx=dfromr(ve*ns)
-              elseif(mode .eq. 3)then
+              elseif(mode == 3)then
                 kx=dfromr(ve**ns)
               endif
               isp=ispb-1
@@ -191,11 +191,11 @@
                 do j=1,ns
                   levele=levele+1
                   kj=tfleval(kle,.true.,irtc)
-                  if(irtc .ne. 0)then
-                    if(irtc .eq. -2)then
+                  if(irtc /= 0)then
+                    if(irtc == -2)then
                       irtc=0
                       go to 9010
-                    elseif(irtc .eq. -3)then
+                    elseif(irtc == -3)then
                       lv=itfdownlevel()
                       irtc=0
                       exit
@@ -205,7 +205,7 @@
                   kj=dtfcopy(kj)
                   lv=itfdownlevel()
                   if(ktflistq(kj,klj))then
-                    if(klj%head%k .eq. ktfoper+mtfnull)then
+                    if(klj%head%k == ktfoper+mtfnull)then
                       isp0=isp
                       call tfgetllstkall(klj)
                       call tflocal1d(kj)
@@ -231,11 +231,11 @@ c                      enddo
                 do j=1,ns
                   levele=levele+1
                   kj=tfeevalref(ke,irtc)
-                  if(irtc .ne. 0)then
-                    if(irtc .eq. -2)then
+                  if(irtc /= 0)then
+                    if(irtc == -2)then
                       irtc=0
                       go to 9020
-                    elseif(irtc .eq. -3)then
+                    elseif(irtc == -3)then
                       lv=itfdownlevel()
                       irtc=0
                       exit
@@ -245,7 +245,7 @@ c                      enddo
                   kj=dtfcopy(kj)
                   lv=itfdownlevel()
                   if(ktflistq(kj,klj))then
-                    if(klj%head%k .eq. ktfoper+mtfnull)then
+                    if(klj%head%k == ktfoper+mtfnull)then
                       isp0=isp
                       call tfgetllstkall(klj)
                       call tflocal1d(kj)
@@ -268,14 +268,14 @@ c                      enddo
             endif
           endif
         else
-          if(mode .eq. 0)then
+          if(mode == 0)then
             if(ktflistq(ke,kle))then
               do j=1,ns
                 levele=levele+1
                 kj=tfleval(kle,.true.,irtc)
                 lv=itfdownlevel()
-                if(irtc .ne. 0)then
-                  if(irtc .eq. -2)then
+                if(irtc /= 0)then
+                  if(irtc == -2)then
                     irtc=0
                   else
                     go to 9200
@@ -287,8 +287,8 @@ c                      enddo
                 levele=levele+1
                 kj=tfeevalref(ke,irtc)
                 lv=itfdownlevel()
-                if(irtc .ne. 0)then
-                  if(irtc .eq. -2)then
+                if(irtc /= 0)then
+                  if(irtc == -2)then
                     irtc=0
                   else
                     go to 9200
@@ -299,12 +299,12 @@ c                      enddo
           else
             if(ktfrealq(ke,ve))then
               irtc=0
-              if(mode .eq. 1)then
+              if(mode == 1)then
                 kx=kxavaloc(-1,ns,klr)
                 klr%rbody(1:ns)=ve
-              elseif(mode .eq. 2)then
+              elseif(mode == 2)then
                 kx=dfromr(ve*ns)
-              elseif(mode .eq. 3)then
+              elseif(mode == 3)then
                 kx=dfromr(ve**ns)
               endif
               isp=ispb-1
@@ -314,11 +314,11 @@ c                      enddo
                 do j=1,ns
                   levele=levele+1
                   kj=tfleval(kle,.true.,irtc)
-                  if(irtc .ne. 0)then
-                    if(irtc .eq. -2)then
+                  if(irtc /= 0)then
+                    if(irtc == -2)then
                       irtc=0
                       cycle
-                    elseif(irtc .eq. -3)then
+                    elseif(irtc == -3)then
                       irtc=0
                       lv=itfdownlevel()
                       exit
@@ -328,7 +328,7 @@ c                      enddo
                   kj=dtfcopy(kj)
                   lv=itfdownlevel()
                   if(ktflistq(kj,klj))then
-                    if(klj%head%k .eq. ktfoper+mtfnull)then
+                    if(klj%head%k == ktfoper+mtfnull)then
                       isp0=isp
                       call tfgetllstkall(klj)
                       call tflocal1d(kj)
@@ -349,11 +349,11 @@ c                      enddo
                 do j=1,ns
                   levele=levele+1
                   kj=tfeevalref(ke,irtc)
-                  if(irtc .ne. 0)then
-                    if(irtc .eq. -2)then
+                  if(irtc /= 0)then
+                    if(irtc == -2)then
                       irtc=0
                       cycle
-                    elseif(irtc .eq. -3)then
+                    elseif(irtc == -3)then
                       irtc=0
                       lv=itfdownlevel()
                       exit
@@ -363,7 +363,7 @@ c                      enddo
                   kj=dtfcopy(kj)
                   lv=itfdownlevel()
                   if(ktflistq(kj,klj))then
-                    if(klj%head%k .eq. ktfoper+mtfnull)then
+                    if(klj%head%k == ktfoper+mtfnull)then
                       isp0=isp
                       call tfgetllstkall(klj)
                       call tflocal1d(kj)
@@ -386,26 +386,26 @@ c                      enddo
         endif
         call tflocald(ke)
       endif
-      if(mode .eq. 0)then
+      if(mode == 0)then
         kx%k=ktfoper+mtfnull
         irtc=0
-      elseif(mode .eq. 1)then
+      elseif(mode == 1)then
         kx=kxlistcopied(ispb)
         irtc=0
       else
         do i=ispb+1,isp
           call tflocal(ktastk(i))
         enddo
-        ktastk(ispb)=ktfoper+merge(mtfplus,mtfmult,mode .eq. 2)
+        ktastk(ispb)=ktfoper+merge(mtfplus,mtfmult,mode == 2)
         kx=tfefunrefu(ispb,irtc)
       endif
  9000 isp=ispb-1
       if(var)then
         call tfdelete(symd,.true.,.false.)
       endif
-      if(irtc .eq. 0)then
+      if(irtc == 0)then
         return
-      elseif(irtc .eq. -3)then
+      elseif(irtc == -3)then
         kx%k=ktfoper+mtfnull
         irtc=0
 c      else
@@ -483,11 +483,11 @@ c        call tfcatchreturn(0,kx,irtc)
           return
         endif
       enddo
-      if(narg .eq. 1)then
+      if(narg == 1)then
         x0=1.d0
         x1=rtastk(isp)
         xs=1.d0
-      elseif(narg .eq. 2)then
+      elseif(narg == 2)then
         x0=rtastk(isp-1)
         x1=rtastk(isp)
         xs=1.d0
@@ -496,7 +496,7 @@ c        call tfcatchreturn(0,kx,irtc)
         x1=rtastk(isp-1)
         xs=rtastk(isp)
       endif
-      if(xs .eq. 0.d0)then
+      if(xs == 0.d0)then
         kx=dxnullo
         irtc=itfmessage(9,'General::wrongnum','"non-zero"')
         return

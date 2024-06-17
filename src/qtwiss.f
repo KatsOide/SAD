@@ -1663,7 +1663,7 @@ c      write(*,'(a,1p10g12.4)')'qmult ',chi1,chi2,cod(1:5)
       real*8 ,intent(in):: transe(6,6)
       real*8 rg
       integer*4 ,intent(in):: k
-      if(gammab(k) .eq. gammab(k+1))then
+      if(gammab(k) == gammab(k+1))then
         trans(1,1)=transe(1,1)
         trans(1,2)=transe(1,2)
         trans(1,3)=transe(1,3)

@@ -255,7 +255,7 @@ c        write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),
         real*8 , intent (inout)::x(np),px(np),y(np),py(np),z(np)
         real*8 phih,dcph,sph,ds,dx1,dy1,dxa,st1,x1,px1,al,y1
         logical*4 , intent(in)::ent
-        if(dx .ne. 0.d0 .or. dy .ne. 0.d0)then
+        if(dx /= 0.d0 .or. dy /= 0.d0)then
           phih=phi0*.5d0
           sph=sin(phih)
           dcph=-2.d0*sin(phih*.5d0)**2
@@ -290,7 +290,7 @@ c        write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),
               z(i)=z(i)-al
             enddo
           endif
-        elseif(sint .ne. 0.d0 .or. cost .ne. 1.d0)then
+        elseif(sint /= 0.d0 .or. cost /= 1.d0)then
           do concurrent (i=1:np)
             y1=y(i)
             y(i)=x(i)*sint+y1*cost
@@ -400,7 +400,7 @@ c        write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),
         real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
      $       dv(np),g(np),sx(np),sy(np),sz(np)
         logical*4 ,intent(in):: krad,fringe
-        if((mfring .gt. 0 .or. mfring == -1) .and. fb1 .ne. 0.d0)then
+        if((mfring .gt. 0 .or. mfring == -1) .and. fb1 /= 0.d0)then
           dxfr1=fb1**2/rhob/24.d0
           dyfr1=fb1/rhob**2/6.d0
           dzfr1=dxfr1*sinp1
@@ -415,7 +415,7 @@ c        write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),
           dyfra1=0.d0
           dzfr1=0.d0
         endif
-        if((mfring .gt. 0 .or. mfring == -2) .and. fb2 .ne. 0.d0)then
+        if((mfring .gt. 0 .or. mfring == -2) .and. fb2 /= 0.d0)then
           dxfr2=fb2**2/rhob/24.d0
           dyfr2=fb2/rhob**2/6.d0
           dzfr2=dxfr2*sinp2
@@ -593,7 +593,7 @@ c     $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
      $         0.d0,0.d0,1,nmmax,0,i00)
         endif
         return
-      elseif(ak .ne. 0.d0)then
+      elseif(ak /= 0.d0)then
         call tbendi(np,x,px,y,py,z,g,dv,sx,sy,sz,al,phi0+ak0,phi0,
      1       cosp1,sinp1,cosp2,sinp2,
      1       ak,dx,dy,theta,dtheta,cost,sint,dchi2,alg,phig,
@@ -601,7 +601,7 @@ c     $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
         return
       endif
       call tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,.true.)
-      if(dtheta .ne. 0.d0 .or. dchi2 .ne. 0.d0)then
+      if(dtheta /= 0.d0 .or. dchi2 /= 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,alg,phig,dtheta,dchi2,.true.)
       endif
 c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1)-x(2),px(1)-px(2),
@@ -632,11 +632,11 @@ c     $     y(1)-y(2),py(1)-py(2),z(1)-z(2),g(1)-g(2)
           pyr0=py
           zr0=z
         endif
-        if(iprev(l_track) == 0 .and. fb1 .ne. 0.d0)then
+        if(iprev(l_track) == 0 .and. fb1 /= 0.d0)then
           n1=-1
           f1r=fb1*.5d0
         endif
-        if(inext(l_track) == 0 .and. fb2 .ne. 0.d0)then
+        if(inext(l_track) == 0 .and. fb2 /= 0.d0)then
           n2=2
           f2r=fb2*.5d0
         endif
@@ -667,7 +667,7 @@ c        endif
      1       cosp1,sinp1,cosp2,sinp2,
      1       mfring,fringe,n1,n2,ndiv)
       endif
- 9000 if(dtheta .ne. 0.d0 .or. dchi2 .ne. 0.d0)then
+ 9000 if(dtheta /= 0.d0 .or. dchi2 /= 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,alg-al,phig-phi0,dtheta,dchi2,.false.)
       endif
       call tbshift(np,x,px,y,py,z,-dx,-dy,-phi0,cost,-sint,.false.)

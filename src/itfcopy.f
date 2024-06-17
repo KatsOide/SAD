@@ -12,14 +12,14 @@
       integer*4 i,kk,irtc,isp0
       logical*4 ,intent(in):: del,unset
       if(unset)then
-        if(def%upval .ne. 0)then
+        if(def%upval /= 0)then
           isp0=isp
           isp=isp+1
           ktastk(isp)=ktfoper+mtfunset
           isp=isp+1
           dtastk(isp)=sad_descr(def%sym)
           kx=tfefunref(isp0+1,.true.,irtc)
-          if(irtc .ne. 0 .and. ierrorprint .ne. 0)then
+          if(irtc /= 0 .and. ierrorprint /= 0)then
             call tfreseterror
           endif
           isp=isp0
@@ -28,13 +28,13 @@
       ka1=def%upval
       def%upval=0
       do kk=1,2
-        do while(ka1 .ne. 0)
+        do while(ka1 /= 0)
           call loc_defhash(ka1,dhash)
           ka10=dhash%next
           if(dhash%gen == maxgeneration)then
             do i=0,dhash%nhash
               kadi=dhash%dhash(i)%k
-              do while(kadi .ne. 0)
+              do while(kadi /= 0)
                 kadi0=klist(kadi)
                 call tfcleardaloc(kadi)
                 call tfree(kadi)
@@ -54,7 +54,7 @@
       if(del)then
         kp0=def%prev
         kp1=def%next
-        if(kp1 .ne. 0)then
+        if(kp1 /= 0)then
           call loc1_symdef(kp1,def1)
           def1%prev=kp0
           if(max(0,def1%sym%gen) == max(0,def%sym%gen) .and.

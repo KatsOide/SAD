@@ -133,7 +133,7 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       logical*4 ent
       rhob=al/phib
       if(ent)then
-        if(psi .eq. 0.d0)then
+        if(psi == 0.d0)then
           call tbedgemaxwell(trans,cod,rhob)
         else
           call tbedgedrift(trans,cod,psi)
@@ -143,7 +143,7 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
           call tmultr5(trans,trans1,6)
         endif
       else
-        if(psi .eq. 0.d0)then
+        if(psi == 0.d0)then
           call tbedgemaxwell(trans,cod,-rhob)
         else
           call tbedgebody(trans,cod,rhob,psi)
@@ -239,8 +239,9 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       subroutine tbedgemaxwell(trans,cod,rhob)
       use mathfun, only: sqrtl
       implicit none
-      real*8 trans(6,6),rhob,cod(6),pr,a,b,pxi,pyi,yi,pvi,
-     $     c,af,bf,pvi2,yr
+      real*8 ,intent(inout):: trans(6,6),cod(6)
+      real*8 ,intent(in):: rhob
+      real*8 pr,a,b,pxi,pyi,yi,pvi,c,af,bf,pvi2,yr
       real*8, parameter :: ampmin=1.d-6
       pr=1.d0+cod(6)
       pxi=min(pr,max(-pr,cod(2)))
@@ -371,7 +372,7 @@ c      trans(3,6)=-pr*pyi*sxa*(f+pxi*sinp/pzi)
       pr=1.d0+cod(6)
       akx= ak(1)
       aky=-ak(2)
-      if(akx .ne. 0.d0 .and. fb1 .ne. 0.d0)then
+      if(akx /= 0.d0 .and. fb1 /= 0.d0)then
         rhob=1.d0/akx
         dxfrx=fb1**2/rhob/24.d0
         dyfrx=fb1/rhob**2/6.d0
@@ -381,7 +382,7 @@ c      trans(3,6)=-pr*pyi*sxa*(f+pxi*sinp/pzi)
         dyfrx=0.d0
         dyfrax=0.d0
       endif
-      if(aky .ne. 0.d0 .and. fb1 .ne. 0.d0)then
+      if(aky /= 0.d0 .and. fb1 /= 0.d0)then
         rhob=-1.d0/aky
         dyfry=fb1**2/rhob/24.d0
         dxfry=fb1/rhob**2/6.d0
@@ -392,7 +393,7 @@ c      trans(3,6)=-pr*pyi*sxa*(f+pxi*sinp/pzi)
         dxfray=0.d0
       endif
 c      write(*,'(a,l2,1p10g12.4)')'tbfrme ',ent,dxfrx,dyfrx,dyfrax,dxfry,dyfry,dxfray
-      if((dxfrx .ne. 0.d0 .or. dyfry .ne. 0.d0) .and. ent)then
+      if((dxfrx /= 0.d0 .or. dyfry /= 0.d0) .and. ent)then
         call tbfrmle(trans,cod,beam,
      $       dxfrx,dyfrx,dyfrax,
      $       dxfry,dyfry,dxfray)
@@ -440,7 +441,7 @@ c      write(*,'(a,l2,1p10g12.4)')'tbfrme ',ent,dxfrx,dyfrx,dyfrax,dxfry,dyfry,d
       cod(5)=cod(5)+dz
       call tmultr5(trans,trans1,irad)
       call tmulbs(beam,trans1,.true.)
-      if((dxfrx .ne. 0.d0 .or. dyfry .ne. 0.d0) .and. .not. ent)then
+      if((dxfrx /= 0.d0 .or. dyfry /= 0.d0) .and. .not. ent)then
         call tbfrmle(trans,cod,beam,
      $       dxfrx,dyfrx,dyfrax,
      $       dxfry,dyfry,dxfray)

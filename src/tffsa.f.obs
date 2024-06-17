@@ -5,17 +5,17 @@ C   19/12/90 302031849  MEMBER NAME  CORRECT  *.FORT     M  E2FORT
      $       mult,ilist(1,ifmast),itstr,itestr,nster,
      $       .false.,lfno)
         go to 12
-      elseif(word.eq.'COUPLESTE') then
+      elseif(word=='COUPLESTE') then
         call mcoupste(word,latt,mult,
      $       rlist(itstr),nster,lfno)
         go to 12
-      elseif(word.eq.'READSTE')then
+      elseif(word=='READSTE')then
         call mcstr(' ',latt,mult,
      $       ilist(1,ifmast),itstr,itestr,nster,.true.,lfno)
         call preadstr(word,latt,twiss,
      $       mult,rlist(itstr),nster,lfno)
         go to 12
-      elseif(word.eq.'WRITESTE')then
+      elseif(word=='WRITESTE')then
         call pwrtstr(word,latt,twiss,
      $       mult,rlist(itstr),nster,lfno)
         go to 12
@@ -25,18 +25,18 @@ C   19/12/90 302031849  MEMBER NAME  CORRECT  *.FORT     M  E2FORT
      $       ilist(1,ifmast),itmon,itemon,nmon,.false.,
      &             lfno)
         go to 12
-      elseif(word.eq.'READMON')then
+      elseif(word=='READMON')then
         call mcmon(' ',latt,mult,pos,
      $       ilist(1,ifmast),itmon,itemon,nmon,.true.,
      &             lfno)
         call preadmon(word,latt,twiss,
      $       mult,rlist(itmon),nmon,lfno)
         go to 12
-      elseif(word.eq.'WRITEMON')then
+      elseif(word=='WRITEMON')then
         call pwrtmon(word,latt,twiss,
      $       mult,rlist(itmon),nmon,lfno)
         go to 12
-      elseif(word.eq.'KILL')then
+      elseif(word=='KILL')then
         call pkill(word,wordp,latt,mult,
      $       rlist(itmon),nmon,rlist(itstr),
      1       nster,lfno)
@@ -61,7 +61,7 @@ C   19/12/90 302031849  MEMBER NAME  CORRECT  *.FORT     M  E2FORT
         call pundo(latt,twiss,
      $       gammab,0,1.d0+dp0)
         go to 10
-      elseif(word.eq.'SUM+'.or.word.eq.'SUM-'.or.word.eq.'SUM'.or.
+      elseif(word=='SUM+'.or.word=='SUM-'.or.word=='SUM'.or.
      1       abbrev(word,'SUMC_LR','_')) then
         title=Tfgetstrv('TITLE')
         case=Tfgetstrv('CASE')
@@ -84,24 +84,24 @@ C   19/12/90 302031849  MEMBER NAME  CORRECT  *.FORT     M  E2FORT
       elseif(abbrev(word,'DEL_ETE','_'))then
         call mfdel(word)
         goto 12
-      elseif(word.eq.'ADD'.or.word.eq.'SUB'.or.word.eq.'SWAP'
+      elseif(word=='ADD'.or.word=='SUB'.or.word=='SWAP'
      z       .or.abbrev(word,'FAC_TOR','_')
      z       .or.abbrev(word,'DIV_IDE','_')
-     1       .or.word.eq.'PUSH'.or.word.eq.'DROP'            ) then
+     1       .or.word=='PUSH'.or.word=='DROP'            ) then
         call mstack(word,latt,twiss,
      $       rlist(itstr),nster,rlist(itmon),
      1       rlist(itemon),nmon)
         goto 12
-      elseif(word.eq.'TRIM') then
+      elseif(word=='TRIM') then
         call ptrim(word,latt,twiss,rlist(itmon),
      $       rlist(itemon),nmon,lfno)
         goto 12
-      elseif(word.eq.'TCOD') then
+      elseif(word=='TCOD') then
         call mcrcod(latt,twiss,mult,
      $       rlist(itmon),rlist(itemon),nmon,
      $       .false.,.false.,.true.,lfno)
         go to 10
-      elseif(word.eq.'MCOD') then
+      elseif(word=='MCOD') then
         call mcrcod(latt,twiss,mult,
      $       rlist(itmon),rlist(itemon),
      1       nmon,.true.,.false.,.true.,lfno)
@@ -118,7 +118,7 @@ C   19/12/90 302031849  MEMBER NAME  CORRECT  *.FORT     M  E2FORT
         call pecorr(word,latt,pos,
      $       rlist(iferrk),title,case,lfno)
         goto 12
-      elseif(word .eq. 'BUMP')then
+      elseif(word == 'BUMP')then
         call getwdl(word)
         call pcbak(latt,twiss)
         if(abbrev(word,'I_TERATION','_')) then
@@ -144,7 +144,7 @@ C   19/12/90 302031849  MEMBER NAME  CORRECT  *.FORT     M  E2FORT
      $         flv%nfc,.false.)
         endif
         go to 12
-      elseif(word.eq.'LBUMP') then
+      elseif(word=='LBUMP') then
         call getwdl(word)
         call pcbak(latt,twiss)
         call pbumps(rlist(itstr),nster,flv%kfit,flv%ifitp,flv%mfitp,
@@ -163,12 +163,12 @@ C   19/12/90 302031849  MEMBER NAME  CORRECT  *.FORT     M  E2FORT
      $       gammab,0,1.d0+dp0,
      1            rlist(itstr),nster,lfno)
         goto 12
-      elseif(word.eq.'VBUMP') then
+      elseif(word=='VBUMP') then
         call pvbump(word,wordp,latt,twiss,
      $       mult,ilist(1,ifmast),rlist(itstr),nster,
      $       nlist,flv%kfit,flv%ifitp,flv%mfitp,flv%fitval,flv%nfc,lfno)
         goto 12
-      elseif(word.eq.'BTUNE') then
+      elseif(word=='BTUNE') then
         call ffs_init_sizep
         title=Tfgetstrv('TITLE')
         case=Tfgetstrv('CASE')
@@ -176,7 +176,7 @@ C   19/12/90 302031849  MEMBER NAME  CORRECT  *.FORT     M  E2FORT
      $       mult,gammab,rlist(ifsize),nlist,
      $       rlist(itstr),rlist(itestr),nster,title,case,lfno)
         goto 12
-      elseif(word.eq.'BALS') then
+      elseif(word=='BALS') then
         title=Tfgetstrv('TITLE')
         case=Tfgetstrv('CASE')
         call pasex(word,wordp,
@@ -185,12 +185,12 @@ C   19/12/90 302031849  MEMBER NAME  CORRECT  *.FORT     M  E2FORT
      $       rlist(itstr),rlist(itestr),nster,rlist(itmon),
      $       rlist(itemon),nmon,lfno)
         go to 12
-      elseif(word.eq.'PETIN'.or.word.eq.'PETOUT') then
+      elseif(word=='PETIN'.or.word=='PETOUT') then
         call petcod(word,twiss,rlist(itmon),nmon)
         goto 12
       elseif(abbrev(word,'WR_ITE','_')) then
         call getwdl(word)
-        if(word.eq.'RMATQ'.or.word.eq.'RMAT') then
+        if(word=='RMATQ'.or.word=='RMAT') then
           call pwrite(word,latt,twiss,
      $         gammab,pos,rlist(itmon),nmon)
         elseif(abbrev(word,'LAT_TICE','_').or.

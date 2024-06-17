@@ -2,8 +2,7 @@
       use tfstk
 
       contains
-      recursive logical*4 function tfnearlysameqf(k1,k2,re,ae)
-     $     result(lx)
+      recursive logical*4 function tfnearlysameqf(k1,k2,re,ae) result(lx)
       implicit none
       type (sad_descriptor) ,intent(in):: k1,k2
       type (sad_dlist), pointer :: kl1,kl2
@@ -16,18 +15,18 @@
         if(tfnumberq(k2,cx2))then
           s=abs(cx1)+abs(cx2)
           d=abs(cx2-cx1)
-          if(d .le. s*re .or. d .le. ae)then
+          if(d <= s*re .or. d <= ae)then
             lx=.true.
           endif
         endif
       elseif(tfnumberq(k2))then
-      elseif(k1%k .ne. k2%k)then
+      elseif(k1%k /= k2%k)then
       elseif(ktfnonlistq(k1,kl1))then
         lx=tfsameq(k1,k2)
       elseif(ktfnonlistq(k2,kl2))then
       else
         n1=kl1%nl
-        if(n1 .ne. kl2%nl)then
+        if(n1 /= kl2%nl)then
           return
         endif
         if(.not. tfnearlysameqf(kl1%head,kl2%head,re,ae))then
@@ -49,7 +48,7 @@
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       integer*4 itfmessage
-      if(isp .ne. isp1+1)then
+      if(isp /= isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
@@ -60,11 +59,11 @@
 
       subroutine tfnanqk(isp1,kx,irtc)
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       integer*4 itfmessage
-      if(isp .ne. isp1+1)then
+      if(isp /= isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
@@ -80,7 +79,7 @@
       integer*4 ,intent(out):: irtc
       integer*4 itfmessage
       type (sad_descriptor) ,intent(out):: kx
-      if(isp .ne. isp1+1)then
+      if(isp /= isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
@@ -98,12 +97,11 @@
       lx=.false.
       if(ktflistq(k,kl))then
         kh=kl%head%k
-        if(iand(kl%attr,lnonreallist) .eq. 0)then
-          if(kh .eq. ktfoper+mtfcomplex .and.
-     $         kl%nl .eq. 2)then
+        if(iand(kl%attr,lnonreallist) == 0)then
+          if(kh == ktfoper+mtfcomplex .and. kl%nl == 2)then
             lx=.true.
           endif
-        elseif(kh .eq. ktfoper+mtflist)then
+        elseif(kh == ktfoper+mtflist)then
           do i=1,kl%nl
             if(tfcomplexlistqk(kl%dbody(i)))then
               lx=.true.
@@ -121,10 +119,10 @@
       type (sad_dlist), pointer :: kli
       type (sad_pat), pointer :: kpi
       integer*4 i
-      if(iand(ksymbollist,kl%attr) .ne. 0)then
+      if(iand(ksymbollist,kl%attr) /= 0)then
         lx=.true.
         return
-      elseif(iand(knosymbollist,kl%attr) .ne. 0)then
+      elseif(iand(knosymbollist,kl%attr) /= 0)then
         lx=.false.
         return
       endif
@@ -141,14 +139,14 @@
             return
           endif
         elseif(ktfpatq(kl%dbody(i),kpi))then
-          if(kpi%sym%loc .ne. 0 .or. ktftype(kpi%expr%k) .ne. ktfref
-     $         .or. ktftype(kpi%default%k) .ne. ktfref)then
+          if(kpi%sym%loc /= 0 .or. ktftype(kpi%expr%k) /= ktfref
+     $         .or. ktftype(kpi%default%k) /= ktfref)then
             lx=.true.
             kl%attr=ior(kl%attr,ksymbollist)
             return
           endif
         endif
-        if(i .eq. 0 .and. ktfreallistq(kl))then
+        if(i == 0 .and. ktfreallistq(kl))then
           exit
         endif
       enddo
@@ -163,7 +161,7 @@
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       integer*4 itfmessage
-      if(isp .ne. isp1+2)then
+      if(isp /= isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
@@ -179,10 +177,10 @@
       logical*4 ,intent(out):: null
       tfrepeatedqk=.false.
       if(ktflistq(k,kl))then
-        if(kl%head%k .eq. ktfoper+mtfrepeated)then
+        if(kl%head%k == ktfoper+mtfrepeated)then
           tfrepeatedqk=.true.
           null=.false.
-        elseif(kl%head%k .eq. ktfoper+mtfrepeatednull)then
+        elseif(kl%head%k == ktfoper+mtfrepeatednull)then
           tfrepeatedqk=.true.
           null=.true.
         endif
@@ -199,7 +197,7 @@
         l=.true.
       else
         l=.false.
-        if(tflistq(k,kl) .and. kl%nl .gt. 0)then
+        if(tflistq(k,kl) .and. kl%nl > 0)then
           do i=1,kl%nl
             if(.not. tfrefq(kl%dbody(i)))then
               return

@@ -1015,7 +1015,7 @@ c        write(*,'(a,i5,1p10g12.4)')'ogeo ',lxp,gv(:,4),ogv(:,4),cod(1:4)
       logical*4 exist,temat
       integer*4 nl
       nc=len(name0)
-      name(1:nc)=name0
+      name(1:max(1,nc))=name0
       if(name(1:1) == '@')then
         name(1:nc-1)=name(2:nc)
         nc=nc-1

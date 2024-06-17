@@ -296,14 +296,14 @@ c      write(*,'(1p6g12.4)')r
       cc(2:6:2)=conjg(cc(1:5:2))
       ceig0=ceig
       cd(4:6)=log(cc(1:5:2))
-      if(vceff .ne. 0.d0)then
+      if(vceff /= 0.d0)then
         phirf=asinz(u0*pgev/vceff)
         heff=wrfeff*cveloc/omega0
       else
         phirf=0.d0
         heff=0.d0
       endif
-      synchm=.not. trpt .and. rfsw .and. imag(cd(6)) .ne. 0.d0
+      synchm=.not. trpt .and. rfsw .and. imag(cd(6)) /= 0.d0
       if(synchm)then
         if(wrfeff /= 0.d0)then
           alphap=-imag(cd(6))*abs(imag(cd(6)))/(c*m_2pi/omega0)/(dvcacc/pgev)
@@ -340,15 +340,15 @@ c      write(*,'(1p6g12.4)')r
      1       (rd(i,i+1)-rd(i+1,i))*.5d0)/cc(i)
       enddo
       taurdx=merge(-m_2pi/omega0/dble(cd(1)),0.d0,
-     $     dble(cd(1)) .ne. 0.d0)
+     $     dble(cd(1)) /= 0.d0)
       taurdy=merge(-m_2pi/omega0/dble(cd(2)),0.d0,
-     $     dble(cd(2)) .ne. 0.d0)
+     $     dble(cd(2)) /= 0.d0)
       taurdz=merge(-m_2pi/omega0/dble(cd(3)),0.d0,
-     $     dble(cd(3)) .ne. 0.d0)
+     $     dble(cd(3)) /= 0.d0)
       params(ipdampx:ipdampz)=dble(cd(1:3))
       params(ipdnux:ipdnuz)=imag(cd(1:3))
       sr=params(ipdampx)+params(ipdampy)+params(ipdampz)
-      if(sr .ne. 0.d0)then
+      if(sr /= 0.d0)then
         sr=4.d0/sr
         params(ipjx:ipjz)=params(ipdampx:ipdampz)*sr
       else
@@ -432,7 +432,7 @@ c     enddo
         do i=1,5,2
           k1=iaidx(i,i)
           k2=iaidx(i+1,i+1)
-          if(btr(k2,k2) .ne. 0.d0 .and. btr(k1,k1) .ne. 0.d0)then
+          if(btr(k2,k2) /= 0.d0 .and. btr(k1,k1) /= 0.d0)then
             ab(i)=sqrt(abs(btr(k1,k1)/btr(k2,k2)))
 c     do j=1,21
             btr(k1,1:21)=btr(k1,1:21)/ab(i)
@@ -482,7 +482,7 @@ c        write(*,'(a,1p5G15.7)')'tecalc-3 ',btr(1,1),btr(1,3),btr(3,3),beam(1),b
         sigz=sqrt(abs(emitp(15)))
       else
         sigz=merge(abs(alphap)*sige*cveloc*p0/h0/omegaz,
-     $       0.d0,omegaz .ne. 0.d0)
+     $       0.d0,omegaz /= 0.d0)
         eemz=sigz*sige
       endif
       params(ipemx:ipemz)=(/eemx,eemy,eemz/)
@@ -596,18 +596,17 @@ c      write(*,'(1p10g12.4)')spt
       integer*4 i,iii,k,j,m
       real*8 ,intent(in):: dc
       real*8 ,intent(inout):: emitn(21),beam(42)
-      real*8 trans1(6,6),rx,ry,rz,emx1,emy1,emz1,emmin,
-     $     de,tf,tt,eintrb,rr
+      real*8 trans1(6,6),rx,ry,rz,emx1,emy1,emz1,emmin,de,tf,tt,eintrb,rr
       logical*4 ,intent(out):: pri
       character*11 autofg,vout(5)
       emx1=eemx
       emy1=eemy
       emz1=eemz
+      de=0.d0
       if(trpt)then
         call rsetgl1('EMITXC',eemx)
         call rsetgl1('EMITYC',eemy)
         call rsetgl1('EMITZC',eemz)
-        de=0.d0
         calint=.true.
         iret=3
         return
@@ -709,7 +708,7 @@ c            endif
                   else
                     tt=0.d0
                   endif
-                  if(tt .ne. 0.d0)then
+                  if(tt /= 0.d0)then
                     vout(i)=autofg(1.d0/tt,'9.6')
                   else
                     vout(i)='   ---'
@@ -764,7 +763,7 @@ c            endif
               eemx=eemx*rr
               eemy=eemy*rr
               eemz=eemz*rr
-            elseif(emx0 .ne. 0.d0)then
+            elseif(emx0 /= 0.d0)then
               if(it .ge. 20)then
                 emxmax=min(max(eemx,emx0),emxmax)
                 emxmin=max(min(eemx,emx0),emxmin)
@@ -1159,7 +1158,7 @@ c     $         'Z :',dble(cd(3))*sr
 c     kiku <------------------
         xxs=emitp(1)-emitp(6)
         yys=-2.d0*emitp(4)
-        if(xxs .ne. 0.d0 .and. yys .ne. 0.d0)then
+        if(xxs /= 0.d0 .and. yys /= 0.d0)then
           btilt=atan2(yys,xxs)/2d0
         else
           btilt=0.d0

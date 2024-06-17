@@ -63,7 +63,7 @@
       level= itfuplevel()
       kaf=ktfsymbolz(vname,len_trim(vname),symd)
       kax=0
-      if(symd%downval .eq. 0)then
+      if(symd%downval == 0)then
         kv=0
       else
         kv=1
@@ -152,7 +152,7 @@
             endif
           endif
           if(smearp .and.
-     $         (mod(n,nsmear) .eq. 0 .or. n .eq. nturn+1))then
+     $         (mod(n,nsmear) == 0 .or. n == nturn+1))then
             nsm=mod(n-1,nsmear)+1
             if(nsm .gt. 1)then
               call tsmear(n,nsmear,np,kptbl,

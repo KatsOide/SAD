@@ -7,7 +7,7 @@ c$$$      integer*8 i,ic,i1,j,ixl(16)
 c$$$      do l=1,16
 c$$$        ixl(l)=ktaloc(n)
 c$$$        if(ixl(l) .ge. 2**31-n .or. ixl(l) .le. 0)then
-c$$$          if(l .ne. 1)then
+c$$$          if(l /= 1)then
 c$$$            cycle
 c$$$          else
 c$$$            n1=max(n,3)
@@ -16,14 +16,14 @@ c$$$            do na=n1,nindex
 c$$$              ic=icp+na*2
 c$$$              i1=ic
 c$$$              i=klist(i1)
-c$$$              do while(i .ne. ic)
+c$$$              do while(i /= ic)
 c$$$                if(i .gt. 0 .and. i .lt. 2**31)then
 c$$$                  m1=ilist(1,i-1)
 c$$$                  if(m1 .eq. m)then
 c$$$                    klist(i1)=klist(i)
 c$$$                    klist(klist(i)+1)=i1
 c$$$                    j=ich+iand(i+m+2,mhash)
-c$$$                    do while(klist(j) .ne. i+2)
+c$$$                    do while(klist(j) /= i+2)
 c$$$                      j=klist(j)
 c$$$                    enddo
 c$$$                    klist(j)=klist(i+2)
@@ -38,7 +38,7 @@ c$$$                  elseif(m1 .ge. m+minseg2)then
 c$$$                    klist(i1)=klist(i)
 c$$$                    klist(klist(i)+1)=i1
 c$$$                    j=ich+iand(i+m1+2,mhash)
-c$$$                    do while(klist(j) .ne. i+2)
+c$$$                    do while(klist(j) /= i+2)
 c$$$                      j=klist(j)
 c$$$                    enddo
 c$$$                    klist(j)=klist(i+2)
@@ -113,7 +113,7 @@ c      write(*,*)'talocp ',ip1,ip1+na
       nnet=nnet+na
       j=klist(icsep)
       j1=icsep
-      do while(j .ne. icsep)
+      do while(j /= icsep)
         if(j+4 == ip1)then
           klist(j1)=klist(j)
           ip1=j
@@ -162,7 +162,7 @@ c$$$      end
       integer*4 n1
       n1=max(n,3)
       if(n1 .lt. nindex)then
-        tfaloc=klist(icp+n1*2) .ne. icp+n1*2
+        tfaloc=klist(icp+n1*2) /= icp+n1*2
       else
         tfaloc=.false.
       endif

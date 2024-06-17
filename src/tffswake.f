@@ -41,7 +41,7 @@
       call c_f_pointer(c_loc(rlist(iwbufxy)),wbufxy,[np,np])
       call c_f_pointer(c_loc(rlist(iwbufxyl)),wbufxyl,[np,np])
       do iwp=1,nwakep+1
-        if(iwp .eq. nwakep+1)then
+        if(iwp == nwakep+1)then
           ibound%le=fbound%le
           ibound%fe=fbound%fe
         else
@@ -49,7 +49,7 @@
           if(ibound%le .gt. fbound%le)then
             cycle
           endif
-          if(ibound%le .eq. fbound%le)then
+          if(ibound%le == fbound%le)then
             ibound%fe=fbound%fe
           else
             ibound%fe=0.d0
@@ -58,17 +58,17 @@
         if(ibound%le .lt. ibound%lb)then
           cycle
         elseif(ibound%le .gt. ibound%lb .or.
-     $         ibound%le .eq. ibound%lb .and. ibound%fe .ne. 0.d0)then
+     $         ibound%le == ibound%lb .and. ibound%fe /= 0.d0)then
           do i=nfam1,nfam
             ii=min(1,abs(i))
             twiss(ibound%lb,ii,:)=utwiss(:,i,itp1)
-            call qcell1(ibound,ii,optstat(i),i .ne. 0,.true.,0)
+            call qcell1(ibound,ii,optstat(i),i /= 0,.true.,0)
             call tffssetutwiss(i,ibound,beg,
-     $           ibound%lb .eq. fbound%lb,ibound%le .eq. fbound%le)
+     $           ibound%lb == fbound%lb,ibound%le == fbound%le)
           enddo
-        elseif(ibound%lb .eq. fbound%le)then
+        elseif(ibound%lb == fbound%le)then
           npf=np*ntwissfun
-          if(idtypec(nlat-1) .eq. icMARK)then
+          if(idtypec(nlat-1) == icMARK)then
             iutp=itwissp(nlat-1)
             utwiss(:,nfam1:nfam,iutp)=utwiss(:,nfam1:nfam,itp1)
 c            call tmov(utwiss(1,nfam1,itp1),
@@ -85,13 +85,13 @@ c     $           utwiss(1,nfam1,iutp),npf)
         if(iwp .le. nwakep)then
           iutp=itwissp(ibound%le)
           idx=kytbl(kwDX,idtypec(ibound%le))
-          if(idx .ne. 0)then
+          if(idx /= 0)then
             dx=rlist(latt(ibound%le)+idx)
           else
             dx=0.d0
           endif
           idy=kytbl(kwDY,idtypec(ibound%le))
-          if(idy .ne. 0)then
+          if(idy /= 0)then
             dy=rlist(latt(ibound%le)+idy)
           else
             dy=0.d0
@@ -112,7 +112,7 @@ c     $           utwiss(1,nfam1,iutp),npf)
           do i=nfam1,nfam
             ii=min(1,abs(i))
             twiss(ibound1%lb,ii,:)=utwiss1(:,i)
-            call qcell1(ibound1,ii,optstat(i),i .ne. 0,.true.,0)
+            call qcell1(ibound1,ii,optstat(i),i /= 0,.true.,0)
             utwiss1(:,i)=twiss(ibound1%le,ii,:)
           enddo
           iutp1=itwissp(ibound1%le)
@@ -164,8 +164,8 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
       cp0=abs(charge*e*pbunch/np/p)
       sigg=max(1.d-5,sigz/np/anbunch)
       dsig=.1d0*sigg
-      if(iwl .ne. 0 .and. lwake)then
-        if(iwl .eq. iwsl)then
+      if(iwl /= 0 .and. lwake)then
+        if(iwl == iwsl)then
           ddz0=ut0(mfitdz,nfam1)-wzl(nfam1)
           re=.false.
           do i=nfam1+1,nfam
@@ -221,9 +221,9 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
         endif
         ut1(mfitddp,:)=ut0(mfitddp,:)-cp0*wbuf
       endif
-      if(iwt .ne. 0 .and. twake)then
+      if(iwt /= 0 .and. twake)then
         re=.false.
-        if(iwt .eq. iwst)then
+        if(iwt == iwst)then
           ddz0=ut0(mfitdz,nfam1)-wzt(nfam1)
           re=.true.
           do i=nfam1+1,nfam
@@ -324,7 +324,7 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
       integer*8 ifname,ifwfunl,ifwfunt
       save ifname,ifwfunl,ifwfunt
       data ifwfunl,ifwfunt/0,0/
-      if(ifwfunl .eq. 0)then
+      if(ifwfunl == 0)then
         ifwfunl=ktadaloc(0,2)
         ifwfunt=ktadaloc(0,2)
         dlist(ifwfunl)=dtfcopy1(kxsymbolz('WakeFunction',12))
@@ -347,23 +347,23 @@ c      call tmov(ut0(1,nfam1),ut1(1,nfam1),ntwissfun*np)
         levele=levele+1
         call descr_sad(dfromk(ktflist+ifwfunl),kwll)
         kx=tfleval(kwll,.true.,irtc)
-        if(irtc .ne. 0)then
-          if(ierrorprint .ne. 0)then
+        if(irtc /= 0)then
+          if(ierrorprint /= 0)then
             call tfaddmessage('WakeFunction Longitudinal',0,lfno)
           endif
           go to 9000
         endif
         if(ktflistq(kx))then
           kal=ktfmalocp(kx,n,m,.false.,.true.,.false.,.false.,irtc)
-          if(irtc .eq. 0 .and. m .eq. 2)then
+          if(irtc == 0 .and. m == 2)then
 c            call tfdebugprint(kx,'setupwake-l-kx',1)
             isp=isp1
             LOOP_J_1: do j=isp-3,isp0+1,-2
               kalj=abs(ktastk(j))
-              if(kalj .ne. 0)then
-                if(ilist(1,kal-1) .eq. ilist(1,kalj-1))then
+              if(kalj /= 0)then
+                if(ilist(1,kal-1) == ilist(1,kalj-1))then
                   do k=0,ilist(1,kal-1)-2
-                    if(rlist(kal+k) .ne. rlist(kalj+k))then
+                    if(rlist(kal+k) /= rlist(kalj+k))then
                       cycle LOOP_J_1
                     endif
                   enddo
@@ -381,23 +381,23 @@ c            call tfdebugprint(kx,'setupwake-l-kx',1)
         call descr_sad(dfromk(ktflist+ifwfunt),kwtl)
         kx=tfleval(kwtl,.true.,irtc)
         isp=isp2
-        if(irtc .ne. 0)then
-          if(ierrorprint .ne. 0)then
+        if(irtc /= 0)then
+          if(ierrorprint /= 0)then
             call tfaddmessage('WakeFunction Transverse',0,lfno)
           endif
           go to 9000
         endif
         if(ktflistq(kx))then
           kat=ktfmalocp(kx,n,m,.false.,.true.,.false.,.false.,irtc)
-          if(irtc .eq. 0 .and. m .eq. 2)then
+          if(irtc == 0 .and. m == 2)then
 c            call tfdebugprint(kx,'setupwake-t-kx',1)
             isp=isp1
             LOOP_J_2: do j=isp-2,isp0+2,-2
               katj=abs(ktastk(j))
-              if(katj .ne. 0)then
-                if(ilist(1,kat-1) .eq. ilist(1,katj-1))then
+              if(katj /= 0)then
+                if(ilist(1,kat-1) == ilist(1,katj-1))then
                   do k=0,ilist(1,kat-1)-2
-                    if(rlist(kat+k) .ne. rlist(katj+k))then
+                    if(rlist(kat+k) /= rlist(katj+k))then
                       cycle LOOP_J_2
                     endif
                   enddo

@@ -22,7 +22,7 @@ c      endif
       ipoint=m
       if(irtc == 0)then
         itfgeto=0
-      elseif(irtc .gt. 0 .and. kerror .ne. 0)then
+      elseif(irtc .gt. 0 .and. kerror /= 0)then
         itfgeto=merge(-3,-2,rlist(ktfaddr(kerror)+1) .ge. 1000.d0)
         call tfreseterror
       else
@@ -141,7 +141,7 @@ c      endif
       character*(*) ,intent(out):: word
  1    if(ipoint .ge. lrecl)then
         call getbuf
-        if(ios .ne. 0)then
+        if(ios /= 0)then
           word=' '
           return
         endif

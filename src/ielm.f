@@ -26,7 +26,7 @@
       irtc=0
       lw=len_trim(word)
       if(lw .gt. 0)then
-        if(word(1:1) .ne. "^")then
+        if(word(1:1) /= "^")then
           call tfevalb(word,kx,irtc)
           ierrorprint=iep
           if(irtc == 0 .and. ktfrealq(kx,v))then
@@ -35,7 +35,7 @@
             exist=.true.
             return
           endif
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             call tfreseterror
           endif
         endif
@@ -92,8 +92,8 @@
           endif
           kx=tfeval(ordw,1,m,.false.,irtc)
           iord=int(kx%x(1))
-          if(irtc .ne. 0 .or. ktfnonrealq(kx))then
-            if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
+          if(irtc /= 0 .or. ktfnonrealq(kx))then
+            if(irtc .gt. 0 .and. ierrorprint /= 0)then
               call tfreseterror
             endif
             ielmf=1
@@ -114,10 +114,10 @@
       endif
       name=word(1:ln)
       ielmf=0
-      if(ipm .ne. 0)then
+      if(ipm /= 0)then
         call tfevals(word(ipm:lw),kx%k,irtc)
-        if(irtc .ne. 0 .or. ktfnonrealq(kx))then
-          if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
+        if(irtc /= 0 .or. ktfnonrealq(kx))then
+          if(irtc .gt. 0 .and. ierrorprint /= 0)then
             call tfreseterror
           endif
           ielmf=1
@@ -137,7 +137,7 @@
       else
         i=ielmh(name,iord)
         if(i == 0)then
-          if(lfn .ne. 0 .and. idot .gt. 0)then
+          if(lfn /= 0 .and. idot .gt. 0)then
             call termes('?Undefined location ',word(1:lw))
           endif
           ielmf=nlat
@@ -202,12 +202,12 @@ c     *        >0: found
       name1=name
       k=itehash(name1,MAXPNAME)*2
       j=klist(ielmhash+k+2)
-      if(j .ne. 0)then
+      if(j /= 0)then
         do i=j,j+ilist(1,ielmhash+k+1)-1
           ielmh=ilist(1,i)
           if(name1 == pnamec(ielmh))then
             if(ilist(ielmh,ifmult) == iord)return
-            if(iord .ne. 0)cycle
+            if(iord /= 0)cycle
             if(nelvx(ilist(ielmh,ifele1))%klp == ielmh)return
 c     Note: ilist(i, ifmult) == 0 if ilist(ilist(i, ifele1), ifklp) == i
 c     *     by tfinit(), tfinimult() initialization
@@ -280,7 +280,7 @@ c     *     by tfinit(), tfinimult() initialization
       integer*4 i
       j=ielmhash
       do i=0,nelmhash*2,2
-        if(ilist(1,j+i+1) .ne. 0)then
+        if(ilist(1,j+i+1) /= 0)then
           call tfree(klist(j+i+2))
         endif
       enddo

@@ -10,13 +10,13 @@
       logical calc,err
       calc=.true.
 400   call getwdl(word)
-      if(word(1:1) .eq. ' ')then
+      if(word(1:1) == ' ')then
         return
       endif
-      if(index(word,'-') .eq. len_trim(word))then
+      if(index(word,'-') == len_trim(word))then
         word1=word(1:len_trim(word)-1)
         do 410 i=1,mfit
-          if(nlist(i) .eq. word1)then
+          if(nlist(i) == word1)then
             call txcalc(icalc,ncalc,mfpnta,mfpnta1,i,.false.,err)
             calc=.false.
             go to 400
@@ -25,7 +25,7 @@
         return
       else
         do 510 i=1,mfit
-          if(nlist(i) .eq. word)then
+          if(nlist(i) == word)then
             call txcalc(icalc,ncalc,mfpnta,mfpnta1,i,.true.,err)
             calc=.false.
             go to 400

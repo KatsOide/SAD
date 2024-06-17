@@ -14,8 +14,8 @@
       integer*4 isp1,narg,irtc,idim,k,i,itfloc,itfmessage,lout
       logical*4 cell0,geo,calc6d0
       narg=isp-isp1
-      if(narg .ne. 5)then
-        if(narg .ne. 6)then
+      if(narg /= 5)then
+        if(narg /= 6)then
           irtc=itfmessage(9,'General::narg','"5 or 6"')
           return
         endif
@@ -24,7 +24,7 @@
      $         '"Real(GEOCAL) for #6"')
           return
         endif
-        geo=ktastk(isp) .ne. 0
+        geo=ktastk(isp) /= 0
       else
         geo=.false.
       endif
@@ -33,7 +33,7 @@
         return
       endif
       idim=int(rtastk(isp1+5))
-      if(idim .ne. 2 .and. idim .ne. 3)then
+      if(idim /= 2 .and. idim /= 3)then
         irtc=itfmessage(9,'General::wrongnum','"IDIM must be 2 or 3"')
         return
       endif
@@ -47,7 +47,7 @@
         return
       endif
       kaini=ktfaddr(ktastk(isp1+3))
-      if(ilist(2,kaini-1) .ne. ntwissfun)then
+      if(ilist(2,kaini-1) /= ntwissfun)then
         irtc=itfmessage(9,'General::wrongleng','"#3","28"')
         return
       endif
@@ -57,15 +57,15 @@
         return
       endif
       fbound%lb=itfloc(ktastk(isp1+1),irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
       fbound%le=itfloc(ktastk(isp1+2),irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
       cell0=cell
-      cell=rtastk(isp1+4) .ne. 0.d0
+      cell=rtastk(isp1+4) /= 0.d0
       do k=1,ntwissfun
         itoff=(2*ndim+1)*nlat*(k-1)+ndim*nlat+iftwis+fbound%lb-1
         rlist(itoff)=rlist(kaini+k)

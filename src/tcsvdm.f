@@ -85,7 +85,7 @@ c
                 b(j,k)=b(j,k)-p*b(i,k)
                 b(i,k)=b(i,k)+q*b(j,k)
               enddo
-            elseif(a(j,i) .ne. 0.d0)then
+            elseif(a(j,i) /= 0.d0)then
               p=a(i,i)/a(j,i)
               cp=conjg(p)
               h1=v(j)+v(i)*dble(p*cp)
@@ -115,7 +115,7 @@ c
             r2a=abs(r2)
             r=hypot(r1a,r2a)
 c            r=sqrt(r1a**2+r2a**2)
-            if(r .ne. 0.d0)then
+            if(r /= 0.d0)then
               if(r1a .gt. r2a)then
                 c=r1a/r
                 zc=c
@@ -156,8 +156,8 @@ c            r=sqrt(r1a**2+r2a**2)
             a(i,j)=zs
             if(j .lt. n+2)then
               a(j-1,i)=zc
-            elseif(r .ne. 0.d0 .and. r1a .le. r2a .and.
-     $             zc .ne. 0.d0)then
+            elseif(r /= 0.d0 .and. r1a .le. r2a .and.
+     $             zc /= 0.d0)then
               a(i,j)=1.d0/zc
             endif
  5210     continue
@@ -170,7 +170,7 @@ c            r=sqrt(r1a**2+r2a**2)
         ap=sqrt(v(i))
         v(i+mn)=x(i)
         aa1=abs(a1)
-        if(aa1 .ne. 0.d0)then
+        if(aa1 /= 0.d0)then
           p=ap*conjg(a1)/aa1
         else
           p=1.d0
@@ -185,7 +185,7 @@ c        x(i)=aa1*ap*x(i)
           a(i,i+1)=a(i,i+1)*p
           aa1=abs(a(i,i+1))
           v(i)=aa1*x(i+1)
-          if(aa1 .ne. 0.d0)then
+          if(aa1 /= 0.d0)then
             a1=a(i+1,i+1)*conjg(a(i,i+1))/aa1
           endif
         else
@@ -193,7 +193,7 @@ c        x(i)=aa1*ap*x(i)
         endif
         an=abs(x(i))+abs(v(i))
         anorm=max(anorm,an)
-        if(an .ne. 0.d0)then
+        if(an /= 0.d0)then
           xmin=min(xmin,abs(x(i)))
         endif
  20   continue
@@ -269,11 +269,11 @@ c9710 format(1x,:1p11g11.3)
         v(mn+i)=1.d0
  1510 continue
       v(0)=0.d0
- 1002 if(v(iend) .ne. 0.d0)then
+ 1002 if(v(iend) /= 0.d0)then
         f=v(iend)
         v(iend)=0.d0
         do 1110 i=iend,ibegin,-1
-          if(abs(f)+abs(x(i)) .ne. abs(x(i)))then
+          if(abs(f)+abs(x(i)) /= abs(x(i)))then
             ap=hypot(abs(f),x(i))
 c            ap=sqrt(abs(f)**2+x(i)**2)
             vv=v(i-1)/ap
@@ -330,7 +330,7 @@ c     write(*,*)it,ibegin,iend,v(iend-1)
           else
             g=h*y
             y=f+sign(hypot(f,g),f)
-            if(y .ne. 0.d0)then
+            if(y /= 0.d0)then
               f=((w-z)*(w+z)-h**2+g**2/y)/w
             else
               f=((w-z)*(w+z)-h**2)/w
@@ -343,7 +343,7 @@ c     write(*,*)it,ibegin,iend,v(iend-1)
               i1=i+1
               z=hypot(f,g)
               v(i-1)=z
-              if(z .ne. 0.d0)then
+              if(z /= 0.d0)then
                 c=f/z
                 s=g/z
               else
@@ -357,7 +357,7 @@ c     write(*,*)it,ibegin,iend,v(iend-1)
               y= x(i1)*c
               z=hypot(f,h)
               x(i)=z
-              if(z .ne. 0.d0)then
+              if(z /= 0.d0)then
                 c=f/z
                 s=h/z
               else

@@ -17,13 +17,13 @@
      $     scphiy,u,shphix,shphiy,ycs,snphiy,x(5),y(5)
       real*8 ,intent(out):: dtrans(4,5),dcod(6)
       real*8 cod(6)
-      if(al .eq. 0.d0)then
+      if(al == 0.d0)then
 c        write(*,*)' QDBTHI Not installed yet.'
         dtrans=0.d0
         dcod=0.d0
         return
       endif
-      if(phi0 .eq. 0.d0 .or. phib0 .eq. 0.d0)then
+      if(phi0 == 0.d0 .or. phib0 == 0.d0)then
         phi=1.d-7
         phib=1.d-7
       else
@@ -45,7 +45,7 @@ c        write(*,*)' QDBTHI Not installed yet.'
       rhob=al/phib
       rho0=al/phi
       aind=ak*rho0/phi
-      if(aind .eq. -1.d0)then
+      if(aind == -1.d0)then
         aind=-1.d0+1.d-8
       endif
       ax=sqrt(abs(1.d0+aind))
@@ -77,7 +77,7 @@ c        write(*,*)' QDBTHI Not installed yet.'
         phiy=0.d0
         rhoy=1.d19
       endif
-      if(iv .eq. 2)then
+      if(iv == 2)then
         bpr=rho/rho0
         if(aind .gt. -1.d0)then
           dphix=phib/pr/phix
@@ -104,7 +104,7 @@ c          sinsq=2.d0*sin(phix*.5d0)**2
           if(aind .gt. 0.d0)then
             t33=cosh(phiy)
             t34=rhoy*sinh(phiy)
-          elseif(aind .eq. 0.d0)then
+          elseif(aind == 0.d0)then
             t33=1.d0
             t34=al
           else
@@ -123,7 +123,7 @@ c          sinsq=2.d0*sin(phix*.5d0)**2
      1         +(pr*(rhoa+pxi*al*.5d0)+drho*(1.d0-aind)*.5d0)*xcs
      1         +xd*(3.d0*phix*csphix+(1.d0-phix**2)*snphix)*.5d0
      1        )*dphix/al/pr
-        elseif(aind .eq. -1.d0)then
+        elseif(aind == -1.d0)then
           snphix=phib/pr
           dx1=(bpr-1.d0)/bpr*al
           dpx1=dx1/al
@@ -185,7 +185,7 @@ c          sinsq=2.d0*sin(phix*.5d0)**2
         a26=b26+dk2*t16
         a36=0.d0
         a46=0.d0
-      elseif(iv .eq. 8)then
+      elseif(iv == 8)then
         bpr=rho/rho0
         if(aind .gt. 0.d0)then
           dphix= al/2.d0/phix/bpr
@@ -229,7 +229,7 @@ c          sinsq=2.d0*sin(phix*.5d0)**2
           a46=(pyi*ycs
      1         -yi*rhoy/phiy*(3.d0*phiy*chphiy+(1.d0+phiy**2)*shphiy)
      1        )*.5d0/pr*dphiy
-        elseif(aind .eq. 0.d0)then
+        elseif(aind == 0.d0)then
           u=phi**2/al
           dphix= phix/2.d0/u
           csphix=cos(phix)

@@ -47,7 +47,7 @@
      $     (0.999999999999999983d0,5.85167231706863869d-9)
      $     ]
       do 10 i=1,idim-1
-        if(n .eq. m(i+1))then
+        if(n == m(i+1))then
           ln=i
           go to 1
         endif

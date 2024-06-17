@@ -14,7 +14,7 @@
       enddo
       do i=1,n-1
         cp=ca(i+1,i)
-        if(imag(cp) .ne. 0.d0)then
+        if(imag(cp) /= 0.d0)then
           a=abs(cp)
           cu=conjg(cp)/a
           do j=i+1,n
@@ -29,7 +29,7 @@
         xp=a
         do j=i+2,n
           a=hypot(xp,abs(ca(j,i)))
-          if(a .ne. 0.d0)then
+          if(a /= 0.d0)then
             xc=xp/a
             cs=ca(j,i)/a
             ccs=conjg(cs)
@@ -53,10 +53,10 @@
       enddo
       i1=1
       i2=n
- 1    if(i2 .eq. 1)then
+ 1    if(i2 == 1)then
         go to 3000
       endif
-      if(i1 .eq. i2)then
+      if(i1 == i2)then
         i2=i1-1
         i1=1
         go to 1
@@ -64,9 +64,9 @@
       it=0
  10   do i=i2-1,i1,-1
         w=abs(ca(i,i))+abs(ca(i+1,i+1))
-        if(abs(dble(ca(i+1,i)))+w .eq. w)then
+        if(abs(dble(ca(i+1,i)))+w == w)then
           ca(i+1,i)=0.d0
-          if(i .eq. i2-1)then
+          if(i == i2-1)then
             i2=i2-1
           else
             i1=i+1
@@ -112,7 +112,7 @@
       do i=i1,i2-2
         cp=ca(i+1,i)
         a=hypot(abs(cp),dble(ca(i+2,i)))
-        if(a .ne. 0.d0)then
+        if(a /= 0.d0)then
           cc=cp/a
           xs=dble(ca(i+2,i))/a
           ccc=conjg(cc)
@@ -138,7 +138,7 @@
           enddo
         endif
       enddo
-      if(imag(ca(i2,i2-1)) .ne. 0.d0)then
+      if(imag(ca(i2,i2-1)) /= 0.d0)then
         a=abs(ca(i2,i2-1))
         cu=conjg(ca(i2,i2-1))/a
         ca(i2,i2-1)=a
@@ -162,7 +162,7 @@ c        enddo
  3000 do i=2,n
         do j=i-1,1,-1
           cd=ca(j,j)-ca(i,i)
-          if(cd .ne. 0.d0)then
+          if(cd /= 0.d0)then
             cu=ca(j,i)/cd
 c            do k=i,n
             ca(j,i:n)=ca(j,i:n)+cu*ca(i,i:n)

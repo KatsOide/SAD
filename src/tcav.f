@@ -44,8 +44,7 @@ c      pe=sqrt((he-1.d0)*(he+1.d0))
       v20a=v20a+vcorr
       v02a=v02a+vcorr
       r=abs(vnominal*(1.d0/h0+1.d0/he))
-      ndiv=1+int(min(abs(w*al),
-     $     sqrt(r**2/3.d0/eps)))
+      ndiv=1+int(min(abs(w*al),sqrt(r**2/3.d0/eps)))
       if(r > 1.d-6)then
         wl=asinh(r*(2.d0+r)/2.d0/(1.d0+r))
         ndiv=min(ndivmax,max(ndiv,
@@ -57,6 +56,7 @@ c      pe=sqrt((he-1.d0)*(he+1.d0))
         do i=2,ndiv
           ws(i)=ws(i-1)*we
         enddo
+        wsn=ws(ndiv)
       else
         wsn=1.d0/ndiv
         do i=1,ndiv
