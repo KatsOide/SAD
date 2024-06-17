@@ -2100,57 +2100,49 @@ c
         irtc=0
         go to 7000
  110    if(narg == 1)then
-          kx=tfeintf(dsin,cdsin,k,
-     $         .true.,-dinfinity,dinfinity,irtc)
+          kx=tfeintf(dsin,cdsin,k,.true.,-dinfinity,dinfinity,irtc)
         else
           go to 6811
         endif
         go to 6900
  120    if(narg == 1)then
-          kx=tfeintf(dcos,cdcos,k,
-     $         .true.,-dinfinity,dinfinity,irtc)
+          kx=tfeintf(dcos,cdcos,k,.true.,-dinfinity,dinfinity,irtc)
         else
           go to 6811
         endif
         go to 6900
  130    if(narg == 1)then
-          kx=tfeintf(dtan,tctan,k,
-     $         .true.,-dinfinity,dinfinity,irtc)
+          kx=tfeintf(dtan,tctan,k,.true.,-dinfinity,dinfinity,irtc)
         else
           go to 6811
         endif
         go to 6900
  140    if(narg == 1)then
-          kx=tfeintf(dsinh,tcsinh,k,
-     $         .true.,-dinfinity,dinfinity,irtc)
+          kx=tfeintf(dsinh,tcsinh,k,.true.,-dinfinity,dinfinity,irtc)
         else
           go to 6811
         endif
         go to 6900
  150    if(narg == 1)then
-          kx=tfeintf(dcosh,tccosh,k,
-     $         .true.,-dinfinity,dinfinity,irtc)
+          kx=tfeintf(dcosh,tccosh,k,.true.,-dinfinity,dinfinity,irtc)
         else
           go to 6811
         endif
         go to 6900
  160    if(narg == 1)then
-          kx=tfeintf(dtanh,tctanh,k,
-     $         .true.,-dinfinity,dinfinity,irtc)
+          kx=tfeintf(dtanh,tctanh,k,.true.,-dinfinity,dinfinity,irtc)
         else
           go to 6811
         endif
         go to 6900
  170    if(narg == 1)then
-          kx=tfeintf(dexp,cdexp,k,
-     $         .true.,-dinfinity,dinfinity,irtc)
+          kx=tfeintf(dexp,cdexp,k,.true.,-dinfinity,dinfinity,irtc)
         else
           go to 6811
         endif
         go to 6900
  180    if(narg == 1)then
-          kx=tfeintf(dlog,cdlog,k,
-     $         .true.,0.d0,dinfinity,irtc)
+          kx=tfeintf(dlog,cdlog,k,.true.,0.d0,dinfinity,irtc)
         elseif(narg == 2)then
           if(ilog2%k == 0)then
             ilog2=kxsymbolf('Log2$',5,.true.)
@@ -2164,10 +2156,9 @@ c
         endif
         go to 6900
  190    if(narg == 1)then
-          kx=tfeintf(datan,tcatan,k,
-     $         .true.,-dinfinity,dinfinity,irtc)
+          kx=tfeintf(datan,tcatan,k,.true.,-dinfinity,dinfinity,irtc)
         elseif(narg == 2)then
-          kx=tfeintf2(tatan2,tcatan2,dtastk(isp-1),k,.true.,irtc)
+          kx=tfeintf2(tatan2,tcatan2,dtastk(isp-1),k,irtc)
         else
           go to 6812
         endif
@@ -2175,22 +2166,19 @@ c
  200    call tfdet(isp1,kx,irtc)
         go to 6900
  210    if(narg == 1)then
-          kx=tfeintf(dsqrt,cdsqrt,k,
-     $         .true.,0.d0,dinfinity,irtc)
+          kx=tfeintf(dsqrt,cdsqrt,k,.true.,0.d0,dinfinity,irtc)
         else
           go to 6811
         endif
         go to 6900
  220    if(narg == 1)then
-          kx=tfeintf(tfloor,tcfloor,k,
-     $         .true.,-dinfinity,dinfinity,irtc)
+          kx=tfeintf(tfloor,tcfloor,k,.true.,-dinfinity,dinfinity,irtc)
         else
           go to 6811
         endif
         go to 6900
  230    if(narg == 1)then
-          kx=tfeintf(tceiling,tcceiling,k,
-     $         .true.,-dinfinity,dinfinity,irtc)
+          kx=tfeintf(tceiling,tcceiling,k,.true.,-dinfinity,dinfinity,irtc)
         else
           go to 6811
         endif
@@ -2610,6 +2598,8 @@ c        go to 6900
         go to 6900
  1190   if(narg == 1)then
           kx=tfeintf(tround,tcround,k,.true.,-dinfinity,dinfinity,irtc)
+        elseif(narg == 2)then
+          kx=tfeintf2(tround2,tcround2,dtastk(isp-1),k,irtc)
         else
           go to 6811
         endif
@@ -2974,17 +2964,15 @@ c        go to 6900
         endif
         go to 6900
  2450   if(narg == 1)then
-          kx=tfeintf(zeta,czeta,k,
-     $         .true.,-dinfinity,dinfinity,irtc)
+          kx=tfeintf(zeta,czeta,k,.true.,-dinfinity,dinfinity,irtc)
         elseif(narg == 2)then
-          kx=tfeintf2(zeta2,czeta2,dtastk(isp-1),k,.true.,irtc)
+          kx=tfeintf2(zeta2,czeta2,dtastk(isp-1),k,irtc)
         else
           go to 6812
         endif
         go to 6900
  2460   if(narg == 1)then
-          kx=tfeintf(polygamma,cpolygamma,k,.true.,
-     $         -dinfinity,dinfinity,irtc)
+          kx=tfeintf(polygamma,cpolygamma,k,.true.,-dinfinity,dinfinity,irtc)
         elseif(narg == 2)then
           kx=tfbessel(isp1,5,irtc)
         else
@@ -2992,17 +2980,15 @@ c        go to 6900
         endif
         go to 6900
  2470   if(narg == 1)then
-          kx=tfeintf(dzeta,dczeta,k,
-     $         .true.,-dinfinity,dinfinity,irtc)
+          kx=tfeintf(dzeta,dczeta,k,.true.,-dinfinity,dinfinity,irtc)
         elseif(narg == 2)then
-          kx=tfeintf2(dzeta2,dczeta2,dtastk(isp-1),k,.true.,irtc)
+          kx=tfeintf2(dzeta2,dczeta2,dtastk(isp-1),k,irtc)
         else
           go to 6812
         endif
         go to 6900
  2480   if(narg == 1)then
-          kx=tfeintf(zeta,czeta,k,
-     $         .true.,-dinfinity,dinfinity,irtc)
+          kx=tfeintf(zeta,czeta,k,.true.,-dinfinity,dinfinity,irtc)
         elseif(narg == 2)then
           kx=tfbessel(isp1,6,irtc)
         else
@@ -3010,8 +2996,7 @@ c        go to 6900
         endif
         go to 6900
  2490   if(narg == 1)then
-          kx=tfeintf(dzeta,dczeta,k,
-     $         .true.,-dinfinity,dinfinity,irtc)
+          kx=tfeintf(dzeta,dczeta,k,.true.,-dinfinity,dinfinity,irtc)
         elseif(narg == 2)then
           kx=tfbessel(isp1,7,irtc)
         else

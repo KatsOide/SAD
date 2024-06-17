@@ -21,19 +21,19 @@
         ispf=isp-1
       elseif(narg .eq. 3)then
         call tflevelspec(dtastk(isp),n1,n2,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
         ispf=isp-2
       elseif(narg .eq. 1)then
-        if(mode .ne. 0 .and. mode .ne. 4)then
+        if(mode /= 0 .and. mode /= 4)then
           irtc=-1
         else
           irtc=itfmessage(9,'General::narg','"2 or 3"')
         endif
         return
       else
-        if(mode .ne. 0 .and. mode .ne. 4)then
+        if(mode /= 0 .and. mode /= 4)then
           irtc=itfmessage(9,'General::narg','"2 or 3"')
         else
           irtc=itfmessage(9,'General::narg','"1 or 2 or 3"')
@@ -86,7 +86,7 @@
           levele=levele+1
           ki=tfefunrefu(isp2,irtc)
           l=itfdownlevel()
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             if(irtc .eq. -3)then
               exit
             elseif(irtc .eq. -2)then
@@ -112,7 +112,7 @@
           levele=levele+1
           ki=tfefunrefu(isp2,irtc)
           call tfconnect(ki,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             go to 9000
           endif
           isp=isp2
@@ -163,7 +163,7 @@
           irtc=itfmessage(9,'General::wrongopt',' ')
           return
         endif
-      elseif(narg .ne. 2)then
+      elseif(narg /= 2)then
         irtc=itfmessage(9,'General::narg','"2 (and options)"')
         return
       endif
@@ -204,7 +204,7 @@
         return
       elseif(narg .eq. 3)then
         call tflevelspec(dtastk(isp),n1,n2,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
         ispf=isp-2
@@ -248,7 +248,7 @@
         itr=-1
       endif
       call tfposition(isp1,kx,1,irtc)
-      if(itr .lt. 0 .or. irtc .ne. 0)then
+      if(itr .lt. 0 .or. irtc /= 0)then
         return
       endif
       if(ktfnonlistq(kx,klx))then
@@ -259,7 +259,7 @@
         isp=isp+1
         call tfreplace(klx%dbody(i),kr,dtastk(isp),
      $       .true.,.true.,.false.,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 100
         endif
       enddo
@@ -328,14 +328,14 @@
         if(narg .eq. 3 .or. narg .eq. 4)then
           ispf=ispa-narg+2
           call tflevelspec(dtastk(ispf+1),n1,n2,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
           if(narg .eq. 3)then
             ispmax=mstk
           elseif(ktfrealq(ktastk(ispa)))then
             ispb=isp+int(rtastk(ispa))
-            if(n1 .eq. 1 .and. n2 .eq. 1 .and. icases .ne. 2)then
+            if(n1 .eq. 1 .and. n2 .eq. 1 .and. icases /= 2)then
               if(ispb .eq. isp+1)then
                 kl=dtastk(ispf-1)
                 if(ktflistq(kl,kll))then
@@ -435,7 +435,7 @@
      $     n1,n2,5+icases,ind,rind,ihead,ispmax,irtc)
       call tflocald(kf)
       call tflocald(kl)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
       if(icases .eq. 2)then
@@ -461,14 +461,14 @@
         return
       endif
       if(ktfnonrealq(dtastk(isp1+1)))then
-        if(narg .ne. 4)then
+        if(narg /= 4)then
           irtc=-1
           return
         else
           j=isp1+4
         endif
       else
-        if(ktastk(isp1+1) .ne. 0)then
+        if(ktastk(isp1+1) /= 0)then
           j=isp1+2
         elseif(narg .lt. 3)then
           kx%k=ktfoper+mtfnull
@@ -498,7 +498,7 @@
       endif
       do i=isp1+2,isp-1,2
         kxi=tfeevalref(dtastk(i),irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
         if(itfpmatc(dtastk(isp1+1),kxi) .ge. 0)then
@@ -519,13 +519,13 @@
       integer*4 ,intent(out):: irtc
       type (sad_descriptor) kxi
       integer*4 i,itfmessage
-      if(mod(isp-isp1,2) .ne. 0 .or. isp .le. isp1)then
+      if(mod(isp-isp1,2) /= 0 .or. isp .le. isp1)then
         irtc=itfmessage(9,'General::narg','"even number"')
         return
       endif
       do i=isp1+1,isp-1,2
         kxi=tfeevalref(dtastk(i),irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
         if(ktftrueq(kxi%k))then
@@ -547,7 +547,7 @@
       type (sad_descriptor) kr,kc,ke
       integer*4 l,itgetfpe,itfmessage
       logical*4 f
-      if(isp .ne. isp1+2)then
+      if(isp /= isp1+2)then
         irtc=itfmessage(9,'Genearl::narg','"2"')
         return
       endif
@@ -557,13 +557,13 @@
       do while(f)
         levele=levele+1
         kr=tfeevalref(kc,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
         f=ktftrueq(kr%k)
         if(f)then
           kx=tfeevalref(ke,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             if(irtc .eq. -3)then
               irtc=0
               go to 9000
@@ -573,7 +573,7 @@
               go to 9000
             endif
           endif
-          if(itgetfpe() .ne. 0)then
+          if(itgetfpe() /= 0)then
             call tclrfpe
             irtc=itfmessage(9,'General::fpe','""')
             go to 9000
@@ -603,7 +603,7 @@
         irtc=itfmessage(9,'General::narg','"0"')
         return
       elseif(narg .eq. 1 .and.
-     $       ktastk(isp) .ne. ktfoper+mtfnull)then
+     $       ktastk(isp) /= ktfoper+mtfnull)then
         irtc=itfmessage(9,'General::narg','"0"')
         return
       endif
@@ -619,7 +619,7 @@
       integer*4 ,intent(in):: mode
       integer*4 ,intent(out):: irtc
       integer*4 itfmessage
-      if(modethrow .ne. -1)then
+      if(modethrow /= -1)then
         irtc=itfmessage(999,'General::throwinthrow','""')
       else
         call tflocal(kerror)
@@ -638,7 +638,7 @@
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       integer*4 itfmessage
-      if(isp-isp1 .ne. 1)then
+      if(isp-isp1 /= 1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
@@ -726,7 +726,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
         levele=levele+1
         kxi=tfefunrefu(isp2+1,irtc)
         call tfconnect(kxi,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
         isp=isp2
@@ -759,7 +759,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
       if(isp .eq. isp1+1)then
         irtc=-1
         return
-      elseif(isp .ne. isp1+2)then
+      elseif(isp /= isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
@@ -810,7 +810,7 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
             isp=isp+1
             ktastk(isp)=ktastk(i)
             kx=tfefunrefu(isp4+1,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               isp=isp2+1
               return
             endif
@@ -873,11 +873,11 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
           do l=0,nsymhash
             j=itfcontext+l+1
             i=klist(j)
-            do while(i .ne. j)
+            do while(i /= j)
               call loc_namtbl(i,loc)
               nv=loc%str%nch
               vname=loc%str%str(1:nv)
-              if(loc%symdef .ne. 0)then
+              if(loc%symdef /= 0)then
                 isp=isp+1
                 dtastk(isp)=loc%str%alloc
               endif
@@ -888,11 +888,11 @@ c        write(*,*)'tfcatchreturn ',mode,modethrow
           do l=0,nsymhash
             j=itfcontext+l+1
             i=klist(j)
-            do while(i .ne. j)
+            do while(i /= j)
               call loc_namtbl(i,loc)
               nv=loc%str%nch
               vname=loc%str%str(1:nv)
-              if(loc%symdef .ne. 0 .and.
+              if(loc%symdef /= 0 .and.
      $             tmatch(vname(1:nv),pat(1:npat)))then
                 isp=isp+1
                 dtastk(isp)=loc%str%alloc

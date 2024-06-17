@@ -3,7 +3,7 @@
       use efun
       use temw, only:tmulbs
       use ffs_flag, only:calpol
-      use tfcsi,only:icslfnm
+      use tfcsi,only:icslfnm,lfnm
       use mathfun
       implicit none
       type alist
@@ -75,7 +75,7 @@
         if(ierrorprint /= 0)then
           call tfaddmessage(' ',2,icslfnm())
         endif
-        write(*,*)' Error in ExternalMap of ',l,ord(l),' element at ',
+        write(lfnm,*)' Error in ExternalMap of ',l,ord(l),' element at ',
      $       nt,ord(nt),' turn.'
         return
       elseif(.not. tflistq(kx,klx) .or. klx%nl /= 7)then
@@ -327,7 +327,7 @@ c      write(*,*)'unmap ',ipn,n,np,kzi%rbody(4)
       use maloc,only:ktfmalocp
       use sad_basics
       use iso_c_binding
-      use tfcsi,only:icslfnm
+      use tfcsi,only:icslfnm,lfnm
       implicit none
       type (sad_descriptor) kx,k2,k3,k4
       integer*8 k1,kax,ka1,kat1,kbm,krt
@@ -357,7 +357,7 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
         if(ierrorprint /= 0)then
           call tfaddmessage(' ',2,icslfnm())
         endif
-        write(*,*)' Error in ExternalMap(EMIT) of ',l,ord(l),
+        write(lfnm,*)' Error in ExternalMap(EMIT) of ',l,ord(l),
      $       ' element.'
         isp=isp0
         return
@@ -440,7 +440,7 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
  9110 call tfree(kat1)
  9100 levele=itfdownlevel()
       isp=isp0
-      write(*,*)'ExternalMap(EMIT) of ',l,ord(l),
+      write(lfnm,*)'ExternalMap(EMIT) of ',l,ord(l),
      $     ' element did not return ',
      $     '{cod(6), trans(6,6)} or ',
      $     '{cod(6), trans(6,6), dtrans(6,6), dbeam(6,6)}.'
@@ -453,22 +453,22 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       use efun
       use maloc,only:tfl2m,tfmsize
       use sad_basics
-      use tfcsi,only:icslfnm
+      use tfcsi,only:icslfnm,lfnm
       implicit none
       type (sad_descriptor) :: kx
       type (sad_dlist), pointer :: kxl, k2l
       type (sad_rlist), pointer :: k1l
-      integer*4 l,isp0,n,m,irtc
-      real*8 trans(6,6),cod(6)
+      integer*4 ,intent(in):: l
+      integer*4 isp0,n,m,irtc
+      real*8 ,intent(inout)::  trans(6,6),cod(6)
       character*2 ord
-      logical*4 err,coup
+      logical*4 ,intent(out):: err,coup
       integer*8, save:: ifv=0,iem=0
       if(iem == 0)then
         iem=ktfsymbolz('ExternalMap',11)
         ifv=ktsalocb(0,'OPTICS',6)
       endif
       err=.true.
-c      iat=itfm2l(cod,0,6,1,.false.)
       levele=levele+1
       isp0=isp
       isp=isp+1
@@ -479,14 +479,13 @@ c      iat=itfm2l(cod,0,6,1,.false.)
       rtastk(isp)=l
       isp=isp+1
       dtastk(isp)=kxm2l(cod,0,6,1,.false.)
-c      itastk(2,isp)=iat
       kx=tfefunref(isp0+1,.false.,irtc)
       if(irtc /= 0)then
         levele=itfdownlevel()
         if(ierrorprint /= 0)then
           call tfaddmessage(' ',2,icslfnm())
         endif
-        write(*,*)' Error in ExternalMap(OPTICS) of ',l,ord(l),
+        write(lfnm,*)' Error in ExternalMap(OPTICS) of ',l,ord(l),
      $       ' element.'
         isp=isp0
         return
@@ -514,7 +513,7 @@ c      itastk(2,isp)=iat
  9000 levele=itfdownlevel()
       isp=isp0
       return
- 9100 write(*,*)'ExternalMap(OPTICS) of ',l,ord(l),
+ 9100 write(lfnm,*)'ExternalMap(OPTICS) of ',l,ord(l),
      $     ' element did not return ',
      $     '{cod(6), trans(6,6)}.'
       go to 9000
@@ -528,7 +527,7 @@ c      itastk(2,isp)=iat
       use tmacro
       use geolib
       use efun
-      use tfcsi,only:icslfnm
+      use tfcsi,only:icslfnm,lfnm
       implicit none
       type (sad_descriptor) kx
       integer*8 ktfgeol,kax,k1,k2,k11,k12,ka1,ka11,ka12,kdb
@@ -563,7 +562,7 @@ c      ktastk(isp)=ktflist+ktfgeol(geo(1,1,l))
         if(ierrorprint /= 0)then
           call tfaddmessage(' ',2,icslfnm())
         endif
-        write(*,*)' Error in ExternalMap(GEO) of ',l,ord(l),' element.'
+        write(lfnm,*)' Error in ExternalMap(GEO) of ',l,ord(l),' element.'
         isp=isp0
         return
       endif
@@ -616,7 +615,7 @@ c     call tmov(geo(1,1,l),geo(1,1,l+1),12)
       levele=itfdownlevel()
       isp=isp0
       return
- 9100 write(*,*)'ExternalMap(GEO) of ',l,ord(l),
+ 9100 write(lfnm,*)'ExternalMap(GEO) of ',l,ord(l),
      $     ' element did not return ',
      $     '{{{GX, GY, GX}, {CHI1, CHI2, CHI3}}, S}.'
       go to 9000

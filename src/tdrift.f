@@ -223,7 +223,11 @@ c cod does NOT have canonical momenta!
           a24=sin(phi)
           a12=a24/bzs
           a22=cos(phi)
-          a14=merge(a24**2/(1.d0+a22),1.d0-a22,abs(a22) == 0.d0)/bzs
+          if(abs(a22) == 0.d0)then
+            a14=a24**2/(1.d0+a22)/bzs
+          else
+            a14=(1.d0-a22)/bzs
+          endif
           da12=a22
           da14=a24
         endif

@@ -415,8 +415,7 @@ cc                 write(*,'(a,2i8,1p10g12.4)')'bstrhl ',l_track,is,i,xx,rnbs
                      p1=colb%gambet*pn
                      h1=gamp*pn
                      write(*,*) x(i),pxi,y(i),pyi,delg
-                     call tphotonconv(x(i),pxi,y(i),pyi,delg,0.d0,
-     &                    p1,h1,sz,i)
+                     call tphotonconv(x(i),pxi,y(i),pyi,delg,p1,h1,sz,i)
                   endif
 !                  write(*,'(I4,1P,7E12.4)') 
 !     &                 j,xi(j),xi(j+1),xij,SwI(j),SwI(j+1),xx,delg

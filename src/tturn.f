@@ -184,6 +184,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       iwptc=0
       sspac1=0.d0
       nwak=0
+      aewak=.false.
       if(twake .or. lwake)then
         dzwr=0.d0
         do i=1,nwakep
@@ -288,10 +289,11 @@ c          if(l == nextwake .and. lele /= icCAVI .and. lele /= icMULT)then
             if(.not. cmp%update)then
               call tpara(cmp)
             endif
-            ak0=merge(cmp%value(ky_K0_BEND)
-     $           +cmp%value(ky_RANK_BEND)*tgauss(),
-     $           cmp%value(ky_K0_BEND),
-     $           cmp%value(ky_RANK_BEND) /= 0.d0)
+            if(cmp%value(ky_RANK_BEND) == 0.d0)then
+              ak0=cmp%value(ky_K0_BEND)
+            else
+              ak0=cmp%value(ky_K0_BEND)+cmp%value(ky_RANK_BEND)*tgauss()
+            endif
             ak1=cmp%value(ky_K1_BEND)
             krad=rad .and. cmp%value(ky_RAD_BEND) == 0.d0 .and.
      $           cmp%value(p_L_BEND) /= 0.d0
@@ -412,10 +414,11 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
             if(cmp%value(ky_RANV_CAVI) /= 0.d0)then
               ak=ak+cmp%value(ky_RANV_CAVI)*tgauss()
             endif
-            ph=merge(cmp%value(ky_DPHI_CAVI),
-     $           cmp%value(ky_DPHI_CAVI)+
-     $           cmp%value(ky_RANP_CAVI)*tgauss(),
-     $           cmp%value(ky_RANP_CAVI) == 0.d0)
+            if(cmp%value(ky_RANP_CAVI) == 0.d0)then
+              ph=cmp%value(ky_DPHI_CAVI)
+            else
+              ph=cmp%value(ky_DPHI_CAVI)+cmp%value(ky_RANP_CAVI)*tgauss()
+            endif
             autophi=cmp%value(ky_APHI_CAVI) /= 0.d0
             if(autophi)then
               ph=ph+gettwiss(mfitdz,l)*cmp%value(p_W_CAVI)
@@ -446,12 +449,16 @@ c     $       cmp%value(p_DPHIX_BEND),cmp%value(p_DPHIY_BEND),
 
           case (icTCAV)
             if(rfsw)then
-              ak=merge(cmp%value(ky_K0_TCAV),
-     $             cmp%value(ky_K0_TCAV)+cmp%value(ky_RANK_TCAV)*tgauss(),
-     $             cmp%value(ky_RANK_TCAV) == 0.d0)
-              ph=merge(cmp%value(ky_PHI_TCAV),
-     $             cmp%value(ky_PHI_TCAV)+cmp%value(ky_RANP_TCAV)*tgauss(),
-     $             cmp%value(ky_RANP_TCAV) == 0.d0)
+              if(cmp%value(ky_RANK_TCAV) == 0.d0)then
+                ak=cmp%value(ky_K0_TCAV)
+              else
+                ak=cmp%value(ky_K0_TCAV)+cmp%value(ky_RANK_TCAV)*tgauss()
+              endif
+              if(cmp%value(ky_RANP_TCAV) == 0.d0)then
+                ph=cmp%value(ky_PHI_TCAV)
+              else
+                ph=cmp%value(ky_PHI_TCAV)+cmp%value(ky_RANP_TCAV)*tgauss()
+              endif
               harmf=cmp%value(ky_HARM_TCAV)-int(cmp%value(ky_HARM_TCAV))
               ph=ph+harmf*(n-1)*pi2
               call ttcav(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,

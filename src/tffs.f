@@ -2758,7 +2758,7 @@ c         enddo
         call rsetgl1('SIGZ',sigzs)
       endif
       dpmax=max(0.d0,rlist(j+ky_DP_MARk))
-      kdp=kxsymbolz('DP',2,symddp)
+      kdp=kxsymbolz('`DP',3,symddp)
       if(dpmax <= 1.d-30)then
         dpmax=rfromd(symddp%value)
       endif

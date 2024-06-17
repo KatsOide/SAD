@@ -908,7 +908,7 @@ c     endif
 
       type sad_symdef
       sequence
-      integer*4 len,attr
+      integer*4 len,dummy
       integer*8 next,prev,upval,downval
       type (sad_descriptor) value
       type (sad_symbol) sym
@@ -3941,12 +3941,12 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         return
         end function
 
-        type (sad_descriptor) function kxnaloc(lg,locp,n)
+        type (sad_descriptor) function kxnaloc(lg0,locp,n)
         implicit none
         integer*8 kp,kp1, kp0,ktalocr
         integer*8 , intent(in)::locp
-        integer*4 , intent(in)::lg
-        integer*4 ipg,n
+        integer*4 , intent(in)::lg0,n
+        integer*4 ipg,lg
         type (sad_symdef), pointer :: def,def0
         type (sad_namtbl), pointer :: loc
         call loc_namtbl(locp,loc)
@@ -3955,6 +3955,8 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         if(kp <= 0)then
           kp=ktalocr(9+n)
           call loc1_symdef(kp,def)
+          lg=merge(lg0,1,lg0>=0)
+          loc%str%gen=lg
           def%next=0
           def%prev=kp0
           def%upval=0
@@ -3969,26 +3971,33 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
           loc%kind=0
           loc%symdef=kp
           loc%str%ref=loc%str%ref+1
-c          write(*,'(a,i12,2i5,a)')'kxnaloc ',kp,n,loc%str%nch,loc%str%str(1:loc%str%nch)
         else
           call loc1_symdef(kp,def0)
           ipg=def0%sym%gen
-          do while(lg < ipg)
-            kp0=kp
-            kp=def0%next
-            if(kp == 0)then
-              exit
-            endif
-            call loc1_symdef(kp,def0)
-            ipg=def0%sym%gen
-          enddo
+          if(lg0 < 0)then
+            lg=max(loc%str%gen,0)+1
+c            write(*,'(a,2i12,3i5,2a)')'kxnaloc ',kp,kp0,loc%str%gen,lg,ipg,'  ',loc%str%str(1:loc%str%nch)
+          else
+            lg=lg0
+            do while(lg0 < ipg)
+c              write(*,*)'kxnaloc-1 ',kp,lg0,ipg
+              kp0=kp
+              kp=def0%next
+              if(kp == 0)then
+                exit
+              endif
+              call loc1_symdef(kp,def0)
+              ipg=def0%sym%gen
+            enddo
+          endif
+          loc%str%gen=max(lg,loc%str%gen)
           kp1=ktaloc(9+n)
           call loc1_symdef(kp1,def)
           def%next=kp
           def%prev=kp0
           if(kp /= 0)then
             def0%prev=kp1
-            if(lg == ipg)then
+            if(lg0 == ipg)then
               def0%sym%override=0
             endif
           endif

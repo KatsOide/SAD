@@ -24,7 +24,7 @@ c      include 'DEBUG.inc'
       type (sad_descriptor) kx
       type (ffs_bound) fbound,ibound
       integer*4 ,intent(out):: ibegin,iqcol(maxcond),lfp(2,maxcond),nqcola1,nqcola,kdp(maxcond)
-      integer*4 i1,i2,i3,i,ii,j,iter,kt,iq,l,maxf,ie,ie1,iv,lout,irtc
+      integer*4 i1,i2,i3,i,ix,j,iter,kt,iq,l,maxf,ie,ie1,iv,lout,irtc
       type (ffs_res) ,intent(out):: r,residual1(-ndimmax:ndimmax)
       real*8 ,intent(out):: df(maxcond)
       logical*4 ,intent(in):: parallel
@@ -112,12 +112,7 @@ c      call tfmemcheckprint('tffscalc-before-prolog',.true.,irtc)
           anux0h=aint(twiss(nlat,0,mfitnx)/pi)
           anuy0h=aint(twiss(nlat,0,mfitny)/pi)
           anusum0=aint((twiss(nlat,0,mfitnx)+twiss(nlat,0,mfitny))/pi2)
-          anudiff0=tfloor(
-     $         (twiss(nlat,0,mfitnx)-twiss(nlat,0,mfitny))/pi2)
-c          anudiff0=twiss(nlat,0,mfitnx)/pi2-
-c     $         aint(twiss(nlat,0,mfitnx)/pi2)-
-c     $         twiss(nlat,0,mfitny)/pi2+
-c     $         aint(twiss(nlat,0,mfitny)/pi2)
+          anudiff0=tfloor((twiss(nlat,0,mfitnx)-twiss(nlat,0,mfitny))/pi2)
           if(optstat(0)%stabx .and. optstat(0)%staby
      $         .and. optstat(0)%stabz .or. chgini)then
             call twmov(1,twiss,nlat,ndim,.false.)
@@ -127,7 +122,6 @@ c     $         aint(twiss(nlat,0,mfitny)/pi2)
           if(parallel)then
             irtc=0
             iutm=ktfallocshared((2*nfam+1)*4)
-c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
             if(irtc == 0)then
               ipr=itffork()
             else
@@ -150,89 +144,68 @@ c            iutm=mapalloc8(rlist(1),(2*nfam+1)*4,8,irtc)
           i2=0
           i3=0
           fam=.false.
- 1        do ii=ifb,ife,idir
+ 1        do ix=ifb,ife,idir
             if(fam)then
-              if(kfam(ii) == 0)then
+              if(kfam(ix) == 0)then
                 cycle
-              elseif(ipr > 0 .and. jfam(ii) >= 0 .or.
-     $               ipr == 0 .and. jfam(ii) .lt. 0)then
+              elseif(ipr > 0 .and. jfam(ix) >= 0 .or.
+     $               ipr == 0 .and. jfam(ix) < 0)then
                 cycle
               endif
               i3=i2
-              i2=jfam(ii)
-              i1=ii
+              i2=jfam(ix)
             else
               i3=i2
               i2=i1
-              i1=ii
             endif
+            i1=ix
             if(optstat(i2)%over)then
-              utwiss(1,ii,1:nut)=utwiss(1,i2,1:nut)
-              utwiss(mfitddp,ii,1:nut)=utwiss(mfitddp,ii,1:nut)+dp(ii)
-              optstat(ii)=ffs_stat(optstat(i2)%tracex,optstat(i2)%tracey,optstat(i2)%tracez,
+              utwiss(1,ix,1:nut)=utwiss(1,i2,1:nut)
+              utwiss(mfitddp,ix,1:nut)=utwiss(mfitddp,ix,1:nut)+dp(ix)
+              optstat(ix)=ffs_stat(optstat(i2)%tracex,optstat(i2)%tracey,optstat(i2)%tracez,
      $             .false.,.false.,.false.,.true.)
             else
               if(beg)then
-                twiss(ibegin,1,1:ntfun)
-     $               =utwiss(1:ntfun,ii,itwissp(ibegin))
+                twiss(ibegin,1,1:ntfun)=utwiss(1:ntfun,ix,itwissp(ibegin))
               else
                 twiss(1,1,:)=utwiss(:,0,1)
                 if(inicond)then
-                  if(uini(mfitbx,ii) > 0.d0)then
-                    twiss(1,1,:)=uini(:,ii)
+                  if(uini(mfitbx,ix) > 0.d0)then
+                    twiss(1,1,:)=uini(:,ix)
                   endif
-                  twiss(1,1,mfitdx:mfitddp)=
-     $                 utwiss(mfitdx:mfitddp,0,1)+
-     $                 uini(mfitdx:mfitddp,ii)
+                  twiss(1,1,mfitdx:mfitddp)=utwiss(mfitdx:mfitddp,0,1)+uini(mfitdx:mfitddp,ix)
                 else
                   if(fam)then
-                    twiss(1,1,mfitdx:mfitdpy )=
-     $                   utwiss(mfitdx:mfitdpy ,i2,1)+dfam(1:4,ii)
+                    twiss(1,1,mfitdx:mfitdpy)=utwiss(mfitdx:mfitdpy,i2,1)+dfam(1:4,ix)
                   else
-c                    call tgetphysdispu(utwiss(1,i2,1),physd)
-c                    physd1=(utwiss(mfitdx:mfitdpy,i2,1)
-c     $                     -utwiss(mfitdx:mfitdpy,i3,1))/(dp(i2)-dp(i3))
-c                    do i=1,4
-c                      if(abs(physd(i)) > abs(physd1(i)))then
-c                        physd(i)=physd1(i)
-c                      endif
-c                    enddo
-                    twiss(1,1,mfitdx:mfitdpy)=
-     $                   utwiss(mfitdx:mfitdpy,i2,1)
-c     $                   +(dp(ii)-dp(i2))*physd
-c                    if(ii == nfr)then
-c                      write(*,'(a,1p10g12.4)')'tffscalc ',
-c     $                     twiss(1,1,mfitdx:mfitdpy),
-c     $                     utwiss(mfitex:mfitepy,i2,1),dp(ii),dp(i2)
-c                    endif
+                    twiss(1,1,mfitdx:mfitdpy)=utwiss(mfitdx:mfitdpy,i2,1)
                   endif
                   twiss(1,1,mfitdz )=utwiss(mfitdz ,i2,1)
-                  twiss(1,1,mfitddp)=twiss(1,0,mfitddp)+dp(ii)
+                  twiss(1,1,mfitddp)=twiss(1,0,mfitddp)+dp(ix)
                 endif
+c                write(*,'(a,2i5,2l2)')'tffscalc-iniorb ',ix,i2,fam,inicond
                 twiss(1,1,mfitnx)=0.d0
                 twiss(1,1,mfitny)=0.d0
                 if(fbound%lb > 1)then
                   twiss(fbound%lb,1,1:ntfun)=twiss(1,1,1:ntfun)
                 endif
               endif
-              call qcell1(ibound,1,optstat(ii),fam,chgini,lout)
-              call tffssetutwiss(ii,fbound,beg,.true.,.true.)
+              call qcell1(ibound,1,optstat(ix),fam,chgini,lout)
+              call tffssetutwiss(ix,fbound,beg,.true.,.true.)
             endif
             if(cell)then
               anuxih=aint(twiss(nlat,1,mfitnx)/pi)
               anuyih=aint(twiss(nlat,1,mfitny)/pi)
               anuxi=aint(twiss(nlat,1,mfitnx)/pi2)
               anuyi=aint(twiss(nlat,1,mfitny)/pi2)
-              anusumi=aint((twiss(nlat,1,mfitnx)
-     $             +twiss(nlat,1,mfitny))/pi2)
-              anudiffi=tfloor((twiss(nlat,1,mfitnx)
-     $             -twiss(nlat,1,mfitny))/pi2)
-              optstat(ii)%stabx=fam .or. optstat(ii)%stabx .and. (
+              anusumi=aint((twiss(nlat,1,mfitnx)+twiss(nlat,1,mfitny))/pi2)
+              anudiffi=tfloor((twiss(nlat,1,mfitnx)-twiss(nlat,1,mfitny))/pi2)
+              optstat(ix)%stabx=fam .or. optstat(ix)%stabx .and. (
      $             (.not. intres .or. anuxi == anux0) .and.
      $             (.not. halfres .or. anuxih == anux0h) .and.
      $             (.not. sumres .or. anusumi == anusum0) .and.
      $             (.not. diffres .or. anudiffi == anudiff0))
-              optstat(ii)%staby=fam .or. optstat(ii)%staby .and. (
+              optstat(ix)%staby=fam .or. optstat(ix)%staby .and. (
      $             (.not. intres .or. anuyi == anuy0) .and.
      $             (.not. halfres .or. anuyih == anuy0h) .and.
      $             (.not. sumres .or. anusumi == anusum0) .and.
@@ -258,8 +231,7 @@ c                    endif
               irw=waitpid(-1,isw)
             enddo
             if(isw /= 0)then
-              call termes(
-     1             '?Error in parallel process.',' ')
+              call termes('?Error in parallel process.',' ')
             endif
             do i=nfam1,nfam
               if(i > 0 .and. i <= nfr .or.
@@ -300,8 +272,7 @@ c                    endif
         zcal=.false.
         do i=1,nvar
           kt=idtypec(nelvx(nvevx(i)%ivarele)%klp)
-          if(kt /= icSEXT .and. kt /= icOCTU .and. kt /= icDECA
-     $         .and. kt /= icDODECA)then
+          if(kt /= icSEXT .and. kt /= icOCTU .and. kt /= icDECA .and. kt /= icDODECA)then
             zcal=.true.
             exit
           endif
@@ -313,14 +284,14 @@ c                    endif
           endif
           if(.not. cell .and. .not. geomet)then
             do i=ibegin,nlat-1
-              ii=icomp(i)
-              ie=iele1(ii)
+              ix=icomp(i)
+              ie=iele1(ix)
               ie1=iele1(i)
               do j=1,nvar
                 iv=nvevx(j)%ivvar
                 if(iv == nelvx(ie)%ival .and. nvevx(j)%ivarele == ie
      $               .and. (nvevx(j)%ivcomp == 0 .or.
-     $               nvevx(j)%ivcomp == ii))then
+     $               nvevx(j)%ivcomp == ix))then
                   ibegin=i
                   go to 1023
                 elseif(iv /= nelvx(ie)%ival .and.
@@ -352,14 +323,11 @@ c                    endif
           endif
         endif
         do l=fbound%lb,maxf
-          etamax=max(abs(twiss(l,0,mfitex)),
-     $         abs(twiss(l,0,mfitey)),etamax)
+          etamax=max(abs(twiss(l,0,mfitex)),abs(twiss(l,0,mfitey)),etamax)
         enddo
-        avebeta=(pos(maxf)-pos(1))/
-     $       max(twiss(maxf,0,mfitnx),twiss(maxf,0,mfitny))
+        avebeta=(pos(maxf)-pos(1))/max(twiss(maxf,0,mfitnx),twiss(maxf,0,mfitny))
       endif
-      call twfit(flv%kfit,
-     1     flv%ifitp,flv%kfitp,kdp,nqcola,iqcol,maxf,wcal)
+      call twfit(flv%kfit,flv%ifitp,flv%kfitp,kdp,nqcola,iqcol,maxf,wcal)
       wcal=.false.
       rw=0.d0
       residual1(nfam1:nfam)=ffs_res(0.d0,0)
@@ -367,8 +335,7 @@ c                    endif
       do i=1,nqcola
         if(kdp(i) /= 0)then
           iq=iqcol(i)
-          wi=(offmw/2.d0/
-     $         sqrt(dble(max(1,abs(flv%mfitp(flv%kfitp(iq)))))))**2
+          wi=(offmw/2.d0/sqrt(dble(max(1,abs(flv%mfitp(flv%kfitp(iq)))))))**2
           wsum=wsum+wi
           wiq(i)=wiq(i)*wi**(1.d0/wexponent)
         else
@@ -381,7 +348,12 @@ c                    endif
           residual1(kdp(i))%r=residual1(kdp(i))%r+drw
         endif
       enddo
-      r=ffs_res(merge(wsum*(max(rw,1.d-50)/wsum)**(2.d0/wexponent),0.d0,rw > 0.d0),0)
+      if(rw > 0.d0)then
+        r=ffs_res(wsum*(max(rw,1.d-50)/wsum)**(2.d0/wexponent),0)
+      else
+        r=ffs_res(0.d0,0)
+      endif
+c      write(*,*)'tffscalc ',r%nstab,r%r
       if(cell)then
         cellstab=.true.
         zerores=.true.
@@ -402,8 +374,7 @@ c                    endif
         enddo
         if(zerores)then
           do i=nfam1,nfam
-            cellstab=cellstab .and.
-     $           optstat(i)%stabx .and. optstat(i)%staby
+            cellstab=cellstab .and. optstat(i)%stabx .and. optstat(i)%staby
           enddo
         endif
       else
@@ -448,8 +419,7 @@ c      use ffs_flag, only:cell
       use eeval
       use tfcsi,only:icslfnm
       implicit none
-      integer*4 ,intent(in):: nqcola,maxf,
-     $     kfit(*),ifitp(*),kfitp(*),kdp(*),iqcol(nqcola)
+      integer*4 ,intent(in):: nqcola,maxf,kfit(*),ifitp(*),kfitp(*),kdp(*),iqcol(nqcola)
       logical*4 ,intent(in):: wcal
       integer*4 i,j,k,iq
       real*8 coum,emxx,emyy,dpm,coup,em
@@ -524,7 +494,7 @@ c      use ffs_flag, only:cell
           case (mfitbmagx,mfitbmagy,mfitbmagz)
             wfit(i)=3.d0
           case (mfitgx,mfitgy,mfitgz)
-            wfit(i)=0.01d0*sqrt(
+            wfit(i)=1.d-3*sqrt(
      $           max(twiss(maxf,0,mfitnx),twiss(maxf,0,mfitny))
      $           /em/max(almin,pos(maxf)-pos(1)))
           case (mfitchi1,mfitchi2,mfitchi3)
@@ -593,7 +563,7 @@ c
         ntfun=merge(ntwissfun,mfitdetr,
      $       orbitcal .or. calc6d)
         twiss(1,0,1:ntfun)=cmp%value(1:ntfun)
-        if(direlc(l) .lt. 0.d0)then
+        if(direlc(l) < 0.d0)then
           twiss(1,0,mfitax)=-cmp%value(mfitax)
           twiss(1,0,mfitay)=-cmp%value(mfitay)
           twiss(1,0,mfitaz)=-cmp%value(mfitaz)
@@ -610,7 +580,7 @@ c
         endif
       else
         cmp%value(1:ntwissfun)=twiss(1,0,1:ntwissfun)
-        if(direlc(l) .lt. 0.d0)then
+        if(direlc(l) < 0.d0)then
           cmp%value(mfitax)=-twiss(1,0,mfitax)
           cmp%value(mfitay)=-twiss(1,0,mfitay)
           cmp%value(mfitaz)=-twiss(1,0,mfitaz)

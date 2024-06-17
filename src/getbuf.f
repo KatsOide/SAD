@@ -52,7 +52,6 @@
             lrecl=lrecl0+nc-1
           endif
           if(lfne > 0 .and. lfni /= 5)then
-            write(*,*)'getbuf0-1 ',lfne,lfni
             write(lfne,'(1x,a)')buffer(lrecl0:lrecl)
           endif
           ipoint=lrecl1
@@ -81,7 +80,6 @@
           go to 10
         endif
         if(lfne > 0 .and. lfni /= 5)then
-          write(*,*)'getbuf0-2 ',lfne,lfni
           if(buffer(lrecl:lrecl) == char(10))then
             write(lfne,'(1x,a)')buffer(ipoint:lrecl-1)
           else

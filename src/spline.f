@@ -18,21 +18,21 @@ C
       real*8 dy1a,ddy1
       real*8, allocatable :: dddy(:)
       real*8 f
-      if(np .le. 2)then
+      if(np <= 2)then
         ddy=0.d0
         return
       endif
       allocate (dddy(np))
-      if(mode .eq. 0 .or. mode .eq. 2)then
+      if(mode == 0 .or. mode == 2)then
         ddy(1)=0.d0
         ddy(2)=(y(3)-y(2))/(x(3)-x(2))-(y(2)-y(1))/(x(2)-x(1))
         work(2)=(x(3)-x(1))*2.d0
-      elseif(mode .eq. 1 .or. mode .eq. 3)then
+      elseif(mode == 1 .or. mode == 3)then
         work(1)=(x(2)-x(1))*.5d0
         work(2)=(x(3)-x(1))*2.d0-work(1)
         ddy(1)=.5d0*((y(2)-y(1))/work(1)/2.d0-dy(1))
         ddy(2)=(y(3)-y(2))/(x(3)-x(2))-(y(2)-y(1))/(x(2)-x(1))-ddy(1)
-      elseif(mode .eq. 4)then
+      elseif(mode == 4)then
         dy1a=(y(2)-y(1)+y(np)-y(np-1))/(x(2)-x(1)+x(np)-x(np-1))
         work(1)=(x(2)-x(1))*.5d0
         work(2)=(x(3)-x(1))*2.d0-work(1)
@@ -76,10 +76,10 @@ c     $       i,f,work(i),x(i),x(i+1),x(i+2)
         ddy(i+1)=(y(i+2)-y(i+1))/(x(i+2)-x(i+1))
      1           -(y(i+1)-y(i))/f-f/work(i)*ddy(i)
       enddo
-      if(mode .eq. 0 .or. mode .eq. 1)then
+      if(mode == 0 .or. mode == 1)then
         ddy(np)=0.d0
         ddy(np-1)=ddy(np-1)/work(np-1)
-      elseif(mode .eq. 2 .or. mode .eq. 3)then
+      elseif(mode == 2 .or. mode == 3)then
         work(np)=x(np)-x(np-1)
         ddy(np)=dy(2)-(y(np)-y(np-1))/work(np)
         ddy(np-1)=(ddy(np-1)-ddy(np)*.5d0)/
@@ -90,7 +90,7 @@ c     $       i,f,work(i),x(i),x(i+1),x(i+2)
         ddy(i)=(ddy(i)-ddy(i+1)*(x(i+1)-x(i)))/work(i)
 c        write(*,*)'spline ',i,work(i),ddy(i)
       enddo
-      if(mode .eq. 1 .or. mode .eq. 3)then
+      if(mode == 1 .or. mode == 3)then
         ddy(1)=(ddy(1)/work(1)-ddy(2))*.5d0
       endif
       deallocate (dddy)
@@ -116,20 +116,20 @@ C
       integer*4 i
       real*8 ,intent(in)::y(np)
       real*8 ,intent(out)::ddy(np),work(np)
-      if(mode1 .eq. 0)then
+      if(mode1 == 0)then
         ddy(1)=0.d0
-        if(np .le. 2)then
+        if(np <= 2)then
           ddy(2)=0.d0
           return
         endif
         ddy(2)=y(3)-2.d0*y(2)+y(1)
         work(2)=4.d0
-      elseif(mode1 .eq. 1)then
+      elseif(mode1 == 1)then
         work(1)=.5d0
         work(2)=3.5d0
         ddy(1)=.5d0*(y(2)-y(1)-ddy(1))
         ddy(2)=y(3)-2.d0*y(2)+y(1)-ddy(1)
-      elseif(mode1 .eq. 2)then
+      elseif(mode1 == 2)then
         ddy(2)=y(3)-2.d0*y(2)+y(1)-ddy(1)
         work(2)=4.d0
       endif
@@ -138,21 +138,21 @@ C
         ddy(i+1)=y(i+2)-2.d0*y(i+1)+y(i)
      1           -ddy(i)/work(i)
       enddo
-      if(mode2 .eq. 0)then
+      if(mode2 == 0)then
         ddy(np)=0.d0
         ddy(np-1)=ddy(np-1)/work(np-1)
-      elseif(mode2 .eq. 1)then
+      elseif(mode2 == 1)then
         ddy(np)=ddy(np)-(y(np)-y(np-1))
         ddy(np-1)=(ddy(np-1)-ddy(np)*.5d0)/
      $       (work(np-1)-.5d0)
         ddy(np)=(ddy(np)-ddy(np-1))*.5d0
-      elseif(mode2 .eq. 2)then
+      elseif(mode2 == 2)then
         ddy(np-1)=(ddy(np-1)-ddy(np))/work(np-1)
       endif
       do 20 i=np-2,2,-1
         ddy(i)=(ddy(i)-ddy(i+1))/work(i)
 20    continue
-      if(mode1 .eq. 1)then
+      if(mode1 == 1)then
         ddy(1)=ddy(1)-ddy(2)*.5d0
       endif
       return
@@ -161,9 +161,7 @@ C
       real*8 function splint1(np,y,mode1,mode2,dy)
       implicit none
       integer*4 , intent(in)::np,mode1,mode2
-c      integer*4 i
       real*8 ,intent(in)::y(np),dy(2)
-c      real*8 s
       real*8,allocatable:: work(:),ddy(:)
       allocate (work(np),ddy(np))
       ddy(1)=dy(1)
@@ -208,8 +206,11 @@ c      real*8 s
         dx=x(i+1,k)-x(i,k)
         dx2=.5d0*dx**2
         s=s+(y(i+1,k)+y(i,k)-(ddy(i+1)+ddy(i))*dx2)*dx
-        ddyi=merge(-(ddy(i)-ddy(i-1))/(x(i,k)-x(i-1,k)),0.d0,
-     $       i .gt. 1)
+        if(i > 1)then
+          ddyi=-(ddy(i)-ddy(i-1))/(x(i,k)-x(i-1,k))
+        else
+          ddy = 0.d0
+        endif
         if(i .lt. n-1)then
           ddyi=ddyi+(ddy(i+2)-ddy(i+1))/(x(i+2,k)-x(i+1,k))
         endif
@@ -217,9 +218,12 @@ c      real*8 s
         sddy=sddy+work(i)
       enddo
       s=s*.5d0
-      s2=merge(s,(4.d0*s-s0)/3.d0,first)
-c      write(*,*)n,s2,s
-      if(abs(s2-s20) .le. max(eps*s20,epsabs))then
+      if(first)then
+        s2=s
+      else
+        s2=(4.d0*s-s0)/3.d0
+      endif
+      if(abs(s2-s20) <= max(eps*s20,epsabs))then
         splint=s2
         deallocate (x,y,ddy,work)
         return
@@ -312,14 +316,14 @@ C
       real*8 dy(2)
       type (sad_descriptor), save :: kxperiodic
       data kxperiodic%k /0/
-      if(kxperiodic%k .eq. 0)then
+      if(kxperiodic%k == 0)then
         kxperiodic=kxsymbolz('`Periodic',9)
       endif
       mode=0
-      if(isp .eq. isp1+2)then
+      if(isp == isp1+2)then
         call tfgetoption('Derivative',dtastk(isp),kd,irtc)
         if(irtc .ne. 0)then
-          if(irtc .eq. -1)then
+          if(irtc == -1)then
             go to 9100
           endif
           return
@@ -423,12 +427,12 @@ C
         i2=kl%nl
         x=rtastk(isp)
         irtc=0
-        do while(i2 .gt. i1+1)
+        do while(i2 > i1+1)
           ih=i1+(i2-i1)/2
-          if(kl%rbody(ih) .eq. x)then
+          if(kl%rbody(ih) == x)then
             kx=dfromr(dble(ih))
             return
-          elseif(kl%rbody(ih) .gt. x)then
+          elseif(kl%rbody(ih) > x)then
             i2=ih
           else
             i1=ih
@@ -446,18 +450,18 @@ C
           if(x .lt. kl%rbody(i1))then
             i2=i1
             i1=1
-          elseif(x .eq. kl%rbody(i2))then
+          elseif(x == kl%rbody(i2))then
             i1=i2
-          elseif(x .gt. kl%rbody(i2))then
+          elseif(x > kl%rbody(i2))then
             i1=i2
             i2=m
           endif
-          do while(i2 .gt. i1+1)
+          do while(i2 > i1+1)
             ih=i1+(i2-i1)/2
-            if(kl%rbody(ih) .eq. x)then
+            if(kl%rbody(ih) == x)then
               i1=ih
               exit
-            elseif(kl%rbody(ih) .gt. x)then
+            elseif(kl%rbody(ih) > x)then
               i2=ih
             else
               i1=ih

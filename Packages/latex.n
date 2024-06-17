@@ -11,6 +11,7 @@ LaTeX=Class[{},{eqn=0,pre0="\
 \\usepackage{amssymb} %maths\n\
 \\usepackage{amsmath,bm,mathtools}\n\
 \\usepackage{txfonts} \n\
+%\\usepackage{stackengine} \n\
 %\\usepackage{newtxmath} \n\
 %\\usepackage[utf8]{inputenc} \n\
 \\definecolor{red}{rgb}{1,0,0}\n\

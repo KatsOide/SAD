@@ -8,7 +8,7 @@
       use mackw
       implicit none
       integer*4 ntyp
-      parameter (ntyp=18)
+      parameter (ntyp=19)
       integer*8 kavl
       integer*4 ,intent(in):: lfno
       integer*4 j,kx,lt,kp,notchar,ifany,lpw,itfgetrecl,
@@ -20,7 +20,7 @@
       data ltyp /icDRFT,
      $     icBEND,icQUAD,icSEXT,icOCTU,icDECA,icDODECA,icMULT,icSOL,
      $     icCAVI,icTCAV,
-     $     icMAP,icBEAM,icINS,icCOORD,icAPRT,icMONI,icMARK/
+     $     icMAP,icBEAM,icSPCH,icINS,icCOORD,icAPRT,icMONI,icMARK/
       exist1=.false.
       lpw=min(131,itfgetrecl())
       name1=' '
@@ -42,7 +42,7 @@
         go to 21
       endif
       call tfgetlineps(patt,len_trim(patt),nl,kavl,1,irtc)
-      if(irtc .ne. 0 .or. nl .le. 0)then
+      if(irtc /= 0 .or. nl .le. 0)then
         go to 21
       endif
       do j=1,ntyp
@@ -54,7 +54,7 @@
           kx=nelvx(k1)%klp
 c     Note: Skip no-head multiple elements
 c     *     klp(iele1(kx)) == kx if singlet or head of multipole elements
-c          if(klp(iele1(kx)) .ne. kx)cycle
+c          if(klp(iele1(kx)) /= kx)cycle
           kp=idelc(kx)
           if(tmatch(pname(kp),patt))then
             exist=.true.
@@ -81,10 +81,10 @@ c      if(.not. exist1)then
 c        patt='*'
 c        go to 2
 c      endif
-      if(exist .and. notchar(patt,'*',1) .ne. 0)then
+      if(exist .and. notchar(patt,'*',1) /= 0)then
         go to 1
       else
-        exist=ifany(patt,'*%{|',1) .ne. 0
+        exist=ifany(patt,'*%{|',1) /= 0
         write(lfno,*)';'
         return
       endif
@@ -190,9 +190,9 @@ c      endif
           v=v*coeff
           vout=kw(1:lenw(kw))//' ='//autos1(v)
           call trim(vout)
-          if(v .ne. 0.d0 .or. ioff == nelvx(kx)%ival)then
+          if(v /= 0.d0 .or. ioff == nelvx(kx)%ival)then
 c            if(abs(v) .gt. 1.d10 .and. index(vout,'.') .le. 0
-c     $           .and. v .ne. dinfinity)then
+c     $           .and. v /= dinfinity)then
 c              lv=len_trim(vout)
 c              vout(lv+1:lv+1)='.'
 c            endif

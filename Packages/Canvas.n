@@ -1363,7 +1363,9 @@ CanvasGraphics=Class[{},
         1,
         1e-2<=frdyM<2.02,
         2,
-        2.02<=frdyM<5.05,
+        2.02<=frdyM<3.03,
+        3,
+        3.03<=frdyM<5.05,
         5,
         True,
         10]];
@@ -1468,7 +1470,7 @@ CanvasGraphics=Class[{},
           Linear,
           logt=Ceiling[Log[10,Max[Abs[First[Mt]],
             Abs[Mt[[Min[2,Length[Mt]]]]]]]+1e-10];
-          fm=If[logdt<=texp,"S"//(Max[logt,1]-logdt+4)//"."//Max[-logdt+texp,0],""];
+          fm=If[logdt<=texp,"S"//(Max[logt,1]-logdt+4)//"."//Max[-logdt+texp+1,0],""];
           zero=1E-3 * If[Length[Mt]>1,
 	    Min[Abs[Difference[Mt]]],
 	    Abs[Canvas$PlotRange[[2,2]] - Canvas$PlotRange[[2,1]]]];
@@ -1511,7 +1513,8 @@ CanvasGraphics=Class[{},
         Linear,
         logt=Ceiling[Log[10,Max[Abs[First[Mt]],
           Abs[Mt[[Min[2,Length[Mt]]]]]]]+1e-10];
-        fm=If[logdt<=texp,"S"//(Max[logt,1]-logdt+4)//"."//Max[-logdt+texp,0],""];
+        Print["FTY ",{logdt,texp}];
+        fm=If[logdt<=texp,"S"//(Max[logt,1]-logdt+4)//"."//Max[-logdt+texp+1,0],""];
 	zero=1e-3*If[Length[Mt]>1,
           Min[Abs[Difference[Mt]]],
           Abs[Canvas$PlotRange[[2,2]]-Canvas$PlotRange[[2,1]]]];
@@ -1592,6 +1595,7 @@ CanvasGraphics=Class[{},
     If[dt<=1e-100,{{},{},{},0},
       r=dt/(dtf=10^Floor[Log[10,dt]+1e-10]);
       {dtf,dmt}=dtf*AutoTick[w,r];
+      Print["CDT ",{dtf,dmt}];
       tmt=Range[Ceiling[t1/dtf]*dtf,t2,dtf];
       cmt=Complement[Range[Ceiling[t1/dmt]*dmt,t2,dmt],tmt];
       tsl1=ts1*Table[1,{Length[tmt]}];
@@ -1723,8 +1727,8 @@ CanvasGraphics=Class[{},
     ];
 
   With[{
-    l ={1/10,1/5, 1/2, 1,  2,  5,10},
-    l1={1/50,1/20,1/10,1/5,1/2,1,2}},
+    l ={1/10,1/5, 1/4, 1/2, 1,  2,  4,5,10},
+    l1={1/50,1/20,1/20,1/10,1/5,1/2,1,1,2}},
     AutoTick[w_,r_]:=Module[{m=2+4.631*w+4*Min[w,0.5],j},
       j=Length[l];
       Do[If[Floor[r/l[[k]]]<m,j=k;Break[]],{k,j}];
@@ -2083,7 +2087,9 @@ CanvasGraphics=Class[{},
         zr+={dx,dy,dx,dy}];
       {x1,y1,x2,y2}=zr;
       CanvasWidget[Create$Rectangle]={x1-d1,y1-d3,x2+d1,y2+d2,legtagfr,
-        Outline->"gray40",If[LegendBG<=>Null,Fill->LegendBG,Null[],Null[]]};
+        Outline->"gray40",If[LegendBG<=>Null,
+!          If[ListQ[LegendBG],Fill->LegendBG[[1]],Alpha->LegendBG[[2]],
+            Fill->LegendBG,Null[],Null[]]};
       CanvasWidget[Create$Line]={x1-d1+1,y2+d2+1,x2+d1+1,y2+d2+1,x2+d1+1,y1-d3+1,
         Fill->"gray60",legtagfr};
 !      Print["Legend: ",{FirstBG,begin}];

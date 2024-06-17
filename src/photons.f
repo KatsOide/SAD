@@ -96,7 +96,11 @@
         sp0=sin(phi)
         cp0=cos(phi)
         r1=rho*sp0
-        r2=rho*merge(sp0**2/(1.d0+cp0),1.d0-cp0,cp0 .ge. 0.d0)
+        if(cp0 >= 0.d0)then
+          r2=rho*(sp0**2/(1.d0+cp0))
+        else
+          r2=rho*(1.d0-cp0)
+        endif
         gx0=gv(1,4)+(r1*z1-r2*x1)
         gy0=gv(2,4)+(r1*z2-r2*x2)
         gz0=gv(3,4)+(r1*z3-r2*x3)
@@ -107,19 +111,23 @@
         z3=-sp0*x3+cp0*gv(3,3)
         x3= cp0*x3+sp0*gv(3,3)
       endif
-      chi=merge(0.d0,2.d0*atan2(x3,-y3),x3 == 0.d0)
+      if(x3 == 0.d0)then
+        chi=0.d0
+      else
+       chi=2.d0*atan2(x3,-y3)
+      endif
       return
       end associate
       end subroutine
 
-      subroutine tphrec(xi,pxi,yi,pyi,dp,dpr,ppx,ppy,p1,h1,rho,ds,k)
+      subroutine tphrec(xi,pxi,yi,pyi,dp,ppx,ppy,p1,h1,rho,ds,k)
       use tfstk
       use tmacro, only:p0
       use mathfun, only:pxy2dpz
       use geolib
       implicit none
       integer*4 , intent(in)::k
-      real*8 ,intent(in):: xi,pxi,yi,pyi,dp,dpr,ppx,ppy,p1,h1,ds,rho
+      real*8 ,intent(in):: xi,pxi,yi,pyi,dp,ppx,ppy,p1,h1,ds,rho
       integer*4 irtc
       integer*8 kp
       real*8 cod(6),dpa(3),pxir,pzi,pyir,gv(3,4),gv1(3,4),fr,pp,
@@ -127,7 +135,11 @@
       real*8 ,parameter :: frmin=1.d-12
       associate(l=>pcvt%l,cost=>pcvt%cost,sint=>pcvt%sint,al=>pcvt%al,
      $     fr0=>pcvt%fr0,phig=>pcvt%phig)
-      fr=merge(fr0,fr0+ds/al,al == 0.d0)
+      if(al == 0.d0)then
+        fr=fr0
+      else
+        fr=fr0+ds/al
+      endif
       gv=tfgeofrac(l,fr,irtc)
       if(irtc /= 0)then
         return
@@ -171,7 +183,7 @@ c      write(*,'(1p10g12.4)')cod,xi,pxi,yi,pyi
       end associate
       end subroutine
 
-      subroutine tphotonconv(xi,pxi,yi,pyi,dp,dpr,p1,h1,ds,k)
+      subroutine tphotonconv(xi,pxi,yi,pyi,dp,p1,h1,ds,k)
       use tfstk
       use tmacro, only:p0
       use mathfun, only:pxy2dpz
@@ -179,7 +191,7 @@ c      write(*,'(1p10g12.4)')cod,xi,pxi,yi,pyi
       integer*4 , intent(in)::k
       integer*8 kp
       real*8 ,intent(in):: xi,pxi,yi,pyi,dp,p1,h1,ds
-      real*8 xi3a,gx,gy,gz,dpr,
+      real*8 xi3a,gx,gy,gz,
      $     dpgx,dpgy,dpgz,xir,pxir,zir,pzi,pyir,
      $     phi1,cp,sp,thu,thv,xi30,xi1,xi2,xi3,pxia
       associate(l=>pp%l,al=>pp%al,phi=>pp%phi,theta=>pp%theta,
@@ -404,7 +416,7 @@ c      write(*,*)'with ',itp,ilp
         i1=1
         i2=rm%nind
         im=0
-        do while(i2 .ge. i1)
+        do while(i2 >= i1)
           im=(i1+i2)/2
           ia=rm%ias(im)
           found=.true.
@@ -1030,7 +1042,7 @@ c        ppa=hypot(ppx,hypot(ppy,ppz))
               dg=dpr(i)*uc
               xr=x-rph(i)*(px-.5d0*dpx*rph(i))*al
               yr=y-rph(i)*(py-.5d0*dpy*rph(i))*al
-              call tphrec(xr,px,yr,py,dg,dpr(i),
+              call tphrec(xr,px,yr,py,dg,
      $             ppx,ppy,p,h1,rho,al-rph(i)*al,k)
 c              call tphotonconv(xr,px,yr,py,dg,
 c     $             dpr(i),p,h1,-rph(i)*al,k)
@@ -1112,7 +1124,7 @@ c     $             dpr(i),p,h1,-rph(i)*al,k)
                 dg=dpr(i)*uc
                 xr=xn(k)-rph(i)*(pxn(k)-.5d0*dpx*rph(i))*al
                 yr=yn(k)-rph(i)*(pyn(k)-.5d0*dpy*rph(i))*al
-                call tphrec(xr,pxn(k),yr,pyn(k),dg,dpr(i),
+                call tphrec(xr,pxn(k),yr,pyn(k),dg,
      $               ppx,ppy,p,h1,rho,al-rph(i)*al,k)
 c                call tphotonconv(xr,pxn(k),yr,pyn(k),dg,
 c     $               dpr(i),p,h1,-rph(i)*al,k)

@@ -162,7 +162,7 @@
       real*8 p1,h1,ali,v,dchi3,rho0,sp0,cp0,r1,r2,cchi1,schi1,
      $     cchi2,schi2,cchi3,schi3,dx,dy,dz,r11,r12,r13,
      $     r31,r32,r33,oneev,phi,fb1,fb2,x(3),y(3),
-     $     theta,cost,sint,r21,r22,r23,ald,tfacc
+     $     theta,cost,sint,r21,r22,r23,ald,tfacc,xsp0,dcp0
       parameter (oneev=1.d0+3.83d-12)
       logical*4 sol,dir
       call tallocvar(bsi,1)
@@ -193,7 +193,7 @@ c      h1=sqrt(1.d0+p1**2)
       do i=istart,istop-1
         i1=i+1
         if(sol)then
-          sol=i .lt. ke
+          sol=i < ke
           cycle
         endif
         k=idtypec(i)
@@ -203,7 +203,7 @@ c      h1=sqrt(1.d0+p1**2)
           cycle
         endif
         call compelc(i,cmp)
-        ali=merge(cmp%value(kytbl(kwL,k)),0.d0,kytbl(kwL,k) .gt. 0)
+        ali=merge(cmp%value(kytbl(kwL,k)),0.d0,kytbl(kwL,k) > 0)
         if(kytbl(kwANGL,k) /= 0)then
           phi=cmp%value(kytbl(kwANGL,k))
           if(savela)then
@@ -219,10 +219,8 @@ c      h1=sqrt(1.d0+p1**2)
           if(cmp%value(kytbl(kwFRMD,k)) /= 0.d0)then
             if(phi*ali /= 0.d0)then
               if(k == icBEND)then
-                fb1=cmp%value(kytbl(kwF1,icBEND))
-     $               +cmp%value(kytbl(kwFB1,icBEND))
-                fb2=cmp%value(kytbl(kwF1,icBEND))
-     $               +cmp%value(kytbl(kwFB2,icBEND))
+                fb1=cmp%value(kytbl(kwF1,icBEND))+cmp%value(kytbl(kwFB1,icBEND))
+                fb2=cmp%value(kytbl(kwF1,icBEND))+cmp%value(kytbl(kwFB2,icBEND))
               else
                 fb1=cmp%value(kytbl(kwFB1,k))
                 fb2=cmp%value(kytbl(kwFB2,k))
@@ -255,7 +253,7 @@ c      h1=sqrt(1.d0+p1**2)
               endif
             endif
           endif
-          if(k .ge. 36)then
+          if(k >= icBEAM)then
             geo(:,:,i1)=geo(:,:,i)
           endif
           if(kytbl(kwANGL,k) /= 0)then
@@ -265,8 +263,7 @@ c      h1=sqrt(1.d0+p1**2)
               geo(:,4,i1)=geo(:,3,i)*ald+geo(:,4,i)
               geo(:,1:3,i1)=geo(:,1:3,i)
             else
-              theta=merge(cmp%value(kytbl(kwROT,k)),0.d0,
-     $             kytbl(kwROT,k) /= 0)
+              theta=merge(cmp%value(kytbl(kwROT,k)),0.d0,kytbl(kwROT,k) /= 0)
               if(theta /= 0.d0)then
                 cost=cos(theta)
                 sint=sin(theta)
@@ -277,13 +274,21 @@ c      h1=sqrt(1.d0+p1**2)
                 y=0.d0
               endif
               rho0=ald/v
-              sp0=sin(v)
-              cp0=cos(v)
-              r1=rho0*sp0
-              r2=merge(rho0*sp0**2/(1.d0+cp0),rho0*(1.d0-cp0),
-     $             cp0 .ge. 0.d0)
+              call xsincos(v,sp0,xsp0,cp0,dcp0)
+              r1= rho0*sp0
+              r2=-rho0*dcp0
+c              sp0=sin(v)
+c              cp0=cos(v)
+c              r1=rho0*sp0
+c              if(cp0 >= 0.d0)then
+c                r2=rho0*sp0**2/(1.d0+cp0)
+c              else
+c                r2=rho0*(1.d0-cp0)
+c              endif
+c              r2=merge(rho0*sp0**2/(1.d0+cp0),rho0*(1.d0-cp0),
+c     $             cp0 >= 0.d0)
 c              r2=2.d0*rho0*sin(v*.5d0)**2
-              geo(:,4,i1)=geo(:,4,i)+(r1*geo(:,3,i)-r2*x)
+              geo(:,4,i1)= geo(:,4,i)+(r1*geo(:,3,i)-r2*x)
               geo(:,1,i1)= cp0*x+sp0*geo(:,3,i)
               geo(:,3,i1)=-sp0*x+cp0*geo(:,3,i)
               if(theta /= 0.d0)then
@@ -319,8 +324,7 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
                 r31=-schi1*cchi2
                 r32=-schi2
                 r33= cchi1*cchi2
-                geo(:,4,i1)=geo(:,4,i)
-     1               +dx*geo(:,1,i)+dy*geo(:,2,i)+dz*geo(:,3,i)
+                geo(:,4,i1)=geo(:,4,i)+dx*geo(:,1,i)+dy*geo(:,2,i)+dz*geo(:,3,i)
               else
                 dx=-cmp%value(ky_DX_COORD)
                 dy= cmp%value(ky_DY_COORD)
@@ -339,8 +343,7 @@ c              r2=2.d0*rho0*sin(v*.5d0)**2
               geo(:,2,i1)=r21*geo(:,1,i)+r22*geo(:,2,i)+r23*geo(:,3,i)
               geo(:,3,i1)=r31*geo(:,1,i)+r32*geo(:,2,i)+r33*geo(:,3,i)
               if(.not. dir)then
-                geo(:,4,i1)=geo(:,4,i)
-     1               +dx*geo(:,1,i1)+dy*geo(:,2,i1)+dz*geo(:,3,i1)
+                geo(:,4,i1)=geo(:,4,i)+dx*geo(:,1,i1)+dy*geo(:,2,i1)+dz*geo(:,3,i1)
               endif
             case default
               geo(:,4,i1)=geo(:,3,i)*ali+geo(:,4,i)

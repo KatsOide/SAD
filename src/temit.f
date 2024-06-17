@@ -288,6 +288,8 @@ c      write(*,'(a,1p4G15.7)')'tecalc-0 ',beam(1),beam(3),beam(6),beam(10)
         r=tsymp(r)
         ri=tinv6(r)
       endif
+c      write(*,'(a,1p12g10.2)')'tecalc-ceig ',ceig
+c      write(*,'(1p6g12.4)')r
       dceig=ceig-ceig0
       dc=sum(abs(dceig))
       cc(1:5:2)=ceig(1:5:2)
@@ -303,18 +305,26 @@ c      write(*,'(a,1p4G15.7)')'tecalc-0 ',beam(1),beam(3),beam(6),beam(10)
       endif
       synchm=.not. trpt .and. rfsw .and. imag(cd(6)) .ne. 0.d0
       if(synchm)then
-        alphap=merge(-imag(cd(6))*abs(imag(cd(6)))/(c*m_2pi/omega0)
-     $       /(dvcacc/pgev),0.d0,wrfeff .ne. 0.d0)
+        if(wrfeff /= 0.d0)then
+          alphap=-imag(cd(6))*abs(imag(cd(6)))/(c*m_2pi/omega0)/(dvcacc/pgev)
+        else
+          alphap=0.d0
+        endif
         omegaz=abs(imag(cd(6)))*omega0/m_2pi
       else
         alphap=-rx(5,6)/m_2pi/cveloc/p0*h0*omega0
-        omegaz=merge(0.d0,sqrt(
-     $       abs(alphap*m_2pi*heff*vceff/pgev*cos(phirf)))
-     $       *omega0/m_2pi,trpt)
+        if(trpt)then
+          omegaz=0.d0
+        else
+          omegaz=sqrt(abs(alphap*m_2pi*heff*vceff/pgev*cos(phirf)))*omega0/m_2pi
+        endif
       endif
-      bh=merge(sqrt(abs(vceff/pi/abs(alphap)/heff/pgev*
-     1     (2.d0*cos(phirf)-(pi-2.d0*phirf)*u0*pgev/vceff))),
-     $     0.d0,vceff .ne. 0.d0)
+      if(vceff /= 0.d0)then
+        bh=sqrt(abs(vceff/pi/abs(alphap)/heff/pgev*
+     1       (2.d0*cos(phirf)-(pi-2.d0*phirf)*u0*pgev/vceff)))
+      else
+        bh=0.d0
+      endif
       call setparams(params,cod)
       stab=(abs(dble(cd(4))) .lt. 1.d-6
      $     .and. abs(dble(cd(5))) .lt. 1.d-6
@@ -1149,8 +1159,11 @@ c     $         'Z :',dble(cd(3))*sr
 c     kiku <------------------
         xxs=emitp(1)-emitp(6)
         yys=-2.d0*emitp(4)
-        btilt=merge(atan2(yys,xxs) /2d0,0.d0,
-     $       xxs .ne. 0.d0 .and. yys .ne. 0.d0)
+        if(xxs .ne. 0.d0 .and. yys .ne. 0.d0)then
+          btilt=atan2(yys,xxs)/2d0
+        else
+          btilt=0.d0
+        endif
         sig1 = abs(emitp(1)+emitp(6))/2d0
 c     sig2 = 0.5d0* sqrt(abs((emitp(1)-emitp(6))**2+4d0*emitp(4)**2))
         sig2=0.5d0*hypot(emitp(1)-emitp(6),2.d0*emitp(4))

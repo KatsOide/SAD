@@ -14,7 +14,7 @@
      $     a21,a23,a41,a43,a26,a46,
      $     da21,da23,da41,da43,da26,da46
       complex*16 cx,cx1,cx0
-      if(iv .eq. 4)then
+      if(iv == 4)then
         call qdrotate(dtrans,dcod,k1,itwissp(k1),idp,dx,dy,nut)
       else
         call qtentu(trans1,cod,utwiss(1,idp,itwissp(k1)),.true.)
@@ -33,19 +33,26 @@ c     end   initialize for preventing compiler warning
         endif
         pr=1.d0+cod(6)
         kord=nord/2-1
-        daki=merge(1.d0,0.5d0,al .eq. 0.d0)/fact(kord)/pr
+        daki=merge(1.d0,0.5d0,al == 0.d0)/fact(kord)/pr
         aki=ak*daki
         cx0=dcmplx(cod(1),-cod(3))
-        cx=merge((1.d0,0.d0),cx0**kord,kord .le. 0)
+        if(kord <= 0)then
+          cx=(1.d0,0.d0)
+        else
+          cx=cx0**kord
+        endif
         cod(2)=cod(2)-aki*dble(cx)
         cod(4)=cod(4)-aki*imag(cx)
         dcod(1)=0.d0
         dcod(2)=-daki*dble(cx)
         dcod(3)=0.d0
         dcod(4)=-daki*imag(cx)
-        if(kord .gt. 0)then
-          cx1=merge(kord*cx0**(kord-1),(1.d0,0.d0),
-     $         kord .gt. 1)
+        if(kord > 0)then
+          if(kord > 1)then
+            cx1=kord*cx0**(kord-1)
+          else
+            cx1=(1.d0,0.d0)
+          endif
           a21=-aki*dble(cx1)
           a23=-aki*imag(cx1)
           a41=-aki*imag(cx1)
@@ -69,7 +76,7 @@ c     end   initialize for preventing compiler warning
           trans1(2,5)=trans1(2,5)+a26
           trans1(4,5)=trans1(4,5)+a46
         endif
-        if(al .eq. 0.d0)then
+        if(al == 0.d0)then
           go to 3000
         endif
         cod(1)=cod(1)+cod(2)*alb
@@ -81,12 +88,19 @@ c     end   initialize for preventing compiler warning
         dtrans(1,:)=dtrans(1,:)+dtrans(2,:)*alb
         dtrans(3,:)=dtrans(3,:)+dtrans(4,:)*alb
         cx0=dcmplx(cod(1),-cod(3))
-        cx=merge((1.d0,0.d0),cx0**kord,kord .le. 0)
+        if(kord <= 0)then
+          cx=(1.d0,0.d0)
+        else
+          cx=cx0**kord
+        endif
         dcod(2)=dcod(2)-daki*dble(cx)
         dcod(4)=dcod(4)-daki*imag(cx)
-        if(kord .gt. 0)then
-          cx1=merge(kord*cx0**(kord-1),(1.d0,0.d0),
-     $         kord .gt. 1)
+        if(kord > 0)then
+          if(kord > 1)then
+            cx1=kord*cx0**(kord-1)
+          else
+            cx1=(1.d0,0.d0)
+          endif
           a21=-aki*dble(cx1)
           a23=-aki*imag(cx1)
           a41=-aki*imag(cx1)

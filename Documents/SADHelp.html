@@ -13,7 +13,7 @@ eqs img{
 <BODY>
 <CENTER><H2>Welcome to SAD/FFS & SADScript
 </H2></CENTER>
-<CENTER> SAD/FFS SADScript Version: 1.3.3.3k64,      Updated: 01/10/2024</CENTER>
+<CENTER> SAD/FFS SADScript Version: 1.3.4.1.2k64,      Updated: 05/11/2024</CENTER>
 
 <PRE> Please use browser's search to find an item.
 
@@ -6783,6 +6783,9 @@ Example:
 As this example, the off-momentum points are chosen with equal separation. If the off-momentum point
 n is an even number, the chosen points are same as the case of n+1, but the on-momentum point (==DP0)
 is excluded.
+ If a list {min, max} is set to DP, the off-momentum matching is performed at dp/p(k) = min*Sin[k
+Pi/2/n], max*Sin[k Pi/2/n], {k,0,fitp/2}, where fitp is the number of off-momentum points given by
+FITP.
 </PRE>
 <PRE>See also:
  <A HREF=#L479>matching-function-commands</A> <A HREF=#L512>DP</A> <A HREF=#L513>DP0</A></PRE>
@@ -6846,6 +6849,8 @@ ORG</A></H3>
 
 sets the origin of the geometrical coordinate relative to the location with a relative shift (dgx,
 dgy, dgz) and rotation (dchi1, dchi2, dchi3).
+ If location is omitted, reset geometrical coordinate to the original setting.
+ CALC is necessary to reflect the setting to the geometry at each point.
 </PRE>
 <H3><A NAME=L486>
 OUTPUT(OUT)</A></H3>
@@ -7094,12 +7099,15 @@ DP</A></H3>
 <PRE>DP represents the relative momentum spread of the beam. It is automatically set by the keyword DP
 of the MARK element at the beginning of the beam line. The value of EMITY affects the default weight
 of variables in the matching. In the off-momentum matching, the range DP0 - DP < dp/p0 < DP0 + DP
-is used for the matching. The assumed momentum-distribution in the BEAMSIZE(BEAM), MEASURE(MEA),
-etc. commands, is Gaussian with the standard deviation DP and the mean DP0 if the flag GAUSS is on,
-otherwise uniform (square) in the range DP0 - DP < dp/p0 < DP0 + DP.
+is used for the matching.
+ If DP is set to a list {min, max}, the off-momentum matching is performed at dp/p= min*Sin[k Pi/2/n],
+max*Sin[k Pi/2/n], {k,0,fitp/2}, where fitp is the number of off-momentum points given by FITP.
+ The assumed momentum-distribution in the BEAMSIZE(BEAM), MEASURE(MEA), etc. commands, is Gaussian
+with the standard deviation DP and the mean DP0 if the flag GAUSS is on, otherwise uniform (square)
+in the range DP0 - DP < dp/p0 < DP0 + DP.
 </PRE>
 <PRE>See also:
- <A HREF=#L513>DP0</A> <A HREF=#L483>off-momentum-matching</A> <A HREF=#L321>GAUSS</A> <A HREF=#L357>UNIFORM</A> <A HREF=#L76>elements</A> <A HREF=#L138>MARK</A></PRE>
+ <A HREF=#L513>DP0</A> <A HREF=#L483>off-momentum-matching</A> <A HREF=#L470>FITPOINTS(FITP)</A> <A HREF=#L321>GAUSS</A> <A HREF=#L357>UNIFORM</A> <A HREF=#L76>elements</A> <A HREF=#L138>MARK</A></PRE>
 <LI>
 <H3><A NAME=L513>
 DP0</A></H3>
