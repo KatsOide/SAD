@@ -22,7 +22,7 @@
 
 c     Initialize to avoid compiler warning
       lv=itfuplevel()
-      if(iflinep .eq. 0)then
+      if(iflinep == 0)then
         call tfinitlinep(irtc)
       endif
       vs=.false.
@@ -65,15 +65,15 @@ c
           call capita1(word1(1:lw1))
           if(abbrev(word1,'R_ELATIVE','_'))then
             rel=.true.
-          elseif(word1 .eq. 'MAX')then
+          elseif(word1 == 'MAX')then
             maxf=.true.
-          elseif(word1 .eq. 'MIN')then
+          elseif(word1 == 'MIN')then
             minf=.true.
-          elseif(word1 .eq. 'MAXABS' .or. word1 .eq. 'ABSMAX' .or.
-     1           word1 .eq. 'MAXMIN' .or. word1 .eq. 'MINMAX')then
+          elseif(word1 == 'MAXABS' .or. word1 == 'ABSMAX' .or.
+     1           word1 == 'MAXMIN' .or. word1 == 'MINMAX')then
             maxf=.true.
             minf=.true.
-          elseif(word1 .eq. ' ' .or. word1 .eq. '-')then
+          elseif(word1 == ' ' .or. word1 == '-')then
             next=next1
             ipoint=next
             exist=.true.
@@ -86,7 +86,7 @@ c
             endif
           else
             kv=itftypekey(id,word1,lw1,kx)
-            if(kv .eq. 0)then
+            if(kv == 0)then
               go to 912
             else
               iv=merge(-1,kv,tfreallistq(kx,kl))
@@ -95,7 +95,7 @@ c
           next=next1
           ipoint=next
           exist=.true.
- 912      if(iv .eq. 0)then
+ 912      if(iv == 0)then
             call termes('?No default keyword for ',word)
             exist=.false.
             exit
@@ -118,7 +118,7 @@ c
           else
             ivi=merge(-1,nelvx(i)%ival,tfreallistq(kx,kl))
           endif
-          if(ivi .eq. 0)then
+          if(ivi == 0)then
             cycle LOOP_II
           endif
           if(diff)then
@@ -133,12 +133,12 @@ c
         if(minf .or. maxf)then
           ivi=nelvx(i)%ival
         endif
-        if(ivi .eq. 0)then
+        if(ivi == 0)then
           call termes('?No default keyword for ',word)
           exist=.false.
           exit
         endif
-        var=ivi .eq. nelvx(i)%ival
+        var=ivi == nelvx(i)%ival
         if(rel)then
           call loc_comp(idvalc(ii),cmpd)
           va=cmpd%value(ivi)*(1.d0+v)

@@ -95,7 +95,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       use dset,only:tfcleardaloc
       implicit none
       type (sad_symdef) ,intent(inout):: def
-      type (sad_symdef), pointer :: def1,def0
+      type (sad_symdef), pointer :: def1
       type (sad_defhash), pointer :: dhash
       type (sad_descriptor) kx,tfefunrefu
       type (sad_namtbl), pointer::loc

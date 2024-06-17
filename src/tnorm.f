@@ -22,7 +22,7 @@
         if(s .gt. 0.d0)then
           sb=sa
         elseif(s .eq. 0.d0)then
-          if(lfno .ne. 0)then
+          if(lfno /= 0)then
             write(lfno,*)'???-tnorm-Unstable transfer matrix.'
           endif
           sa=1.d0
@@ -39,7 +39,7 @@
       s2=(r(5,3)*r(6,4)-r(5,4)*r(6,3))**2
       s3=(r(5,5)*r(6,6)-r(5,6)*r(6,5))**2
       j=maxloc((/s1,s2,s3/),1)*2-1
-      if(j .ne. 5)then
+      if(j /= 5)then
         v=r(:,5:6)
         r(:,5:6)=r(:,j:j+1)
         r(:,j:j+1)=v
@@ -64,7 +64,7 @@
         ceig(4)=cc
       endif
       do i=1,5,2
-        if(imag(ceig(i)) .ne. 0.d0)then
+        if(imag(ceig(i)) /= 0.d0)then
           a=hypot(r(i,i),r(i,i+1))
           cost=r(i,i  )/a
           sint=r(i,i+1)/a
@@ -73,7 +73,7 @@
           r(:,i+1)=-v(:,1)*sint+r(:,i+1)*cost
         else
           a=r(i,i)
-          if(a .ne. 0.d0)then
+          if(a /= 0.d0)then
             b=r(i,i+1)
             r(:,i+1)=r(:,i+1)*a-b*r(:,i)
             r(:,i  )=r(:,i  )/a

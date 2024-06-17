@@ -73,7 +73,7 @@ c     end   initialize for preventing compiler warning
               a(j,i)=0.d0
               b(j)=b(j)-p*b(i)
               b(i)=b(i)+q*b(j)
-            elseif(a(j,i) .ne. 0.d0)then
+            elseif(a(j,i) /= 0.d0)then
               p=a(i,i)/a(j,i)
               h1=v(j)+v(i)*p**2
               q=v(i)*p/h1
@@ -95,7 +95,7 @@ c     end   initialize for preventing compiler warning
             r1=x(i1)*a(i,i1)
             r2=x(j )*a(i,j )
             r=sign(hypot(r1,r2),r1)
-            if(r .ne. 0.d0)then
+            if(r /= 0.d0)then
               c=r1/r
               s=r2/r
               if(abs(c) > abs(s))then
@@ -129,7 +129,7 @@ c     end   initialize for preventing compiler warning
             if(j .lt. n+2)then
               a(j-1,i)=c
             else
-              if(c .le. abs(s) .and. c .ne. 0.d0)then
+              if(c .le. abs(s) .and. c /= 0.d0)then
                 a(i,j)=sign(1.d0/c,s)
               endif
             endif
@@ -152,7 +152,7 @@ c     end   initialize for preventing compiler warning
         endif
         an=abs(x(i))+abs(v(i))
         anorm=max(anorm,an)
-        if(an .ne. 0.d0)then
+        if(an /= 0.d0)then
           xmin=min(xmin,abs(x(i)))
         endif
  20   continue
@@ -161,7 +161,7 @@ c     end   initialize for preventing compiler warning
         if(xmin > enorm)then
           x(mn+2:m)=0.d0
           r=hypot(x(mn),v(mn))
-          if(r .ne. 0.d0)then
+          if(r /= 0.d0)then
             w=1.d0/r
             d=x(mn)*w
             b(mn)=b(mn)*w
@@ -182,7 +182,7 @@ c     end   initialize for preventing compiler warning
             endif
           endif
           do 4020 i=mn-1,1,-1
-            if(x(i) .ne. 0.d0)then
+            if(x(i) /= 0.d0)then
               p=v(i)*d
               ra=abs(x(i))+abs(v(i))
               r=(x(i)/ra)**2+((v(i)-p)/ra)*((v(i)+p)/ra)
@@ -278,11 +278,11 @@ c9710 format(1x,:1p11g11.3)
       iend=mn
       v(mn+1:mn*2)=1.d0
       v(0)=0.d0
- 1002 if(v(iend) .ne. 0.d0)then
+ 1002 if(v(iend) /= 0.d0)then
         f=v(iend)
         v(iend)=0.d0
         do 1110 i=iend,ibegin,-1
-          if(abs(f)+abs(x(i)) .ne. abs(x(i)))then
+          if(abs(f)+abs(x(i)) /= abs(x(i)))then
             p=hypot(x(i),f)
             vv=v(i-1)/p
             v(i-1)=vv*x(i)
@@ -305,7 +305,7 @@ c9710 format(1x,:1p11g11.3)
         endif
         do 1210 it=1,itmax
 c     write(*,*)it,ibegin,iend,v(iend-1)
-          if(x(iend) .eq. 0.d0)then
+          if(x(iend) == 0.d0)then
             iend=iend-1
             go to 1002
           endif
@@ -314,7 +314,7 @@ c            an=max(abs(x(i)),abs(x(i+1)))
             an=abs(x(i))+abs(x(i+1))
             if(abs(v(i)) .le. an*1.d-16)then
               v(i)=0.d0
-              if(i .eq. iend-1)then
+              if(i == iend-1)then
                 iend=iend-1
               else
                 isep=isep+1
@@ -351,7 +351,7 @@ c            an=max(abs(x(i)),abs(x(i+1)))
           endif
           h=v(iend-1)
           f=((y-z)*(y+z)+(g-h)*(g+h))*.5d0
-          if(w .eq. 0.d0)then
+          if(w == 0.d0)then
             f=0.d0
           else
             g=h*y
@@ -369,7 +369,7 @@ c            an=max(abs(x(i)),abs(x(i+1)))
               i1=i+1
               z=hypot(f,g)
               v(i-1)=z
-              if(z .ne. 0.d0)then
+              if(z /= 0.d0)then
                 c=f/z
                 s=g/z
               else
@@ -383,7 +383,7 @@ c            an=max(abs(x(i)),abs(x(i+1)))
               y= x(i1)*c
               z=hypot(f,h)
               x(i)=z
-              if(z .ne. 0.d0)then
+              if(z /= 0.d0)then
                 c=f/z
                 s=h/z
               else
@@ -429,7 +429,7 @@ c            an=max(abs(x(i)),abs(x(i+1)))
         if(nfail .ge. 0)then
           write(*,'(a,i10,1p3g15.7)')' TSVD convergence failed: ',
      $         iend,v(iend-1),x(iend-1),x(iend)
-          if(nfail .eq. 0)then
+          if(nfail == 0)then
             write(*,*)' -- further message will be suppressed.'
           endif
           nfail=nfail-1

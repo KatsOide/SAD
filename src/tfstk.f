@@ -605,7 +605,7 @@ c     kcpklist0=0
             nnet=nnet+m
             ktaloc=i
             return
-          elseif(m1-minseg2 .ge. m)then
+          elseif(m1-minseg2 >= m)then
             klist(i1)=klist(i)
             klist(klist(i)+1)=i1
             j=ich+iand(i+m1+2,mhash)
@@ -1374,14 +1374,14 @@ c     $           n,i,istat
           endif
           icbk=icbk+1
           ktfsadalloc=sad_loc(sadalloc(i)%ca(1))
-          if(ktfsadalloc .ge. 0)then
+          if(ktfsadalloc >= 0)then
             call tfentercbk(ktfsadalloc,n)
             return
           else
             write(*,*)'Negative allocation - retry: ',i,ktfsadalloc
           endif
         enddo
-        if(icbk .ge. ncbk)then
+        if(icbk >= ncbk)then
           write(*,*)'ktfsadalloc too many allocations: ',icbk
           call abort
         endif
@@ -1447,7 +1447,7 @@ c                  kcbk(3,j)=kcbk(2,k)
         integer*8 , intent(in) ::k
         integer*4 i
         do i=1,jcbk
-          if(k <= kcbk(2,i) .and. k .ge. kcbk(1,i))then
+          if(k <= kcbk(2,i) .and. k >= kcbk(1,i))then
             itfcbk=i
             return
           endif
@@ -3015,13 +3015,13 @@ c        k=kfromr(x)
         return
         end function
 
-        logical*4 function tfsamelistqo(lista,listp)
+        logical*4 function tfsamelistqo(lista,listp) result(re)
         implicit none
         type (sad_dlist) , intent(inout)::lista,listp
         type (sad_descriptor) kai,kpi
         integer*8 kaai,kapi
         integer*4 i,m
-        tfsamelistqo=.false.
+        re=.false.
         m=lista%nl
         if(m /= listp%nl)then
           return
@@ -3034,7 +3034,8 @@ c        k=kfromr(x)
               if(tfnopatqd(kai))then
                 kaai=ktfaddr(kai%k)
                 kapi=ktfaddr(kpi%k)
-                if(ilist(1,kapi-1) .ge. ilist(1,kaai-1))then
+c                write(*,*)'tfsamelistqo ',kaai,kapi,ilist(1,kaai-1),ilist(1,kapi-1)
+                if(ilist(1,kapi-1) >= ilist(1,kaai-1))then
                   call tflocal1d(kai)
                   lista%dbody(i)=dtfcopy1(kpi)
                 else
@@ -3047,7 +3048,7 @@ c        k=kfromr(x)
             return
           endif
         enddo
-        tfsamelistqo=.true.
+        re=.true.
         return
         end
 
@@ -3212,17 +3213,17 @@ c        k=kfromr(x)
         return
         end function
 
-      logical*4 function tfconstlistqo(list)
+      logical*4 function tfconstlistqo(list) result(re)
       implicit none
       type (sad_dlist) ,intent(inout):: list
       type (sad_descriptor) kh
       integer*4 i
       logical*4 nr
       if(iand(lnoconstlist,list%attr) /= 0)then
-        tfconstlistqo=.false.
+        re=.false.
         return
       endif
-      tfconstlistqo=.true.
+      re=.true.
       if(iand(lconstlist,list%attr) /= 0)then
         return
       endif
@@ -3230,16 +3231,16 @@ c        k=kfromr(x)
       nr=ktfnonreallistqo(list)
       if(kh%k .eq. ktfoper+mtfhold .or.
      $     kh%k .eq. ktfoper+mtffun)then
-        tfconstlistqo=.not. tfseqqo(list)
+        re=.not. tfseqqo(list)
       elseif(kh%k .eq. ktfoper+mtfcomplex)then
-        tfconstlistqo=.not. nr
+        re=.not. nr
       elseif(.not. tfconstheadqk(kh))then
-        tfconstlistqo=.false.
+        re=.false.
       elseif(nr)then
         if(iand(kconstarg,list%attr) .eq. 0)then
           do i=1,list%nl
             if(.not. tfconstq(list%dbody(i)%k))then
-              tfconstlistqo=.false.
+              re=.false.
               list%attr=ior(lnoconstlist,list%attr)
               return
             endif
@@ -3247,8 +3248,7 @@ c        k=kfromr(x)
           list%attr=ior(list%attr,kconstarg)
         endif
       endif
-      list%attr=ior(merge(lconstlist+kconstarg,lnoconstlist,
-     $     tfconstlistqo),list%attr)
+      list%attr=ior(merge(lconstlist+kconstarg,lnoconstlist,re),list%attr)
       return
       end
 
@@ -4726,7 +4726,7 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         logical*4 pure elemental function tfonstackq(ka)
         implicit none
         integer*8 , intent(in)::ka
-        tfonstackq=ka .ge. isporg+ispbase
+        tfonstackq=ka >= isporg+ispbase
      $       .and. ka <= isporg+ivstkoffset*2+ispbase
         return
         end function

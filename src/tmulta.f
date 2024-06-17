@@ -25,7 +25,7 @@
       complex*16 ak0(0:nmult),ak(0:nmult),akn(0:nmult),
      $     cx1,csl,csr,cl,cr,cg,cx
       logical*4 ,intent(in):: fringe,krad
-      if(bz .ne. 0.d0)then
+      if(bz /= 0.d0)then
         write(*,*)
      $       'MULT with nonzero ANGLE and BZ is not yet supported.'
         call abort
@@ -40,7 +40,7 @@
         call tbrot(np,x,px,y,py,z,sx,sy,sz,alg,phig,dtheta,dchi2,.true.)
       endif
 c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dtheta,dchi2
-      if(eps0 .eq. 0.d0)then
+      if(eps0 == 0.d0)then
         eps=eps00
       else
         eps=eps00*eps0
@@ -53,14 +53,14 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
       ak(0)=dcmplx(0.d0,imag(ak(0)))
       ak(1)=dcmplx(0.d0,imag(ak(1)))
       do n=nmult,0,-1
-        if(ak(n) .ne. (0.d0,0.d0))then
+        if(ak(n) /= (0.d0,0.d0))then
           nmmax=n
           exit
         endif
       enddo
       nmmin=nmmax
       do n=0,nmmax-1
-        if(ak(n) .ne. (0.d0,0.d0))then
+        if(ak(n) /= (0.d0,0.d0))then
           nmmin=n
           exit
         endif
@@ -76,11 +76,11 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
       endif
       ndiv=min(ndivmax,ndiv)
       aln=al/ndiv
-      if(fb1 .ne. 0.d0)then
+      if(fb1 /= 0.d0)then
         aln=aln-(phi*fb1)**2/al/48.d0
      1       *sin(.5d0*(phi-psi1-psi2))/sin(.5d0*phi)/ndiv
       endif
-      if(fb2 .ne. 0.d0)then
+      if(fb2 /= 0.d0)then
         aln=aln-(phi*fb2)**2/al/48.d0
      1       *sin(.5d0*(phi-psi1-psi2))/sin(.5d0*phi)/ndiv
       endif
@@ -109,7 +109,7 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
         endif
       endif
       do n=1,ndiv
-        if(n .eq. 1)then
+        if(n == 1)then
           w=phin*.5d0-psi1
           cosw=cos(w)
           sinw=sin(w)
@@ -120,9 +120,9 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
           endif
           sinwp1=sin(phin*.5d0)
           mfr=0
-          if(mfring .eq. 2)then
+          if(mfring == 2)then
             mfr=0
-          elseif(mfring .ne. 0)then
+          elseif(mfring /= 0)then
             mfr=-1
           endif
           if(krad .and. calpol)then
@@ -208,9 +208,9 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
       endif
       sinwp1=sinw
       mfr=0
-      if(mfring .eq. 1)then
+      if(mfring == 1)then
         mfr=0
-      elseif(mfring .ne. 0)then
+      elseif(mfring /= 0)then
         mfr=-2
       endif
       if(krad .and. calpol)then
@@ -266,7 +266,7 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
      $     cx1,csl,csr,cl,cr,cg,
      $     csxx,csxy,csyy,cxx,cxy,cyy
       logical*4 enarad,fringe
-      if(bz .ne. 0.d0)then
+      if(bz /= 0.d0)then
         write(*,*)
      $       'MULT with nonzero ANGLE and BZ is not yet supported.'
         call abort
@@ -276,7 +276,7 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
       endif
       call tchge(trans,cod,beam,srot,
      $     dx,dy,0.d0,theta,dtheta,dchi2,alg,phig,.true.)
-      if(dtheta .ne. 0.d0)then
+      if(dtheta /= 0.d0)then
         dphix=      phi*sin(.5d0*dtheta)**2
         dphiy= .5d0*phi*sin(dtheta)
         cod(2)=cod(2)+dphix
@@ -285,7 +285,7 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
         dphix=0.d0
         dphiy=0.d0
       endif
-      if(eps0 .eq. 0.d0)then
+      if(eps0 == 0.d0)then
         eps=eps00
       else
         eps=eps00*eps0
@@ -298,14 +298,14 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
       ak(1)=dcmplx(0.d0,imag(ak(1)))
       nmmax=0
       do n=nmult,0,-1
-        if(ak(n) .ne. (0.d0,0.d0))then
+        if(ak(n) /= (0.d0,0.d0))then
           nmmax=n
           exit
         endif
       enddo
       nmmin=nmmax
       do n=0,nmmax-1
-        if(ak(n) .ne. (0.d0,0.d0))then
+        if(ak(n) /= (0.d0,0.d0))then
           nmmin=n
           exit
         endif
@@ -319,12 +319,12 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
       psi1n=2.d0*psi1*ndiv
       psi2n=2.d0*psi2*ndiv
       aln=al/ndiv
-      if(fb1 .ne. 0.d0 .and. (mfring .eq. 1 .or. mfring .eq. 3))then
+      if(fb1 /= 0.d0 .and. (mfring == 1 .or. mfring == 3))then
         aln=aln-(phi*fb1)**2/al/48.d0
      1       *sin(.5d0*(phi*(1.d0-psi1-psi2)-apsi1-apsi2))
      $       /sin(.5d0*phi)/ndiv
       endif
-      if(fb2 .ne. 0.d0 .and. (mfring .eq. 2 .or. mfring .eq. 3))then
+      if(fb2 /= 0.d0 .and. (mfring == 2 .or. mfring == 3))then
         aln=aln-(phi*fb2)**2/al/48.d0
      1       *sin(.5d0*(phi*(1.d0-psi1-psi2)-apsi1-apsi2))
      $       /sin(.5d0*phi)/ndiv
@@ -339,11 +339,11 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
       enddo
       call tinitr(trans1)
       do n=1,ndiv
-        if(n .eq. 1)then
+        if(n == 1)then
           mfr=0
-          if(mfring .eq. 2)then
+          if(mfring == 2)then
             mfr=0
-          elseif(mfring .ne. 0)then
+          elseif(mfring /= 0)then
             mfr=-1
           endif
           call tbende(trans,cod,beam,srot,aln*.5d0,phibn*.5d0,phin*.5d0,
@@ -379,7 +379,7 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
             cl=cl+(m+1)*cg
             cr=cr+(.5-k)*cg
             cxx=cxx+(.25d0*(4*k**2-1)*cx1-(2*k-1)*(m+1)*r)*cg
-            if(m .eq. 0)then
+            if(m == 0)then
               cxy=cxy+(1-2*k)*cg
             else
               cxy=cxy+(m+1)*((1-2*k)*cx1+2*m*r)*cg
@@ -389,7 +389,7 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
           csl=csl*cx1+cl
           csr=csr*cx1+cr
           csxx=csxx*cx1+cxx
-          if(m .ne. 0)then
+          if(m /= 0)then
             csxy=csxy*cx1+cxy
             csyy=csyy*cx1+cyy
           else
@@ -410,16 +410,16 @@ c        write(*,*)'tmultae ',dble(csr*cx1)/r,dble(csl),nmmin
         call tmulbs(beam,trans1,.true.)
       enddo
       mfr=0
-      if(mfring .eq. 1)then
+      if(mfring == 1)then
         mfr=0
-      elseif(mfring .ne. 0)then
+      elseif(mfring /= 0)then
         mfr=-2
       endif
       call tbende(trans,cod,beam,srot,aln*.5d0,phibn*.5d0,phin*.5d0,
      $     0.d0,psi2n,0.d0,apsi2,ak1n*.5d0,
      $     0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,
      1     fb1,fb2,mfr,fringe,eps0,enarad,.false.,.false.,l)
-      if(dtheta .ne. 0.d0)then
+      if(dtheta /= 0.d0)then
         cod(2)=cod(2)+dphix
         cod(4)=cod(4)+dphiy
       endif

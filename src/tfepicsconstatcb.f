@@ -18,20 +18,20 @@
         type (sad_descriptor) kax,kx
         kax=kxsymbolz('CaMonitor',9)
         kx=tfsyeval(kax,irtc)
-        if(irtc .ne. 0 .or. ktfnonlistq(kx))then
+        if(irtc /= 0 .or. ktfnonlistq(kx))then
           go to 9000
         endif
         kxcamonitor=dtfcopy(kx)
         irl=ktfsymbolz('rl',2)
         call tfclassmember(kxcamonitor,dfromk(ktfsymbol+irl),kx,.false.,irtc)
-        if(irtc .ne. 0 .or. ktfnonsymbolq(kx))then
+        if(irtc /= 0 .or. ktfnonsymbolq(kx))then
           kxcamonitor%k=0
           go to 9000
         endif
         icarl=ktfaddr(kx)
         icsconn=ktfsymbolz('CS$Conn',7)
         call tfclassmember(kxcamonitor,dfromk(ktfsymbol+icsconn),kx,.false.,irtc)
-        if(irtc .ne. 0 .or. ktfnonsymbolq(kx))then
+        if(irtc /= 0 .or. ktfnonsymbolq(kx))then
           kxcamonitor%k=0
           go to 9000
         endif
@@ -52,7 +52,7 @@
         itsl=ktfsymbolz('tsl',3)
         ivalcomm=ktfsymbolz('valcomm',7)
         return
- 9000   if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
+ 9000   if(irtc .gt. 0 .and. ierrorprint /= 0)then
           call tfreseterror
         endif
         return
@@ -75,7 +75,7 @@
       isp0=isp
       if(kxcamonitor%k .eq. 0)then
         call tfepicssyminit(irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
       endif
@@ -85,7 +85,7 @@
       isp=isp+1
       rtastk(isp)=chid
       call tfdeval(isp0+1,icarl,kx,1,.false.,ev,irtc)
-      if(irtc .ne. 0 .or. ktfnonlistq(kx))then
+      if(irtc /= 0 .or. ktfnonlistq(kx))then
         go to 9000
       endif
       icarlch=ktfaddr(kx)
@@ -101,22 +101,22 @@
       stat%x(1)=istat
       if(vn .lt. 1.d0)then
         call tfcbsetsymbol(kaa,ics,stat,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
       else
         call tfcbsetsymbol(kaa,ipos,kn,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
         n=int(vn)
         call tfcbsetlist(kaa,ics,n,stat,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
         call tfclassmember(dfromk(ktflist+kaa),dfromk(ktfsymbol+irn),
      $       kx,.true.,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
         iarn=ktfaddr(kx)
@@ -125,35 +125,35 @@
         endif
         krnn=dlist(iarn+n)
         call tfcbsetsymbol(kaa,irnl,krnn,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
         call tfcbsetsymbol(kaa,icsl,stat,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
       endif
       call tfclassmember(dfromk(ktflist+kaa),dfromk(ktfsymbol+icscomm),kx,.true.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         go to 9000
       endif
       iacscomm=ktfaddr(kx)
       if(ktflistq(kx))then
         if(klist(iacscomm) .eq. ktfoper+mtfhold)then
           ki=tfeevalref(dlist(iacscomm+1),irtc)
-          if(irtc .gt. 0 .and. ierrorprint .ne. 0)then
+          if(irtc .gt. 0 .and. ierrorprint /= 0)then
             call tfreseterror
           endif
         endif
       endif
       call tfclassmember(dfromk(ktflist+kaa),dfromk(ktfsymbol+iauto),kx,.true.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         go to 9000
       endif
-      if(ktfrealq(kx) .and. kx%k .ne. 0)then
+      if(ktfrealq(kx) .and. kx%k /= 0)then
         if(rlist(icacsconn-4) .eq. stat%x(1))then
           call tfclassmember(dfromk(ktflist+kaa),dfromk(ktfsymbol+istart),kx,.true.,irtc)
-          if(irtc .ne. 0 .or. ktfnonsymbolq(kx))then
+          if(irtc /= 0 .or. ktfnonsymbolq(kx))then
             go to 9000
           endif
           iastart=ktfaddr(kx)
@@ -190,7 +190,7 @@
       isp0=isp
       if(kxcamonitor%k .eq. 0)then
         call tfepicssyminit(irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
       endif
@@ -199,7 +199,7 @@
       isp=isp+1
       rtastk(isp)=chid
       call tfdeval(isp0+1,icarl,kx,1,.false.,ev,irtc)
-      if(irtc .ne. 0 .or. ktfnonlistq(kx))then
+      if(irtc /= 0 .or. ktfnonlistq(kx))then
         go to 9000
       endif
       icarlch=ktfaddr(kx)
@@ -235,36 +235,36 @@
       kaa=ktfaddr(ka%k)
       if(n .lt. 1)then
         call tfcbsetsymbol(kaa,iv,k,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
         call tfcbsetsymbol(kaa,isev,dfromr(dble(jsev)),irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
         call tfcbsetsymbol(kaa,its,dfromr(t),irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
       else
         call tfcbsetsymbol(kaa,ipos,dfromr(vn),irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
         call tfcbsetlist(kaa,iv,n,k,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
         call tfcbsetlist(kaa,isev,n,dfromr(dble(jsev)),irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
         call tfcbsetlist(kaa,its,n,dfromr(t),irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
         call tfclassmember(dfromk(ktflist+kaa),dfromk(ktfsymbol+irn),kx,.true.,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
         iarn=ktfaddr(kx)
@@ -273,24 +273,24 @@
         endif
         krnn=dlist(iarn+n)
         call tfcbsetsymbol(kaa,irnl,krnn,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
         call tfcbsetsymbol(kaa,ivl,k,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
         call tfcbsetsymbol(kaa,isevl,dfromr(dble(jsev)),irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
         call tfcbsetsymbol(kaa,itsl,dfromr(t),irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           go to 9000
         endif
       endif
       call tfclassmember(dfromk(ktflist+kaa),dfromk(ktfsymbol+ivalcomm),kx,.true.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         go to 9000
       endif
       iavalcomm=ktfaddr(kx)
@@ -313,7 +313,7 @@
       integer*8 ka,kv,kax
       integer*4 irtc
       call tfclassmember(dfromk(ktflist+ka),dfromk(ktfsymbol+kv),kx,.false.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       elseif(ktfnonsymbolq(kx))then
         irtc=-1
@@ -333,7 +333,7 @@
       integer*8 ka,kv,kal,kax
       integer*4 n,irtc,i
       call tfclassmember(dfromk(ktflist+ka),dfromk(ktfsymbol+kv),kx,.false.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       elseif(ktfnonsymbolq(kx))then
         go to 9000

@@ -20,11 +20,11 @@
       integer*4 itgetqraddiv,i,ndiv
       integer*4 , parameter :: ndivmax=1000
       logical*4 ,intent(in):: krad,kin,achro
-      if(al .eq. 0.d0)then
+      if(al == 0.d0)then
         call tthine(trans,cod,beam,srot,4,
      $       al,ak,dx,dy,theta,.false.)
         return
-      elseif(ak .eq. 0.d0)then
+      elseif(ak == 0.d0)then
         call tdrife0(trans,cod,beam,srot,al,bz,0.d0,.true.,.false.,irad)
         return
       endif
@@ -41,19 +41,19 @@ c cod has canonical momenta!
       if(krad)then
         call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0,0.d0)
       endif
-      if(fringe .and. mfring .ge. 0 .and. mfring .ne. 2)then
+      if(fringe .and. mfring .ge. 0 .and. mfring /= 2)then
         call tqfrie(trans,cod,beam,ak1,al,bzs)
       endif
-      if(mfring .eq. 1 .or. mfring .eq. 3)then
+      if(mfring == 1 .or. mfring == 3)then
         call tqlfre(trans,cod,beam,al,ak1,f1in,f2in,bzs)
       endif
-      if(krad .and. f1in .ne. 0.d0)then
+      if(krad .and. f1in /= 0.d0)then
         call tradke(trans,cod,beam,srot,f1in,0.d0,bzs*.5d0)
       else
         call tsetr0(trans(:,1:6),cod(1:6),bzs*.5d0,0.d0)
       endif
       if(krad)then
-        if(eps0 .eq. 0.d0)then
+        if(eps0 == 0.d0)then
           ndiv=min(ndivmax,max(1,itgetqraddiv(cod,ak1,al,bzs*.5d0)))
         else
           ndiv=min(ndivmax,max(1,int(dble(itgetqraddiv(cod,ak1,al,bzs*.5d0)/eps0))))
@@ -64,20 +64,20 @@ c cod has canonical momenta!
 c      ndiv=min(ndivmax,max(1,merge(
 c     $     merge(itgetqraddiv(cod,ak1,al,bzs*.5d0),
 c     $     int(dble(itgetqraddiv(cod,ak1,al,bzs*.5d0)/eps0)),
-c     $     eps0 .eq. 0.d0),1,krad)))
+c     $     eps0 == 0.d0),1,krad)))
       aln=al/ndiv
       akn=ak1/ndiv
       do i=1,ndiv
         call tsolque(trans,cod,beam,srot,aln,akn,
      $       bzs,0.d0,0.d0,eps0,krad,irad)
       enddo
-      if(mfring .eq. 2 .or. mfring .eq. 3)then
+      if(mfring == 2 .or. mfring == 3)then
         call tqlfre(trans,cod,beam,al,ak1,-f1out,f2out,bzs)
       endif
-      if(fringe .and. mfring .ge. 0 .and. mfring .ne. 1)then
+      if(fringe .and. mfring .ge. 0 .and. mfring /= 1)then
         call tqfrie(trans,cod,beam,-ak1,al,bzs)
       endif
-      if(krad .and. f1out .ne. 0.d0)then
+      if(krad .and. f1out /= 0.d0)then
         call tradke(trans,cod,beam,srot,f1out,0.d0,bzs*.5d0)
       endif
       call tsolrote(trans,cod,beam,srot,0.d0,bz,dx,dy,0.d0,

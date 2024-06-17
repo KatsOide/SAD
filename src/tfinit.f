@@ -44,7 +44,7 @@ c          go to 210
             call loc_comp(idvalc(nelvx(ikx)%klp),cmps)
             v=cmps%value(nelvx(ikx)%ival)
 c            v=rlist(idvalc(klp(ikx))+ival(ikx))
-            if(v .ne. 0.d0)then
+            if(v /= 0.d0)then
               errk(1,l)=tfvalvar(l,nelvx(ikx)%ival)/v
 c              errk(1,l)=rlist(latt(l)+ival(ikx))/v
             endif
@@ -63,14 +63,14 @@ c      do i=1,nlat
         ibzl(3,1:nlat)=0
 c      enddo
       do i=1,nlat-1
-        if(idtypec(i) .eq. icSOL)then
-          if(ibz .ne. 0 .and.
+        if(idtypec(i) == icSOL)then
+          if(ibz /= 0 .and.
      $         rlist(idvalc(i)+ky_BND_SOL)
-     $         .ne. 0.d0)then
+     $         /= 0.d0)then
             ibznext=0
-            if(ibzb .ne. 0)then
+            if(ibzb /= 0)then
               if(rlist(idvalc(i)+ky_GEO_SOL)
-     $             .ne. 0.d0)then
+     $             /= 0.d0)then
                 ibg=i
                 ibb=ibzb
               else
@@ -84,7 +84,7 @@ c      enddo
             endif
             ibzb=0
           else
-            if(ibz .eq. 0)then
+            if(ibz == 0)then
               ibzb=i
             endif
             if(direlc(i) .gt. 0.d0)then
@@ -93,7 +93,7 @@ c      enddo
             else
               ibznext=0
               do j=i+1,nlat-1
-                if(idtypec(j) .eq. icSOL)then
+                if(idtypec(j) == icSOL)then
                   ibz=j
                   ibznext=j
                   exit
@@ -108,7 +108,7 @@ c      enddo
         ibzl(1,i)=ibz
         ibz=ibznext
       enddo
-      if(ibz .ne. 0)then
+      if(ibz /= 0)then
         Write(*,*)'Missing end of solenoid: ',ibz
         call abort
       endif
@@ -167,18 +167,18 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
       integer*4 ibz,ld
       ibz=ilist(i*3-2,ifibzl)
       tfinsol=.false.
-      if(ibz .ne. 0)then
+      if(ibz /= 0)then
         if(ibz .lt. i)then
           tfinsol=.true.
         else
           ld=idelc(i)
           if(ibz .gt. i)then
-            if(idtype(ld) .ne. icSOL)then
+            if(idtype(ld) /= icSOL)then
               tfinsol=.true.
-            elseif(rlist(idval(ld)+ky_BND_SOL) .eq. 0.d0)then
+            elseif(rlist(idval(ld)+ky_BND_SOL) == 0.d0)then
               tfinsol=.true.
             endif            
-          elseif(rlist(idval(ld)+ky_BND_SOL) .eq. 0.d0)then
+          elseif(rlist(idval(ld)+ky_BND_SOL) == 0.d0)then
             tfinsol=.true.
           elseif(direlc(i) .lt. 0.d0)then
             tfinsol=.true.
@@ -225,16 +225,16 @@ c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
         ii=mod(i+nlat+i0-3,nlat-1)+1
         iie=iele1(ii)
         k=nelvx(iie)%klp
-        if(k .eq. 0)then
+        if(k == 0)then
           nelvx(iie)%klp=ii
           icomp(ii)=ii
         else
-          if(mult(k) .eq. 0)then
+          if(mult(k) == 0)then
             mult(k)=1
             ltyp=idtypec(ii)
             if(ltyp .gt. icNULL .and. ltyp .lt. icMXEL)then
               idx=kytbl(kwINDX,ltyp)
-              if(idx .ne. 0)then
+              if(idx /= 0)then
                 mult(k)=max(1,
      $               int(rlist(idvalc(ii)+idx)))
               endif

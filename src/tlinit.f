@@ -44,14 +44,14 @@ c     begin initialize for preventing compiler warning
       y3=0.d0
 c     end   initialize for preventing compiler warning
 c      write(*,*)'tlstore ',lpoint,dphi,dl,theta,rho0,v0
-      if(dphi .eq. 0.d0)then
+      if(dphi == 0.d0)then
         gx=geo0(1,4)+dl*geo0(1,3)
         gy=geo0(2,4)+dl*geo0(2,3)
         gz=geo0(3,4)+dl*geo0(3,3)
         geoi=geo0(:,1:3)
         gt=t0+dl/v0
       else
-        if(theta .ne. 0.d0)then
+        if(theta /= 0.d0)then
           cost=cos(theta)
           sint=sin(theta)
           x1= cost*geo0(1,1)-sint*geo0(1,2)
@@ -114,7 +114,7 @@ c        write(*,*)'tlspect ',ltbl,np0,ltbl*8*np0
       enddo
       if(keep)then
         geo0(:,3)=geoi(:,3)
-        if(dphi .ne. 0 .and. theta .ne. 0.d0)then
+        if(dphi /= 0 .and. theta /= 0.d0)then
           geo0(1,2)=-sint*geo0(1,1)+cost*y1
           geo0(1,1)= cost*geo0(1,1)+sint*y1
           geo0(2,2)=-sint*geo0(2,1)+cost*y2
@@ -163,14 +163,14 @@ c      write(*,*)ltbl,lpoint,katbl,ilist(1,katbl-1)
       integer*8 kx, ke
       integer*4 isp1,irtc,n,m,itfmessage
       real*8 tx,ty,tz
-      if(isp .ne. isp1+2)then
+      if(isp /= isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
       call tfmsize(dtastk(isp1+1),n,m,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
-      elseif(n .ne. 4)then
+      elseif(n /= 4)then
         irtc=itfmessage(9,'General::wrongleng','"#1","4"')
         return
       endif
@@ -179,7 +179,7 @@ c      write(*,*)ltbl,lpoint,katbl,ilist(1,katbl-1)
      $       '"List of Reals for #2"')
         return
       endif
-      if(klt%nl .ne. 3)then
+      if(klt%nl /= 3)then
         irtc=itfmessage(9,'General::wrongleng','"#2","3"')
         return
       endif
@@ -277,7 +277,7 @@ c     begin initialize for preventing compiler warning
       kas=0
 c     end   initialize for preventing compiler warning
       irtc=0
-      if(isp .ne. isp1+2)then
+      if(isp /= isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
@@ -285,7 +285,7 @@ c     end   initialize for preventing compiler warning
         irtc=itfmessage(9,'General::wrongtype','"List for #1"')
         return
       endif
-      if(klp%nl .ne. 2)then
+      if(klp%nl /= 2)then
         irtc=itfmessage(9,'General::wrongleng','"#1","2"')
         return
       endif
@@ -297,7 +297,7 @@ c     end   initialize for preventing compiler warning
         return
       endif
       m=kl1%nl
-      if(m .ne. kl2%nl)then
+      if(m /= kl2%nl)then
         irtc=itfmessage(9,'General::equalleng','"#1[[1]] and #[[2]]"')
         return
       endif
@@ -305,7 +305,7 @@ c     end   initialize for preventing compiler warning
         irtc=itfmessage(9,'General::wrongtype','"List of Reals for #2"')
         return
       endif
-      if(klt%nl .ne. 3)then
+      if(klt%nl /= 3)then
         irtc=itfmessage(9,'General::wrongleng','"#","3"')
         return
       endif
@@ -334,7 +334,7 @@ c     end   initialize for preventing compiler warning
         ipr=1
         nastep=1
       endif
-      if(ipr .eq. 0)then
+      if(ipr == 0)then
         naa=(na-na1)/nastep+1
         kac=ktaloc(naa*3)
       else
@@ -366,7 +366,7 @@ c     end   initialize for preventing compiler warning
         x=w*kl1%rbody(1)
         c=(c-cos(x)*a1/w-kl2%rbody(1)*sin(x))/w
         s=(s-sin(x)*a1/w+kl2%rbody(1)*cos(x))/w
-        if(ipr .eq. 0)then
+        if(ipr == 0)then
           kack=kac+(k-na1)/nastep*3
           rlist(kack  )=ak
           rlist(kack+1)=c
@@ -378,7 +378,7 @@ c     end   initialize for preventing compiler warning
         endif
       enddo
       if(nparallel .gt. 1 .and. na .ge. nparallel)then
-        if(ipr .eq. 0)then
+        if(ipr == 0)then
           write(fn,'(a,i12.12)')'/tmp/',(ipid*nparallel)+na1
           open(999,file=fn,form='unformatted',status='unknown')
           write(999)(rlist(kac+i),i=0,naa*3-1)
@@ -388,7 +388,7 @@ c     end   initialize for preventing compiler warning
           do j=1,nparallel-1
  3001       irw=waitpid(-1,isw)
             do k=1,nparallel-1
-              if(irw .eq. ichpid(k))then
+              if(irw == ichpid(k))then
                 na1=k
                 ichpid(k)=0
                 go to 3010
@@ -435,7 +435,7 @@ c$$$     $     phi,theta,gx,gy,gz,dpgx,dpgy,dpgz
 c$$$      e0=amass*sqrt((p*p0)**2+1.d0)
 c$$$      b0=sqrt(bxa**2+bya**2)
 c$$$      call SYNRADCL(E0,B0,alr,2,NG,EG,thu,thv,XI30,XI2,IRTN)
-c$$$      if(irtn .gt. 100 .or. ng .eq. 0)then
+c$$$      if(irtn .gt. 100 .or. ng == 0)then
 c$$$        dprad=0.d0
 c$$$        dpradx=0.d0
 c$$$        dprady=0.d0
@@ -457,7 +457,7 @@ c$$$          thu1=thu-(s0+ds)*b0/brho
 c$$$          thx1=thu1*c1+thv*s1
 c$$$          thy1=-thu1*s1+thv*c1
 c$$$          al1=al+ds+s0
-c$$$          if(al .eq. 0.d0)then
+c$$$          if(al == 0.d0)then
 c$$$            phi1=0.d0
 c$$$          else
 c$$$            phi1=phi*al1/al

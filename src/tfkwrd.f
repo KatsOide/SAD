@@ -4,7 +4,7 @@
       implicit none
       integer*4 ,intent(in):: lt,ioff
       integer*4 i
-      if(ioff .eq. 0)then
+      if(ioff == 0)then
         tfkwrd=pname(kytbl(0,lt))(2:)
       else
         if(ioff .ge. kytbl(kwMAX,lt))then
@@ -27,7 +27,7 @@
       implicit none
       integer*4 ,intent(in):: lt,ioff
       integer*4 i
-      if(ioff .eq. 0)then
+      if(ioff == 0)then
         tfkwrd1=pname(kytbl(0,lt))(2:)
       else
         if(ioff .ge. kytbl(kwMAX,lt))then

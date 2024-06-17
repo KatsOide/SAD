@@ -42,7 +42,7 @@ c     Case: Force append suffix number by comp flag
           ltyp=idtype(id)
           if(ltyp .gt. icNULL .and. ltyp .lt. icMXEL)then
             idx=kytbl(kwINDX,ltyp)
-            if(idx .ne. 0)then
+            if(idx /= 0)then
               idx=max(1,int(rlist(idval(id)+idx)))
             endif
           else
@@ -57,7 +57,7 @@ c     *   >0: suffix number starts `idx'
           else
             name(l+1:)='.1'
           endif
-        elseif(idx .ne. 0)then
+        elseif(idx /= 0)then
 c     Case: Append suffix number for multiple elements
           l=lenw(name)
           if(idx .gt. 1)then

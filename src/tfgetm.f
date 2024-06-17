@@ -17,13 +17,13 @@ c
 c      print *,'data gotten from pipe:', xa1,ya1
 c
       do i=1,flv%nfc
-        if(flv%ifitp(i) .eq. flv%measp .and.
-     $       flv%ifitp1(i) .eq. flv%measp)then
-          if(flv%kfit(i) .eq. 32 .and. ndp(i) .ne. 0)then
+        if(flv%ifitp(i) == flv%measp .and.
+     $       flv%ifitp1(i) == flv%measp)then
+          if(flv%kfit(i) == 32 .and. ndp(i) .ne. 0)then
             flv%fitval(i)=(xa1-xa)*.5d0*alphad+
      $           flv%fitval(i)*(1.d0-alphad)
           endif
-          if(flv%kfit(i) .eq. 34 .and.
+          if(flv%kfit(i) == 34 .and.
      $         ndp(i) .ne. 0)then
             flv%fitval(i)=(ya1-ya)*.5d0*alphad+
      $           flv%fitval(i)*(1.d0-alphad)

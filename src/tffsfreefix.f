@@ -16,7 +16,7 @@
       character*256 word1,keyword,tfkwrd,tfkwrd1,word,nlist1
       character*(MAXPNAME+16) name,name1
  1    call peekwdp(word,next)
-      if(word .eq. ' ')then
+      if(word == ' ')then
         return
       endif
       wild=ifany(word,'%*<{|',1) .gt. 0
@@ -28,7 +28,7 @@
         LOOP_K_1: do k=1,ntwissfun
           l=lenw(nlist(k))
           nlist1=nlist(k)(:l)//'I'
-          if(word .eq. nlist1(:l+1))then
+          if(word == nlist1(:l+1))then
             ipoint=next
             found=.true.
             it=41
@@ -38,7 +38,7 @@
           endif
         enddo LOOP_K_1
         call tfgetlineps(word,len_trim(word),nl,kal,0,irtc)
-        if(irtc .ne. 0 .or. nl .le. 0)then
+        if(irtc /= 0 .or. nl .le. 0)then
           go to 3000
         endif
         LOOP_K_2: do kkk=1,nl
@@ -51,7 +51,7 @@
           else
 c     Note: Skip no-head multiple elements
 c     *     klp(iele1(k)) == k if singlet or head of multipole elements
-            if(nelvx(iele1(k))%klp .ne. k .or.
+            if(nelvx(iele1(k))%klp /= k .or.
      $           .not. tmatch(pnamec(k),word))then
               cycle LOOP_K_2
             endif
@@ -62,26 +62,26 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
             call peekwd(word1,next)
           endif
           itk=idtypec(k)
-          if(itk .ne. it)then
-            if(word1 .ne. ' ')then
+          if(itk /= it)then
+            if(word1 /= ' ')then
               ivk=1
  1010         continue
               keyword=tfkwrd(itk,ivk)
-              if(keyword .eq. ' ')then
-                if(it .ne. 0)then
+              if(keyword == ' ')then
+                if(it /= 0)then
                   cycle LOOP_K_2
                 endif
                 word1=' '
                 iv=0
                 go to 1020
               else
-                if(keyword .eq. word1)then
+                if(keyword == word1)then
                   ipoint=next
                   iv=ivk
                   go to 1020
                 endif
                 keyword=tfkwrd1(itk,ivk)
-                if(keyword .eq. word1)then
+                if(keyword == word1)then
                   ipoint=next
                   iv=ivk
                   go to 1020
@@ -95,28 +95,28 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
           endif
           found=.true.
           kk=iele1(k)
-          if(iv .eq. 0)then
-            if(nelvx(kk)%ival .eq. 0)then
+          if(iv == 0)then
+            if(nelvx(kk)%ival == 0)then
               call termes('Can''t use as variable ',
      $             pnamec(k))
               return
             endif
           endif
           LOOP_I_1: do i=1,nvar
-            if(nvevx(i)%ivarele .eq. kk)then
-              ivi=merge(nelvx(kk)%ival,iv,iv .eq. 0)
-              if(nvevx(i)%ivvar .eq. ivi)then
+            if(nvevx(i)%ivarele == kk)then
+              ivi=merge(nelvx(kk)%ival,iv,iv == 0)
+              if(nvevx(i)%ivvar == ivi)then
                 if(comp)then
-                  if(nvevx(i)%ivcomp .eq. 0)then
+                  if(nvevx(i)%ivcomp == 0)then
                     call termes(
      $                   'Element already used as variable: ',
      $                   pnamec(k))
                     return
-                  elseif(nvevx(i)%ivcomp .ne. k)then
+                  elseif(nvevx(i)%ivcomp /= k)then
                     cycle LOOP_I_1
                   endif
                 else
-                  if(nvevx(i)%ivcomp .ne. 0)then
+                  if(nvevx(i)%ivcomp /= 0)then
                     call elname(nvevx(i)%ivcomp,name)
                     call termes(
      $        'A component has been already used as variable: ',
@@ -145,16 +145,16 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
  11       nvar=nvar+1
           ffv%evarini=.true.
           nvevx(i)%ivarele=kk
-          ivi=merge(nelvx(kk)%ival,iv,iv .eq. 0)
+          ivi=merge(nelvx(kk)%ival,iv,iv == 0)
           nvevx(i)%ivvar=ivi
           nvevx(i)%valvar=tfvalvar(k,ivi)
           nvevx(i)%ivcomp=ivck
-          if(ivi .eq. nelvx(kk)%ival)then
+          if(ivi == nelvx(kk)%ival)then
             if(comp)then
               call elnameK(icomp(k),name1)
-              if(icomp(k) .eq. k)then
+              if(icomp(k) == k)then
                 do jj=1,nlat-1
-                  if(jj .ne. k .and. icomp(jj) .eq. k)then
+                  if(jj /= k .and. icomp(jj) == k)then
                     call elnameK(jj,name)
                     call termes('Info-Component '//
      $                   name(1:lenw(name))//' is coupled to ',
@@ -169,8 +169,8 @@ c     *     klp(iele1(k)) == k if singlet or head of multipole elements
               endif
             else
               do jj=1,nlat-1
-                if(nelvx(iele1(jj))%klp .eq. k
-     $               .and. icomp(jj) .ne. k)then
+                if(nelvx(iele1(jj))%klp == k
+     $               .and. icomp(jj) /= k)then
 c     `jj' is same family but different master with `k',
 c     where klp(iele1(k)) == k
                   call elnameK(jj,name)
@@ -199,7 +199,7 @@ c     where klp(iele1(k)) == k
         LOOP_K_3: do k=1,ntwissfun
           l=lenw(nlist(k))
           nlist1=nlist(k)(:l)//'I'
-          if(word .eq. nlist1(:l+1))then
+          if(word == nlist1(:l+1))then
             ipoint=next
             found=.true.
             it=41
@@ -211,7 +211,7 @@ c     where klp(iele1(k)) == k
         LOOP_I_3: do i=1,nvar
  1210     continue
           kk=nvevx(i)%ivarele
-          if(nvevx(i)%ivcomp .ne. 0)then
+          if(nvevx(i)%ivcomp /= 0)then
             if(.not. temat(nvevx(i)%ivcomp,name,word))then
               cycle LOOP_I_3
             endif
@@ -226,26 +226,26 @@ c     where klp(iele1(k)) == k
           endif
           found=.true.
           itk=idtypec(nelvx(kk)%klp)
-          if(itk .ne. it)then
-            if(word1 .ne. ' ')then
+          if(itk /= it)then
+            if(word1 /= ' ')then
               ivk=1
  1110         continue
               keyword=tfkwrd(itk,ivk)
-              if(keyword .eq. ' ')then
-                if(it .ne. 0)then
+              if(keyword == ' ')then
+                if(it /= 0)then
                   cycle LOOP_I_3
                 endif
                 word1=' '
                 iv=0
                 go to 1120
               else
-                if(keyword .eq. word1)then
+                if(keyword == word1)then
                   ipoint=next
                   iv=ivk
                   go to 1120
                 endif
                 keyword=tfkwrd1(itk,ivk)
-                if(keyword .eq. word1)then
+                if(keyword == word1)then
                   ipoint=next
                   iv=ivk
                   go to 1120
@@ -257,7 +257,7 @@ c     where klp(iele1(k)) == k
             endif
             it=itk
           endif
-          if(iv .eq. 0 .or. iv .eq. nvevx(i)%ivvar)then
+          if(iv == 0 .or. iv == nvevx(i)%ivvar)then
             do j=i,nvar-1
               nvevx(j)%ivarele=nvevx(j+1)%ivarele
               nvevx(j)%ivvar=nvevx(j+1)%ivvar
@@ -268,7 +268,7 @@ c     where klp(iele1(k)) == k
             nvar=nvar-1
             ffv%evarini=.true.
             if(i .gt. nvar .or.
-     $           .not. wild .and. iv .ne. 0)then
+     $           .not. wild .and. iv /= 0)then
               go to 1
             endif
           else

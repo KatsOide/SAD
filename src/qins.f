@@ -62,7 +62,7 @@
         dpsiy=param(6)/pi2
       else
         do i=l1-1,1,-1
-          if(idtypec(i) .eq. 34)then
+          if(idtypec(i) == 34)then
             go to 10
           endif
         enddo

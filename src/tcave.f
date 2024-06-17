@@ -32,7 +32,7 @@
       else
         w=omega0*harm/c
       endif
-      if(w .eq. 0.d0)then
+      if(w == 0.d0)then
         wi=0.d0
       else
         wi=1.d0/w
@@ -56,13 +56,13 @@ c      write(*,'(a,1p5g15.7)')'tcave ',phi,phis,phic,trf0
       v11a=v11/ndiv/amass*abs(charge)
       v20a=v20/ndiv/amass*abs(charge)+vn*(w*(.5d0/p0+.5d0/p1))**2/4.d0
       v02a=v02/ndiv/amass*abs(charge)+vn*(w*(.5d0/p0+.5d0/p1))**2/4.d0
-      if(p1 .ne. p0)then
+      if(p1 /= p0)then
         dhg=(p1-p0)*(p1+p0)/(h1+h0)/ndiv
       else
         dhg=0.d0
       endif
       vc0=vc0+vc
-      if(omega0 .ne. 0.d0)then
+      if(omega0 /= 0.d0)then
         hvc0=hvc0+(c*w)/omega0*vc
       endif
       if(rfsw)then
@@ -73,16 +73,16 @@ c      write(*,'(a,1p5g15.7)')'tcave ',phi,phis,phic,trf0
           s0=sin(phis)
           offset1=sin(phis)
         endif
-        if(al .ne. 0.d0 .and. fringe
-     $       .and. mfring .ge. 0 .and. mfring .ne. 2)then
+        if(al /= 0.d0 .and. fringe
+     $       .and. mfring .ge. 0 .and. mfring /= 2)then
           call tcavfrie(trans,cod,beam,al,v,w,phic,phis-phic,s0,p0,
      $         irad,irad .gt. 6 .or. calpol,autophi)
         endif
         call tinitr(trans1)
         dgb=0.d0
         do n=1,ndiv
-         if(al .ne. 0.d0)then
-            if(n .eq. 1)then
+         if(al /= 0.d0)then
+            if(n == 1)then
               call tdrife0(trans,cod,beam,srot,aln*.5d0,0.d0,0.d0,.true.,.false.,irad)
             else
               call tdrife0(trans,cod,beam,srot,aln,0.d0,0.d0,.true.,.false.,irad)
@@ -164,11 +164,11 @@ c          call tmultr(trans,trans1,irad)
           endif
           dgb=dgb+dhg
         enddo
-        if(al .ne. 0.d0)then
+        if(al /= 0.d0)then
           call tdrife0(trans,cod,beam,srot,aln*.5d0,0.d0,0.d0,.true.,.false.,irad)
           call tgetdvh(dgb,dv)
           cod(5)=cod(5)+dv*aln*.5d0
-          if(fringe .and. mfring .ge. 0 .and. mfring .ne. 1)then
+          if(fringe .and. mfring .ge. 0 .and. mfring /= 1)then
             call tcavfrie(trans,cod,beam,al,-v,w,phic,phis-phic,s0,p0,
      $           irad,irad .gt. 6 .or. calpol,autophi)
           endif
@@ -180,11 +180,11 @@ c          call tmultr(trans,trans1,irad)
         dvcacc=dvcacc+vc*cp*w
         ddvcacc=ddvcacc+vc*sp*w**2
         vcacc=vcacc-vc*sp
-        if(al .ne. 0.d0)then
+        if(al /= 0.d0)then
           call tdrife0(trans,cod,beam,srot,al,0.d0,0.d0,.true.,.false.,irad)
         endif
       endif
-      if(dhg .ne. 0.d0)then
+      if(dhg /= 0.d0)then
         rg2=p0/gammab(l+1)
 c        rg=sqrt(rg2)
         call tinitr(trans1)

@@ -21,7 +21,7 @@
       endif
       irtc=0
       m=kl%nl
-      if(m .eq. 0)then
+      if(m == 0)then
         kx=k
         return
       endif
@@ -41,10 +41,10 @@
      $         '"range-list","less than 3"')
           return
         endif
-        if(mn .eq. 0)then
+        if(mn == 0)then
           n1=1
           n2=0
-        elseif(mn .eq. 1)then
+        elseif(mn == 1)then
           n1=int(kln%rbody(1))
           if(n1 .lt. 0)then
             n1=m+n1+1
@@ -65,7 +65,7 @@
      $       '"Real number or a list of reals for #2"')
         return
       endif
-      list=kl%head%k .eq. ktfoper+mtflist
+      list=kl%head%k == ktfoper+mtflist
       if(n1 .lt. 1 .or. n2 .lt. 1 .or.
      $     n1 .gt. m .or. n2 .gt. m)then
         if(take)then
@@ -103,12 +103,12 @@
       if(take)then
         mx=n2-n1+1
       else
-        if(n1 .eq. 1)then
+        if(n1 == 1)then
           n1=n2+1
           n2=m
           mx=m-n1+1
           take=.true.
-        elseif(n2 .eq. m)then
+        elseif(n2 == m)then
           n2=n1-1
           n1=1
           mx=n2
@@ -117,7 +117,7 @@
           mx=m-(n2-n1+1)
         endif
       endif
-      if(mx .eq. m)then
+      if(mx == m)then
         kx=k
         return
       elseif(mx .gt. 0)then
@@ -184,7 +184,7 @@
       integer*4 ,intent(out):: irtc
       type (sad_dlist), pointer :: list,listx
       integer*4 m,itfmessage
-      if(isp .ne. isp1+1)then
+      if(isp /= isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       elseif(ktfnonlistq(ktastk(isp),list))then
@@ -197,7 +197,7 @@
         irtc=0
         return
       endif
-      if(iand(list%attr,lnonreallist) .eq. 0)then
+      if(iand(list%attr,lnonreallist) == 0)then
         call loc_sad(ktavaloc(-1,m),listx)
 c        do i=1,m
         listx%dbody(m:1:-1)=list%dbody(1:m)
@@ -225,7 +225,7 @@ c        enddo
       type (sad_dlist), pointer :: kl,klx
       type (sad_rlist), pointer :: klr
       integer*4 i,m,itfmessage,n
-      if(isp .ne. isp1+1 .and. isp .ne. isp1+2)then
+      if(isp /= isp1+1 .and. isp /= isp1+2)then
         irtc=itfmessage(9,'General::narg','"1 or 2"')
         return
       elseif(ktfnonlistq(ktastk(isp1+1)))then
@@ -238,7 +238,7 @@ c        enddo
       if(m .le. 1)then
         go to 8000
       endif
-      if(isp .eq. isp1+1)then
+      if(isp == isp1+1)then
         n=1
       elseif(ktfnonrealq(ktastk(isp)))then
         irtc=itfmessage(9,'General::wrongtype','"Real for #2"')
@@ -251,7 +251,7 @@ c        enddo
       else
         n=mod(n-1,m)+1
       endif
-      if(n .eq. 0)then
+      if(n == 0)then
         go to 8000
       endif
       if(ktfreallistq(kl))then
@@ -291,13 +291,13 @@ c        enddo
       type (sad_rlist), pointer :: klr
       integer*4 i,m,itfmessage,isp0
       krv%x(1)=-1.d0
-      if(isp .eq. isp1+2)then
+      if(isp == isp1+2)then
         if(.not. ktfrealq(dtastk(isp),krv%x(1)))then
           irtc=itfmessage(9,'General::wrongtype',
      $         '"Real for #2"')
           return
         endif
-      elseif(isp .ne. isp1+1)then
+      elseif(isp /= isp1+1)then
         irtc=itfmessage(9,'General::narg','"1 or 2"')
         return
       endif
@@ -315,9 +315,9 @@ c        enddo
       if(ktfreallistq(kl))then
         kx=kxavaloc(-1,m-1,klr)
         call c_f_pointer(c_loc(klr),klx)
-        if(krv%x(1) .eq. -1.d0)then
+        if(krv%x(1) == -1.d0)then
           klr%rbody(1:m-1)=kl%rbody(2:m)-kl%rbody(1:m-1)
-        elseif(krv%x(1) .eq. 1.d0)then
+        elseif(krv%x(1) == 1.d0)then
           klr%rbody(1:m-1)=kl%rbody(2:m)+kl%rbody(1:m-1)
         else
           klr%rbody(1:m-1)=kl%rbody(2:m)+krv%x(1)*kl%rbody(1:m-1)
@@ -348,7 +348,7 @@ c        enddo
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       integer*4 itfmessage
-      if(isp .ne. isp1+1)then
+      if(isp /= isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       elseif(ktfnonlistq(ktastk(isp)))then
@@ -377,14 +377,14 @@ c        enddo
           k%k=ktfsymbol+klist(ifunbase+ka)
         endif
         if(ktfsymbolq(k,sym))then
-          if(sym%override .eq. 0)then
+          if(sym%override == 0)then
             sym=>tfsydef(sym)
           endif
           if(sym%gen .le. 0)then
             if(protect)then
               sym%attr=ior(sym%attr,iattrprotected)
             else
-              if(iand(sym%attr,iattrconstant) .ne. 0)then
+              if(iand(sym%attr,iattrconstant) /= 0)then
                 irtc=itfmessageexp(9,'General::unprotconst',k)
               endif
               sym%attr=ior(sym%attr,iattrprotected+iattrconstant)
@@ -432,10 +432,10 @@ c        enddo
       type (sad_symbol), pointer :: sym
       integer*8 ka
       integer*4 iat,isp0,itfmessage
-      if(iaxnone%k .eq. 0)then
+      if(iaxnone%k == 0)then
         call tfattrinit
       endif
-      if(isp .ne. isp1+1)then
+      if(isp /= isp1+1)then
         irtc=itfmessage(999,'General::narg','"1"')
         return
       endif
@@ -450,36 +450,36 @@ c        enddo
       endif
       iat=sym%attr
       isp0=isp
-      if(iat .eq. 0)then
+      if(iat == 0)then
         isp=isp+1
         dtastk(isp)=iaxnone
       else
-        if(iand(iat,iattrholdfirst) .ne. 0)then
+        if(iand(iat,iattrholdfirst) /= 0)then
           isp=isp+1
           dtastk(isp)=merge(iaxholdall,iaxholdfirst,
-     $         iand(iat,iattrholdrest) .ne. 0)
+     $         iand(iat,iattrholdrest) /= 0)
         else
           isp=isp+1
           dtastk(isp)=merge(iaxholdrest,iaxholdnone,
-     $         iand(iat,iattrholdrest) .ne. 0)
+     $         iand(iat,iattrholdrest) /= 0)
         endif
-        if(iand(iat,iattrconstant) .ne. 0)then
+        if(iand(iat,iattrconstant) /= 0)then
           isp=isp+1
           dtastk(isp)=iaxconstant
         endif
-        if(iand(iat,iattrprotected) .ne. 0)then
+        if(iand(iat,iattrprotected) /= 0)then
           isp=isp+1
           dtastk(isp)=iaxprotected
         endif
-        if(iand(iat,iattrimmediate) .ne. 0)then
+        if(iand(iat,iattrimmediate) /= 0)then
           isp=isp+1
           dtastk(isp)=iaximmediate1
         endif
-        if(iand(iat,iattrdynamic) .ne. 0)then
+        if(iand(iat,iattrdynamic) /= 0)then
           isp=isp+1
           dtastk(isp)=iaxdynamic
         endif
-        if(iand(iat,iattrorderless) .ne. 0)then
+        if(iand(iat,iattrorderless) /= 0)then
           isp=isp+1
           dtastk(isp)=iaxordless
         endif
@@ -502,11 +502,11 @@ c        enddo
       integer*4 narg,iattrib,i,itfmessage,isp0,
      $     itfmessageexp
       logical*4 prot
-      if(iaxnone%k .eq. 0)then
+      if(iaxnone%k == 0)then
         call tfattrinit
       endif
       narg=isp-isp1
-      if(narg .ne. 2)then
+      if(narg /= 2)then
         irtc=itfmessage(999,'General::narg','"2"')
         return
       endif
@@ -516,7 +516,7 @@ c        enddo
         k%k=ktfsymbol+klist(ifunbase+ka)
       endif
       if(ktfsymbolq(k,sym))then
-        if(sym%override .eq. 0 .or. sym%override .eq. 1)then
+        if(sym%override == 0 .or. sym%override == 1)then
           sym=>tfsydef(sym)
           ka=ksad_loc(sym%loc)
         endif
@@ -529,7 +529,7 @@ c        enddo
             isp=isp+1
             dtastk(isp)=kl%dbody(i)
             call tfsetattributes(isp0,kx,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               isp=isp0
               return
             endif
@@ -540,7 +540,7 @@ c        enddo
         if(.not. ktfsymbolq(kv))then
           go to 9000
         endif
-        prot=ktfprotectedq(ktfaddrd(k)) .and. sym%override .ne. -3
+        prot=ktfprotectedq(ktfaddrd(k)) .and. sym%override /= -3
         iattrib=sym%attr
         if(tfsamesymbolq(kv,iaxnone))then
           iattrib=0
@@ -557,10 +557,10 @@ c        enddo
             irtc=itfmessage(9,'General::localconst',' ')
             return
           endif
-          prot=prot .and. iand(iattrib,iattrconstant) .eq. 0
+          prot=prot .and. iand(iattrib,iattrconstant) == 0
           iattrib=ior(iattrib,iattrconstant+iattrprotected)
         elseif(tfsamesymbolq(kv,iaxprotected))then
-          prot=prot .and. iand(iattrib,iattrprotected) .eq. 0
+          prot=prot .and. iand(iattrib,iattrprotected) == 0
           iattrib=ior(iattrib,iattrprotected)
         elseif(tfsamesymbolq(kv,iaximmediate1))then
           iattrib=ior(iattrib,iattrimmediate)
@@ -586,7 +586,7 @@ c        enddo
           ktastk(isp)=ktastk(isp0)
           call tfsetattributes(isp0,kx,irtc)
           isp=isp0
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
         enddo
@@ -616,8 +616,8 @@ c        enddo
       endif
       isp0=isp
       call tfreleaseholdstk(isp1,isp0,irtc)
-      if(irtc .eq. 0)then
-        if(isp .eq. isp0+1)then
+      if(irtc == 0)then
+        if(isp == isp0+1)then
           kx=dtastk(isp)
         else
           kx=kxcompose(isp0,klx)
@@ -643,9 +643,9 @@ c        enddo
         dtastk(isp)=dtastk(i)
         if(ktflistq(dtastk(i),kli))then
           isp=isp-1
-          if(kli%head%k .eq. ktfoper+mtfhold)then
+          if(kli%head%k == ktfoper+mtfhold)then
             call tfevallstkall(kli,.true.,.true.,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               isp=isp0
               return
             endif
@@ -656,18 +656,18 @@ c        enddo
             dtastk(isp)=kli%head
             isp3=isp
             call tfreleaseholdstk(isp4,isp-1,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               isp=isp0
               return
             endif
-            if(kli%head%k .eq. ktfoper+mtfnull)then
+            if(kli%head%k == ktfoper+mtfnull)then
               do j=isp3+1,isp
                 isp=isp4+j-isp3
                 ktastk(isp)=ktastk(j)
               enddo
             else
               call tfefunrefstk(isp3,isp4+1,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 isp=isp0
                 return
               endif

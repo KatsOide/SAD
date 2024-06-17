@@ -36,9 +36,9 @@
       rhob=al/phib
       rho0=al/phi0
       aind=rho0/phi0*ak
-      eps=merge(epsbend,epsbend*eps0,eps0 .eq. 0.d0)
+      eps=merge(epsbend,epsbend*eps0,eps0 == 0.d0)
       ndiv=1+int(abs(phi0/eps))
-      krad=rad .and. enarad .and. al .ne. 0.d0
+      krad=rad .and. enarad .and. al /= 0.d0
       f1r=0.d0
       f2r=0.d0
       n1=1
@@ -51,11 +51,11 @@
         if(calpol)then
           bsi=0.d0
         endif
-        if(iprev(l_track) .eq. 0 .and. fb1 .ne. 0.d0)then
+        if(iprev(l_track) == 0 .and. fb1 /= 0.d0)then
           f1r=.5d0*fb1
           n1=-1
         endif
-        if(inext(l_track) .eq. 0 .and. fb2 .ne. 0.d0)then
+        if(inext(l_track) == 0 .and. fb2 /= 0.d0)then
           f2r=.5d0*fb2
           n2=2
         endif
@@ -65,10 +65,10 @@
       endif
       ndiv=min(ndivmax,ndiv)
       n2=ndiv+n2
-      if(fringe .and. mfring .gt. -4 .and. mfring .ne. 2)then
+      if(fringe .and. mfring .gt. -4 .and. mfring /= 2)then
         call ttfrin(np,x,px,y,py,z,g,4,ak,al,0.d0)
       endif
-      if(fb1 .ne. 0.d0)then
+      if(fb1 /= 0.d0)then
         dxfr1=fb1**2/rhob/24.d0
         dyfr1=fb1/rhob**2/6.d0
         dyfra1=4.d0*dyfr1/fb1**2
@@ -110,7 +110,7 @@ c     dp=g(i)*(2.d0+g(i))
           call tsetpcvt(l_track,dx,dy,theta,dtheta,phi0,phig,al)
         endif
         do n=n1,n2
-          call tbendiinit(akxn(n),alx(n),n .eq. n1)
+          call tbendiinit(akxn(n),alx(n),n == n1)
           call tbendicorr((akxn(n)+akx0)*.5d0,(alx(n)+alx0)*.5d0,
      $         (phixn(n)+phix0)*.5d0)
           akx0=akxn(n)
@@ -119,7 +119,7 @@ c     dp=g(i)*(2.d0+g(i))
           call tbendibody(alx0)
           if(krad)then
             bsi(i)=bsi(i)+akxn(n)/alx(n)*xi*yi
-            if(n .ne. n2)then
+            if(n /= n2)then
               cphi0=cphixn(n)
               sphi0=sphixn(n)
               if(rfluct)then
@@ -154,7 +154,7 @@ c                call tsetphotongeo(alx(n),phixn(n),theta,.false.)
         z(i)=zi+ff*fpx
         g(i)=dp
       enddo
-      if(fb2 .ne. 0.d0)then
+      if(fb2 /= 0.d0)then
         dxfr2=fb2**2/rhob/24.d0
         dyfr2=fb2/rhob**2/6.d0
         dyfra2=4.d0*dyfr2/fb2**2
@@ -167,7 +167,7 @@ c                call tsetphotongeo(alx(n),phixn(n),theta,.false.)
      $         (.5d0*dyfr2-.25d0*dyfra2*y(i)**2)*y(i)**2/pr)/pr
         enddo
       endif
-      if(fringe .and. mfring .gt. -4 .and. mfring .ne. 1)then
+      if(fringe .and. mfring .gt. -4 .and. mfring /= 1)then
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,0.d0)
       endif
       if(krad)then

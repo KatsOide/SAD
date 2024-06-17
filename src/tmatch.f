@@ -22,10 +22,10 @@
         lx=ln .le. 0
         return
       endif
-      if(iafwild .eq. 0)then
+      if(iafwild == 0)then
         iafwild=ktfsymbolz('$WildCardID',11)
       endif
-      if(rlist(iafwild-4) .ne. 0.d0)then
+      if(rlist(iafwild-4) /= 0.d0)then
         en=name(ln+1:ln+1)
         name(ln+1:ln+1)=char(0)
         ep=patt(lp+1:lp+1)
@@ -33,7 +33,7 @@
         ir=regexp(name,patt)
         name(ln+1:ln+1)=en
         patt(lp+1:lp+1)=ep
-        lx=ir .eq. 1
+        lx=ir == 1
         return
       endif
       ia=index(patt(1:lp),'|')
@@ -50,7 +50,7 @@
           endif
         endif
         if(ln .le. 0)then
-          lx=notchar1(patt(1:lp),lp,'*',1) .eq. 0
+          lx=notchar1(patt(1:lp),lp,'*',1) == 0
         else
           lx=tmatchl1(name,ln,patt,lp)
         endif
@@ -70,75 +70,75 @@ c      write(*,'(a,l2,4a)')'tmatchl ',lx,' ',name(1:ln),' ',patt(1:lp)
       if(id1 .le. 0)then
         lx=tmatchl2(name,ln,patt,lp)
         return
-      elseif(id1 .eq. 1)then
+      elseif(id1 == 1)then
         ic=index(patt(1:lp),'}')
-        if(ic .eq. 0)then
+        if(ic == 0)then
           ic=lp+1
         endif
-        if(patt(2:2) .eq. '^')then
+        if(patt(2:2) == '^')then
           if(index(patt(3:ic-1),name(1:1)) .gt. 0)then
             return
           endif
-        elseif(index(patt(2:ic-1),name(1:1)) .eq. 0)then
+        elseif(index(patt(2:ic-1),name(1:1)) == 0)then
           return
         endif
         if(lp .le. ic)then
-          lx=ln .eq. 1
-        elseif(ln .eq. 1)then
-          lx=notchar1(patt,lp,'*',ic+1) .eq. 0
+          lx=ln == 1
+        elseif(ln == 1)then
+          lx=notchar1(patt,lp,'*',ic+1) == 0
         else
           lx=tmatchl1(name(2:ln),ln-1,patt(ic+1:lp),lp-ic)
         endif
         return
       endif
       ic1=notany1(patt,lp,'*%{}',1)
-      if(ic1 .eq. 1)then
+      if(ic1 == 1)then
         ic2=max(ifany1(patt,lp,'*%{',ic1+1)-1,ic1)
         if(ln .lt. ic2)then
           return
-        elseif(name(1:ic2) .ne. patt(1:ic2))then
+        elseif(name(1:ic2) /= patt(1:ic2))then
           return
-        elseif(ic2 .eq. lp)then
-          lx=ln .eq. ic2
-        elseif(ln .eq. ic2)then
-          lx=notchar1(patt,lp,'*',ic2+1) .eq. 0
+        elseif(ic2 == lp)then
+          lx=ln == ic2
+        elseif(ln == ic2)then
+          lx=notchar1(patt,lp,'*',ic2+1) == 0
         else
           lx=tmatchl1(name(ic2+1:ln),ln-ic2,
      $         patt(ic2+1:lp),lp-ic2)
         endif
         return
       endif
-      if(ic1 .ne. 0)then
-        if(id1+1 .ne. ic1)then
+      if(ic1 /= 0)then
+        if(id1+1 /= ic1)then
           ic2=max(ifany1(patt,lp,'*%{',ic1+1)-1,ic1)
           if(index(name(1:ln),patt(ic1:ic2)) .le. 0)then
             return
           endif
         endif
       endif
-      if(patt(1:1) .eq. '*')then
-        if(lp .eq. 1)then
+      if(patt(1:1) == '*')then
+        if(lp == 1)then
           lx=.true.
         else
           lx=tmatchl1(name,ln,patt(2:lp),lp-1)
-          if(.not. lx .and. ln .ne. 1)then
+          if(.not. lx .and. ln /= 1)then
             lx=tmatchl1(name(2:ln),ln-1,patt(1:lp),lp)
           endif
         endif
         return
-      elseif(patt(1:1) .eq. '%')then
-        if(lp .eq. 1)then
-          lx=ln .eq. 1
-        elseif(ln .eq. 1)then
-          lx=notchar1(patt,lp,'*',2) .eq. 0
+      elseif(patt(1:1) == '%')then
+        if(lp == 1)then
+          lx=ln == 1
+        elseif(ln == 1)then
+          lx=notchar1(patt,lp,'*',2) == 0
         else
           lx=tmatchl1(name(2:ln),ln-1,patt(2:lp),lp-1)
         endif
-      elseif(name(1:1) .eq. '}')then
-        if(lp .eq. 1)then
-          lx=ln .eq. 1
-        elseif(ln .eq. 1)then
-          lx=notchar1(patt,lp,'*',2) .eq. 0
+      elseif(name(1:1) == '}')then
+        if(lp == 1)then
+          lx=ln == 1
+        elseif(ln == 1)then
+          lx=notchar1(patt,lp,'*',2) == 0
         else
           lx=tmatchl1(name(2:ln),ln-1,patt(2:lp),lp-1)
         endif
@@ -153,43 +153,43 @@ c      write(*,'(a,l2,4a)')'tmatchl ',lx,' ',name(1:ln),' ',patt(1:lp)
       character*(*) name,patt
       lx=.false.
       ic1=notany1(patt,lp,'*%',1)
-      if(ic1 .eq. 1)then
+      if(ic1 == 1)then
         ic2=max(ifany1(patt,lp,'*%',ic1+1)-1,ic1)
         if(ln .lt. ic2)then
           return
-        elseif(name(1:ic2) .ne. patt(1:ic2))then
+        elseif(name(1:ic2) /= patt(1:ic2))then
           return
-        elseif(ic2 .eq. lp)then
-          lx=ln .eq. ic2
-        elseif(ln .eq. ic2)then
-          lx=notchar1(patt,lp,'*',ic2+1) .eq. 0
+        elseif(ic2 == lp)then
+          lx=ln == ic2
+        elseif(ln == ic2)then
+          lx=notchar1(patt,lp,'*',ic2+1) == 0
         else
           lx=tmatchl2(name(ic2+1:ln),ln-ic2,
      $         patt(ic2+1:lp),lp-ic2)
         endif
         return
       endif
-      if(ic1 .ne. 0)then
+      if(ic1 /= 0)then
         ic2=max(ifany1(patt,lp,'*%',ic1+1)-1,ic1)
         if(index(name(1:ln),patt(ic1:ic2)) .le. 0)then
           return
         endif
       endif
-      if(patt(1:1) .eq. '*')then
-        if(lp .eq. 1)then
+      if(patt(1:1) == '*')then
+        if(lp == 1)then
           lx=.true.
         else
           lx=tmatchl2(name,ln,patt(2:lp),lp-1)
-          if(.not. lx .and. ln .ne. 1)then
+          if(.not. lx .and. ln /= 1)then
             lx=tmatchl2(name(2:ln),ln-1,patt(1:lp),lp)
           endif
         endif
         return
       else
-        if(lp .eq. 1)then
-          lx=ln .eq. 1
-        elseif(ln .eq. 1)then
-          lx=notchar1(patt(2:lp),lp-1,'*',1) .eq. 0
+        if(lp == 1)then
+          lx=ln == 1
+        elseif(ln == 1)then
+          lx=notchar1(patt(2:lp),lp-1,'*',1) == 0
         else
           lx=tmatchl2(name(2:ln),ln-1,patt(2:lp),lp-1)
         endif
@@ -204,27 +204,27 @@ c      write(*,'(a,l2,4a)')'tmatchl ',lx,' ',name(1:ln),' ',patt(1:lp)
       character*(*) name,patt
       lx=.false.
       ic1=notchar1(patt,lp,'*',1)
-      if(ic1 .eq. 1)then
+      if(ic1 == 1)then
         ic2=max(0,index(patt(ic1+1:lp),'*')-1)+ic1
         if(ln .lt. ic2)then
           return
-        elseif(name(1:ic2) .ne. patt(1:ic2))then
+        elseif(name(1:ic2) /= patt(1:ic2))then
           return
-        elseif(ic2 .eq. lp)then
-          lx=ln .eq. ic2
-        elseif(ln .eq. ic2)then
-          lx=notchar1(patt,lp,'*',ic2+1) .eq. 0
+        elseif(ic2 == lp)then
+          lx=ln == ic2
+        elseif(ln == ic2)then
+          lx=notchar1(patt,lp,'*',ic2+1) == 0
         else
           lx=tmatchl3(name(ic2+1:ln),ln-ic2,
      $         patt(ic2+1:lp),lp-ic2)
         endif
         return
       endif
-      if(ic1 .ne. 0)then
+      if(ic1 /= 0)then
         ic2=max(0,index(patt(ic1+1:lp),'*')-1)+ic1
-        if(ic2 .eq. lp)then
+        if(ic2 == lp)then
           if(ln .ge. ic2-ic1+1)then
-            lx=name(ln-ic2+ic1:ln) .eq. patt(ic1:ic2)
+            lx=name(ln-ic2+ic1:ln) == patt(ic1:ic2)
           endif
           return
         endif
@@ -233,8 +233,8 @@ c      write(*,'(a,l2,4a)')'tmatchl ',lx,' ',name(1:ln),' ',patt(1:lp)
           return
         endif
         id2=id1+ic2-ic1
-        if(ln .eq. id2)then
-          lx=notchar1(patt,lp,'*',ic2+1) .eq. 0
+        if(ln == id2)then
+          lx=notchar1(patt,lp,'*',ic2+1) == 0
         else
           lx=tmatchl3(name(id2+1:ln),ln-id2,
      $         patt(ic2+1:lp),lp-ic2) .or.
@@ -243,11 +243,11 @@ c      write(*,'(a,l2,4a)')'tmatchl ',lx,' ',name(1:ln),' ',patt(1:lp)
         endif
         return
       endif
-      if(lp .eq. 1)then
+      if(lp == 1)then
         lx=.true.
       else
         lx=tmatchl3(name,ln,patt(2:lp),lp-1)
-        if(.not. lx .and. ln .ne. 1)then
+        if(.not. lx .and. ln /= 1)then
           lx=tmatchl3(name(2:ln),ln-1,patt(1:lp),lp)
         endif
       endif

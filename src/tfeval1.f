@@ -12,7 +12,7 @@
       real*8 vx,fflogi
       logical*4 exist
       character*8 name
-      if(isp .ne. isp1+1)then
+      if(isp /= isp1+1)then
         call tfdefinition(isp1,kx,irtc)
         return
       endif
@@ -46,17 +46,17 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
       logical*4 ,intent(in):: old
       if(ktflistq(k1,kl1))then
         kv=tfleval(kl1,.true.,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
       elseif(ktfsymbolq(k1))then
         kv=tfsyeval(k1,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
       elseif(ktfpatq(k1))then
         kv=tfpateval(k1,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
       else
@@ -68,22 +68,22 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
         kr=tfeval1(kv,k2,mtfmult,irtc)
       elseif(iopc .eq. mtfsubtractfrom)then
         ku=tfeval1(sad_descr(-1.d0),k2,mtfmult,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
         kr=tfeval1(kv,ku,mtfplus,irtc)
       else
         ku=tfeval1(k2,sad_descr(-1.d0),mtfpower,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
         kr=tfeval1(kv,ku,mtfmult,irtc)
       endif
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
       ks=tfeevaldef(k1,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
       kx=tfset1(ks,kr,mtfset,irtc)
@@ -127,7 +127,7 @@ c        write(*,*)'flagordef-vx ',exist,vx,'"'//name(1:nc)//'"'
         if(def)then
           call loc_sad(ktfaddrd(ks0),lists)
           call tfgetdefargp(lists,ktfaddr(ks),kp,ev,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
         else

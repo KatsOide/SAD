@@ -162,7 +162,7 @@ c'\
           buf(i:i)='0'
           i=i-1
         else
-          do while(av .ne. 0.d0)
+          do while(av /= 0.d0)
             av1=aint(av/base)
             ifrac=int(av-av1*base)
             if(ifrac .lt. 10)then
@@ -186,7 +186,7 @@ c'\
           return
         endif
         i=1
-        do while(af .ne. 0.d0 .and. i .le. lmax)
+        do while(af /= 0.d0 .and. i .le. lmax)
           af1=aint(af*base)
           ifrac=int(af1)
           if(ifrac == 0)then
@@ -238,7 +238,7 @@ c'\
           if(str)then
             nc0=strb%nch
             call tfquotestring(strb,strx%str,nc,lfno,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               return
             endif
             nc=max(strb%nch-nc0,0)
@@ -258,22 +258,22 @@ c'\
           if(ic == itfcontroot)then
             call putstringbufp(strb,'`',lfno,irtc)
             nc=1
-          elseif(klist(ic) .ne. 0)then
+          elseif(klist(ic) /= 0)then
             call tfconvstrb(strb,dlist(ic),
      $           nc,.false.,gens,lfno,form,irtc)
           endif
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
  1        nc1=loc%str%nch
           call putstringbufpb(strb,loc%str%str,nc1,.true.,lfno,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
           nc=nc+nc1
           if(.not. gens)then
             if(sym%gen .gt. 0 .and.
-     $           sym%gen .ne. maxgeneration)then
+     $           sym%gen /= maxgeneration)then
               buff='$'//autos1(dble(sym%gen))
               nc1=lenw(buff)
               call putstringbufpb(strb,buff,nc1,.true.,lfno,irtc)
@@ -298,7 +298,7 @@ c'\
             kpat=-1
           endif
 c          kpat=merge(merge(int(kav),0,kav .le. 3),-1,ktv == ktfref)
-          if(pat%default%k .ne. ktfref)then
+          if(pat%default%k /= ktfref)then
             if(kpat .lt. 0)then
               call putstringbufp(strb,'((',lfno,irtc)
               nc=2
@@ -309,12 +309,12 @@ c          kpat=merge(merge(int(kav),0,kav .le. 3),-1,ktv == ktfref)
           else
             nc=0
           endif
-          if(pat%sym%loc .ne. 0)then
+          if(pat%sym%loc /= 0)then
             ip=ktfaddr(pat%sym%alloc%k)
             if(ip .gt. 0)then
               call tfconvstrb(strb,transfer(ktfsymbol+ip,k),
      $             nc1,.false.,gens,lfno,form,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 return
               endif
               nc=nc+nc1
@@ -322,28 +322,28 @@ c          kpat=merge(merge(int(kav),0,kav .le. 3),-1,ktv == ktfref)
           endif
           if(kpat .gt. 0)then
             call putstringbufp(strb,patstr(1:kpat),lfno,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               return
             endif
             nc=nc+kpat
-            if(pat%head%k .ne. 0)then
+            if(pat%head%k /= 0)then
               call tfconvstrb(strb,
      $             pat%head,nc1,.false.,gens,lfno,form,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 return
               endif
               nc=nc+nc1
             endif
           else
             call putstringbufp(strb,':',lfno,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               return
             endif
             call tfconvstrb(strb,pat%expr,nc1,.true.,
      $           gens,lfno,form,irtc)
             nc=nc+nc1+1
           endif
-          if(pat%default%k .ne. ktfref)then
+          if(pat%default%k /= ktfref)then
             if(kpat .lt. 0)then
               call putstringbufp(strb,'):',lfno,irtc)
               nc=nc+2
@@ -422,7 +422,7 @@ c
             case (mtfcomplex)
               if(ktfrealq(klist(ka+1)))then
                 if(rlist(ka+1) == 0.d0)then
-                  if(iand(ktrmask,klist(ka+2)) .ne. ktfnr)then
+                  if(iand(ktrmask,klist(ka+2)) /= ktfnr)then
                     if(rlist(ka+2) == 1.d0)then
                       call putstringbufp(strb,'I',lfno,irtc)
                       return
@@ -432,12 +432,12 @@ c
                     endif
                   endif
                   call putstringbufp(strb,'(',lfno,irtc)
-                  if(irtc .ne. 0)then
+                  if(irtc /= 0)then
                     return
                   endif
                   call tfconvstrb(strb,dlist(ka+2),
      $                 nc,.true.,gens,lfno,form,irtc)
-                  if(irtc .ne. 0)then
+                  if(irtc /= 0)then
                     return
                   endif
                   call putstringbufp(strb,' I)',lfno,irtc)
@@ -445,15 +445,15 @@ c
                 endif
               endif
               call putstringbufp(strb,'(',lfno,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 return
               endif
               call tfconvstrb(strb,dlist(ka+1),
      $             nc,.true.,gens,lfno,form,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 return
               endif
-              if(iand(ktrmask,klist(ka+2)) .ne. ktfnr)then
+              if(iand(ktrmask,klist(ka+2)) /= ktfnr)then
                 if(rlist(ka+2) .ge. 0.d0)then
                   call putstringbufp(strb,'+',lfno,irtc)
                 endif
@@ -467,12 +467,12 @@ c
               else
                 call putstringbufp(strb,'+',lfno,irtc)
               endif
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 return
               endif
               call tfconvstrb(strb,dlist(ka+2),
      $             nc,.true.,gens,lfno,form,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 return
               endif
               call putstringbufp(strb,' I)',lfno,irtc)
@@ -482,7 +482,7 @@ c
               if(ktfrealq(k1,v1))then
                 if(v1 == -1.d0)then
                   call putstringbufp(strb,'(-',lfno,irtc)
-                  if(irtc .ne. 0)then
+                  if(irtc /= 0)then
                     return
                   endif
                   opce=')'
@@ -505,11 +505,11 @@ c
               k1=dlist(ka+1)
               call tfconvstrb(strb,k1,nc,
      $             .true.,gens,lfno,form,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 return
               endif
               call putstringbufp(strb,'[[',lfno,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 return
               endif
               opcx=','
@@ -542,12 +542,12 @@ c
           else
             call tfconvstrb(strb,dlist(ka),nc,
      $           .true.,gens,lfno,form,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               return
             endif
             iaaf=-1
             call putstringbufp(strb,'[',lfno,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               return
             endif
             opcx=','
@@ -557,7 +557,7 @@ c
         else
           iaaf=mtflist
           call putstringbufp(strb,'{',lfno,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
           opcx=','
@@ -566,7 +566,7 @@ c
         endif
         if(i1 .gt. 1)then
           call putstringbufp(strb,opcx(1:ncx),lfno,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             return
           endif
         endif
@@ -577,16 +577,16 @@ c
           ki=list%dbody(i)
           if(ktflistq(ki,listi))then
             kai=ktfaddrd(ki)
-            if(opcx .ne. ',' .and. ktfoperq(listi%head%k))then
+            if(opcx /= ',' .and. ktfoperq(listi%head%k))then
               iaaf1=int(ktfaddr(listi%head))
-              if(iaaf1 .le. mtfend .and. iaaf1 .ne. mtflist)then
+              if(iaaf1 .le. mtfend .and. iaaf1 /= mtflist)then
                 if(iprior(iaaf1) .ge. iprior(iaaf))then
                   call putstringbufp(strb,'(',lfno,irtc)
-                  if(irtc .ne. 0)then
+                  if(irtc /= 0)then
                     go to 8000
                   endif
                   call tfconvstrl(strb,kai,lfno,form,gens,irtc)
-                  if(irtc .ne. 0)then
+                  if(irtc /= 0)then
                     go to 8000
                   endif
                   call putstringbufp(strb,')',lfno,irtc)
@@ -599,7 +599,7 @@ c
           else
             call tfconvstrb(strb,ki,nc,.true.,gens,lfno,form,irtc)
           endif
- 102      if(irtc .ne. 0)then
+ 102      if(irtc /= 0)then
             go to 8000
           endif
           if(iaaf == mtfinequality .and. i .lt. nd)then
@@ -611,11 +611,11 @@ c
               opcx=','
               ncx=1
               call putstringbufp(strb,opcx(1:ncx),lfno,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 return
               endif
               call tfconvstrb(strb,ki,nc,.true.,gens,lfno,form,irtc)
-              if(irtc .ne. 0)then
+              if(irtc /= 0)then
                 go to 8000
               endif
             endif
@@ -635,7 +635,7 @@ c
      $         .or. ((iaaf == mtffun .or. iaaf == mtfincrement
      $         .or. iaaf == mtfdecrement) .and. nd == 1))then
             call putstringbufp(strb,opcx(1:ncx),lfno,irtc)
-            if(irtc .ne. 0)then
+            if(irtc /= 0)then
               go to 8000
             endif
           endif
@@ -647,7 +647,7 @@ c
           endif
         enddo
         le=lenw(opce)
-        if(le .ne. 0)then
+        if(le /= 0)then
           call putstringbufp(strb,opce(1:le),lfno,irtc)
         endif
  8000   llevel=llevel-1
@@ -661,7 +661,7 @@ c
         real*8 x
         character*22 str1,autos1
         logical*4 full
-        if(strb%nch .ne. 0)then
+        if(strb%nch /= 0)then
           ich=strb%istr(strb%nch)
           if(ich .ge. ichar('0') .and. ich .le. ichar('9'))then
             call putstringbufb1(strb,' ')
@@ -754,7 +754,7 @@ c
      $             strb%llevel .lt. strb%maxllevel)then
                 strb%column=0
                 call flushstringbuf(strb,.true.,.true.,lfno,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   return
                 endif
               endif
@@ -764,7 +764,7 @@ c
      $             (lw .le. 0 .or. lw .lt. l-i1+iext .and.
      $             lexp .ge. l-i1+1))then
                 call flushstringbuf(strb,indent,.true.,lfno,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   return
                 endif
 c                write(*,*)'psbuf-2 ',lw,lexp,strb%nch
@@ -778,7 +778,7 @@ c                write(*,*)'psbuf-2 ',lw,lexp,strb%nch
               if(string(i:i) == char(13))then
                 call putstringbufb(strb,string(i1:i1),i-i1+1,full)
                 call flushstringbuf(strb,indent,.false.,lfno,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   return
                 endif
                 i1=i+1
@@ -786,7 +786,7 @@ c                write(*,*)'psbuf-2 ',lw,lexp,strb%nch
               elseif(string(i:i) == char(10))then
                 call putstringbufb(strb,string(i1:i1),i-i1,full)
                 call flushstringbuf(strb,indent,.true.,lfno,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   return
                 endif
                 i1=i+1
@@ -799,7 +799,7 @@ c                write(*,*)'psbpb ',i1,lw,l
                 call putstringbufb(strb,string(i1:i1),lw-1,full)
                 call putstringbufb(strb,'\\',1,full)
                 call flushstringbuf(strb,indent,.true.,lfno,irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   return
                 endif
                 i1=i1+lw-1

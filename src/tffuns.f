@@ -8,14 +8,14 @@
       integer*4 ,intent(in):: isp1,isp2
       if(isp1 .ge. isp2)then
         kx=dxnull
-      elseif(isp1+1 .eq. isp2)then
+      elseif(isp1+1 == isp2)then
         kx=dtastk(isp2)
       else
         kx=kxcrelistm(isp2-isp1,ktastk(isp1+1:isp2),k_descr(ktfoper+mtfnull))
       endif
 c      kx=merge(dxnull,merge(dtastk(isp2),
 c     $     kxcrelistm(isp2-isp1,ktastk(isp1+1:isp2),
-c     $     k_descr(ktfoper+mtfnull)),isp1+1 .eq. isp2),
+c     $     k_descr(ktfoper+mtfnull)),isp1+1 == isp2),
 c     $     isp1 .ge. isp2)
       return
       end
@@ -27,19 +27,19 @@ c     $     isp1 .ge. isp2)
       integer*4 ,intent(out):: irtc
       integer*4 itfmessage
       kx=dxnullo
-      if(isp .ne. isp1+2)then
+      if(isp /= isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
       k=dtastk(isp)
       k1=dtastk(isp1+1)
       kx%k=0
-      if(k%k .eq. k1%k)then
+      if(k%k == k1%k)then
         kx%k=ktftrue
       elseif(tfsameq(k,k1))then
         kx%k=ktftrue
       endif
-      if(iopc .eq. mtfunsame)then
+      if(iopc == mtfunsame)then
         kx%k=ktftrue-kx%k
       endif
       irtc=0
@@ -54,12 +54,12 @@ c     $     isp1 .ge. isp2)
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       integer*4 isp0,isp2,n,itfmessage,isp3,isp4,i,j
-      if(isp1 .eq. isp)then
+      if(isp1 == isp)then
         kx=dxnulll
         irtc=0
         return
-      elseif(isp1+1 .eq. isp)then
-        if(ktastk(isp) .eq. ktfoper+mtfnull)then
+      elseif(isp1+1 == isp)then
+        if(ktastk(isp) == ktfoper+mtfnull)then
           kx=dxnulll
           irtc=0
           return
@@ -72,10 +72,10 @@ c     $     isp1 .ge. isp2)
         ki=ktastk(i)
         if(ktflistq(ki,kli))then
           k1=kli%head%k
-          if(k1 .eq. ktfoper+mtflist)then
+          if(k1 == ktfoper+mtflist)then
             call tfgetllstkall(kli)
-          elseif(k1 .eq. ktfoper+mtfrule .or.
-     $           k1 .eq. ktfoper+mtfruledelayed)then
+          elseif(k1 == ktfoper+mtfrule .or.
+     $           k1 == ktfoper+mtfruledelayed)then
             isp=isp+1
             ktastk(isp)=ki
           else
@@ -100,15 +100,15 @@ c     $       ktflistq(ktastk(i),kli))
       n=isp-isp2
       isp3=isp
       call tfsortl(ktastk(isp2-3),.false.,n,2,ktfref,.true.,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         isp=isp0-1
         return
       endif
       isp4=isp
       do i=1,n
         j=int(ktastk(isp3+i))
-        if(j .ne. 0 .and.
-     $       ktastk(isp0+j) .ne. ktfoper+mtfnull)then
+        if(j /= 0 .and.
+     $       ktastk(isp0+j) /= ktfoper+mtfnull)then
           isp=isp+1
           ktastk(isp)=ktastk(isp0+j)
         endif

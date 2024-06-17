@@ -6,7 +6,7 @@
       parameter (lstr=512)
       real*8 gw
       character*(lstr) file,comm
-      if(isp .ne. isp1+13)then
+      if(isp /= isp1+13)then
         irtc=itfmessage(9,'General::narg','"13"')
         return
       endif
@@ -24,47 +24,47 @@
           go to 9000
         endif
       enddo
-      if(ilist(2,ktfaddr(ktastk(isp1+1))-1) .ne. 3)then
+      if(ilist(2,ktfaddr(ktastk(isp1+1))-1) /= 3)then
         irtc=itfmessage(9,'General::wrongval',
      $       '"EmittanceStrong={ex,ey,ez}"')
         return
       endif
-      if(ilist(2,ktfaddr(ktastk(isp1+2))-1) .ne. 36*nip)then
+      if(ilist(2,ktfaddr(ktastk(isp1+2))-1) /= 36*nip)then
         irtc=itfmessage(9,'General::wrongval',
      $       '"Dim[BeamMatrixStrong]={#IP,6,6}"')
         return
       endif
-      if(ilist(2,ktfaddr(ktastk(isp1+3))-1) .ne. 3)then
+      if(ilist(2,ktfaddr(ktastk(isp1+3))-1) /= 3)then
         irtc=itfmessage(9,'General::wrongval',
      $       '"EmittanceWeak={ex,ey,ez}"')
         return
       endif
-      if(ilist(2,ktfaddr(ktastk(isp1+4))-1) .ne. 36*nip)then
+      if(ilist(2,ktfaddr(ktastk(isp1+4))-1) /= 36*nip)then
         irtc=itfmessage(9,'General::wrongval',
      $       '"Dim[BeamMatrixWeak]={#IP,6,6}"')
         return
       endif
-      if(ilist(2,ktfaddr(ktastk(isp1+5))-1) .ne. 6*nip)then
+      if(ilist(2,ktfaddr(ktastk(isp1+5))-1) /= 6*nip)then
         irtc=itfmessage(9,'General::wrongval',
      $       '"Dim[OrbitWeak]={#IP,6}"')
         return
       endif
-      if(ilist(2,ktfaddr(ktastk(isp1+6))-1) .ne. 6*nip)then
+      if(ilist(2,ktfaddr(ktastk(isp1+6))-1) /= 6*nip)then
         irtc=itfmessage(9,'General::wrongval',
      $       '"Dim[Separations]={#IP,6}"')
         return
       endif
-      if(ilist(2,ktfaddr(ktastk(isp1+7))-1) .ne. 3)then
+      if(ilist(2,ktfaddr(ktastk(isp1+7))-1) /= 3)then
         irtc=itfmessage(9,'General::wrongval',
      $       '"DampingRate={dx,dy,dz}"')
         return
       endif
-      if(ilist(2,ktfaddr(ktastk(isp1+8))-1) .ne. 3)then
+      if(ilist(2,ktfaddr(ktastk(isp1+8))-1) /= 3)then
         irtc=itfmessage(9,'General::wrongval',
      $       '"Apertures={ax,ay,az}"')
         return
       endif
-      if(ilist(2,ktfaddr(ktastk(isp1+9))-1) .ne. nip)then
+      if(ilist(2,ktfaddr(ktastk(isp1+9))-1) /= nip)then
         irtc=itfmessage(9,'General::wrongval',
      $       '"Dim[Particles]={#IP}"')
         return

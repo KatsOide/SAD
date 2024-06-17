@@ -34,7 +34,7 @@ c
       is=11
       do f=is,nbuf
 c        write(*,*)'nextfn ',f,mode,itbuf(f)
-        if(itbuf(f) .eq. modeclose)then
+        if(itbuf(f) == modeclose)then
           inquire(f,IOSTAT=ios,err=9000,OPENED=od)
           if( .not. od) then
             itbuf(f)=mode
@@ -61,7 +61,7 @@ c
       use iso_c_binding
       implicit none
       integer*4 lfn
-      if(ibuf(lfn) .ne. 0)then
+      if(ibuf(lfn) /= 0)then
         call c_f_pointer(c_loc(jlist(1,ibuf(lfn))),buffer)
       else
         buffer=>buffer0
@@ -96,7 +96,7 @@ c
       case (modewrite)
         close(lfn)
         if(ibuf(lfn) > 0)then
-          if(ilist(2,ibuf(lfn)-1) .ne. 0)then
+          if(ilist(2,ibuf(lfn)-1) /= 0)then
             irtc=unixclose(ilist(2,ibuf(lfn)-1))
             ilist(2,ibuf(lfn)-1)=0
           endif
@@ -144,7 +144,7 @@ c        write(*,*)'trbclose ',cm(1:str%nch+3)
       implicit none
       integer*4 lfn
       if(lfn > 0)then
-        if(mbuf(lfn) .eq. lbuf(lfn))then
+        if(mbuf(lfn) == lbuf(lfn))then
           mbuf(lfn)=lbuf(lfn)+1
         endif
       endif
@@ -154,7 +154,7 @@ c        write(*,*)'trbclose ',cm(1:str%nch+3)
       integer*8 function itrbibuf(lfn,mode) result(ia)
       implicit none
       integer*4 , intent(in) :: lfn,mode
-      if(lfn > 0 .and. itbuf(lfn) .eq. mode)then
+      if(lfn > 0 .and. itbuf(lfn) == mode)then
         ia=ibuf(lfn)
       else
         ia=0
@@ -177,7 +177,7 @@ c        write(*,*)'trbclose ',cm(1:str%nch+3)
       integer*4 , intent(in) ::lfn,ib
       itbuf(lfn)=ib
       if(ib .le. modewrite)then
-        if(ibuf(lfn) .eq. 0)then
+        if(ibuf(lfn) == 0)then
           ibuf(lfn)=ktaloc(maxlbuf/8)
           lenbuf(lfn)=maxlbuf
         endif
@@ -204,14 +204,14 @@ c      use iso_c_binding
       integer*4 ,intent(in):: lfn,ib
       integer*4 nc
       integer*4 itfgetbuf,irtc,ls,ie,i
-      if(lfn .le. 0 .or. ibuf(lfn) .eq. 0)then
+      if(lfn .le. 0 .or. ibuf(lfn) == 0)then
         go to 9000
       endif
       if(itbuf(lfn) .le. modewrite)then
 c        write(*,*)'tfreadbuf ',lfn,itbuf(lfn),modewrite
         nc=itfgetbuf(lfn,jlist(ib,ibuf(lfn)),
      $       maxlbuf-ib-256,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
         lbuf(lfn)=ib-1
@@ -221,14 +221,14 @@ c        write(*,*)'tfreadbuf ',lfn,nc,lbuf(lfn),mbuf(lfn),ib
       else
  11     ls=lenbuf(lfn)
 c        if(lbuf(lfn) .lt. ls .and.
-c     $       jlist(lbuf(lfn)+1,ibuf(lfn)) .eq. 10)then
+c     $       jlist(lbuf(lfn)+1,ibuf(lfn)) == 10)then
 c          lbuf(lfn)=lbuf(lfn)+1
 c        endif
         if(lbuf(lfn) .lt. ls)then
           ie=ls
           do i=lbuf(lfn)+1,ls
-            if(jlist(i,ibuf(lfn)) .eq. 10)then
-              if(i .eq. 1 .or. jlist(i-1,ibuf(lfn)) .ne.
+            if(jlist(i,ibuf(lfn)) == 10)then
+              if(i == 1 .or. jlist(i-1,ibuf(lfn)) /=
      $             ichar('\\'))then
                 ie=i
                 exit
@@ -272,7 +272,7 @@ c        endif
       implicit none
       integer*4 ,intent(in):: j,jfd
       integer*8 ,intent(in):: ib,is
-      if(itbuf(j) .eq. 0)then
+      if(itbuf(j) == 0)then
         itbuf(j)=int(is)
         lenbuf(j)=0
         ifd(J)=0
@@ -312,7 +312,7 @@ c      write(*,*)': ',nc,'''',buffer(mbuf(in):mbuf(in)+nc-1),''''
       if(nc > 0)then
         str=buffer(mbuf(in):mbuf(in)+nc-1)
         mbuf(in)=mbuf(in)+nc
-        if(str(nc:nc) .eq. char(10))then
+        if(str(nc:nc) == char(10))then
           str(nc:)=' '
         else
           str(nc+1:)=' '
@@ -336,7 +336,7 @@ c      write(*,*)': ',nc,'''',buffer(mbuf(in):mbuf(in)+nc-1),''''
       integer*4 ,intent(out):: irtc
       integer*8 ia
       integer*4 itfmessage,n,m,iu,nc
-      if(isp .ne. isp1+1)then
+      if(isp /= isp1+1)then
         kx=dxnullo
         irtc=itfmessage(9,'General::narg','"1"')
         return
@@ -356,7 +356,7 @@ c      write(*,*)': ',nc,'''',buffer(mbuf(in):mbuf(in)+nc-1),''''
       irtc=0
       ia=ktfallocshared(m+1)
 c      ia=mapallocfixed8(rlist(0), m+1, 8, irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         irtc=itfmessage(9,'General::mmap','""')
         kx%k=kxfailed
         irtc=0
@@ -387,7 +387,7 @@ c      ia=mapallocfixed8(rlist(0), m+1, 8, irtc)
       integer*8 ia
       integer*4 itfmessage,isp0,iu,ist
       logical*4 tfcheckelement
-      if(isp .ne. isp1+1)then
+      if(isp /= isp1+1)then
         kx=dxnullo
         irtc=itfmessage(9,'General::narg','"1"')
         return
@@ -398,13 +398,13 @@ c      ia=mapallocfixed8(rlist(0), m+1, 8, irtc)
       endif
       irtc=0
       ia=itrbibuf(iu,modeshared)
-      if(ia .eq. 0)then
+      if(ia == 0)then
         kx%k=kxeof
         return
       endif
       ist=ilist(2,ia)
-      do while(ist .ne. 0)
-        if(ist .ne. 1 .and. ist .ne. -1)then
+      do while(ist /= 0)
+        if(ist /= 1 .and. ist /= -1)then
           write(*,*)'tfreadshared shared memory destructed ',ist,ia
           call abort
         endif
@@ -433,7 +433,7 @@ c          write(*,*)'at ',ia
           isp0=isp
           call tfrecallshared(isp0,ktflist+ia+3,kx,irtc)
           isp=isp0
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             kx%k=ktfoper+mtfnull
           endif
         else
@@ -455,7 +455,7 @@ c          write(*,*)'readshared-other '
       integer*8 kas,ka,kt,kap,k
       integer*4 itfmessage,itfmessageexp,isp0,n,i,iu,ist
       kx=dxnullo
-      if(isp .ne. isp1+2)then
+      if(isp /= isp1+2)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
       elseif(ktfnonrealq(ktastk(isp1+1),iu))then
@@ -463,13 +463,13 @@ c          write(*,*)'readshared-other '
         return
       endif
       kas=itrbibuf(iu,modeshared)
-      if(kas .eq. 0)then
+      if(kas == 0)then
         irtc=itfmessage(99,'Shared::notopen','""')
         return
       endif
       ist=ilist(2,kas)
-      do while(ist .ne. 0)
-        if(ist .ne. 1 .and. ist .ne. -1)then
+      do while(ist /= 0)
+        if(ist /= 1 .and. ist /= -1)then
           write(*,*)'writeshared shared memory destructed: ',ist,kas
           call abort
         endif
@@ -483,7 +483,7 @@ c          write(*,*)'readshared-other '
       else
         ka=ktfaddr(k)
         kt=k-ka
-        if(kt .eq. ktfstring)then
+        if(kt == ktfstring)then
           if(ilist(1,ka) > ilist(1,kas)*8)then
             ilist(2,kas)=0
             irtc=itfmessageexp(9,'Shared::toolarge',
@@ -495,10 +495,10 @@ c          write(*,*)'readshared-other '
           ilist(1,kas+2)=ilist(1,ka)
           klist(kas+1)=ktfstring+kas+2
 c          write(*,*)'writeshared-string ',kas,klist(kas+1)
-        elseif(kt .eq. ktflist)then
+        elseif(kt == ktflist)then
           isp0=isp
           call tfsharedsize(isp0,k,n,irtc)
-          if(irtc .ne. 0)then
+          if(irtc /= 0)then
             ilist(2,kas)=0
             isp=isp1+2
             return
@@ -540,7 +540,7 @@ c          write(*,*)'writeshared-string ',kas,klist(kas+1)
       integer*4, intent(out):: lfn
       integer*4 j
       do j=nbuf,11,-1
-        if(itbuf(j) .eq. modeclose)then
+        if(itbuf(j) == modeclose)then
           lfn=j
           call irbopen1(lfn,ib,is,ifd)
           return
@@ -560,7 +560,7 @@ c          write(*,*)'writeshared-string ',kas,klist(kas+1)
       integer*8 kfile,ksize,mapallocfile
       integer*4 lfn,ifd
       kfile=mapallocfile(str,ifd,ksize,irtc)
-      if(irtc .eq. 0)then
+      if(irtc == 0)then
         call trbopen(lfn,kfile/8,ksize+modemapped,ifd)
         kx%x(1)=dble(lfn)
       else

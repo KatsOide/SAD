@@ -22,7 +22,7 @@
       endif
 1     write(l,'(A,A,1X,A)',err=900)head(1:len_trim(head)),
      1       mess(1:l1),mess1(1:l2)
-      if(l .ne. 6)then
+      if(l /= 6)then
         l=6
         go to 1
       endif

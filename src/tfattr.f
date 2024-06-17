@@ -24,7 +24,7 @@
       isp1=isp
  1    exist1=.false.
       call getwdl(word)
-      if(word .eq. ' ')then
+      if(word == ' ')then
         if(exist)then
           go to 9000
         else
@@ -40,11 +40,11 @@
         endif
         exist1=.true.
         i=iele1(icomp(j))
-        if(icomp(j) .eq. j .or. nelvx(iele1(j))%klp .eq. j .or.
+        if(icomp(j) == j .or. nelvx(iele1(j))%klp == j .or.
      $       icomp(j) .ne. nelvx(iele1(j))%klp .and.
      $       icomp(j) .ne. icomp(nelvx(iele1(j))%klp))then
           call elname(icomp(j),namc)
-          if(nelvx(i)%ival .eq. 0)then
+          if(nelvx(i)%ival == 0)then
             v=0.d0
           else
             v=rlist(latt(j)+nelvx(i)%ival)/errk(1,j)
@@ -61,7 +61,7 @@
             klxi%rbody(7)=couple(j)
             isp=isp+1
           endif
-          if(nelvx(i)%klp .eq. j)then
+          if(nelvx(i)%klp == j)then
             namc='<--'
           endif
           write(lfno,'(5a,1x,2a)')name(1:12),

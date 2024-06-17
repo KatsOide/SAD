@@ -34,7 +34,7 @@
           elseif(iopc == mtfpower)then
             if(k1%k .lt. 0)then
               ki2=int(v2)
-              if(ki2 .ne. v2)then 
+              if(ki2 /= v2)then 
                 c1=dcmplx(v1,0.d0)**v2
                 kx=kxcalocc(-1,c1)
               else
@@ -46,7 +46,7 @@
           elseif(iopc == mtfrevpower)then
             if(k2%k .lt. 0)then
               ki1=int(v1)
-              if(ki1 .ne. v1)then 
+              if(ki1 /= v1)then 
                 c1=dcmplx(v2,0.d0)**v1
                 kx=kxcalocc(-1,c1)
               else
@@ -85,7 +85,7 @@
       integer*4 ,intent(out):: irtc
       complex*16 ,intent(in):: c1,c2
       complex*16 cx
-      if(iopc1 .gt. mtfunequal .and. iopc1 .ne. mtfcomplex)then
+      if(iopc1 .gt. mtfunequal .and. iopc1 /= mtfcomplex)then
         kx=dxnullo
         irtc=-1
       else
@@ -813,7 +813,7 @@ c     $             ir == klr2%rbody(i))
         if(imag(c2) == 0.d0 .or. imag(c2) == -0.d0)then
           i2=int8(c2)
           tfcmplxmathv=merge(merge(1.d0/c1,merge((1.d0,0.d0),c1**i2,
-     $         i2 == 0 .and. redmath%value%k .ne. 0),
+     $         i2 == 0 .and. redmath%value%k /= 0),
      $         i2 == -1),c1**dble(c2),i2 == dble(c2))
         else
           tfcmplxmathv=c1**c2
@@ -821,7 +821,7 @@ c     $             ir == klr2%rbody(i))
       case (mtfequal)
         tfcmplxmathv=merge(1.d0,0.d0,c1 == c2)
       case (mtfunequal)
-        tfcmplxmathv=merge(1.d0,0.d0,c1 .ne. c2)
+        tfcmplxmathv=merge(1.d0,0.d0,c1 /= c2)
       case (mtfcomplex)
         tfcmplxmathv=c1+dcmplx(-imag(c2),dble(c2))
       case default

@@ -57,7 +57,7 @@
  301      m=min(m+1,nn)
         enddo
         do i=1,nn
-          if(jshow(i) .eq. 0)then
+          if(jshow(i) == 0)then
             go to 302
           endif
         enddo
@@ -171,8 +171,8 @@
       enddo
       do 3010 i=1,nqcol1
         iq=flv%kfitp(flv%iqcol(i))
-        if(flv%ifitp(iq) .ne. flv%ifitp1(iq))then
-          if(flv%lfp(2,i) .eq. 0)then
+        if(flv%ifitp(iq) /= flv%ifitp1(iq))then
+          if(flv%lfp(2,i) == 0)then
             call txcalc(icalc1,ncc,flv%lfp(1,i),flv%lfp(1,i),
      $           flv%kfit(iq),.true.,err)
           endif
@@ -216,17 +216,17 @@
         if(k .gt. 0)then
           do 20 j=1,flv%nfc
             if(flv%mfitp(j) .gt. 0)then
-              if(kpa .eq. flv%ifitp(j) .and. kpb .eq. flv%ifitp1(j))then
-                if(flv%kfit(j) .eq. k)then
+              if(kpa == flv%ifitp(j) .and. kpb == flv%ifitp1(j))then
+                if(flv%kfit(j) == k)then
                   jm=j
                   go to 21
                 endif
               endif
             elseif(flv%mfitp(j) .lt. 0)then
               if(tftype1fit(k))then
-                if(kpa .eq. flv%ifitp(j) .and.
-     $               kpb .eq. flv%ifitp1(j))then
-                  if(flv%kfit(j) .eq. k)then
+                if(kpa == flv%ifitp(j) .and.
+     $               kpb == flv%ifitp1(j))then
+                  if(flv%kfit(j) == k)then
                     jm=j
                     go to 21
                   endif
@@ -234,7 +234,7 @@
               else
                 if(kpa .ge. flv%ifitp(j) .and.
      $               kpb .le. flv%ifitp1(j))then
-                  if(flv%kfit(j) .eq. k)then
+                  if(flv%kfit(j) == k)then
                     if(abs(flv%fitval(j)) .lt. fm)then
                       jm=j
                       fm=flv%fitval(j)
@@ -244,7 +244,7 @@
               endif
             endif
  20       continue
- 21       if(jm .eq. 0)then
+ 21       if(jm == 0)then
             vout=' #######'
             vout(lfs+1:lfs+3)='  #'
             nl=len_trim(nlist(k))
@@ -255,9 +255,9 @@
  9001       format(I3)
 c     write(*,*)jm,flv%mfitp(jm),lfs,vout(lfs+1:lfs+2)
             if(flv%mfitp(jm) .gt. 0)then
-              if(flv%ifitp(jm) .ne. flv%ifitp1(jm))then
-                if(k .eq. mfitbx .or. k .eq. mfitby
-     $               .or. k .eq. mfitbz)then
+              if(flv%ifitp(jm) /= flv%ifitp1(jm))then
+                if(k == mfitbx .or. k == mfitby
+     $               .or. k == mfitbz)then
                   vout(1:lfs)=autofg(flv%fitval(jm),forms)
                 else
                   vout(1:lfs)=autofg(flv%fitval(jm)/scale(k),forms)
@@ -283,7 +283,7 @@ c                  vout(1:lfs)=autofg(x/scale(k),forms)
           fun(1:3)='FUN'
         endif
         call elname(kpa,namea)
-        if(kpa .ne. kpb)then
+        if(kpa /= kpb)then
           call elname(kpb,name1)
           ln=len_trim(namea)
 c          name=namea
@@ -293,7 +293,7 @@ c          name(ln+1:namel)='/'//name1
           name1=' '
           name=namea
         endif
-        if(kpa .eq. mfpnta .and. kpb .eq. mfpnta1)then
+        if(kpa == mfpnta .and. kpb == mfpnta1)then
           name(namel:namel)='f'
         endif
         if(ret)then
@@ -305,7 +305,7 @@ c          name(ln+1:namel)='/'//name1
           klist(kaxi+4)=ktflist+kaxi4
           klist(kax4+i)=ktflist+kaxi
         endif
-        if(kpa .ne. kpb)then
+        if(kpa /= kpb)then
           select case(k)
           case (mfitbx,mfitby,mfitbz,mfitgmx,mfitgmy,mfitgmz)
             do m=1,mm
@@ -384,11 +384,11 @@ c            endif
           buf1=name(1:namel)//     fun//vout(1:lfs+3)//     buf0
         endif
         lb=len_trim(buf1)
-        if(ip .ne. 0 .and. ip+lb+1 .gt. lw)then
+        if(ip /= 0 .and. ip+lb+1 .gt. lw)then
           write(lfno,'(a)')buf2(1:ip)
           ip=0
         endif
-        if(ip .eq. 0)then
+        if(ip == 0)then
           buf2(1:lb)=buf1(1:lb)
           ip=lb
         else
@@ -406,7 +406,7 @@ c            endif
       use tffitcode
       implicit none
       integer*4 ,intent(in):: k
-      tftype1fit=k .eq. mfitnx .or. k .eq. mfitny .or.
+      tftype1fit=k == mfitnx .or. k == mfitny .or.
      $     (k .ge. mfitleng .and. k .le. mfitgz)
       return
       end
@@ -414,7 +414,7 @@ c            endif
       character*3 function famlabel(k)
       implicit none
       integer*4 ,intent(in):: k
-      if(k .eq. 0)then
+      if(k == 0)then
         famlabel='   '
       elseif(k .gt. 9)then
         write(famlabel,'(a,i2)')'x',k

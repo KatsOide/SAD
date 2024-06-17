@@ -44,7 +44,7 @@
               c1=sinc(v)/v**2
               c2=(sin(v*.5d0)-v*cos(v*.5d0))*2.d0*sin(v*.5d0)/v**2
             endif
-            if(theta .ne. 0.d0)then
+            if(theta /= 0.d0)then
               cost=cos(theta)
               sint=sin(theta)
               yr1=-cost*geo(j1,2,k)-sint*geo(j1,1,k)
@@ -58,7 +58,7 @@
             qu=qu+(yr1*drj2-yr2*drj1
      1           +al*(c1*geo(j,3,k)+c2*xr))*s
           elseif(kf .ge. mfitchi1 .and. kf .le. mfitchi3)then
-            if(theta .ne. 0.d0)then
+            if(theta /= 0.d0)then
               cost=cos(theta)
               sint=sin(theta)
               yr1=-cost*geo(1,2,k)-sint*geo(1,1,k)
@@ -93,7 +93,7 @@ c     $             /sqrt(geo(1,3,ne)**2+geo(2,3,ne)**2)
         endif
       elseif(ltyp .le. icDODECA .or. ltyp .eq. icMULT)then
         call tfbndsol(k,kbg,kbe)
-        if(kbe .ne. 0)then
+        if(kbe /= 0)then
           ip=idelc(k)
           dx=rlist(idval(ip)+kytbl(kwDX,ltyp))
           dy=rlist(idval(ip)+kytbl(kwDY,ltyp))

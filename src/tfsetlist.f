@@ -21,7 +21,7 @@
       integer*4 ,intent(out):: irtc
       type (sad_rlist), pointer :: klr
       integer*4 isp0,m,itfmessage
-      if(isp .ne. isp1+1)then
+      if(isp /= isp1+1)then
         irtc=itfmessage(9,'General::narg','"1"')
         return
       endif
@@ -62,12 +62,12 @@ c        enddo
             isp2=isp
             do i=2,m
               call tfdimensionsstk(list%dbody(i),ka0)
-              if(isp-isp2 .ne. n1)then
+              if(isp-isp2 /= n1)then
                 isp=isp1
                 return
               else
                 do j=1,n1
-                  if(itastk(1,isp1+j) .ne. itastk(1,isp2+j))then
+                  if(itastk(1,isp1+j) /= itastk(1,isp2+j))then
                     isp=isp1
                     return
                   endif

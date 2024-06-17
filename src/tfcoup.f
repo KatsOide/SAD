@@ -1,18 +1,23 @@
-      subroutine tfcoup(lfno,exist)
+      subroutine tfcoup(exist)
       use tfstk
       use ffs
       use ffs_pointer
       use tffitcode
       use ffs_seg
+      use ffsa, only:tffssetupcouple
       implicit none
       type (sad_comp), pointer :: cmp
-      integer*4 ,intent(in):: lfno
       integer*4 kk1,k1,i,kk2,k2,ielm,lenw
       real*8 co,v,getva
       character*(MAXPNAME+16) ele1,ele2,name
       logical*4 ,intent(out):: exist
       logical*4 comp
       call getwdlp(ele1)
+      if(ele1 == '*')then
+        call tffssetupcouple()
+        exist=.true.
+        return
+      endif
       call getwdlp(ele2)
       co=getva(exist)
       if( .not. exist)then
@@ -34,24 +39,24 @@
         go to 9000
       endif
       k2=iele1(kk2)
-      if(idtypec(kk1) .ne.
+      if(idtypec(kk1) /=
      $     idtypec(kk2))then
         call termes('Different types of element to COUP_LE.',' ')
         go to 9000
       endif
-      if(nelvx(k1)%ival .ne. nelvx(k2)%ival)then
+      if(nelvx(k1)%ival /= nelvx(k2)%ival)then
         call termes('Different keywords of element to COUP_LE.',' ')
         go to 9000
       endif
       evarini=.true.
-      if(icomp(kk2) .ne. kk2)then
-        if(kk2 .eq. nelvx(k2)%klp)then
+      if(icomp(kk2) /= kk2)then
+        if(kk2 == nelvx(k2)%klp)then
           call elnameK(kk2,name)
           call termes('Info-COUPLEs of Components '//
      $         pname(idelc(kk2))(1:lpnamec(kk2))//'.*'//
      $         ' have been reset to ',name(1:lenw(name))//' .')
           do i=1,nlat-1
-            if(iele1(i) .eq. k2)then
+            if(iele1(i) == k2)then
               icomp(i)=kk2
               couple(i)=1.d0
             endif
@@ -66,10 +71,10 @@
       v=tfvalvar(kk2,nelvx(k2)%ival)/errk(1,kk2)
 c      v=rlist(latt(kk2)+ival(k2))/errk(1,kk2)
       if(comp)then
-        if(kk1 .eq. kk2 .and. nelvx(iele1(kk1))%klp .eq. kk1)then
+        if(kk1 == kk2 .and. nelvx(iele1(kk1))%klp == kk1)then
           co=1.d0
           do i=1,nlat-1
-            if(icomp(i) .eq. kk1 .and. i .ne. kk1)then
+            if(icomp(i) == kk1 .and. i /= kk1)then
               call elname(i,name)
               call termes('Info-Component '//name(1:lenw(name))//
      $             ' has been made uncoupled.',' ')
@@ -79,7 +84,7 @@ c      v=rlist(latt(kk2)+ival(k2))/errk(1,kk2)
           enddo
         else
           do i=1,nlat-1
-            if(icomp(i) .eq. kk1 .and. i .ne. kk1)then
+            if(icomp(i) == kk1 .and. i /= kk1)then
               call tfdecoupcomp(i)
             endif
           enddo
@@ -90,10 +95,10 @@ c      v=rlist(latt(kk2)+ival(k2))/errk(1,kk2)
 c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
         cmp%value(nelvx(k1)%ival)=v*errk(1,kk1)*co
       else
-        if(k1 .ne. k2)then
+        if(k1 /= k2)then
           do i=1,nlat-1
-            if(iele1(i) .ne. k1)then
-              if(iele1(icomp(i)) .eq. k1)then
+            if(iele1(i) /= k1)then
+              if(iele1(icomp(i)) == k1)then
                 call tfdecoupcomp(i)
               endif
             else
@@ -104,7 +109,7 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
           enddo
         else
           do i=1,nlat-1
-            if(iele1(i) .eq. k1)then
+            if(iele1(i) == k1)then
               icomp(i)=kk2
               couple(i)=co
               rlist(latt(i)+nelvx(k1)%ival)=v*errk(1,i)*co
@@ -131,7 +136,7 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
       character*(MAXPNAME+16) ele,name
       logical*4 mat,temat
  1    call peekwdp(ele,next)
-      if(ele .eq. ' ')then
+      if(ele == ' ')then
         return
       endif
       mat=.false.
@@ -142,11 +147,11 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
           ipoint=next
         endif
         j=icomp(i)
-        if(j .ne. nelvx(iele1(i))%klp)then
+        if(j /= nelvx(iele1(i))%klp)then
           if(temat(i,name,ele))then
             icomp(i)=nelvx(iele1(i))%klp
             couple(i)=1.d0
-          elseif(nelvx(iele1(j))%klp .ne. j)then
+          elseif(nelvx(iele1(j))%klp /= j)then
             if(temat(j,name,ele))then
               call tfdecoupcomp(i)
             endif
@@ -171,7 +176,7 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
       character*(MAXPNAME+16) ele,name
       logical*4 mat,temat
  1    call peekwdp(ele,next)
-      if(ele .eq. ' ')then
+      if(ele == ' ')then
         return
       endif
       mat=.false.

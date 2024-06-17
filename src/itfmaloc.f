@@ -56,7 +56,7 @@ c          call tmov(rlist(ka+1),rlist(kap),n)
         if(tfnonlistq(kl%dbody(i),kli))then
           go to 9000
         endif
-        if(kli%nl .ne. m)then
+        if(kli%nl /= m)then
           go to 9000
         endif
         if(ktfnonreallistqo(kli))then
@@ -228,7 +228,7 @@ c          enddo
         if(tfnonlistq(kl%dbody(i),kli))then
           go to 9000
         endif
-        if(kli%nl .ne. m)then
+        if(kli%nl /= m)then
           go to 9000
         endif
         if(ktfnonreallistqo(kli))then
@@ -304,7 +304,7 @@ c          enddo
           ktfcmaloc=-1
           go to 9000
         endif
-        if(kli%nl .ne. m)then
+        if(kli%nl /= m)then
           ktfcmaloc=-1
           go to 9000
         endif
@@ -446,7 +446,7 @@ c            enddo
         do i=1,m
           if(imag(a(1,i)) == 0.d0)then
             klx%rbody(i)=dble(a(1,i))
-            if(kc .ne. 0)then
+            if(kc /= 0)then
               kai=kc+(i-1)*6
               call tflocal1(kai)
             endif
@@ -475,7 +475,7 @@ c     $           imag_sign*imag(a(1,i)))
             do j=1,n
               if(imag(a(j,i)) == 0.d0)then
                 klxi%rbody(j)=dble(a(j,i))
-                if(kc .ne. 0)then
+                if(kc /= 0)then
                   kaj=kc+(j-1)*6
                   call tflocal1(kaj)
                 endif
@@ -504,7 +504,7 @@ c     $           imag_sign*imag(a(1,i)))
             do j=1,m
               if(imag(a(i,j)) == 0.d0)then
                 klxi%rbody(j)=dble(a(i,j))
-                if(kc .ne. 0)then
+                if(kc /= 0)then
                   kaj=kc+(j-1)*6
                   call tflocal1(kaj)
                 endif

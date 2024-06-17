@@ -10,7 +10,7 @@
       logical*4 ,intent(out):: exist
       data delim/'[*/)}]><=.&^|'/
       exist=.false.
- 2    if(word .eq. 'IF')then
+ 2    if(word == 'IF')then
         iflevel=iflevel+1  
  1      f=getva(exist) .ne. 0.d0
 c        write(*,*)'tfif-1 ',f,exist
@@ -28,16 +28,16 @@ c        write(*,*)'tfif-1 ',f,exist
             call tfgettok(word)
             call peekwd(ch,next)
             if(index(delim,ch) .le. 0)then
-              if(word .eq. 'ELSE')then
+              if(word == 'ELSE')then
                 if(iflevel .gt. ifl)then
                   word=' '
                 endif
-              elseif(word .eq. 'IF')then
+              elseif(word == 'IF')then
                 iflevel=iflevel+1
-              elseif(word .eq. 'ENDIF')then
+              elseif(word == 'ENDIF')then
                 iflevel=iflevel-1
-              elseif(word .eq. 'ELSEIF')then
-                if(iflevel .eq. ifl)then
+              elseif(word == 'ELSEIF')then
+                if(iflevel == ifl)then
                   word=' '
                   go to 1
                 endif
@@ -47,7 +47,7 @@ c            write(*,*)'tfif-if  ',word(1:len_trim(word)),' ',ch,' ',iflevel
           enddo
           exist=.true.
         endif
-      elseif(word .eq. 'ELSE')then
+      elseif(word == 'ELSE')then
         if(iflevel .le. 0)then
           call termes('?ELSE without IF',' ')
           call skipline
@@ -61,15 +61,15 @@ c            write(*,*)'tfif-if  ',word(1:len_trim(word)),' ',ch,' ',iflevel
           call peekwd(ch,next)
           if(index(delim,ch) .le. 0)then
 c          write(*,*)'tfif-else ',word(1:len_trim(word)),iflevel
-            if(word .eq. 'IF')then
+            if(word == 'IF')then
               iflevel=iflevel+1
-            elseif(word .eq. 'ENDIF')then
+            elseif(word == 'ENDIF')then
               iflevel=iflevel-1
             endif
           endif
         enddo
         exist=.true.
-      elseif(word .eq. 'ELSEIF')then
+      elseif(word == 'ELSEIF')then
         if(iflevel .le. 0)then
           call termes('?ELSEIF without IF',' ')
           call skipline
@@ -79,7 +79,7 @@ c          write(*,*)'tfif-else ',word(1:len_trim(word)),iflevel
         endif
         word='ELSE'
         go to 2
-      elseif(word .eq. 'ENDIF')then
+      elseif(word == 'ENDIF')then
         if(iflevel .le. 0)then
           call termes('?ENDIF without IF',' ')
           call skipline

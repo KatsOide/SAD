@@ -149,33 +149,33 @@ c      rlist(kshm/8)=m_pi/2
 c      write(*,*)'shm: ',rlist(kshm/8)
 
       call get_environment_variable('COLUMNS',env)
-      if(env .eq. ' ')then
+      if(env == ' ')then
         env='132'
       endif
       lpw=min(255,max(79,ifromstr(env(1:lenw(env)))-1))
       iavpw=ktrvaloc('System`PageWidth',dble(lpw))
 
       call get_environment_variable('SAD_PACKAGES',pkg)
-      if(pkg .eq. ' ')then
+      if(pkg == ' ')then
         call get_environment_variable('SAD$PACKAGES',pkg)
-        if(pkg .eq. ' ')then
+        if(pkg == ' ')then
           call buildinfo_get_string('Target:SAD_PKG_ROOT', pkg)
-          if(pkg .eq. ' ')then
+          if(pkg == ' ')then
             pkg='/SAD/share/Packages/'
           endif
         endif
       endif
       call texpfn(pkg)
       lpkg=len_trim(pkg)
-      if(pkg(lpkg:lpkg) .ne. '/')then
+      if(pkg(lpkg:lpkg) /= '/')then
         lpkg=lpkg+1
         pkg(lpkg:lpkg)='/'
       endif
 
       call get_environment_variable('SAD_ENV',env)
-      if(.not. (len_trim(env) .gt. 0 .and. index(env,'/') .ne. 1))then
+      if(.not. (len_trim(env) .gt. 0 .and. index(env,'/') /= 1))then
         call buildinfo_get_string('Target:SAD_ENV', env)
-        if(.not. (len_trim(env) .gt. 0 .and. index(env,'/') .ne. 1))then
+        if(.not. (len_trim(env) .gt. 0 .and. index(env,'/') /= 1))then
           env='local'
         endif
       endif
@@ -207,15 +207,15 @@ c      write(*,*)'tfinitn 1 '
       implicit none
       type (sad_descriptor) kx
       integer*4 isp1,irtc,itfmessage,istatus
-      if(isp .eq. isp1)then
+      if(isp == isp1)then
         call tfresetsharedmap()
         call exit(0)
-      elseif(isp .eq. isp1+1)then
+      elseif(isp == isp1+1)then
         if(ktfrealq(ktastk(isp)))then
           call tfresetsharedmap()
           istatus=int(rtastk(isp1+1))
           call exit(istatus)
-        elseif(ktastk(isp) .eq. ktfoper+mtfnull)then
+        elseif(ktastk(isp) == ktfoper+mtfnull)then
           call tfresetsharedmap()
           call exit(0)
         endif
@@ -232,7 +232,7 @@ c      write(*,*)'tfinitn 1 '
       type (sad_symdef), pointer :: symd
       save kxreal,kxsymbol,kxstring,kxpat
       data kxreal%k /0/
-      if(kxreal%k .eq. 0)then
+      if(kxreal%k == 0)then
         kxreal=kxsymbolz('Real',4)
         kxstring=kxsymbolz('String',6)
         kxpat%k=ktfoper+mtfcolon
@@ -269,8 +269,8 @@ c      write(*,*)'tfinitn 1 '
       kx=dxnullo
       if(isp .gt. isp1+1)then
         go to 9000
-      elseif(isp .eq. isp1+1)then
-        if(ktastk(isp) .ne. ktfoper+mtfnull)then
+      elseif(isp == isp1+1)then
+        if(ktastk(isp) /= ktfoper+mtfnull)then
           go to 9000
         endif
       endif
@@ -308,7 +308,7 @@ c      write(*,*)'tfinitn 1 '
       logical*4 ev,nev
       integer*4 ,intent(in):: map(narg+1),ieval(narg+1)
       data nfun/0/
-      if(nfun .eq. 0)then
+      if(nfun == 0)then
         ifunbase=ktalocr(maxnfun)
       endif
       loc=ktlookupc(name,len(name),itfcontext,.true.)
@@ -331,8 +331,8 @@ c      write(*,*)'tfinitn 1 '
       do i=1,narg+1
         fun%mapeval(1,i)=map(i)
         fun%mapeval(2,i)=ieval(i)
-        nev=nev .and. map(i) .eq. 0 .and. ieval(i) .eq. 1
-        ev=ev .and. ieval(i) .eq. 0
+        nev=nev .and. map(i) == 0 .and. ieval(i) == 1
+        ev=ev .and. ieval(i) == 0
       enddo
       if(nev)then
         fun%mapeval(2,1)=-1

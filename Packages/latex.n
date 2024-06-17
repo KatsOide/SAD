@@ -88,10 +88,11 @@ LaTeX=Class[{},{eqn=0,pre0="\
             Write[f,text,"\n"];
             Write[f,Postamble[style]];
             Close[f];
-!            Print["pdflatex -interaction nonstopmode "//fn//" "//pdf//" > /dev/null"];
+!            Print[`$HaveLaTeX//" -interaction nonstopmode "//fn//" "//pdf//" > /dev/null"];
             {If[System[`$HaveLaTeX//" -interaction nonstopmode "//fn//" "//pdf//" > /dev/null"],
               If[style <=> "standalone",
-                System[$HaveLaTeX[1,-6]//"crop --margins "//margins//" "//pdf//" "//pdf//" > /dev/null"]];
+!                Print[`$HaveLaTeX[1,-6]//"crop --margins "//margins//" "//pdf//" "//pdf//" > /dev/null"];
+                System[`$HaveLaTeX[1,-6]//"crop --margins "//margins//" "//pdf//" "//pdf//" > /dev/null"]];
               If[wdir && StringLength[text] < maxtext && text[1,5] <=> "{\\tt ",
                 System["mv "//pdf//" "//(fn1=ldir//pdf)//"; rm "//fnr//".log "//";rm "//fnr//".aux"];
                 `$LTPDF[text]=pdf;

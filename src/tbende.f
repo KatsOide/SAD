@@ -21,13 +21,13 @@
       drhopp=1.d0/rhoe/p
       akxsqp=-akxsq/p
       phixp=-0.5d0*phix/p
-      if(akxsq .gt. 0.d0)then
+      if(akxsq > 0.d0)then
         dcxp=spx*phixp
         dcxkxp=dcxp/akxsq+dcxkx/p
         sxkxp= 0.5d0*sxkx/p+cx*phixp/akx
         xsxkxp=(-dcx*phixp/akxsq-1.5d0*xsxkx/p)/akx
         aksxp=-0.5d0*aksx/p+akx*cx*phixp
-      elseif(akxsq .lt. 0.d0)then
+      elseif(akxsq < 0.d0)then
         dcxp=-spx*phixp
         dcxkxp=dcxp/akxsq+dcxkx/p
         sxkxp= 0.5d0*sxkx/p+cx*phixp/akx
@@ -42,11 +42,11 @@
       endif
       akysqp=-akysq/p
       phiyp=-0.5d0*phiy/p
-      if(akysq .gt. 0.d0)then
+      if(akysq > 0.d0)then
         dcyp=phiyp*spy
         sykyp= 0.5d0*syky/p+cy*phiyp/aky
         aksyp=-0.5d0*aksy/p+aky*cy*phiyp
-      elseif(akysq .lt. 0.d0)then
+      elseif(akysq < 0.d0)then
         dcyp=-phiyp*spy
         sykyp= 0.5d0*syky/p+cy*phiyp/aky
         aksyp=-0.5d0*aksy/p-aky*cy*phiyp
@@ -302,19 +302,19 @@ c$$$      pz2=1.d0+dpz2
 c$$$c      d=pxf*pz1+pxi*pz2
 c$$$      sinda=min(1.d0,max(-1.d0,2.d0*pxf*pz2/(pxf**2+pz2**2)))
 c$$$c      sinda=min(1.d0,max(-1.d0,merge(2.d0*pxf*pz2/(pxf**2+pz2**2),
-c$$$c     $     dpx*(pxf+pxi)/d,d .eq. 0.d0)))
+c$$$c     $     dpx*(pxf+pxi)/d,d == 0.d0)))
 c$$$      s=sinda**2
 c$$$      da=sinda*(1.d0+s*merge(
 c$$$     $     a3+s*(a5+s*(a7+s*(a9+s*(a11+s*(a13+s*a15))))),
 c$$$     $     a3+s*(a5+a7*s),
-c$$$     $     s .gt. 2.d-4))
+c$$$     $     s > 2.d-4))
 c$$$      trans1(2,1)=-snphi0/rhob
 c$$$      trans1(2,2)=csphi0-snphi0*pxi/pz1
 c$$$      trans1(2,6)=snphi0/pz1
 c$$$      trans1(2,4)=-pyi*trans1(2,6)
 c$$$      dpzinv=dpx/pz1/pz2*(pxi+pxf)/(pz1+pz2)
 c$$$      phsq=(1.d0-pyi)*(1.d0+pyi)
-c$$$c      dtn=merge(-2.d0*pxi/pz1,phsq*sinda/pz1/pz2,d .eq. 0.d0)
+c$$$c      dtn=merge(-2.d0*pxi/pz1,phsq*sinda/pz1/pz2,d == 0.d0)
 c$$$      dtn=phsq*sinda/pz1/pz2
 c$$$      trans1(1,1)=csphi0+snphi0*pxf/pz2
 c$$$      trans1(1,2)=rhob*(snphi0-dtn*csphi0+pxi*pxf/pz1/pz2*snphi0)
@@ -356,7 +356,7 @@ c$$$     1     +drho*sinsq0
       logical*4 en
       rb=rb0
       bsi2=0.d0
-      bsi1=merge(1.d0,0.d0,rb .lt. .5d0)
+      bsi1=merge(1.d0,0.d0,rb < .5d0)
       en=enarad
       do i=1,2
         fl=0.5d0*fb*rb
@@ -367,7 +367,7 @@ c$$$     1     +drho*sinsq0
      $     en)
         rb=1.d0/6.d0/rb
         bsi1=0.d0
-        if(rb .lt. .5d0)then
+        if(rb < .5d0)then
           bsi2=1.d0
           en=.false.
         endif
@@ -415,12 +415,12 @@ c$$$     1     +drho*sinsq0
       else
         al=al0
       endif
-      if(phi0 .eq. 0.d0)then
-        if(ak .eq. 0.d0)then
+      if(phi0 == 0.d0)then
+        if(ak == 0.d0)then
           call tsteee(trans,cod,beam,srot,al0,-phib,dx,dy,theta,enarad,
      $         apsi1,apsi2,
      $         fb1,fb2,mfring,fringe,next)
-        elseif(phib .eq. phi0)then
+        elseif(phib == phi0)then
           call tquade(trans,cod,beam,srot,al0,ak,0.d0,
      1     dx,dy,theta,enarad,fringe,0.d0,0.d0,0.d0,0.d0,0,eps0,
      $     .true.,.false.)
@@ -437,7 +437,7 @@ c$$$     1     +drho*sinsq0
      $         .false.,.false.)
         endif
         return
-      elseif(phib .eq. 0.d0)then
+      elseif(phib == 0.d0)then
         call tchge(trans,cod,beam,srot,
      $       dx,dy,dz,theta,dtheta,dchi2,alg,phig,.true.)
         call tbdrifte(trans,cod,beam,srot,al,phi0,h0,h1emit,dvemit,
@@ -445,7 +445,7 @@ c$$$     1     +drho*sinsq0
         call tchge(trans,cod,beam,srot,
      $       dx,dy,dz,theta,dtheta,dchi2,alg-al0,phig-phi0,.false.)
         return
-      elseif(al .eq. 0.d0)then
+      elseif(al == 0.d0)then
         call tbthie(trans,cod,beam,srot,phib,phi0,dx,dy,dz,theta,dtheta,dchi2)
         return
       endif
@@ -462,7 +462,7 @@ c      write(*,'(a,1p10g12.4)')'tbende-2 ',cod(1:5)
       f1r=0.d0
       f2r=0.d0
       if(fb1 /= 0.d0)then
-        if(mfring .gt. 0 .or. mfring .eq. -1)then
+        if(mfring > 0 .or. mfring == -1)then
           dxfr1=fb1**2*phibl/24.d0
           dyfr1=fb1*phibl**2/6.d0
           dyfra1=merge(4.d0*dyfr1/fb1**2,0.d0,fringe)
@@ -470,18 +470,17 @@ c      write(*,'(a,1p10g12.4)')'tbende-2 ',cod(1:5)
           f1r=0.5d0*fb1
         endif
       endif
-      if(fb2 /= 0.d0 .and.
-     $       mfring .gt. 0 .or. mfring .eq. -2)then
+      if(fb2 /= 0.d0 .and. mfring > 0 .or. mfring == -2)then
         f2r=0.5d0*fb2
       endif
       rbc=1.d0-(f1r+f2r)/al0
       phic=phi0*rbc
-      eps=merge(epsbend,epsbend*eps0,eps0 .eq. 0.d0)
+      eps=merge(epsbend,epsbend*eps0,eps0 == 0.d0)
       drhob=rhob-rho0
       aind=rho0/phi0*ak
       b=brhoz/rhob
       b1=b*aind/rhob
-      ndiv=merge(1,1+int(abs(phic/eps)),ak .eq. 0.d0)
+      ndiv=merge(1,1+int(abs(phic/eps)),ak == 0.d0)
       if(enarad)then
         nrad=int(abs(al0*rbc/epsrad*crad*(h0*b)**2))
         ndiv=max(ndiv,int(nrad*emidiv*emidib),
@@ -502,7 +501,7 @@ c      write(*,'(a,1p10g12.4)')'tbende-2.5 ',cod(1:5)
       akn=akc/ndiv
       aln=alc/ndiv
       phin=phic/ndiv
-      if(ak .eq. 0.d0)then
+      if(ak == 0.d0)then
         call xsincos(phin,sn,xsn,cn,dcn)
         bsi1=1.d0
         bsi2=0.d0
@@ -515,14 +514,14 @@ c      write(*,'(a,1p10g12.4)')'tbende-2.5 ',cod(1:5)
           n2=ndiv+1
         endif
         do n=n1,n2
-          if(n .eq. 0)then
+          if(n == 0)then
             call tbendef1(trans,cod,beam,srot,al0,phi0,fb1,rbl,enarad)
-          elseif(n .eq. ndiv+1)then
+          elseif(n == ndiv+1)then
             call tbendef1(trans,cod,beam,srot,al0,phi0,fb2,rbh,enarad)
             alr=f2r
             phi1=alr*rbl/al0*phi0
           else
-            if(n .eq. n2)then
+            if(n == n2)then
               bsi2=1.d0
             endif
             call tbendebody0(trans,cod,beam,srot,aln,
@@ -556,13 +555,13 @@ c          write(*,'(a,i5,1p10g12.4)')'tbende-3a ',n,cod(1:5)
      $         (akx+akx0)*.5d0,(alx+alx0)*.5d0)
           akx0=akx
           alx0=alx
-          if(n .eq. n2)then
+          if(n == n2)then
             bsi2=1.d0
           endif
           call tbendebody(trans,cod,beam,srot,alx,phi1,
      $         akx,alr,bsi1,bsi2,
      $         enarad .and. n /= n2)
-          if(n .le. 0 .or. n .ge. ndiv)then
+          if(n <= 0 .or. n >= ndiv)then
             tbinit=.true.
           endif
           bsi1=0.d0

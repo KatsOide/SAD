@@ -28,7 +28,7 @@ c      use ffs_pointer, only:inext,iprev
      $       dx,dy,theta,.false.,.false.)
         return
       endif
-      krad=rad .and. radlvl .ne. 1.d0
+      krad=rad .and. radlvl /= 1.d0
 c      theta2=theta+akang(dcmplx(ak0,0.d0),al,cr1)
       ak=sign(ak0,al)
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
@@ -42,7 +42,7 @@ c      theta2=theta+akang(dcmplx(ak0,0.d0),al,cr1)
         pyr0=py
         zr0=z
       endif
-      if(fringe .and. mfring .ne. 2)then
+      if(fringe .and. mfring /= 2)then
         call ttfrin(np,x,px,y,py,z,g,4,ak,al,bz)
       endif
       if(mfring .eq. 1 .or. mfring .eq. 3)then
@@ -67,7 +67,7 @@ c          p=(1.d0+g(i))**2
           call tsetpcvt(l_track,dx,dy,theta2,0.d0,0.d0,0.d0,al)
           pcvt%fr0=-0.5d0*f1in/al
         endif
-        if(f1in .ne. 0.d0)then
+        if(f1in /= 0.d0)then
           call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,f1in,0.d0)
         endif
         call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -94,10 +94,10 @@ c          p=(1.d0+g(i))**2
           py(i)=pyf
 2120    continue
       endif
-      if(fringe .and. mfring .ne. 1)then
+      if(fringe .and. mfring /= 1)then
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,bz)
       endif
-      if(krad .and. f1out .ne. 0.d0)then
+      if(krad .and. f1out /= 0.d0)then
         pcvt%fr0=1.d0-.5d0*f1out/al
         call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,f1out,0.d0)
       endif

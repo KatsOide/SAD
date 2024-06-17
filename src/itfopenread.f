@@ -17,7 +17,7 @@
       call texpfn(fname)
       nc=len_trim(fname)
       in=nextfn(openread)
-      if(in .ne. 0)then
+      if(in /= 0)then
         if(disp)then
           open(in,file=fname(1:nc),status='OLD',err=9000,
      $         disp='DELETE')
@@ -51,7 +51,7 @@
       call texpfn(fname)
       nc=len_trim(fname)
       i=nextfn(openwrite)
-      if(i .ne. 0)then
+      if(i /= 0)then
         open(i,file=fname(1:nc),status='UNKNOWN',
 c     $       buffercount=16,
      $       err=9000)
@@ -81,7 +81,7 @@ c     $       buffercount=16,
       call texpfn(fname)
       nc=len_trim(fname)
       i=nextfn(openwrite)
-      if(i .ne. 0)then
+      if(i /= 0)then
         open(i,file=fname,status='UNKNOWN',access='APPEND',
 c     $       buffercount=16,
      $       err=9000)

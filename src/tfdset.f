@@ -1249,25 +1249,25 @@ c     $       iand(-lmemberlist-1,klx%attr),member)
           ki=kli%head
         enddo
         if(ktfsymbolqdef(ki%k,symd))then
-          if(symd%sym%override .ne. 0)then
-            if(symd%sym%gen .lt. 0 .and. symd%sym%gen .ne. -3)then
+          if(symd%sym%override /= 0)then
+            if(symd%sym%gen .lt. 0 .and. symd%sym%gen /= -3)then
               cycle LOOP_I
             endif
-            if(kas .eq. 0 .or. kas .eq. ktfaddr(ki))then
+            if(kas == 0 .or. kas == ktfaddr(ki))then
               call tfdset(k2,symd%upval,kx,karg)
-              if(kas .ne. 0)then
+              if(kas /= 0)then
                 cycle LOOP_I
               endif
             endif
           else
             symi=>tfsydef(symd%sym)
-            if(symi%gen .lt. 0 .and. symi%gen .ne. -3)then
+            if(symi%gen .lt. 0 .and. symi%gen /= -3)then
               cycle LOOP_I
             endif
-            if(kas .eq. 0 .or. kas .eq. ksad_loc(symi%loc))then
+            if(kas == 0 .or. kas == ksad_loc(symi%loc))then
               call sym_symdef(symi,symd)
               call tfdset(k2,symd%upval,kx,karg)
-              if(kas .ne. 0)then
+              if(kas /= 0)then
                 cycle LOOP_I
               endif
             endif

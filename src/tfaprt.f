@@ -30,20 +30,20 @@ c     end   initialize for preventing compiler warning
       endif
       call getwdl(word)
 1     patt=word
-      if(patt .eq. ' ' .and. begin)then
+      if(patt == ' ' .and. begin)then
         patt='*'
       endif
       match=.false.
-2     if(patt .eq. ' ')then
+2     if(patt == ' ')then
         go to 11
       endif
       do 10 i=1,nlat-1
         it=idtypec(i)
-        if(it .eq. 1)then
+        if(it == 1)then
           go to 10
         endif
         if(temat(i,name,patt))then
-          if(mod(nl,65) .eq. 0)then
+          if(mod(nl,65) == 0)then
             begin=.false.
             aout=autofg(bpole,'S6.3')
             call trim(aout)
@@ -61,15 +61,15 @@ c     end   initialize for preventing compiler warning
           if(it .gt. 1 .and. it .le. 6)then
             v=rlist(latt(i)+2)
             al=rlist(latt(i)+1)
-            ak=merge(abs(v/al),0.d0,al .ne. 0.d0)
-          elseif(it .eq. icmult)then
+            ak=merge(abs(v/al),0.d0,al /= 0.d0)
+          elseif(it == icmult)then
             v=rlist(latt(i)+13)
             al=rlist(latt(i)+1)
-            ak=merge(abs(v/al),0.d0,al .ne. 0.d0)
+            ak=merge(abs(v/al),0.d0,al /= 0.d0)
           endif
-          if(it .eq. 2)then
+          if(it == 2)then
             theta=rlist(latt(i)+5)
-          elseif(it .eq. 4 .or. it .eq. 6)then
+          elseif(it == 4 .or. it == 6)then
             theta=rlist(latt(i)+4)
           else
             theta=0.d0
@@ -86,7 +86,7 @@ c     end   initialize for preventing compiler warning
           sigxy1=beam2(iaidx(1,3))/sigx1/sigy1
           sigx=0.d0
           sigy=0.d0
-          if(it .eq. 4 .or. it .eq. icmult)then
+          if(it == 4 .or. it == icmult)then
             if(v .gt. 0.d0)then
               if(beam1(iaidx(1,2)) .gt. 0.d0
      1           .and. beam2(iaidx(1,2)) .lt. 0.d0)then
@@ -106,11 +106,11 @@ c     end   initialize for preventing compiler warning
             endif
             sigx=sqrt(sigx)
             sigy=sqrt(sigy)
-            a=merge(bpole/ak/brho1,bpole,ak .ne. 0.d0)
+            a=merge(bpole/ak/brho1,bpole,ak /= 0.d0)
             aout=autofg(a*1.d3,'6.3')
-          elseif(it .eq. 6)then
+          elseif(it == 6)then
 c           b=ak*max(sigx0,sigy0,sigx1,sigy1)**2*.5d0*brho1
-            a=merge(sqrt(2.d0*bpole/ak/brho1),1.d0,ak .ne. 0.d0)
+            a=merge(sqrt(2.d0*bpole/ak/brho1),1.d0,ak /= 0.d0)
             aout=autofg(a*1.d3,'6.3')
           else
             aout=' '
@@ -131,13 +131,13 @@ c           b=ak*max(sigx0,sigy0,sigx1,sigy1)**2*.5d0*brho1
 9001      format(2a)
         endif
 10    continue
-11    if(patt .eq. '*')then
+11    if(patt == '*')then
         return
       endif
       if(match)then
         go to 1
       else
-        if(ifany(word,'*%',1) .eq. 0)then
+        if(ifany(word,'*%',1) == 0)then
           if(begin)then
             match=.true.
             patt='*'

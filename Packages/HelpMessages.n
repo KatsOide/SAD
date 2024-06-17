@@ -1588,6 +1588,7 @@ rejects the matching-functions which match matching-function-pattern at the curr
     "\
    Usage: COUP slave-element master-element coefficient\n\n\
 sets the value of the default-keyword of slave-element to be equal to coefficient times the value of the default-keyword of master-element. COUPLE(COUP) cannot be cascaded. The master-element cannot be COUPLEd to any other element. To reset COUPLE, say COUP slave-element slave-element 1.\n\
+ If slave-element is *, COUPLE command set all keywords according to existing COUPLEd relations and ElementValues.\n\
  Consider ElementValues to define universal coupling for any keywords.",
     "ATTRIBUTE(ATTR) FREE ElementValues",
     {}},

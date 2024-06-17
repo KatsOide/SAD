@@ -18,12 +18,12 @@ c      use ffs_pointer, only:inext,iprev
       real*8 ,intent(in):: al,ak0,dx,dy,theta,theta2,
      $     f1in,f1out,f2in,f2out,eps0,bz
       real*8 ak,alr,p,a,ea,b,pxf,pyf,bxs,bys,bzs
-      if(al .eq. 0.d0)then
+      if(al == 0.d0)then
         call tthin(np,x,px,y,py,z,g,dv,sx,sy,sz,4,0.d0,ak0,
      $       dx,dy,theta,.false.,.false.)
         return
-      elseif(ak0 .eq. 0.d0)then
-        if(bz .eq. 0.d0)then
+      elseif(ak0 == 0.d0)then
+        if(bz == 0.d0)then
           call tdrift_free(np,x,px,y,py,z,dv,al)
         else
           call tdrift_solenoid(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -44,10 +44,10 @@ c      theta2=theta+akang(dcmplx(ak0,0.d0),al,cr1)
           bsi=0.d0
         endif
       endif
-      if(fringe .and. mfring .gt. -4 .and. mfring .ne. 2)then
+      if(fringe .and. mfring .gt. -4 .and. mfring /= 2)then
         call ttfrin(np,x,px,y,py,z,g,4,ak,al,bzs)
       endif
-      if(mfring .eq. 1 .or. mfring .eq. 3)then
+      if(mfring == 1 .or. mfring == 3)then
         do concurrent (i=1:np)
           p=1.d0+g(i)
           a=f1in/p
@@ -68,7 +68,7 @@ c      theta2=theta+akang(dcmplx(ak0,0.d0),al,cr1)
           call tsetpcvt(l_track,dx,dy,theta2,0.d0,0.d0,0.d0,al)
           pcvt%fr0=-0.5d0*f1in/al
         endif
-        if(f1in .ne. 0.d0)then
+        if(f1in /= 0.d0)then
           call tradk(np,x,px,y,py,z,g,dv,sx,sy,sz,f1in,0.d0)
         endif
         pxr0=px
@@ -80,7 +80,7 @@ c      theta2=theta+akang(dcmplx(ak0,0.d0),al,cr1)
         call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al,ak,bzs,0.d0,0.d0,0,eps0)
       endif
-      if(mfring .eq. 2 .or. mfring .eq. 3)then
+      if(mfring == 2 .or. mfring == 3)then
         do concurrent (i=1:np)
           p=(1.d0+g(i))**2
           p=1.d0+g(i)
@@ -97,10 +97,10 @@ c      theta2=theta+akang(dcmplx(ak0,0.d0),al,cr1)
           py(i)=pyf
         enddo
       endif
-      if(fringe .and. mfring .gt. -4 .and. mfring .ne. 1)then
+      if(fringe .and. mfring .gt. -4 .and. mfring /= 1)then
         call ttfrin(np,x,px,y,py,z,g,4,-ak,al,bzs)
       endif
-      if(krad .and. f1out .ne. 0.d0)then
+      if(krad .and. f1out /= 0.d0)then
         if(photons)then
           pcvt%fr0=1.d0-.5d0*f1out/al
         endif
@@ -143,7 +143,7 @@ c     begin initialize for preventing compiler warning
       alb=0.d0
       aki=0.d0
 c     end   initialize for preventing compiler warning
-      if(ak .eq. 0.d0)then
+      if(ak == 0.d0)then
         call tdrift_free(np,x,px,y,py,z,dv,al)
         return
       endif
@@ -164,7 +164,7 @@ c     end   initialize for preventing compiler warning
       endif
       kord=nord/2-1
       akf=ak/fact(kord)
-      if(al .ne. 0.d0)then
+      if(al /= 0.d0)then
         ala=al*alpha1
         alb=al*alpha
         do concurrent (i=1:np)
@@ -176,7 +176,7 @@ c     end   initialize for preventing compiler warning
         enddo
         akf=akf*.5d0
       endif
-      if(kord .eq. 2)then
+      if(kord == 2)then
         do concurrent (i=1:np)
           aki=akf/(1.d0+g(i))
           px(i)=px(i)-aki*(x(i)-y(i))*(x(i)+y(i))
@@ -191,7 +191,7 @@ c     end   initialize for preventing compiler warning
           py(i)=py(i)-aki*imag(cx)
         enddo
       endif
-      if(al .ne. 0.d0)then
+      if(al /= 0.d0)then
         if(kord .le. 0)then
           do concurrent (i=1:np)
             dpz=pxy2dpz(px(i),py(i))
@@ -200,7 +200,7 @@ c     end   initialize for preventing compiler warning
             y(i)=y(i)+py(i)*al1
             z(i)=z(i)+dpz  *al1-dv(i)*alb*2.d0
           enddo
-        elseif(kord .eq. 2)then
+        elseif(kord == 2)then
           f1=beta*2.d0*al
           f2=4.d0*gamma*al**2
           f3=gamma*6.d0*al**2
@@ -230,7 +230,7 @@ c     end   initialize for preventing compiler warning
             y(i)=yi  +py(i)*al1
             z(i)=zi  +dpz  *al1-dv(i)*alb
           enddo
-        elseif(kord .eq. 1)then
+        elseif(kord == 1)then
           f1=beta*al
           f3=gamma*2.d0*al**2
           f4=.5d0*f1
@@ -285,7 +285,7 @@ c     end   initialize for preventing compiler warning
             z(i)=zi  +dpz  *al1-dv(i)*alb
           enddo
         endif
-        if(kord .eq. 2)then
+        if(kord == 2)then
           do concurrent (i=1:np)
             aki=akf/(1.d0+g(i))
             px(i)=px(i)-aki*(x(i)-y(i))*(x(i)+y(i))
@@ -332,12 +332,12 @@ c
      $     1.d0,2.d0,3.d0,4.d0,5.d0,6.d0,7.d0,8.d0,9.d0,10.d0,
      $     11.d0,12.d0,13.d0,14.d0,15.d0,16.d0,17.d0,18.d0,19.d0,
      $     20.d0,21.d0,22.d0,23.d0]
-      if(al .eq. 0.d0 .or. ak .eq. 0.d0)then
+      if(al == 0.d0 .or. ak == 0.d0)then
         return
       endif
-      if(nord .eq. 4)then
+      if(nord == 4)then
         akk=ak/al/4.d0
-        if(bz .eq. 0.d0)then
+        if(bz == 0.d0)then
           do concurrent (i=1:np)
             aki=akk/(1.d0+g(i))
             xi=x(i)
@@ -390,7 +390,7 @@ c            ab=aki*(xi-yi)*(xi+yi)
             z(i)=z(i)-px(i)*(dx1+t*xi)-py(i)*(dy1+t*yi)
           enddo
         endif
-      elseif(nord .eq. 2)then
+      elseif(nord == 2)then
         akk=ak/al
         do concurrent (i=1:np)
           aki=akk/(1.d0+g(i))
@@ -398,7 +398,7 @@ c            ab=aki*(xi-yi)*(xi+yi)
           py(i)=py(i)-aki*px(i)*y(i)
           z(i)=z(i)-.5d0*aki*px(i)*y(i)**2
         enddo
-      elseif(nord .eq. 6)then
+      elseif(nord == 6)then
         akk=ak/al/24.d0
         do concurrent (i=1:np)
           aki=akk/(1.d0+g(i))
@@ -454,19 +454,19 @@ c          cp1=(dcmplx(1.d0,a)*cp-(aki*4.d0)*cz1*conjg(cx*cp))/d
       integer*4 i
       real*8 x0,px0,theta,cost,sint,aka
       intrinsic hypot
-      if((ak(1) .ne. 0.d0 .or. ak(2) .ne. 0.d0) .and. al .ne. 0.d0)then
+      if((ak(1) /= 0.d0 .or. ak(2) /= 0.d0) .and. al /= 0.d0)then
 c        theta=pi/nord
-        if(ak(1) .eq. 0.d0)then
+        if(ak(1) == 0.d0)then
           theta=pi/nord
           aka=ak(2)
-        elseif(ak(2) .eq. 0.d0)then
+        elseif(ak(2) == 0.d0)then
           theta=0.d0
           aka=ak(1)
         else
           theta=atan2(ak(2),ak(1))*2.d0/nord
           aka=hypot(ak(1),ak(2))
         endif
-        if(theta .ne. 0.d0)then
+        if(theta /= 0.d0)then
           cost=cos(theta)
           sint=sin(theta)
           do concurrent (i=1:np)
@@ -527,7 +527,7 @@ c        theta=pi/nord
       real*8 ,intent(in):: x
       character*(*) ,intent(in):: tag
       write(*,*)'zcheck-0 ',tag
-      if(x .ne. 0.d0)then
+      if(x /= 0.d0)then
         write(*,*)'zcheck-x ',x
         stop
       endif

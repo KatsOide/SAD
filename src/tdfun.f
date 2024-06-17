@@ -20,8 +20,8 @@ c Obsolete 3/16/2022
      $     k,ip,irtc,m
       logical*4 maxfit,ttrans(-nfam:nfam),tftype1fit
 c      do j=1,nfcol
-c        if(flv%kfit(flv%kfitp(j)) .eq. mfitnx .or.
-c     $       flv%kfit(flv%kfitp(j)) .eq. mfitny)then
+c        if(flv%kfit(flv%kfitp(j)) == mfitnx .or.
+c     $       flv%kfit(flv%kfitp(j)) == mfitny)then
 c          do m=nfam1,nfam
 c            detr0=utwiss(mfitr1,m,1)*utwiss(mfitr4,m,1)
 c     $           -utwiss(mfitr2,m,1)*utwiss(mfitr3,m,1)
@@ -66,7 +66,7 @@ c        write(*,*)'TDFUN ',j,ka,kf,mfitgx
           mp=(abs(flv%mfitp(ka))-1)/2
           do20:     do idp=nfam1,nfam
             vf=flv%fitval(ka)
-            if((kfam(idp) .eq. 0 .and. idp .ge. -mp .and. idp .le. mp)
+            if((kfam(idp) == 0 .and. idp .ge. -mp .and. idp .le. mp)
      $           .or. jfam(idp) .ge. -mp .and. jfam(idp) .le. mp)then
               if(kf .ge. mfitdx .and. kf .le. mfitdpy .and.
      $             (idp .lt. -nfr .or. idp .gt. nfr ))then
@@ -76,12 +76,13 @@ c     $             .or. inicond .and. idp /= 0))then
                 cycle
               endif
               if(idp /= 0 .or. mp*2+1 /= abs(flv%mfitp(ka)))then
-                if(kp .eq. nlat)then
+                if(kp == nlat)then
+                  write(*,*)'tdfun ',idp,vf,xixf,dp(idp),dp0
                   if(idp .ge. -1 .and. idp .le. 1)then
-                    if(kf .eq. mfitnx)then
+                    if(kf == mfitnx)then
                       vf=vf+(dp(idp)-dp0)*xixf
                     endif
-                    if(kf .eq. mfitny)then
+                    if(kf == mfitny)then
                       vf=vf+(dp(idp)-dp0)*xiyf
                     endif
                   endif
@@ -127,7 +128,7 @@ c     $             .or. inicond .and. idp /= 0))then
      $                     kpb,kpe,dp(idp),
      $                     iuid(idp),kfam(idp),
      $                     vb,ve,vf,vf1,irtc)
-                      if(irtc .eq. -1)then
+                      if(irtc == -1)then
                         cycle
                       endif
                       if(maxfit)then
@@ -141,8 +142,8 @@ c     $             .or. inicond .and. idp /= 0))then
                       endif
                       if(.not. maxfit)then
                         df1(i)=df1(i)+merge(log(vf),vf,
-     $                       kf .eq. mfitbx .or. kf .eq. mfitby
-     $                       .or. kf .eq. mfitbz)
+     $                       kf == mfitbx .or. kf == mfitby
+     $                       .or. kf == mfitbz)
                       endif
                       iqcol(i)=j
                       lfp(1,i)=kpe
@@ -160,11 +161,11 @@ c     $             .or. inicond .and. idp /= 0))then
                   vf1=vf
                   call tfgetfitval(nlist(kf),kp,0,dp(idp),
      $                 iuid(idp),kfam(idp),vf,v,vf,vf1,irtc)
-                  if(irtc .eq. -1)then
+                  if(irtc == -1)then
                     cycle
                   endif
                   df1(i)=tdfun1(vf1,v,kf,maxfit,idp,ttrans(idp))
-                  if(maxfit .and. df1(i) .eq. 0.d0)then
+                  if(maxfit .and. df1(i) == 0.d0)then
                     cycle
                   endif
                   iqcol(i)=j
@@ -214,7 +215,7 @@ c     $             .or. inicond .and. idp /= 0))then
       integer*8 ifvloc,ifvfun,ifvloc1
       save ifvloc,ifvfun,ifvloc1
       data kfv%k /0/
-      if(kfv%k .eq. 0)then
+      if(kfv%k == 0)then
         kfid=kxavaloc(0,2,klid)
         kfv =kxadaloc(0,5,klv)
         klv%head=dtfcopy(kxsymbolz('`FitValue',9))
@@ -240,7 +241,7 @@ c      call tfdebugprint(kfid,'gfv-1',1)
       klid%rbody(2)=dp
       call elname(kp,name)
       ln=lenw(name)
-      if(kp1 .eq. 0)then
+      if(kp1 == 0)then
         retry1=.false.
         klv%rbody(4)=vf
         klv%rbody(5)=v
@@ -261,7 +262,7 @@ c      call tfdebugprint(kfid,'gfv-1',1)
       endif
       call tclrfpe
       levele=itfuplevel()
-      if(kp1 .eq. 0)then
+      if(kp1 == 0)then
 c        call tfdebugprint(kfv,'FitValue-1',1)
         kx=tfleval(klv,.true.,irtc)
       else
@@ -277,16 +278,16 @@ c      call tfdebugprint(kx,'==> ',1)
         call termes('Error in FitValue '//
      $       funname//' at '//name,' ')
       elseif(ktfrealq(kx,vf1))then
-      elseif(kx%k .eq. ktfoper+mtfnull)then
+      elseif(kx%k == ktfoper+mtfnull)then
         irtc=-1
       elseif(retry)then
         retry=.false.
-        if(mult(kp) .eq. 0)then
+        if(mult(kp) == 0)then
 c     Generate singlet element name with suffix number(.###)
           call elnameK(kp,name)
           ln=lenw(name)
           go to 100
-        elseif(nelvx(ilist(kp,ifele1))%klp .eq. kp)then
+        elseif(nelvx(ilist(kp,ifele1))%klp == kp)then
 c     Remove suffix number(.###) if head of multiple elements
 c     Note: index(name,'.') > 0 if mult(kp) != 0
           ln=index(name,'.')-1
@@ -306,12 +307,12 @@ c     Reset `kp'-element name in name(1:ln)
           call elname(kp,name)
           ln=lenw(name)
         endif
-        if(mult(kp1) .eq. 0)then
+        if(mult(kp1) == 0)then
 c     Generate singlet element name with suffix number(.###)
           call elnameK(kp1,name1)
           ln1=lenw(name1)
           go to 100
-        elseif(nelvx(ilist(kp1,ifele1))%klp .eq. kp1)then
+        elseif(nelvx(ilist(kp1,ifele1))%klp == kp1)then
 c     Remove suffix number(.###) if singlet or head of multiple elements
 c     Note: index(name1,'.') > 0 if kp1 != 0
           ln1=index(name1,'.')-1
@@ -337,7 +338,7 @@ c     Note: index(name1,'.') > 0 if kp1 != 0
       type (sad_descriptor) ,save :: kff
       data kff%k /0/
       integer*4 itfuplevel,itfdownlevel,i,m,level,irtc
-      if(kff%k .eq. 0)then
+      if(kff%k == 0)then
         kff=kxsymbolz('`FitFunction',12)
       endif
       level=itfuplevel()
@@ -495,7 +496,7 @@ c        write(*,*)'tdfun1 ',kf,maxfit,vf,v,tdfun1
       va=abs(tgfun(kf,ibegin,idp))
       do i=ibegin,iend
         va1=abs(tgfun(kf,min(i+1,iend),idp))
-c        if(kf .eq. mfitgmy)then
+c        if(kf == mfitgmy)then
 c          write(*,*)'tfpeak ',i,va,va0,va1
 c        endif
         if(va .gt. va0 .and. va .ge. va1)then

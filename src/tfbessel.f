@@ -33,7 +33,7 @@ c     Including m_pi_2 symbol
      $     cnf,cp,cq,cr,cs0,cs1,zp,cx,cxp,csigma,
      $     ca1,ca2,cf,cg,cf1,cf2,clogz,zhi,cnfpi,cs,cb2(2)
       real*8 az,xcn,an0,anf,acnf,ak,by,c,s,bj
-      if(imag(cn) .eq. 0.d0 .and. imag(z) .eq. 0.d0)then
+      if(imag(cn) == 0.d0 .and. imag(z) == 0.d0)then
         if(dble(z) .ge. 0.d0)then
           cb=dcmplx(rrbessely(dble(cn),dble(z)),0.d0)
         else
@@ -65,7 +65,7 @@ c     Including m_pi_2 symbol
           acnf=abs(cnf)
           zhi=2.d0/z
           clogz=log(zhi)
-          if(acnf .eq. 0.d0)then
+          if(acnf == 0.d0)then
             zp=1.d0
             cp=1.d0/m_pi
             cq=1.d0/m_pi
@@ -91,7 +91,7 @@ c     Including m_pi_2 symbol
             endif
             ca1=cnfpi/sin(cnfpi)
             csigma=cnf*clogz
-            if(csigma .eq. (0.d0,0.d0))then
+            if(csigma == (0.d0,0.d0))then
               ca2=(1.d0,0.d0)
             else
               ca2=tcsinh(csigma)/csigma
@@ -118,9 +118,9 @@ c     Including m_pi_2 symbol
             cs0=cs0+cxp*cg
             cs1=cs1+cxp*(cp-ak*cg)
           enddo
-          if(an0 .eq. 0.d0)then
+          if(an0 == 0.d0)then
             cb=-cs0
-          elseif(an0 .eq. 1.d0)then
+          elseif(an0 == 1.d0)then
             cb=-cs1*zhi
           else
             cs0=-cs0
@@ -169,7 +169,7 @@ c     Including m_pi_2 symbol
           aanf=abs(anf)
           zhi=2.d0/z
           clogz=log(zhi)
-          if(aanf .eq. 0.d0)then
+          if(aanf == 0.d0)then
             zp=1.d0
             cp=1.d0/m_pi
             cq=1.d0/m_pi
@@ -195,7 +195,7 @@ c     Including m_pi_2 symbol
             endif
             ca1=anfpi/sin(anfpi)
             csigma=anf*clogz
-            if(csigma .eq. 0.d0)then
+            if(csigma == 0.d0)then
               ca2=1.d0
             else
               ca2=sinh(csigma)/csigma
@@ -222,9 +222,9 @@ c     Including m_pi_2 symbol
             cs0=cs0+cxp*cg
             cs1=cs1+cxp*(cp-ak*cg)
           enddo
-          if(an0 .eq. 0.d0)then
+          if(an0 == 0.d0)then
             cb=-cs0
-          elseif(an0 .eq. 1.d0)then
+          elseif(an0 == 1.d0)then
             cb=-cs1*zhi
           else
             cs0=-cs0
@@ -250,7 +250,7 @@ c     Including m_pi_2 symbol
       complex*16 ,intent(in):: cn,z
       complex*16 cj,cj1,cj2,cs,zi,cnk,cn2k,cg,cb2(2)
       real*8 az,acn,an,ak,xcn
-      if(imag(cn) .eq. 0.d0 .and. imag(z) .eq. 0.d0)then
+      if(imag(cn) == 0.d0 .and. imag(z) == 0.d0)then
         if(dble(z) .ge. 0.d0)then
           cb=dcmplx(rrbesselj(dble(cn),dble(z)),0.d0)
         else
@@ -271,8 +271,8 @@ c
           nmax=int(max(1.d0,20.d0/max(log10(2.d0/az),1.d0),
      $         2.d0*az-dble(cn)))
         endif
-        if(cn .eq. (0.d0,0.d0))then
-          if(az .eq. 0.d0)then
+        if(cn == (0.d0,0.d0))then
+          if(az == 0.d0)then
             cb=1.d0
           else
             cs=1.d-100
@@ -291,13 +291,13 @@ c
           endif
         else
           xcn=dble(cn)
-          if(xcn .lt. 0.d0 .and. cn .eq. anint(xcn))then
-            if(mod(-xcn,2.d0) .eq. 0.d0)then
+          if(xcn .lt. 0.d0 .and. cn == anint(xcn))then
+            if(mod(-xcn,2.d0) == 0.d0)then
               cb=cbesselj(-cn,z)
             else
               cb=-cbesselj(-cn,z)
             endif
-          elseif(az .eq. 0.d0)then
+          elseif(az == 0.d0)then
             cb=0.d0
           else
             cj2=0.d0
@@ -388,8 +388,8 @@ c
           nmax=int(max(1.d0,20.d0/max(log10(2.d0/az),1.d0),
      $         2.d0*az-dble(cn)))
         endif
-        if(cn .eq. 0.d0)then
-          if(az .eq. 0.d0)then
+        if(cn == 0.d0)then
+          if(az == 0.d0)then
             cb=1.d0
           else
             cs=1.d-100
@@ -407,13 +407,13 @@ c
             cb=cj/(cs*2.d0+cj)
           endif
         else
-          if(cn .lt. 0.d0 .and. cn .eq. anint(cn))then
-            if(mod(-cn,2.d0) .eq. 0.d0)then
+          if(cn .lt. 0.d0 .and. cn == anint(cn))then
+            if(mod(-cn,2.d0) == 0.d0)then
               cb=rrbesselj(-cn,z)
             else
               cb=-rrbesselj(-cn,z)
             endif
-          elseif(az .eq. 0.d0)then
+          elseif(az == 0.d0)then
             cb=0.d0
           else
             cj2=0.d0

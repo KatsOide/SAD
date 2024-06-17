@@ -26,25 +26,25 @@
      $     dyfra1,dyfra2,apsi1,apsi2,tanp1,tanp2
       real*8 trans1(6,6)
       logical*4 enarad,fringe,next,prev,krad
-      if(al .eq. 0.d0)then
+      if(al == 0.d0)then
         call tthine(trans,cod,beam,srot,2,al,-phib,dx,dy,theta,
      $       .false.)
         return
-      elseif(phib .eq. 0.d0)then
+      elseif(phib == 0.d0)then
         call tdrife0(trans,cod,beam,srot,al,0.d0,0.d0,.true.,.false.,irad)
         return
       endif
       call tchge(trans,cod,beam,srot,dx,dy,0.d0,theta,0.d0,0.d0,0.d0,0.d0,.true.)
-      krad=enarad .and. al .ne. 0.d0
+      krad=enarad .and. al /= 0.d0
       if(krad)then
         call tsetr0(trans(:,1:6),cod(1:6),0.d0,0.d0)
       endif
       rhob=al/phib
-      prev=bradprev .ne. 0.d0
+      prev=bradprev /= 0.d0
       rbc=1.d0
       f1r=0.d0
       f2r=0.d0
-      if(fb1 .ne. 0.d0 .and. (mfring .gt. 0 .or. mfring .eq. -1))then
+      if(fb1 /= 0.d0 .and. (mfring .gt. 0 .or. mfring == -1))then
         dxfr1=-fb1**2/rhob/24.d0
         dyfr1=fb1/rhob**2/6.d0
         if(fringe)then
@@ -59,8 +59,8 @@
       else
         n1=1
       endif
-      if(fb2 .ne. 0.d0 .and.
-     $       (mfring .gt. 0 .or. mfring .eq. -2))then
+      if(fb2 /= 0.d0 .and.
+     $       (mfring .gt. 0 .or. mfring == -2))then
         f2r=0.5d0*fb2
         rbc=rbc-f2r/al
         n2=2
@@ -86,7 +86,7 @@ c     end   initialize for preventing compiler warning
       endif
       aln=alc/ndiv
       phin=phic/ndiv
-      if(mfring .ne. -2)then
+      if(mfring /= -2)then
 c        call tbfrie(trans,cod,beam,-rhob,0.d0,.true.)
         call tbedge(trans,cod,beam,al,-phib,apsi1,.true.)
       endif
@@ -107,7 +107,7 @@ c        call tbfrie(trans,cod,beam,-rhob,0.d0,.true.)
         pz2=1.d0+dpz2
         phsq=pxi**2+pz1**2
         d=pxf*pz1+pxi*pz2
-        if(d .eq. 0.d0 .or. pxi*pxf .lt. 0.d0)then
+        if(d == 0.d0 .or. pxi*pxf .lt. 0.d0)then
           u=(dpx+pxf*dpz1-pxi*dpz2)/phsq
           w=(pxf*dpz1-pxi*dpz2+dpx*pyi**2)/phsq
         else
@@ -145,18 +145,18 @@ c$$$        endif
         cod(2)=pxf*pr
         cod(3)=cod(3)+pyi*(alx+dl)
         cod(5)=cod(5)-(dl+dvemit*alx)
-        if(n .ne. ndiv+n2 .and. krad)then
+        if(n /= ndiv+n2 .and. krad)then
           call tradke(trans,cod,beam,srot,alr,0.d0,0.d0)
         endif
 100   continue
       if(.not. next)then
         bradprev=0.d0
       endif
-      if(mfring .ne. -1)then
+      if(mfring /= -1)then
 c        call tbfrie(trans,cod,beam, rhob,0.d0,.false.)
         call tbedge(trans,cod,beam,al,-phib,apsi2,.false.)
       endif
-      if(f2r .ne. 0.d0)then
+      if(f2r /= 0.d0)then
         dxfr2=fb2**2/rhob/24.d0
         dyfr2=fb2/rhob**2/6.d0
         if(fringe)then

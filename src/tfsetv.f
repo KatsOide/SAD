@@ -18,18 +18,18 @@
             is=0
             do j=1,nvar
               iv=nvevx(j)%ivvar
-              if(iv .eq. nelvx(ie)%ival)then
-                if(nvevx(j)%ivarele .eq. ie
-     $               .and. (nvevx(j)%ivcomp .eq. 0 .or.
-     $               nvevx(j)%ivcomp .eq. ii))then
+              if(iv == nelvx(ie)%ival)then
+                if(nvevx(j)%ivarele == ie
+     $               .and. (nvevx(j)%ivcomp == 0 .or.
+     $               nvevx(j)%ivcomp == ii))then
 c                  cmp%value(iv)=nvevx(j)%valvar*errk(1,i)*couple(i)
 c                  cmp%update=cmp%nparam .le. 0
                   cmp%ievar1=j
                   is=is+1
                 endif
-              elseif(iv .ne. 0 .and. nvevx(j)%ivarele .eq. ie1
-     $               .and. (nvevx(j)%ivcomp .eq. 0 .or.
-     $               nvevx(j)%ivcomp .eq. i))then
+              elseif(iv /= 0 .and. nvevx(j)%ivarele == ie1
+     $               .and. (nvevx(j)%ivcomp == 0 .or.
+     $               nvevx(j)%ivcomp == i))then
 c                cmp%value(iv)=nvevx(j)%valvar
 c                cmp%update=cmp%nparam .le. 0
                 cmp%ievar2=j
@@ -40,12 +40,12 @@ c                cmp%update=cmp%nparam .le. 0
               endif
             enddo
           endif
-          if(cmp%ievar1 .ne. 0)then
+          if(cmp%ievar1 /= 0)then
             cmp%value(nvevx(cmp%ievar1)%ivvar)=
      $           nvevx(cmp%ievar1)%valvar*errk(1,i)*couple(i)
             cmp%update=cmp%nparam .le. 0
           endif
-          if(cmp%ievar2 .ne. 0)then
+          if(cmp%ievar2 /= 0)then
             cmp%value(nvevx(cmp%ievar2)%ivvar)=
      $           nvevx(cmp%ievar2)%valvar
             cmp%update=cmp%nparam .le. 0
@@ -76,18 +76,18 @@ c                cmp%update=cmp%nparam .le. 0
       integer*4 k,irtc
       integer*4 i,ie,iv
       call tffscoupledvar(irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         call termes('?Error in CoupledVariables',' ')
       endif
       do i=1,flv%nvar
         ie=nvevx(i)%ivarele
         iv=nvevx(i)%ivvar
         k=nvevx(i)%ivcomp
-        if(k .eq. 0)then
+        if(k == 0)then
           k=nelvx(ie)%klp
         endif
         nvevx(i)%valvar=merge(tfvalvar(k,iv)/errk(1,k),
-     $       tfvalvar(k,iv),iv .eq. nelvx(ie)%ival)
+     $       tfvalvar(k,iv),iv == nelvx(ie)%ival)
       enddo
       return
       end
@@ -105,17 +105,17 @@ c                cmp%update=cmp%nparam .le. 0
       ite=0
       ntv=0
       do j=1,flv%ntouch
-        if(nelvx(nvevx(j)%itouchele)%ival .ne. nvevx(j)%itouchv)then
+        if(nelvx(nvevx(j)%itouchele)%ival /= nvevx(j)%itouchv)then
           ntv=ntv+1
           itv(ntv)=j
           ite(nvevx(j)%itouchele)=1
         endif
       enddo
-      if(ntv .eq. 0)then
+      if(ntv == 0)then
         do i=1,nlat-1
           ie=iele1(icomp(i))
-          if(icomp(i) .ne. i .and. ie .ne. 0 .and.
-     $         nelvx(ie)%ival .ne. 0)then
+          if(icomp(i) /= i .and. ie /= 0 .and.
+     $         nelvx(ie)%ival /= 0)then
             call tfvcopy(icomp(i),i,nelvx(ie)%ival,
      $           errk(1,i)*couple(i)/errk(1,icomp(i)))
           endif
@@ -124,16 +124,16 @@ c                cmp%update=cmp%nparam .le. 0
         do i=1,nlat-1
           ie=iele1(icomp(i))
           ie1=iele1(i)
-          if(ie .ne. 0 .and. i .ne. icomp(i) .and.
-     $         nelvx(ie)%ival .ne. 0)then
+          if(ie /= 0 .and. i /= icomp(i) .and.
+     $         nelvx(ie)%ival /= 0)then
             call tfvcopy(icomp(i),i,nelvx(ie)%ival,
      $           errk(1,i)*couple(i)/errk(1,icomp(i)))
           endif
-          if(ite(ie1) .ne. 0)then
+          if(ite(ie1) /= 0)then
             do k=1,ntv
               j=itv(k)
-              if(nvevx(j)%itouchele .eq. ie1 .and.
-     $             nelvx(ie1)%klp .ne. i)then
+              if(nvevx(j)%itouchele == ie1 .and.
+     $             nelvx(ie1)%klp /= i)then
                 call tfvcopy(nelvx(ie1)%klp,i,nvevx(j)%itouchv,1.d0)
               endif
             enddo
@@ -141,7 +141,7 @@ c                cmp%update=cmp%nparam .le. 0
         enddo
       endif
       call tffscoupledvar(irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         call termes('?Error in CoupledVariables',' ')
       endif
       return
@@ -163,12 +163,12 @@ c                cmp%update=cmp%nparam .le. 0
         do i=1,nele
           k1=nelvx(i)%klp
           do j=isp0+1,isp
-            if(itastk(1,j) .eq. i)then
+            if(itastk(1,j) == i)then
               call elcompl(i,kl)
               do l=1,kl%nl
                 k=int(kl%rbody(l))
-                if(k .ne. k1 .and. icomp(k) .eq. k1
-     $               .and. itastk(2,j) .ne. nelvx(i)%ival)then
+                if(k /= k1 .and. icomp(k) == k1
+     $               .and. itastk(2,j) /= nelvx(i)%ival)then
                   call tfvcopy(k1,k,itastk(2,j),1.d0)
                 endif
               enddo
@@ -184,7 +184,7 @@ c                cmp%update=cmp%nparam .le. 0
           itastk(1,isp)=ie1
           itastk(2,isp)=nelvx(ie1)%ival
           do j=isp0+1,isp1
-            if(ktastk(j) .eq. ktastk(isp))then
+            if(ktastk(j) == ktastk(isp))then
               call tfvcopy(icomp(l),l,nelvx(ie1)%ival,couple(l))
             endif
           enddo
@@ -192,7 +192,7 @@ c                cmp%update=cmp%nparam .le. 0
         isp=isp1
       endif
       call tffscoupledvar(irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         call termes('?Error in CoupledVariables',' ')
       endif
       return
@@ -209,7 +209,7 @@ c                cmp%update=cmp%nparam .le. 0
       type (sad_descriptor) ifcoupv,ifsetcoup,k,kx
       type (sad_symdef), pointer, save :: symdcoupv
       data ifcoupv%k,ifsetcoup%k /0,0/
-      if(ifcoupv%k .eq. 0)then
+      if(ifcoupv%k == 0)then
         ifcoupv  =dtfcopy1(kxsymbolz('`EVList',7))
         call descr_sad(ifcoupv,symdcoupv)
         ifsetcoup=dtfcopy1(kxsymbolz('SetCoupledElements',18))
@@ -217,7 +217,7 @@ c                cmp%update=cmp%nparam .le. 0
       irtc=0
       k=symdcoupv%value
       if(tflistq(k,kl))then
-        if(kl%nl .eq. 0)then
+        if(kl%nl == 0)then
           return
         endif
       else
@@ -225,9 +225,9 @@ c                cmp%update=cmp%nparam .le. 0
       endif
       levele=levele+1
       kx=tfsyeval(ifsetcoup,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         if(irtc .gt. 0)then
-          if(ierrorprint .ne. 0)then
+          if(ierrorprint /= 0)then
             ierrorf=0
             irtc1=irtc
             call tfaddmessage(
@@ -249,7 +249,7 @@ c                cmp%update=cmp%nparam .le. 0
       type (sad_comp), pointer :: cmps,cmpd
       integer*4 ntou,i,ie
       do i=1,ntou
-        if(nvevx(i)%itouchele .eq. ie)then
+        if(nvevx(i)%itouchele == ie)then
           call loc_comp(latt(nelvx(ie)%klp),cmps)
           call loc_comp(idvalc(nelvx(ie)%klp),cmpd)
           call tfvcopycmp(cmps,cmpd,nvevx(i)%itouchv,1.d0)

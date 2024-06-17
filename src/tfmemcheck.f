@@ -2,17 +2,19 @@
       use tfstk
       use tfmem
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer :: klx5,kld
       type (sad_rlist), pointer :: klri,klr
       integer*8 ip1,ip0,ip,ix,i,j, i1, ki,m,ih,mf
-      integer*4 isp1,irtc,l,nf,isp0,itfmessage
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 l,nf,isp0,itfmessage
       real*8 xnmem,xnnet
       character*12 tftypename
       logical*4 tfcheckelement,freel,check
-      if(isp1+1 .eq. isp .and. ktfrealq(ktastk(isp)))then
+      if(isp1+1 == isp .and. ktfrealq(ktastk(isp)))then
         check=.true.
-        freel=rtastk(isp) .eq. 2.d0
+        freel=rtastk(isp) == 2.d0
       else
         check=.false.
         freel=.false.
@@ -21,14 +23,14 @@
       ih=-1
       if(check)then
         call tfcheckcont(itfcontext,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           return
         endif
         do l=1,levele
           j=itflocal+l
           i1=j
           i=klist(j)
-          do while(i .ne. j)
+          do while(i /= j)
             if(i .le. 0)then
               write(*,*)'Wrong temporary element:',i
               go to 9100
@@ -54,9 +56,9 @@
       do ix=0,nindex
         ip0=icp+ix*2
         ip=klist(ip0)
-        do while(ip .ne. ip0)
+        do while(ip /= ip0)
           ip1=klist(ip)
-          if(klist(ip1+1) .ne. ip)then
+          if(klist(ip1+1) /= ip)then
             write(*,*)
      $           'Free area (size-list) is inconsistent: area =',ip,
      $           ' next area =',ip1,' previous(next) area =',
@@ -66,7 +68,7 @@
           nf=nf+1
           if(ix .lt. nindex)then
             m=ix+1
-            if(ilist(1,ip-1) .ne. m)then
+            if(ilist(1,ip-1) /= m)then
               write(*,*)
      $             'Free area size is inconsistent: area =',ip,
      $             ' index =',m,' stored size =',ilist(1,ip-1)
@@ -127,7 +129,7 @@
       character*(*) function tftypename(k)
       use tfstk
       implicit none
-      integer*8 k
+      integer*8 ,intent(in):: k
       select case (ktftype(k))
       case (ktflist)
         tftypename='List'
@@ -167,14 +169,14 @@
       do m=0,nsymhash
         j=icont+m+1
         i=klist(j)
-        do while(i .ne. j)
+        do while(i /= j)
           call loc_namtbl(i,loc)
           nc=loc%str%nch
           if(nc .le. 0)then
             write(*,*)'Zero or negative length for symbol name: ',nc
             go to 9000
           endif
-          if(loc%len .ne. nc/8+9)then
+          if(loc%len /= nc/8+9)then
             write(*,*)'Inconsistent loc table size: ',loc%len,
      $           ' <> ',nc/8+9
             go to 9000
@@ -183,20 +185,20 @@ c          write(*,*)'checkcont ',loc%str%str(1:nc)
           k=loc%symdef
           k0=ksad_loc(loc%symdef)
           do while(k .gt. 0)
-            if(klist(k+1) .ne. k0)then
+            if(klist(k+1) /= k0)then
               write(*,*)'Wrong previous name table: ',klist(k+1),
      $             ' <> ',k0
               go to 9000
             endif
             ks=klist(k+4)
-            if(ilist(2,k+7) .eq. -3)then
-              if(ktfaddr(ks) .ne. icont)then
+            if(ilist(2,k+7) == -3)then
+              if(ktfaddr(ks) /= icont)then
                 call tfcheckcont(ktfaddr(ks),irtc)
-                if(irtc .ne. 0)then
+                if(irtc /= 0)then
                   return
                 endif
               endif
-            elseif(iand(ktfmask,ks) .ne. ktfref)then
+            elseif(iand(ktfmask,ks) /= ktfref)then
               if(.not. tfcheckelement(ks,.false.))then
                 go to 9000
               endif
@@ -204,7 +206,7 @@ c          write(*,*)'checkcont ',loc%str%str(1:nc)
             do l=0,1
               kad0=k+2+l
               kad=klist(kad0)
-              do while(kad .ne. 0)
+              do while(kad /= 0)
                 if(kad .lt. 0)then
                   write(*,*)
      $                 'Negative definition pointer: ',
@@ -217,19 +219,19 @@ c          write(*,*)'checkcont ',loc%str%str(1:nc)
      $                 ' block = ',itfcbk(kad)
                   go to 9000
                 endif
-                if(klist(kad+1) .ne. kad0)then
+                if(klist(kad+1) /= kad0)then
                   write(*,*)'Wrong previous definition:',klist(kad+1),
      $                 ' <>',kad0
                   go to 9000
                 endif
-                if(ilist(1,kad+2) .eq. maxgeneration)then
+                if(ilist(1,kad+2) == maxgeneration)then
                   do ii=kad+3,kad+ilist(2,kad+2)+3
                     ih=ii-kad-3
                     kadi0=ii
                     kadi=klist(ii)
-                    do while(kadi .ne. 0)
+                    do while(kadi /= 0)
                       call tfcheckdef(kadi,kadi0,irtc)
-                      if(irtc .ne. 0)then
+                      if(irtc /= 0)then
                         go to 9000
                       endif
                       kadi0=kadi
@@ -238,7 +240,7 @@ c          write(*,*)'checkcont ',loc%str%str(1:nc)
                   enddo
                 else
                   call tfcheckdef(kad,kad0,irtc)
-                  if(irtc .ne. 0)then
+                  if(irtc /= 0)then
                     go to 9000
                   endif
                 endif
@@ -246,7 +248,7 @@ c          write(*,*)'checkcont ',loc%str%str(1:nc)
                 kad=klist(kad)
               enddo
             enddo
-            if(ilist(1,k-1) .ne. 10)then
+            if(ilist(1,k-1) /= 10)then
               if(ktfoperq(klist(k+4)))then
               else
                 write(*,*)'Inconsistent size of generation table:',
@@ -260,7 +262,7 @@ c          write(*,*)'checkcont ',loc%str%str(1:nc)
      $             'Negative pointer to next generation table:',k1
               go to 9000
             endif
-            if(klist(k+8) .ne. i)then
+            if(klist(k+8) /= i)then
               write(*,*)
      $             'Inconsistent pointer to loc table: ',
      $             klist(k+8),' name table =',i+5
@@ -308,7 +310,7 @@ c          write(*,*)'checkcont ',loc%str%str(1:nc)
      $       'Negative definition pointer:',kad
         return
       endif
-      if(klist(kad+1) .ne. kad0)then
+      if(klist(kad+1) /= kad0)then
         write(*,*)
      $       'Inconsistent definition table:',
      $       ' at ',kad,' previous table =',kad0,
@@ -358,13 +360,13 @@ c          write(*,*)'checkcont ',loc%str%str(1:nc)
         write(*,*)'Negative pointer:'
         return
       endif
-      if(kt .eq. ktfoper)then
+      if(kt == ktfoper)then
         if(ka .lt. 0 .or. ka .gt. 16384)then
           write(*,*)'Illegal function number: ',ka
           return
         endif
       else
-        if(ka .eq. 0)then
+        if(ka == 0)then
           write(*,*)'Zero pointer:'
           return
         endif
@@ -374,30 +376,30 @@ c          write(*,*)'checkcont ',loc%str%str(1:nc)
           return
         endif
         kt1=iand(ktfmask,klist(ka-2))
-        if(kt .eq. ktfsymbol)then
-          if(ilist(2,ka-3) .ne. 0)then
-            if(kt1 .ne. ktfsymbol)then
+        if(kt == ktfsymbol)then
+          if(ilist(2,ka-3) /= 0)then
+            if(kt1 /= ktfsymbol)then
               write(*,*)
      $             'Inconsistent element type for definition:',
      $             tfkname(kt),tfkname(kt1)
               return
             endif
           else
-            if(kt1 .eq. ktfstring)then
-              if(ilist(2,ka-1) .ne. ka)then
+            if(kt1 == ktfstring)then
+              if(ilist(2,ka-1) /= ka)then
                 write(*,*)
      $               'Inconsistent element type (string as symbol):',
      $               ka,ilist(2,ka-1)
                 return
               endif
-            elseif(kt1 .ne. ktfsymbol)then
+            elseif(kt1 /= ktfsymbol)then
               write(*,*)
      $             'Inconsistent element type, should be Symbol, but ',
      $             tfkname(kt1)
               return
             endif
           endif
-        elseif(kt1 .ne. kt)then
+        elseif(kt1 /= kt)then
           write(*,*)'Inconsistent element type, should be ',
      $         tfkname(kt),', but ',tfkname(kt1)
           return
@@ -406,7 +408,7 @@ c          write(*,*)'checkcont ',loc%str%str(1:nc)
           write(*,*)'Wrong degeneration count:',ilist(1,ka-1)
           return
         endif
-        if(kt .eq. ktflist)then
+        if(kt == ktflist)then
           m=ilist(2,ka-1)
           if(m .lt. 0)then
             write(*,*)'Negative length of list:',m
@@ -431,7 +433,7 @@ c     $             'Non-real in a real list:',3)
                   return
                 endif
               enddo
-            elseif(m .ne. 0)then
+            elseif(m /= 0)then
               nr=.false.
               do i=1,m
                 nr=nr .or. ktfnonrealq(klist(ka+i))
@@ -447,7 +449,7 @@ c                call tfdebugprint(k,' ',1)
             endif
           endif
           nrec=nrec-1
-        elseif(kt .eq. ktfstring)then
+        elseif(kt == ktfstring)then
           nc=ilist(1,ka)
           nw=ilist(1,ka-3)-4
           if(nw .lt. nc/8+1)then
@@ -455,10 +457,10 @@ c                call tfdebugprint(k,' ',1)
      $           nc,' size of allocated memory:',nw
             return
           endif
-        elseif(kt .eq. ktfsymbol)then
+        elseif(kt == ktfsymbol)then
           nw=ilist(1,ka-3)
-c          if((nw .lt. 4 .and. nw .ne. 0) .or. nw .gt. 9)then
-c            if(it .ne. ntfsymbol .or. ilist(2,ia-1) .ne. ka)then
+c          if((nw .lt. 4 .and. nw /= 0) .or. nw .gt. 9)then
+c            if(it /= ntfsymbol .or. ilist(2,ia-1) /= ka)then
 c              write(*,*)'Inconsistent length of symbol: ',nw
 c              return
 c            endif
@@ -473,7 +475,7 @@ c          endif
             write(*,*)'Illegal loc table of symbol:',loc
             return
           endif
-        elseif(kt .eq. ktfpat)then
+        elseif(kt == ktfpat)then
           nw=ilist(1,ka-3)
 c          if(nw .lt. 13 .or. nw .gt. 16)then
 c            write(*,*)
@@ -500,8 +502,9 @@ c          endif
       subroutine tfmemcheckprint1(tag,k,pri)
       use tfstk
       implicit none
-      integer*4 irtc,k
-      character*(*) tag
+      integer*4 ,intent(in):: k
+      integer*4 irtc
+      character*(*) ,intent(in):: tag
       logical*4 pri
       call tfmemcheckprint(tag,k,pri,irtc)
       return
@@ -511,15 +514,17 @@ c          endif
       use tfstk
       implicit none
       type (sad_descriptor) k1
-      integer*4 isp0,irtc,i,k
-      character*(*) tag
-      logical*4 pri
+      integer*4 ,intent(in):: k
+      integer*4 ,intent(out):: irtc
+      integer*4 isp0,i
+      character*(*) ,intent(in):: tag
+      logical*4 ,intent(in):: pri
       isp0=isp
       isp=isp+1
       rtastk(isp)=1.d0
       levele=levele+1
       call tfmemcheck(isp0,k1,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         write(*,*)'memcheck-error: ',tag,' ',k
         call tfreseterror
       elseif(pri)then

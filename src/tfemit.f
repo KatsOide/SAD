@@ -28,7 +28,7 @@
       endif
       is=1
       ie=nlat
-      if(narg .eq. 4)then
+      if(narg == 4)then
         if(tfnonreallistq(dtastk(isp),klr))then
           irtc=itfmessage(9,'General::wongval','"{begin, end} for #4"')
           return
@@ -43,13 +43,13 @@ c        write(*,'(a,1p2g15.7,3i5)')'tfemit ',klr%rbody(1:2),is,ie,nlat
       if(narg .ge. 3)then
         if(tflistq(ktastk(isp1+3),kl))then
           if(tfreallistq(kl%dbody(1),kl1))then
-            if(kl1%nl .ne. 6)then
+            if(kl1%nl /= 6)then
               irtc=itfmessage(9,'General::wrongval',
      $      '"{x, px, y, py, z, dp} for InitialOrbit"')
               return
             endif
             codin=kl1%rbody(1:6)
-          elseif(nel .ne. nlat)then
+          elseif(nel /= nlat)then
             codin=twiss(is,0,mfitdx:mfitddp)
           endif
           if(tfreallistq(kl%dbody(2),kl2))then
@@ -70,7 +70,7 @@ c        write(*,'(a,1p2g15.7,3i5)')'tfemit ',klr%rbody(1:2),is,ie,nlat
         return
       endif
       lno=int(rtastk(isp1+2))
-      if(lno .eq. -1)then
+      if(lno == -1)then
         lno=icslfno()
       endif
       irtc=0
@@ -79,7 +79,7 @@ c        write(*,'(a,1p2g15.7,3i5)')'tfemit ',klr%rbody(1:2),is,ie,nlat
         iae%iamat=ktadalocnull(-1,7)
         if(mode .ge. 2)then
           iae%iacod=ktadalocnull(-1,nel)
-          if(mode .eq. 3)then
+          if(mode == 3)then
             iae%iatr=ktadalocnull(-1,nel)
             if(intra)then
               iae%iabmi=ktadalocnull(-1,nel)
@@ -88,12 +88,12 @@ c        write(*,'(a,1p2g15.7,3i5)')'tfemit ',klr%rbody(1:2),is,ie,nlat
         endif
       endif
       call tfsetparam
-      if(ifsize .eq. 0 .and. codplt)then
+      if(ifsize == 0 .and. codplt)then
         ifsize=ktaloc(nel*21)
         call c_f_pointer(c_loc(rlist(ifsize)),beamsize,[21,nel])
         modesize=0
       endif
-      if(nel .eq. nlat)then
+      if(nel == nlat)then
         cod=codin
         call temit(trans,cod,beam,btr,
      $       .not. trpt .and. mode .ge. 0,iae,codplt,param,stab,lno)
@@ -115,7 +115,7 @@ c        write(*,'(a,1p2g15.7,3i5)')'tfemit ',klr%rbody(1:2),is,ie,nlat
         param(iptwiss:iptwiss+ntwissfun-1)=tfetwiss(ris,codin,
      $       twiss(is,0,mfitdetr) .lt. 1.d0)
       endif
-      kx=kxadaloc(-1,merge(6,2+max(0,mode),mode .eq. 3 .and. intra),
+      kx=kxadaloc(-1,merge(6,2+max(0,mode),mode == 3 .and. intra),
      $     klx)
       kaparam=ktfaddr(kxm2l(param,0,nparams,1,.false.))
       if(itgetfpe() .gt. 0)then
@@ -131,7 +131,7 @@ c      write(*,'(a,i5,5i12)')'tfemit ',mode,nparams
         if(mode .ge. 2)then
           klx%dbody(4)%k=ktflist+ktfcopy1(iae%iacod)
 c          call tfdebugprint(klx%dbody(4),'tfemit-cod',10)
-          if(mode .eq. 3)then
+          if(mode == 3)then
             klx%dbody(5)%k=ktflist+ktfcopy1(iae%iatr)
 c            call tfdebugprint(klx%dbody(5),'tfemit-trmat',10)
             if(intra)then
@@ -156,7 +156,7 @@ c            call tfdebugprint(klx%dbody(5),'tfemit-trmat',10)
       integer*4 mphi2,i,itfmessage
       real*8 arg(4),emxe,emye,rese
       call tfinitemip
-      if(isp .ne. isp1+4)then
+      if(isp /= isp1+4)then
         go to 9001
       endif
       do i=1,4
@@ -169,7 +169,7 @@ c            call tfdebugprint(klx%dbody(5),'tfemit-trmat',10)
       call tfgeo(.true.)
       kparams=ktaloc(nparams)
       codin=0.d0
-      if(ifsize .eq. 0 .and. codplt)then
+      if(ifsize == 0 .and. codplt)then
         ifsize=ktaloc(nlat*21)
 c        ilist(2,iwakepold+6)=ifsize
       endif
@@ -198,7 +198,7 @@ c        ilist(2,iwakepold+6)=ifsize
       integer*4 ,intent(in)::is
       real*8 , intent(out)::ris(6,6)
       real*8 mu(3),c(3),s(3),trans(6,6)
-      if(is .ne. 1)then
+      if(is /= 1)then
         call tftmat6(trans,1,is)
         ris=tinv6(matmul(trans,r))
 c        call tmultr(rs,trans,6)

@@ -61,7 +61,7 @@ C
         enddo
         ddy(1) =(ddy(1)/work(1)- ddy(2))*.5d0
         dddy(1)=(-0.5d0/work(1)-dddy(2))*.5d0
-        if(dddy(1) .ne. dddy(np))then
+        if(dddy(1) /= dddy(np))then
           ddy1=-(ddy(np)-ddy(1))/(dddy(np)-dddy(1))
           ddy=ddy+ddy1*dddy
         endif
@@ -209,7 +209,7 @@ C
         if(i > 1)then
           ddyi=-(ddy(i)-ddy(i-1))/(x(i,k)-x(i-1,k))
         else
-          ddy = 0.d0
+          ddyi=0.d0
         endif
         if(i .lt. n-1)then
           ddyi=ddyi+(ddy(i+2)-ddy(i+1))/(x(i+2,k)-x(i+1,k))
@@ -322,7 +322,7 @@ C
       mode=0
       if(isp == isp1+2)then
         call tfgetoption('Derivative',dtastk(isp),kd,irtc)
-        if(irtc .ne. 0)then
+        if(irtc /= 0)then
           if(irtc == -1)then
             go to 9100
           endif
@@ -334,12 +334,12 @@ C
           if(ktfnonlistq(kd,kld))then
             go to 9100
           endif
-          if(kld%nl .ne. 2)then
+          if(kld%nl /= 2)then
             go to 9100
           endif
           k1=kld%dbody(1)
           if(ktfoperq(k1,ka1))then
-            if(ka1 .ne. mtfnull)then
+            if(ka1 /= mtfnull)then
               go to 9100
             endif
           elseif(ktfnonrealq(k1,dy(1)))then
@@ -349,7 +349,7 @@ C
           endif
           k2=kld%dbody(2)
           if(ktfoperq(k2,ka2))then
-            if(ka2 .ne. mtfnull)then
+            if(ka2 /= mtfnull)then
               go to 9100
             endif
           elseif(ktfnonrealq(k2,dy(2)))then
@@ -358,14 +358,14 @@ C
             mode=mode+2
           endif
         endif
-      elseif(isp .ne. isp1+1)then
+      elseif(isp /= isp1+1)then
         go to 9100
       endif
       call tfmsize(dtastk(isp1+1),n,m,irtc)
-      if(irtc .ne. 0)then
+      if(irtc /= 0)then
         return
       endif
-      if(n .ne. 2)then
+      if(n /= 2)then
         go to 9000
       endif
       ka=ktfaddr(ktastk(isp1+1))
@@ -410,7 +410,7 @@ C
       integer*4 ,intent(out):: irtc
       integer*4 itfmessage,i1,i2,ih,n,i,m
       real*8 x
-      if(isp1+2 .ne. isp)then
+      if(isp1+2 /= isp)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
       endif
