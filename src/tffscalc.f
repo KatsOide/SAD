@@ -104,6 +104,7 @@ c      call tfmemcheckprint('tffscalc-before-prolog',.true.,irtc)
       if(wake)then
         call tffswake(ibound,beg)
       else
+c        write(*,'(a,2l3)')'tffscalc ',cell,wake
         call qcell1(ibound,0,optstat(0),.false.,chgini,lout)
         call tffssetutwiss(0,fbound,beg,.true.,.true.)
         if(cell)then

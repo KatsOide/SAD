@@ -66,9 +66,9 @@ With[{default={OneTurnInformation->False,
           OneTurnExcitation->
             Table[e[[3,5,((m+n+Abs[m-n])^2+2*(m+n)-6*Abs[m-n])/8]],
               {m,6},{n,6}],
-          EquilibriumBeamMatrix->
+          EquilibriumBeamMatrix->(e06=e[[3,6]];
             Table[e[[3,6,((m+n+Abs[m-n])^2+2*(m+n)-6*Abs[m-n])/8]],
-              {m,6},{n,6}],
+              {m,6},{n,6}]),
           SpinPrecessionMatrix->e[[3,7]]}];
         If[mode>1,
           AppendTo[r,ClosedOrbit->e[[4]]];
