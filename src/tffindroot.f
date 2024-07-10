@@ -1,5 +1,6 @@
       module findr
       use tfstk
+      real*8 ,parameter :: alarge=1.d300
 
       type symv
       sequence
@@ -37,7 +38,12 @@
         a=((g1-g0)/f1**2-(g2-g0)/f2**2)/(f1-f2)+dg/f1/f2
         b=(-f2*(g1-g0)/f1**2+f1*(g2-g0)/f2**2)-dg*(f1+f2)/f1/f2
         s=sqrt(max(0.d0,b**2-3.d0*a*dg))
-        f=merge(-dg/(s+b),(s-b)/3.d0/a,b > 0.d0)
+        if(b > 0.d0)then
+          f=-dg/(s+b)
+        else
+          f=(s-b)/3.d0/a
+        endif
+c        f=merge(-dg/(s+b),(s-b)/3.d0/a,b > 0.d0)
       endif
       f=min(m_euler*f1,max(f1/16.d0,f))
       return
@@ -300,12 +306,17 @@ c     call tfdebugprint(kx,'evalres-2',1)
       if(ktfnonreallistq(kax))then
         if(tfcomplexlistqk(kx))then
           do i=1,neq
-            f(i)=merge(rlist(kax+i*2-1)-rlist(kax+i*2),1.d200,
-     $           ktfrealq(klist(kax+i*2-1)) .and.
-     $           ktfrealq(klist(kax+i*2)))
+            if(ktfrealq(klist(kax+i*2-1)) .and. ktfrealq(klist(kax+i*2)))then
+              f(i)=rlist(kax+i*2-1)-rlist(kax+i*2)
+            else
+              f=alarge
+            endif
+c            f(i)=merge(rlist(kax+i*2-1)-rlist(kax+i*2),1.d200,
+c     $           ktfrealq(klist(kax+i*2-1)) .and.
+c     $           ktfrealq(klist(kax+i*2)))
           enddo
-          am=1.d300
-          d=1.d300
+          am=alarge
+          d=alarge
         else
           irtc=itfmessage(9,'General::wrongval',
      $         '"results","numbers"')
@@ -373,8 +384,8 @@ c     call tfdebugprint(kx,'evalres-2',1)
           if(kli%nl /= 2)then
             go to 8900
           endif
-          vmin(j+1)=-1.d300
-          vmax(j+1)=1.d300
+          vmin(j+1)=-alarge
+          vmax(j+1)=alarge
         endif
         k1=kli%dbody(1)
         if(ktfnonsymbolq(k1,sym1))then
@@ -684,7 +695,7 @@ c     write(*,*)'covmat ',n,m,ndim
       v00=v0
       iter=0
       ajump=1.d0
-      dbest=1.d300
+      dbest=alarge
       acalc=.false.
       kaxvec=ktadaloc(0,1)
       klist(kaxvec+1)=ktflist+ktavaloc(0,m)
@@ -717,9 +728,6 @@ c     write(*,*)'covmat ',n,m,ndim
      $         kaxvec,.true.,0.d0,irtc)
           if(irtc == 0)then
             a(:,i)=df2
-c     do j=1,m
-c     a(j,i)=df2(j)
-c     enddo
           elseif(irtc == -1)then
             svi=min(max(svmin,abs(v0(i))*frac),
      $           (vmax(i)-vmin(i))*factmin)
@@ -737,9 +745,6 @@ c     enddo
               return
             endif
             a(:,i)=(df2-df0)/svi
-c     do j=1,m
-c     a(j,i)=(df2(j)-df0(j))/svi
-c     enddo
             if(db < d0)then
               d0=db
               v0(i)=v0(i)+svi
@@ -768,10 +773,6 @@ c     enddo
         endif
         dg=0.d0
         do i=1,m
-c     s=0.d0
-c     do j=1,nvar
-c     s=s+a0(i,j)*dv(j)
-c     enddo
           dg=dg+df0(i)*dot_product(a0(i,1:nvar),dv(1:nvar))
         enddo
         dg=dg*2.d0
@@ -790,9 +791,6 @@ c     enddo
           endif          
         endif
  2      v=min(vmax,max(vmin,v0+dv*fact))
-c     2      do i=1,nvar
-c     v(i)=min(vmax(i),max(vmin(i),v0(i)+dv(i)*fact))
-c     enddo
         call tfevalfit(df0,d,data,n,m,ke,symdv,nvar,sav,v,
      $       kaxvec,.false.,cut,irtc)
         if(irtc /= 0)then
@@ -852,9 +850,6 @@ c     enddo
         do j=1,m
           if(abs(df(j)) > cut)then
             a0(j,:)=0.d0
-c     do i=1,nvar
-c     a0(j,i)=0.d0
-c     enddo
           endif
         enddo
       endif
@@ -862,18 +857,10 @@ c     enddo
       if(n == 2)then
         sigma=sqrt(d0/max(1,m-nvar))
         do i=1,nvar
-c     wi=w(i)*sigma
-c     do j=1,nvar
-c     a0(i,j)=a0(i,j)*wi
-c     enddo
           a0(i,:)=a0(i,:)*w(i)*sigma
         enddo
       else
         do i=1,nvar
-c     wi=w(i)
-c     do j=1,nvar
-c     a0(i,j)=a0(i,j)*wi
-c     enddo
           a0(i,:)=a0(i,:)*w(i)
         enddo
       endif
@@ -916,7 +903,6 @@ c     enddo
       do i=1,m
         rlist(kavvec+i)=a(1,i)
       enddo
-c     call tfdebugprint(ke,'ke',1)
       kx=tfeevalref(ke,irtc)
       call tflocal1(kaxvec)
       symdv%value%k=0
@@ -940,8 +926,13 @@ c     call tfdebugprint(ke,'ke',1)
             else
               if(ktfnonreallistqo(kl1))then
                 do i=1,m
-                  df(i)=merge(kl1%rbody(i)-a(2,i),1.d300,
-     $                 ktfrealq(kl1%dbody(i)))
+                  if(ktfrealq(kl1%dbody(i)))then
+                    df(i)=kl1%rbody(i)-a(2,i)
+                  else
+                    df(i)=alarge
+                  endif
+c                  df(i)=merge(kl1%rbody(i)-a(2,i),alarge,
+c     $                 ktfrealq(kl1%dbody(i)))
                 enddo
               else
                 do i=1,m
@@ -953,7 +944,12 @@ c     call tfdebugprint(ke,'ke',1)
           endif
         endif
       elseif(ktfrealq(kx,vx))then
-        df=merge(vx,vx-a(2,:),deriv)
+        if(deriv)then
+          df=vx
+        else
+          df=vx-a(2,:)
+        endif
+c        df=merge(vx,vx-a(2,:),deriv)
         go to 1000
       endif
       do i=1,m
@@ -964,7 +960,7 @@ c     call tfdebugprint(ke,'ke',1)
         endif
         if(ktfnonrealq(kx))then
           if(tfcomplexq(kx))then
-            df(i)=merge(0.d0,1.d300,deriv)
+            df(i)=merge(0.d0,alarge,deriv)
           else
             if(deriv)then
               irtc=-1
@@ -977,7 +973,12 @@ c     call tfdebugprint(ke,'ke',1)
           endif
         else
           vx=kx%x(1)
-          df(i)=merge(vx,vx-a(2,i),deriv)
+          if(deriv)then
+            df=vx
+          else
+            df=vx-a(2,i)
+          endif
+c          df(i)=merge(vx,vx-a(2,i),deriv)
         endif
       enddo
  1000 r=0.d0

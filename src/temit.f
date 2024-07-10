@@ -75,8 +75,7 @@ c      enddo
 
       end module touschek_table
 
-      subroutine temit(trans,cod,beam,btr,
-     $     calem0,iae,plot,params,stab,lfno)
+      subroutine temit(trans,cod,beam,btr,calem0,iae,plot,params,stab,lfno)
       use tfstk
       use temw
       use codm
@@ -221,15 +220,14 @@ c          endif
         beam(1:21)=merge(beamin,emitp,trpt)
         beam(22:42)=0.d0
         call srotinit(srot)
-        call tturne(trans,cod,beam,srot,iae,
-     $       .true.,.false.,rt,.false.)
+        call tturne(trans,cod,beam,srot,iae,.true.,.false.,rt,.false.)
       endif
       if(iae%iamat .eq. 0)then
         if(beamplt .and. plot .and. charge .lt. 0.d0)then
           beamsize=-beamsize
         endif
       else
-        call setiamat(iae%iamat,ri,codin,beamp,beam,trans,srot)
+        call setiamat(iae%iamat,ri,codin,beamp,emitp,trans,srot)
       endif
       return
       end

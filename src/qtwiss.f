@@ -839,7 +839,7 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       r0=1.d100
       cod00=cod0
       fact=.5d0
-      conv=min(conv1,conv0*(1.d0+(cod0(6)/0.001d0)**2))
+      conv=min(conv1,conv0*(1.d0+(cod0(6)/0.001d0)**2+dble(nlat)))
       stab=.false.
       call c_f_pointer(c_loc(tr1),tr1v,[20])
       call c_f_pointer(c_loc(rlist(iftwis)),
@@ -868,7 +868,6 @@ c          enddo
           trans2(:,5)=trans2(:,5)+trans1(:,5)
         else
           call qtwiss1(ptwiss,idp,fbound%lb,fbound%le,trans2,cod,.true.,over)
-c          write(*,'(a,l3,1p6g15.7)')'qcod-qt1 ',over,cod
         endif
         if(fbound%fe > 0.d0)then
           call qtwissfrac1(ftwiss,transe,cod,idp,

@@ -63,6 +63,8 @@
         call qcell6d(fbound,idp,optstat,lfno)
         return
       endif
+      optstat%stabx=.true.
+      optstat%staby=.true.
       if(cell)then
         codfnd=fam
         cod=twiss(fbound%lb,idp,mfitdx:mfitddp)
@@ -405,6 +407,7 @@ c     (Note) Disperdion is defined in 2*2 world
         optstat%staby=optstat%staby .and. stab .and. (codfnd .or. fam)
       endif
       optstat%tracez=0.d0
+c      write(*,'(a,3l3)')'qcell1 ',cell,optstat%stabx,optstat%staby
       return
       end
 

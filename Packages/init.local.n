@@ -30,7 +30,7 @@ SetNPARA[]:=Module[{np=ToExpression[Environment["SLURM_CPUS_ON_NODE"]],f},
   ];
 SetNPARA[];
 
-!KBF$ScreenShotDirectory = "/ldata/KEKB/KCG/ScrShot";
+KBF$ScreenShotDirectory = "/Volumes/afsad/ldata/KEKB/KCG/ScrShot";
 
 !Get[PackagesDirectory//"init.kekb.n"];
 
