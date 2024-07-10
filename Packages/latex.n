@@ -23,6 +23,8 @@ LaTeX=Class[{},{eqn=0,pre0="\
 
   Constructor[]:=(ReleaseHold/@Get[ldir//"LTData.sad"];
     wdir=(style==="standalone" && Check[Module[{f=OpenRead["!echo '0' > "//ldir//"dummy"]},Close[f];1],0]);
+    If[Environmrnt["MAGICK_TEMPORARY_PATH"]==="",
+      Environmrnt["MAGICK_TEMPORARY_PATH"]="/tmp"];
     {style,pt,margins,dpi,eqn});
 
   Preamble["align"]:=StandardForm["\

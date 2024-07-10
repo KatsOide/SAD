@@ -839,7 +839,7 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       r0=1.d100
       cod00=cod0
       fact=.5d0
-      conv=min(conv1,conv0*(1.d0+(cod0(6)/0.001d0)**2+dble(nlat)/100.d0))
+      conv=min(conv1,conv0*(1.d0+(cod0(6)/0.001d0)**2+dble(nlat)))
       stab=.false.
       call c_f_pointer(c_loc(tr1),tr1v,[20])
       call c_f_pointer(c_loc(rlist(iftwis)),

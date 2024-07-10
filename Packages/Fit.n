@@ -1,4 +1,4 @@
-(* Fit.n 7/8/2020 *)
+(* Fit.n 7/7/2024 *)
 {MaxIterations,AccuracyGoal,D};
 
 Fit[`data:{{{__Real},_Real,_Real},___},`fun_,{`v__},`para__]:=Module[
@@ -22,8 +22,8 @@ With[{csl=0.001},
     df[v_]=D[fun,v];
     d=dy$^2+(dx$*(df/@x$))^2;
     dy1=dy$;
-    cs=1e100;
-    While[Abs[cs-cs0]/cs0>csl,
+    cs=1/cs0;
+    While[Abs[cs/cs0-1]>csl,
       cs0=cs;
       f1=Fit$[Thread[{x$,y$,dy1}],fun,v,para];
       {cs,dy1}={ChiSquare,d}/.f1;

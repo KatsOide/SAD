@@ -1130,7 +1130,7 @@ c      endif
         y=rlist(kavy+i)
         if(x < xmin .or. x > xmax)then
           cycle
-        elseif(isym == 99)then
+        elseif(isym /= 99)then
           if(y < ymin .or. y > ymax)then
             cycle
           endif
