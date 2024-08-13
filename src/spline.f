@@ -23,16 +23,17 @@ C
         return
       endif
       allocate (dddy(np))
-      if(mode == 0 .or. mode == 2)then
+      select case (mode)
+      case (0,2)
         ddy(1)=0.d0
         ddy(2)=(y(3)-y(2))/(x(3)-x(2))-(y(2)-y(1))/(x(2)-x(1))
         work(2)=(x(3)-x(1))*2.d0
-      elseif(mode == 1 .or. mode == 3)then
+      case (1,3)
         work(1)=(x(2)-x(1))*.5d0
         work(2)=(x(3)-x(1))*2.d0-work(1)
         ddy(1)=.5d0*((y(2)-y(1))/work(1)/2.d0-dy(1))
         ddy(2)=(y(3)-y(2))/(x(3)-x(2))-(y(2)-y(1))/(x(2)-x(1))-ddy(1)
-      elseif(mode == 4)then
+      case (4)
         dy1a=(y(2)-y(1)+y(np)-y(np-1))/(x(2)-x(1)+x(np)-x(np-1))
         work(1)=(x(2)-x(1))*.5d0
         work(2)=(x(3)-x(1))*2.d0-work(1)
@@ -67,7 +68,7 @@ C
         endif
         deallocate (dddy)
         return
-      endif
+      end select
       do i=2,np-2
         f=x(i+1)-x(i)
 c        write(*,'(a,i4,1p5g12.5)')'spline ',

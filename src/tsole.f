@@ -152,7 +152,7 @@ c          write(*,'(1p6g15.7)')(trans(i,1:6),i=1,6),cod
      $       ftable(1),ftable(2),ftable(3),ftable(4),
      $       mfr,cmp%value(ky_EPS_QUAD),
      $       cmp%value(ky_KIN_QUAD) == 0.d0,
-     $       cmp%value(ky_CHRO_QUAD) /= 0.d0)
+     $       cmp%value(ky_CHRO_QUAD) /= 0.d0,l)
       case(icMULT)
         if(seg)then
           call tmulteseg(trans,cod,beam,srot,l,cmp,bzs,lsegp,

@@ -1,5 +1,5 @@
       subroutine tsteee(trans,cod,beam,srot,al,phib,dx,dy,theta,enarad,
-     $     apsi1,apsi2,fb1,fb2,mfring,fringe,next)
+     $     apsi1,apsi2,fb1,fb2,mfring,fringe,next,l)
       use ffs_flag
       use tmacro
       use bendib, only:rbh,rbl,tbendal
@@ -8,6 +8,7 @@
       use drife
       use chg,only:tchge
       use sad_basics
+      use tparastat,only:setndivelm
       use mathfun
       implicit none
       real*8 epslon,a3,a5,a7,a9,a11,a13,a15
@@ -15,7 +16,8 @@
       parameter (a3=1.d0/6.d0,a5=3.d0/40.d0,a7=5.d0/112.d0,
      1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
      1           a13=231.d0/13312.d0,a15=143.d0/10240.d0)
-      integer*4 mfring,nrad,ndiv,n,n1,n2
+      integer*4 ,intent(in):: mfring,l
+      integer*4 nrad,ndiv,n,n1,n2
       real*8 trans(6,12),cod(6),beam(42),srot(3,9),
      $     al,phib,dx,dy,theta,f1r,f2r,
      $     fb1,fb2,rhob,rbc,alc,phic,alx,alr,
@@ -27,10 +29,10 @@
       real*8 trans1(6,6)
       logical*4 enarad,fringe,next,prev,krad
       if(al == 0.d0)then
-        call tthine(trans,cod,beam,srot,2,al,-phib,dx,dy,theta,
-     $       .false.)
+        call tthine(trans,cod,beam,srot,2,al,-phib,dx,dy,theta,.false.,l)
         return
       elseif(phib == 0.d0)then
+        call setndivelm(l,1)
         call tdrife0(trans,cod,beam,srot,al,0.d0,0.d0,.true.,.false.,irad)
         return
       endif
@@ -84,6 +86,7 @@ c     begin initialize for preventing compiler warning
 c     end   initialize for preventing compiler warning
         ndiv=1
       endif
+      call setndivelm(l,ndiv)
       aln=alc/ndiv
       phin=phic/ndiv
       if(mfring /= -2)then

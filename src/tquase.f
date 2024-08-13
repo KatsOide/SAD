@@ -21,8 +21,7 @@ c
       integer*4 , parameter :: ndivmax=1000
       logical*4 enarad,krad
       if(al .eq. 0.d0)then
-        call tthine(trans,cod,beam,srot,4,
-     $       al,ak,dx,dy,theta,.false.)
+        call tthine(trans,cod,beam,srot,4,al,ak,dx,dy,theta,.false.,l)
         return
       endif
       enarad=radlvl /= 1.d0

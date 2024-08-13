@@ -284,7 +284,7 @@ tfcanvasclip.o: tfcanvasclip.f tfconvstr.o tfloor.o tfstk.o tfstrbuf.o
 tfchgv.o: tfchgv.f tffs.o tfstk.o toplvl.o
 tfchro.o: tfchro.f initb1.o tffs.o tfstk.o
 tfconvstr.o: tfconvstr.f tfeeval.o tfreplace.o tfstk.o tfstrbuf.o
-tfcoup.o: tfcoup.f tffs.o tfstk.o toplvl.o
+tfcoup.o: tfcoup.f tffsa.o tffs.o tfstk.o toplvl.o
 tfdapert.o: tfdapert.f tffs.o tfstk.o toplvl.o
 tfdbun.o: tfdbun.f tffs.o
 tfdisp.o: tfdisp.f initb1.o tffs.o tfstk.o tgfun.o tgrot.o toplvl.o
@@ -305,7 +305,7 @@ tfestk.o: tfestk.f itfpmat.o tfconvstr.o tfeeval.o tfefun.o tfmodule.o tfsolveme
 tfetok.o: tfetok.f tfconvstr.o tffs.o tfstk.o tfstrbuf.o toplvl.o
 tfeval1.o: tfeval1.f tfecmplx.o tfeeval.o tfstk.o
 tfeval.o: tfeval.f tfeeval.o tfstk.o toplvl.o
-tffamsetup.o: tffamsetup.f tfeeval.o tffscalc.o tffs.o tfstk.o
+tffamsetup.o: tffamsetup.f tfeeval.o tffscalc.o tffs.o tfstk.o toplvl.o
 tffile.o: tffile.f tffsa.o tffs.o tfstk.o toplvl.o
 tffindroot.o: tffindroot.f gamma.o itfmaloc.o tfeeval.o tfmodule.o tfpart.o tfreplace.o tfsameq.o tfstk.o
 tffsa.o: tffsa.f INTGRL.o tfeeval.o tffscalc.o tffsmatch.o tffs.o tfmodule.o tfsetparam.o tfstk.o tgrot.o toplvl.o
@@ -430,7 +430,7 @@ tsmear.o: tsmear.f toplvl.o
 tsole.o: tsole.f initb1.o photons.o tdrife.o tffs.o tfstk.o toplvl.o
 tsol.o: tsol.f initb1.o photons.o tdrift.o tffs.o tfloor.o tfstk.o toplvl.o txwake.o
 tsolque.o: tsolque.f photons.o tdrife.o tffs.o tfloor.o tfstk.o toplvl.o
-tsolqu.o: tsolqu.f photons.o tffs.o tfloor.o tsolque.o
+tsolqu.o: tsolqu.f photons.o tffs.o tfloor.o toplvl.o tsolque.o
 tsolvg.o: tsolvg.f tfloor.o
 tsolvm.o: tsolvm.f
 tspac.o: tspac.f tfstk.o toplvl.o

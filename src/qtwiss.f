@@ -124,7 +124,6 @@ c     end   initialize for preventing compiler warning
       sspc0=rlist(ifpos+la-1)
       ntfun=merge(ntwissfun,mfitdetr,orbitcal)
       do l=la+1,lb
-c        call tfmemcheckprint1('qtwiss',l,.false.)
         l1=l-1
         ip1=ip0+l1
         ip=ip1+1
@@ -294,7 +293,7 @@ c          endif
      $           nint(cmp%value(ky_FRMD_BEND)),
      $           cmp%value(ky_FRIN_BEND) == 0.d0,
      $           cmp%value(ky_EPS_BEND),
-     1           coup)
+     1           coup,l1)
             go to 20
 
           case (icQUAD)
@@ -312,14 +311,13 @@ c          endif
      $           mfr,cmp%value(ky_EPS_QUAD),
      $           cmp%value(ky_KIN_QUAD) == 0.d0,
      $           cmp%value(ky_CHRO_QUAD) /= 0.d0,
-     $           coup)
-c            write(*,'(a,1p10g12.4)')'qtwiss-quad ',al,ak1,trans(1:2,1:2)
+     $           coup,l1)
             go to 20
 
           case (icSEXT, icOCTU, icDECA, icDODECA)
             call qthin(trans,cod,ltyp,al,cmp%value(ky_K_THIN),
      1           cmp%value(ky_DX_THIN),cmp%value(ky_DY_THIN),
-     $           cmp%value(ky_ROT_THIN),coup)
+     $           cmp%value(ky_ROT_THIN),coup,l1)
           go to 20
 
           case (icSOL)
@@ -363,7 +361,7 @@ c     $             kxx,irtc)
      $           cmp%value(ky_V11_CAVI),cmp%value(ky_V02_CAVI),
      $           cmp%value(ky_FRIN_CAVI) == 0.d0,mfr,
      $           cmp%value(ky_APHI_CAVI) /= 0.d0,
-     $           coup)
+     $           coup,l)
             go to 20
 
           case (icTCAV)
@@ -998,11 +996,11 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
       type (sad_descriptor) dsave(kwMAX)
       type (sad_comp) , pointer :: cmp
       integer*4 , intent(in)::l
-      integer*4 nvar,le,irtc
+      integer*4 nvar,le,irtc,ibg,ibb
       real*8 , intent(in)::fr
       real*8 , intent(out)::ftwiss(ntwissfun),gv(3,4)
       real*8 trans(6,6),cod(6),gr,sgr,sgr2,gr1,
-     $     tw1(ntwissfun),beam(21),srot(3,9)
+     $     tw1(ntwissfun),beam(21),srot(3,9),rt1
       logical*4 , intent(in)::cgeo
       logical*4 , intent(out)::over
       logical*4 sol,rt,chg,cp0,normal
@@ -1022,9 +1020,19 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
           tw1=twiss(l,0,1:ntwissfun)
           cod=tw1(mfitdx:mfitddp)
           trans=tinv6(etwiss2ri(tw1,normal))
-          call tturne1(trans,cod,beam,srot,
-     $         iaez,0,
-     $         .false.,sol,rt,.true.,l,l)
+          call tfbndsol(l,ibg,ibb)
+          if(ibg > 0)then
+            if(rt)then
+              rt1=1.d0+(tw1(mfitddp)+twiss(l+1,0,mfitddp))*.5d0
+            else
+              rt1=1.d0
+            endif
+            call tsole1(trans,cod,beam,srot,l,rt1,.true.,.true.)
+          else
+            call tturne1(trans,cod,beam,srot,
+     $           iaez,0,
+     $           .false.,sol,rt,.true.,l,l)
+          endif
         endif
         if(cgeo)then
           gv=tfgeo1s(l)
@@ -1646,7 +1654,7 @@ c        write(*,'(a,3i5,1p2g15.7)')'qputfracseg ',k,i1,i,r,lkv0%rbody(i)
      $     eps0,.false.,fringe,
      $     f1in,f2in,f1out,f2out,
      $     mfring,fb1,fb2,bfrm,vc,harm,phi,freq,wakew1,
-     $     1.d0,autophi,0)
+     $     1.d0,autophi)
 c      write(*,'(a,1p10g12.4)')'qmult ',chi1,chi2,cod(1:5)
       call qcopymatg(trans,transe,k)
       coup=trans(1,3) .ne. 0.d0 .or. trans(1,4) .ne. 0.d0 .or.
@@ -1709,17 +1717,16 @@ c      write(*,'(a,1p10g12.4)')'qmult ',chi1,chi2,cod(1:5)
       return
       end subroutine
 
-      subroutine qthin(trans,cod,nord,al,ak,
-     1                 dx,dy,theta,coup)
+      subroutine qthin(trans,cod,nord,al,ak,dx,dy,theta,coup,l)
       use sad_basics
       implicit none
-      integer*4 nord
+      integer*4 ,intent(in):: nord,l
       real*8 trans(4,5),cod(6),transe(6,12),beam(42),srot(3,9),
      $     dx,dy,theta,ak,al
       logical*4 coup
       call tinitr(transe)
       call tthine(transe,cod,beam,srot,nord,al,ak,
-     1     dx,dy,theta,.false.,1)
+     1     dx,dy,theta,.false.,l)
       call qcopymat(trans,transe,.false.)
       coup=trans(1,3) /= 0.d0 .or. trans(1,4) /= 0.d0 .or.
      $     trans(2,3) /= 0.d0 .or. trans(2,4) /= 0.d0
@@ -1728,17 +1735,17 @@ c      write(*,'(a,1p10g12.4)')'qmult ',chi1,chi2,cod(1:5)
 
       subroutine qquad(trans,cod,al,ak,
      1     dx,dy,theta,fringe,f1in,f2in,f1out,f2out,mfring,eps0,
-     $     kin,achro,coup)
+     $     kin,achro,coup,l)
       use sad_basics
       implicit none
-      integer*4 mfring
+      integer*4 ,intent(in):: mfring,l
       real*8 trans(4,5),cod(6),transe(6,12),beam(42),srot(3,9),
      $     dx,dy,theta,ak,eps0,al,f1in,f2in,f1out,f2out
       logical*4 fringe,coup,kin,achro
       call tinitr(transe)
       call tquade(transe,cod,beam,srot,al,ak,0.d0,
      1     dx,dy,theta,.false.,fringe,f1in,f2in,f1out,f2out,mfring,eps0,
-     $     kin,achro,.false.)
+     $     kin,achro,l)
       call qcopymat(trans,transe,.false.)
       coup=trans(1,3) /= 0.d0 .or. trans(1,4) /= 0.d0 .or.
      $     trans(2,3) /= 0.d0 .or. trans(2,4) /= 0.d0

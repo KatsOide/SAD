@@ -21,7 +21,8 @@ WriteBeamLine[f_,b__BeamLine:ExtractBeamLine[],opt___]:=Module[{bo,op},
 WriteBeamLine1[f_,b_:ExtractBeamLine[],opt___]:=Module[
   {def={Format->"FFS",Name->None},form,name,ch,col,s,lb=Length[b]},
   {form,name}={Format,Name}/.{opt}/.def;
-  If[form=="MAIN",
+  Print["WriteBeamLine ",{{opt},form,name}];
+  If[form==="MAIN",
     col=9;
     If[name<=>None,
       Write[f,"\nLINE ",name//" = "]];

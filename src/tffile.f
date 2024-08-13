@@ -11,7 +11,7 @@
       type (sad_descriptor) kx
       type (sad_string), pointer :: str
       real*8 vx
-      integer*4 , intent(in)::lfnb
+      integer*4 ,intent(in)::lfnb
       integer*4 i,lfni1,nc,next,itype,lfno1,isp0,irtc,itfpeeko
       integer*4 ,save:: lfni0=0
       logical*4 ,intent(out)::init,exist
@@ -21,9 +21,9 @@
       exist=.true.
       init=.false.
       clo=.false.
-      if(abbrev(word,'SUSP_END','_') .or. word .eq. 'END')then
-        if(suspend)then
-          init=lfnp .gt. lfnb
+      if(abbrev(word,'SUSP_END','_') .or. word == 'END')then
+        if(suspend .and. lfni0 == 0)then
+          init=lfnp > lfnb
           lfni0=lfni
           call tfclose(lfnb,lfnb)
           lfnp=lfnb
@@ -32,8 +32,7 @@
           call trbassign(lfni)
         endif
         return
-      elseif(abbrev(word,'TERM_INATE','_') .or.
-     $       abbrev(word,'CLO_SE','_'))then
+      elseif(abbrev(word,'TERM_INATE','_') .or. abbrev(word,'CLO_SE','_'))then
         clo=abbrev(word,'CLO_SE','_')
         call peekwd(word,next)
         if(abbrev(word,'IN_PUT','_'))then
@@ -77,7 +76,7 @@
         i=itfdownlevel()
         isp=isp0
         return
-      elseif(abbrev(word,'OUT_PUT','_') .or. word .eq. 'PUT'
+      elseif(abbrev(word,'OUT_PUT','_') .or. word == 'PUT'
      1       .or. abbrev(word,'APP_END','_'))then
         app=abbrev(word,'APP_END','_')
         itype=itfpeeko(kx,next)
@@ -113,23 +112,23 @@
         return
       elseif(abbrev(word,'RES_UME','_'))then
         lfni1=lfni0
-        if(lfni1 .eq. 0)then
+        if(lfni1 == 0)then
           return
         endif
         lfni0=0
         call trbassign(lfni1)
         lfnp=lfnp+1
         rew=.false.
-      elseif(abbrev(word,'IN_PUT','_')  .or. word .eq. 'GET'
-     1       .or. word .eq. 'READ')then
-        rew=word .eq. 'READ'
+      elseif(abbrev(word,'IN_PUT','_')  .or. word == 'GET'
+     1       .or. word == 'READ')then
+        rew=word == 'READ'
         itype=itfpeeko(kx,next)
 c        call tfdebugprint(kx,'IN',1)
         if(ktfrealq(kx,vx))then
           lfni1=int(vx+.5d0)
         elseif(ktfstringq(kx,str))then
           call trbopenmap(str%str(1:str%nch),kx,irtc)
-          if(Irtc .ne. 0)then
+          if(Irtc /= 0)then
             call termes('?File open error for IN_PUT',
      $           str%str(1:str%nch))
             return
@@ -167,11 +166,10 @@ c     write(word,'(''ftn'',i2.2)')lfni1
 
       subroutine texpfn(file)
       implicit none
-      character*(*) file
+      character*(*) ,intent(inout):: file
       integer*4 l
-c
       l=len_trim(file)
-      if(file(1:1) .eq. '''' .or. file(1:1) .eq. '"')then
+      if(file(1:1) == '''' .or. file(1:1) == '"')then
         file=file(2:l-1)
       endif
       call cfexptilde(file)
@@ -183,14 +181,15 @@ c
       use tfrbuf
       use ffsfile
       implicit none
-      integer*4 lfnp1,lfni0,lfnp0,lfnb
+      integer*4 ,intent(in):: lfnp1,lfnb
+      integer*4 lfni0,lfnp0
       lfni0=lfni
       lfnp0=max(1,lfnb-1,lfnp1-1)
       lfni=lfnstk(lfnp0)
-      if(lfni .ne. lfni0)then
+      if(lfni /= lfni0)then
         call trbassign(lfni)
       endif
-      if(lfni0 .ne. lfni)then
+      if(lfni0 /= lfni)then
         call skipline
       endif
       lfnp=lfnp0

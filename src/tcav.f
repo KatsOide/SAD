@@ -5,6 +5,7 @@
       use ffs_flag
       use tmacro
       use wakez
+      use tparastat,only:setndivelm
       use mathfun
       implicit none
       integer*4, parameter ::ndivmax=1000
@@ -20,7 +21,8 @@
      $     dp2,pr2,dvn,dzn,dp1r,p1r,p1,h1,dp2r,p2r,av,dpx,fw,
      $     alx,dpepe,xi,pxi,fw0,
      $     asinh,t,ph,dh,dpr,dpy,dp,dp1,pr1,pe,vcorr
-      logical*4 fringe,autophi,wak
+      logical*4 ,intent(in):: fringe,autophi
+      logical*4 wak
       if(w == 0.d0)then
         wi=0.d0
       else
@@ -63,6 +65,7 @@ c      pe=sqrt((he-1.d0)*(he+1.d0))
           ws(i)=wsn
         enddo
       endif            
+      call setndivelm(l_track,ndiv)
       dphis=phis-phic
       if(rad .or. trpt .or. autophi)then
         offset=sin(dphis)
@@ -210,9 +213,9 @@ c          h1=sqrt(1.d0+(pe*pr1)**2)
       integer*4 ,intent(in):: np
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),dv(np)
       integer*4 i
-      real*8 al,v,p0,dphis,offset,h0,w,s0,dvfs,
-     $     vf,dp1r,p1r,p1,h1,t,ph,dpt,dh,h2,a,dpr,dp2r,p2r,pmin
-      parameter (pmin=1.e-10)
+      real*8 ,intent(in):: al,v,p0,dphis,offset,h0,w,dvfs
+      real*8 s0,vf,dp1r,p1r,p1,h1,t,ph,dpt,dh,h2,a,dpr,dp2r,p2r
+      real*8 ,parameter:: pmin=1.d-10
       vf=v/al/p0*.5d0
       s0=sin(dphis)-offset
       do i=1,np

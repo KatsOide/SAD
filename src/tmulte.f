@@ -82,6 +82,7 @@
       use mathfun
       use multa, only:fact,aninv
       use drife
+      use tparastat,only:setndivelm
       use macmath
       use sad_basics
       implicit none
@@ -250,11 +251,16 @@
         endif
       endif
       dgb=0.d0
+      if(nmmin == 2)then
+        call setndivelm(l,0)
+      else
+        call setndivelm(l,ndiv)
+      endif
       do m=1,ndiv
         if(nmmin == 2)then
           call tsolque(trans,cod,beam,srot,al1,ak1,
      $         bzs,dble(ak0n),imag(ak0n),
-     $         eps0,krad,irad)
+     $         eps0,krad,irad,l)
           call tgetdvh(dgb,dv)
           cod(5)=cod(5)+dv*al1
         endif
@@ -262,31 +268,6 @@
         al1=aln
         ak0n=akn(0)
         call tmulke(trans1,cod,aln,akn,0.d0,w1n,m)
-c$$$        cx0=dcmplx(cod(1),cod(3))
-c$$$        cx=(0.d0,0.d0)
-c$$$        cx2=(0.d0,0.d0)
-c$$$        do kord=nmmax,nmmin,-1
-c$$$          cx=(cx+akn(kord))*cx0*aninv(kord)
-c$$$          cx2=cx2*cx0*aninv(kord)+akn(kord)
-c$$$        enddo
-c$$$        if(nmmin == 2)then
-c$$$          cx=cx*cx0
-c$$$          cx2=cx2*cx0
-c$$$        else
-c$$$          cx=cx+akn(0)
-c$$$        endif
-c$$$        cx=dcmplx(min(pmax,max(-pmax,dble(cx))),
-c$$$     $       min(pmax,max(-pmax,imag(cx))))
-c$$$        trans1(2,1)=-dble(cx2)+w1n
-c$$$        trans1(2,3)=imag(cx2)
-c$$$        trans1(4,1)=imag(cx2)
-c$$$        trans1(4,3)= dble(cx2)+w1n
-c$$$        cod(2)=cod(2)-dble(cx)+w1n*cod(1)
-c$$$        cod(4)=cod(4)+imag(cx)+w1n*cod(3)
-c$$$        bsir0=merge(bsir0+imag(cx)/al1,0.d0,m == 1)
-c$$$        if(m == ndiv)then
-c$$$          bsir0=bsir0-imag(cx)/al1
-c$$$        endif
         if(acc)then
           p1=p0*(1.d0+cod(6))
           h1=p2h(p1)
@@ -404,7 +385,7 @@ c$$$     $         +trans1(4,3)*trans(3,6)
       if(nmmin == 2)then
         call tsolque(trans,cod,beam,srot,al1*.5d0,ak1*.5d0,
      $       bzs,dble(ak0n)*.5d0,imag(ak0n)*.5d0,
-     $       eps0,krad,irad)
+     $       eps0,krad,irad,l)
         call tgetdvh(dgb,dv)
         cod(5)=cod(5)+dv*al1*.5d0
       endif

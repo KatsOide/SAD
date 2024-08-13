@@ -1,8 +1,7 @@
       subroutine tquade(trans,cod,beam,srot,al,ak,bz,
      1     dx,dy,theta,krad,
      1     fringe,f1in,f2in,f1out,f2out,
-     $     mfring,eps0,
-     $     kin,achro)
+     $     mfring,eps0,kin,achro,l)
       use tfstk
       use ffs_flag
       use tmacro
@@ -10,19 +9,19 @@
       use temw, only:tsetr0
       use sol,only:tsolrote
       use kradlib, only:tradke      
+      use tparastat,only:setndivelm
       implicit none
       real*8 , intent(in)::ak,al,bz,dx,dy,theta,
      $     f1in,f2in,f1out,f2out,eps0
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
-      integer*4 ,intent(in):: mfring
+      integer*4 ,intent(in):: mfring,l
       logical*4 ,intent(in):: fringe
       real*8 bxs,bys,bzs,theta1,ak1,aln,akn
       integer*4 itgetqraddiv,i,ndiv
       integer*4 , parameter :: ndivmax=1000
       logical*4 ,intent(in):: krad,kin,achro
       if(al == 0.d0)then
-        call tthine(trans,cod,beam,srot,4,
-     $       al,ak,dx,dy,theta,.false.)
+        call tthine(trans,cod,beam,srot,4,al,ak,dx,dy,theta,.false.,l)
         return
       elseif(ak == 0.d0)then
         call tdrife0(trans,cod,beam,srot,al,bz,0.d0,.true.,.false.,irad)
@@ -61,15 +60,12 @@ c cod has canonical momenta!
       else
         ndiv=1
       endif
-c      ndiv=min(ndivmax,max(1,merge(
-c     $     merge(itgetqraddiv(cod,ak1,al,bzs*.5d0),
-c     $     int(dble(itgetqraddiv(cod,ak1,al,bzs*.5d0)/eps0)),
-c     $     eps0 == 0.d0),1,krad)))
+      call setndivelm(l,0)
       aln=al/ndiv
       akn=ak1/ndiv
       do i=1,ndiv
         call tsolque(trans,cod,beam,srot,aln,akn,
-     $       bzs,0.d0,0.d0,eps0,krad,irad)
+     $       bzs,0.d0,0.d0,eps0,krad,irad,l)
       enddo
       if(mfring == 2 .or. mfring == 3)then
         call tqlfre(trans,cod,beam,al,ak1,-f1out,f2out,bzs)

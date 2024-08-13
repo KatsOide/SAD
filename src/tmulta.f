@@ -9,6 +9,7 @@
       use tbendcom, only:tbrot,tbshift
       use kradlib, only:tradke,pxr0,pyr0,zr0,bsi
       use photontable,only:tsetpcvt,pcvt
+      use tparastat,only:setndivelm
       use mathfun
       implicit none
       integer*4 ,parameter ::ndivmax=2000
@@ -75,6 +76,7 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
         ndiv=max(ndiv,ndivrad(phib,ak1r,0.d0,eps0))
       endif
       ndiv=min(ndivmax,ndiv)
+      call setndivelm(l_track,ndiv)
       aln=al/ndiv
       if(fb1 /= 0.d0)then
         aln=aln-(phi*fb1)**2/al/48.d0
@@ -249,6 +251,7 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
       use multa
       use temw,only:tmulbs
       use chg,only:tchge
+      use tparastat,only:setndivelm
       use kradlib, only:tradke      
       use sad_basics
       implicit none
@@ -316,6 +319,7 @@ c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1),px(1),y(1),py(1),z(1),alg,phig,dt
      $int(sqrt(ampmax**(n-1)/6.d0/fact(n-1)/eps*abs(ak(n)*al)))+1)
       enddo
       ndiv=min(ndivmax,ndiv)
+      call setndivelm(l,ndiv)
       psi1n=2.d0*psi1*ndiv
       psi2n=2.d0*psi2*ndiv
       aln=al/ndiv

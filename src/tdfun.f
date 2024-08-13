@@ -11,13 +11,11 @@ c Obsolete 3/16/2022
       real*8 ,parameter :: abmax=1.d-8
       real*8 ,parameter::factor=0.97d0,dmax=1.d10
       integer*4 ,parameter::npeak=10
-      integer*4 ,intent(out):: nqcola,nqcola1,
-     $     iqcol(*),lfp(2,maxcond),kdp(*)
+      integer*4 ,intent(out):: nqcola,nqcola1,iqcol(*),lfp(2,maxcond),kdp(*)
       real*8 ,intent(out):: df1(*)
       real*8 vpeak(npeak),vf,vb,ve,v,vf1,tdfun1
       logical*4 ,intent(out):: error
-      integer*4 ipeak(npeak),j,i,ka,kf,kp,kp1,mp,idp,kpb,kpe,
-     $     k,ip,irtc,m
+      integer*4 ipeak(npeak),j,i,ka,kf,kp,kp1,mp,idp,kpb,kpe,k,ip,irtc,m
       logical*4 maxfit,ttrans(-nfam:nfam),tftype1fit
 c      do j=1,nfcol
 c        if(flv%kfit(flv%kfitp(j)) == mfitnx .or.
@@ -26,11 +24,11 @@ c          do m=nfam1,nfam
 c            detr0=utwiss(mfitr1,m,1)*utwiss(mfitr4,m,1)
 c     $           -utwiss(mfitr2,m,1)*utwiss(mfitr3,m,1)
 c            ttrans(m)=.false.
-c            if(detr0 .lt. 1.d0)then
+c            if(detr0 < 1.d0)then
 c              do i=2,nut
 c                if(utwiss(mfitr1,m,i)*utwiss(mfitr4,m,i)
 c     $               -utwiss(mfitr2,m,i)*utwiss(mfitr3,m,i)
-c     1               .ge. 1.d0)then
+c     1               >= 1.d0)then
 c                  ttrans(m)=.true.
 c                  exit
 c                endif
@@ -39,7 +37,7 @@ c            else
 c              do i=2,nut
 c                if(utwiss(mfitr1,m,i)*utwiss(mfitr4,m,i)
 c     $               -utwiss(mfitr2,m,i)*utwiss(mfitr3,m,i)
-c     1               .lt. 1.d0)then
+c     1               < 1.d0)then
 c                  ttrans(m)=.true.
 c                  exit
 c                endif
@@ -57,7 +55,7 @@ c        endif
         ka=flv%kfitp(j)
         kf=flv%kfit(ka)
 c        write(*,*)'TDFUN ',j,ka,kf,mfitgx
-        if(kf .gt. mfitchi3)then
+        if(kf > mfitchi3)then
           cycle
         endif
         kp=flv%ifitp(ka)
@@ -66,19 +64,19 @@ c        write(*,*)'TDFUN ',j,ka,kf,mfitgx
           mp=(abs(flv%mfitp(ka))-1)/2
           do20:     do idp=nfam1,nfam
             vf=flv%fitval(ka)
-            if((kfam(idp) == 0 .and. idp .ge. -mp .and. idp .le. mp)
-     $           .or. jfam(idp) .ge. -mp .and. jfam(idp) .le. mp)then
-              if(kf .ge. mfitdx .and. kf .le. mfitdpy .and.
-     $             (idp .lt. -nfr .or. idp .gt. nfr ))then
+            if((kfam(idp) == 0 .and. idp >= -mp .and. idp = mp)
+     $           .or. jfam(idp) >= -mp .and. jfam(idp) = mp)then
+              if(kf >= mfitdx .and. kf = mfitdpy .and.
+     $             (idp < -nfr .or. idp > nfr ))then
 c     $             .or. inicond .and. idp /= 0))then
                 cycle
-              elseif(idp /= 0 .and. kf .gt. mfittry)then
+              elseif(idp /= 0 .and. kf > mfittry)then
                 cycle
               endif
               if(idp /= 0 .or. mp*2+1 /= abs(flv%mfitp(ka)))then
                 if(kp == nlat)then
                   write(*,*)'tdfun ',idp,vf,xixf,dp(idp),dp0
-                  if(idp .ge. -1 .and. idp .le. 1)then
+                  if(idp >= -1 .and. idp = 1)then
                     if(kf == mfitnx)then
                       vf=vf+(dp(idp)-dp0)*xixf
                     endif
@@ -87,19 +85,19 @@ c     $             .or. inicond .and. idp /= 0))then
                     endif
                   endif
                 endif
-                maxfit=flv%mfitp(ka) .lt. 0
+                maxfit=flv%mfitp(ka) < 0
                 if(kp /= kp1)then
                   maxfit=maxfit .and. .not. tftype1fit(kf)
                   kpb=min(kp,kp1)
                   kpe=max(kp,kp1)
                   if(maxfit)then
-                    if(kf .le. mfitdpy
-     $                   .or. kf .ge. mfitpex .and.
-     $                   kf .le. mfitgmz)then
+                    if(kf = mfitdpy
+     $                   .or. kf >= mfitpex .and.
+     $                   kf = mfitgmz)then
                       call tfpeak(idp,kf,kpb,kpe,ipeak,vpeak,npeak)
                       do k=1,npeak
                         ip=ipeak(k)
-                        if(ip .le. 0)then
+                        if(ip = 0)then
                           cycle do20
                         endif
                         df1(i)=tdfun1(vf,vpeak(k),
@@ -110,7 +108,7 @@ c     $             .or. inicond .and. idp /= 0))then
                           lfp(2,i)=0
                           kdp(i)=idp
                           i=i+1
-                          if(i .gt. maxcond)then
+                          if(i > maxcond)then
                             error=.true.
                             return
                           endif
@@ -118,9 +116,9 @@ c     $             .or. inicond .and. idp /= 0))then
                       enddo
                     endif
                   else
-                    if(kf .le. mfitgmz .or.
-     $                   (kf .ge. mfitleng .and. kf .le. mfitchi3))then
-                      maxfit=flv%mfitp(ka) .lt. 0
+                    if(kf = mfitgmz .or.
+     $                   (kf >= mfitleng .and. kf = mfitchi3))then
+                      maxfit=flv%mfitp(ka) < 0
                       vb=tgfun(kf,kpb,idp)
                       ve=tgfun(kf,kpe,idp)
                       vf1=vb
@@ -136,8 +134,8 @@ c     $             .or. inicond .and. idp /= 0))then
                         vf1=vf
                       endif
                       df1(i)=tdfun1(vf1,ve,kf,maxfit,idp,ttrans(idp))
-                      if(cell .and. ka .gt. nfc0 .and. ka .le. nfc0+4
-     $                   .and. abs(df1(i)) .lt. abmax)then
+                      if(cell .and. ka > nfc0 .and. ka = nfc0+4
+     $                   .and. abs(df1(i)) < abmax)then
                         cycle
                       endif
                       if(.not. maxfit)then
@@ -150,7 +148,7 @@ c     $             .or. inicond .and. idp /= 0))then
                       lfp(2,i)=kpb
                       kdp(i)=idp
                       i=i+1
-                      if(i .gt. maxcond)then
+                      if(i > maxcond)then
                         error=.true.
                         return
                       endif
@@ -173,7 +171,7 @@ c     $             .or. inicond .and. idp /= 0))then
                   lfp(2,i)=0
                   kdp(i)=idp
                   i=i+1
-                  if(i .gt. maxcond)then
+                  if(i > maxcond)then
                     error=.true.
                     return
                   endif
@@ -352,7 +350,7 @@ c      call tfdebugprint(kx,'fitfun',3)
         error=.true.
         return
       elseif(ktfrealq(kx,df(nqcol+1)))then
-        if(nqcol .ge. maxcond)then
+        if(nqcol >= maxcond)then
           error=.true.
           level=itfdownlevel()
           return
@@ -362,8 +360,8 @@ c      call tfdebugprint(kx,'fitfun',3)
         kdp(nqcol)=0
       elseif(tfreallistq(kx%k,klx))then
         m=klx%nl
-        if(m .gt. 0)then
-          if(m+nqcol .gt. maxcond)then
+        if(m > 0)then
+          if(m+nqcol > maxcond)then
             error=.true.
             level=itfdownlevel()
             return
@@ -394,7 +392,7 @@ c      call tfmemcheckprint('FitFunction-end',.true.,irtc)
       select case (kf)
       case (mfitbx,mfitby,mfitbz,mfitgmx,mfitgmy,mfitgmz)
         if(maxfit)then
-          if(v .gt. vf)then
+          if(v > vf)then
             tdfun1=log(vf*factor/v)
           else
             tdfun1=0.d0
@@ -406,9 +404,9 @@ c      call tfmemcheckprint('FitFunction-end',.true.,irtc)
       case (mfitax,mfitay,mfitaz)
         if(maxfit)then
           vfa=abs(vf)
-          if(v .gt. vfa)then
+          if(v > vfa)then
             tdfun1=atan(vfa*factor)-atan(v)
-          elseif(v .lt. -vfa)then
+          elseif(v < -vfa)then
             tdfun1=-atan(vfa*factor)-atan(v)
           else
             tdfun1=0.d0
@@ -420,20 +418,20 @@ c      call tfmemcheckprint('FitFunction-end',.true.,irtc)
       case (mfitex,mfitey)
         if(maxfit)then
           vfa=abs(vf)
-          if(v .gt. vfa)then
+          if(v > vfa)then
             tdfun1=vfa-v
           else
             tdfun1=max(-vfa-v,0.d0)
           endif
         else
-          tdfun1=merge(-vf,vf,kdp .lt. 0)-v
+          tdfun1=merge(-vf,vf,kdp < 0)-v
         endif
         return
 
       case (mfitchi1,mfitchi2,mfitchi3)
         if(maxfit)then
           vfa=abs(vf)
-          if(v .gt. vfa)then
+          if(v > vfa)then
             tdfun1=vfa-v
           else
             tdfun1=max(-vfa-v,0.d0)
@@ -441,10 +439,10 @@ c      call tfmemcheckprint('FitFunction-end',.true.,irtc)
         else
           tdfun1=vf-v
         endif
-        do while(tdfun1 .lt. -pi)
+        do while(tdfun1 < -pi)
           tdfun1=tdfun1+pi2
         enddo
-        do while(tdfun1 .gt. pi)
+        do while(tdfun1 > pi)
           tdfun1=tdfun1-pi2
         enddo
         
@@ -466,7 +464,7 @@ c
       case default
         if(maxfit)then
           vfa=abs(vf)
-          if(v .gt. vfa)then
+          if(v > vfa)then
             tdfun1=vfa-v
           else
             tdfun1=max(-vfa-v,0.d0)
@@ -499,9 +497,9 @@ c        write(*,*)'tdfun1 ',kf,maxfit,vf,v,tdfun1
 c        if(kf == mfitgmy)then
 c          write(*,*)'tfpeak ',i,va,va0,va1
 c        endif
-        if(va .gt. va0 .and. va .ge. va1)then
+        if(va > va0 .and. va >= va1)then
           do j=1,npeak
-            if(va .gt. abs(vpeak(j)))then
+            if(va > abs(vpeak(j)))then
               do k=npeak,j+1,-1
                 vpeak(k)=vpeak(k-1)
                 ipeak(k)=ipeak(k-1)

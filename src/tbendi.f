@@ -8,6 +8,7 @@
       use ffs_flag
       use tmacro
       use ffs_pointer, only:inext,iprev
+      use tparastat,only:setndivelm
       use kradlib
       use tspin, only:cphi0,sphi0
       use photontable
@@ -64,6 +65,7 @@
         ndiv=max(ndiv,ndivrad(phib*alc/al,ak*alc/al,0.d0,eps0))
       endif
       ndiv=min(ndivmax,ndiv)
+      call setndivelm(l_track,ndiv)
       n2=ndiv+n2
       if(fringe .and. mfring .gt. -4 .and. mfring /= 2)then
         call ttfrin(np,x,px,y,py,z,g,4,ak,al,0.d0)

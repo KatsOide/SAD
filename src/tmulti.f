@@ -49,6 +49,7 @@ c      write(*,'(a,1p10g12.4)')'tmulk ',apsi,aln,akn(0:2)
       use photontable,only:tsetpcvt,pcvt
       use mathfun
       use multa, only:fact,aninv
+      use tparastat,only:setndivelm
       use kyparam, only:nmult
       use multi
 c      use ffs_pointer, only:inext,iprev
@@ -158,8 +159,13 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
         sv=0.d0
         ibsi=1
         akrm(0:nmmax)=akr(0:nmmax)*wi
-        if(nzleng .and. psi1 /= 0.d0)then
-          call tmulk(np,x,px,y,py,g,al,akr,psi1,nmmax)
+        if(nzleng)then
+          call setndivelm(l_track,0)
+          if(psi1 /= 0.d0)then
+            call tmulk(np,x,px,y,py,g,al,akr,psi1,nmmax)
+          endif
+        else
+          call setndivelm(l_track,ndiv)
         endif
         do m=1,ndiv
           if(nzleng)then
@@ -198,7 +204,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
             al1=al*wm
             ak1=akr1*wm
             ak01=akr(0)*wm
-            if(nmmax .ge. 2)then
+            if(nmmax >= 2)then
               do concurrent (i=1:np)
                 cx1=dcmplx(x(i),y(i))
                 cx=akrm(nmmax)*cx1*aninv(nmmax)
@@ -214,7 +220,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
               call spkick(np,x,px,y,py,z,g,dv,sx,sy,sz,al*wm,radius,
      $             alx,kturn,kptbl)
             endif
-          elseif(nmmax .ge. 1)then
+          elseif(nmmax >= 1)then
             do concurrent (i=1:np)
               cx1=dcmplx(x(i),y(i))
               cx=akrm(nmmax)*cx1*aninv(nmmax)
@@ -272,7 +278,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
             enddo
           endif
           if(krad)then
-            if(calpol .and. nmmax .ge. 2)then
+            if(calpol .and. nmmax >= 2)then
               do concurrent (i=1:np)
                 cx1=dcmplx(x(i),y(i))
                 cx=akr(nmmax)*cx1*aninv(nmmax+1)
@@ -317,6 +323,7 @@ c      write(*,'(a,1p10g12.4)')'tmulti-9 ',x(1),px(1),y(1),py(1),z(1),g(1)
       use wakez,only:txwake
       use mathfun
       use multa, only:fact,aninv
+      use tparastat,only:setndivelm
       use kyparam, only:nmult
       use multi
 c      use ffs_pointer, only:inext,iprev
@@ -426,6 +433,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
       else
         ws(1:ndiv)=1.d0/ndiv
       endif
+      call setndivelm(l_track,ndiv)
       phic=(phirf+dphirf)*charge
       phis=merge(0.d0,merge(phic,w*trf0,autophi),trpt)
       dphis=phis-phic
@@ -515,7 +523,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
           al1=al*wm
           ak1=akr1*wm
           ak01=akr(0)*wm
-          if(nmmax .ge. 2)then
+          if(nmmax >= 2)then
             do concurrent (i=1:np)
               cx1=dcmplx(x(i),y(i))
               cx=akrm(nmmax)*cx1*aninv(nmmax)
@@ -531,7 +539,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
             call spkick(np,x,px,y,py,z,g,dv,sx,sy,sz,al*ws(m),radius,
      $           alx,kturn,kptbl)
           endif
-        elseif(nmmax .ge. 1)then
+        elseif(nmmax >= 1)then
           do concurrent (i=1:np)
             cx1=dcmplx(x(i),y(i))
             cx=akrm(nmmax)*cx1*aninv(nmmax)
@@ -625,7 +633,7 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
      $         dphis,dvfs,offset)
         endif
         if(krad)then
-          if(calpol .and. nmmax .ge. 2)then
+          if(calpol .and. nmmax >= 2)then
             do concurrent (i=1:np)
               cx1=dcmplx(x(i),y(i))
               cx=akr(nmmax)*cx1*aninv(nmmax+1)

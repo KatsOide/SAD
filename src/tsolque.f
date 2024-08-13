@@ -311,17 +311,18 @@ c        phi1=aln*w1
       end module
 
       subroutine tsolque(trans,cod,beam,srot,al,ak,
-     $     bz0,ak0x,ak0y,eps0,enarad,irad)
+     $     bz0,ak0x,ak0y,eps0,enarad,irad,l)
       use tsolz
       use drife
       use tmacro, only:bradprev
       use kradlib, only:tradke
       use temw,only:tmulbs
       use sad_basics
+      use tparastat,only:setndivelm,ndivelm,addndivelm
       implicit none
       type(tzparam) tz
       integer*4 n,ndiv
-      integer*4 ,intent(in):: irad
+      integer*4 ,intent(in):: irad,l
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 trans1(6,6)
       real*8 ,intent(in):: al,ak,eps0,ak0x,ak0y,bz0
@@ -368,6 +369,7 @@ c        phi1=aln*w1
      $       aw1p=>tz%tzp%aw1p,aw2p=>tz%tzp%aw2p,
      $       cxs1p=>tz%tzp%cxs1p,cxs2p=>tz%tzp%cxs2p)
       if(ak == 0.d0)then
+        call addndivelm(l,1)
         call tdrife(trans,cod,beam,srot,al,bz0,ak0x,ak0y,al,.true.,enarad,irad)
         return
 c      elseif(ak .lt. 0.d0)then
@@ -381,6 +383,7 @@ c        stop
         eps=0.1d0*eps0
       endif
       ndiv=min(ndivmax,1+int(abs(al*hypot(ak,bz))/eps))
+      call addndivelm(l,ndiv)
       aln1=al/ndiv
       dx0=ak0x/ak
       dy0=ak0y/ak

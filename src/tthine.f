@@ -1,4 +1,4 @@
-      subroutine tthine(trans,cod,beam,srot,nord,al,ak,dx,dy,theta,enarad)
+      subroutine tthine(trans,cod,beam,srot,nord,al,ak,dx,dy,theta,enarad,l)
       use ffs_flag
       use tmacro
       use drife
@@ -6,7 +6,9 @@
       use multa, only:fact
       use chg,only:tchge
       use sad_basics
+      use tparastat,only:setndivelm
       implicit none
+      integer*4 ,intent(in):: l
       integer*4 kord,nord
       real*8 ,intent(in):: al,ak,dx,dy,theta
       real*8 b1,aki,ala,alb
@@ -15,6 +17,7 @@
       logical*4 ,intent(in):: enarad
       logical*4 krad
       real*8 trans1(6,13)
+      call setndivelm(l,1)
       if(ak .eq. 0.d0)then
         call tdrife0(trans,cod,beam,srot,al,0.d0,0.d0,.true.,.false.,irad)
         return
@@ -54,15 +57,6 @@
         call tmultr5(trans,trans1,irad)
       endif
       call tmulbs(beam ,trans1,.true.)
-c      if(enarad .and. al .ne. 0.d0)then
-c        bx=-b1*imag(cx)
-c        by= b1*dble(cx)
-c        bxx=-b1*imag(cx1)
-c        bxy= b1*dble(cx1)
-c        call trade(trans,beam,cod,bx,by,0.d0,0.d0,
-c     $       bxx,bxy,0.d0,0.d0,0.d0,
-c     $       al*.5d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
-c      endif
       cod(2)=cod(2)-aki*dble(cx)
       cod(4)=cod(4)-aki*imag(cx)
       if(al .ne. 0.d0)then
@@ -87,15 +81,6 @@ c      endif
           call tmultr5(trans,trans1,irad)
         endif
         call tmulbs(beam ,trans1,.true.)
-c        if(enarad)then
-c          bx=-b1*imag(cx)
-c          by= b1*dble(cx)
-c          bxx=-b1*imag(cx1)
-c          bxy= b1*dble(cx1)
-c          call trade(trans,beam,cod,bx,by,0.d0,0.d0,
-c     $         bxx,bxy,0.d0,0.d0,0.d0,
-c     $         al*.5d0,0.d0,0.d0,0.d0,0.d0,.false.,.false.)
-c        endif
         cod(2)=cod(2)-aki*dble(cx)
         cod(4)=cod(4)-aki*imag(cx)
         bsir0=bsir0+aki*imag(cx)/al
