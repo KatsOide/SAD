@@ -322,7 +322,6 @@ LINE$Functions={"GAMMA","GAMMABETA","S","BZS","BZT",
         Unit->Twiss$Unit[f],
         ListCoordinate->"POSITION",
         PlotJoined->Head[f]<=>List]},
-    {`pr100,`pr200}={pr1,pr2};
     {ndiv,unit,lc,fl,pj,tags}=
       {PlotDivision,Unit,ListCoordinate,FrameLabel,PlotJoined,PointTags}/.op;
     {l,t}=If[pr2<=pr1,
@@ -342,7 +341,6 @@ LINE$Functions={"GAMMA","GAMMABETA","S","BZS","BZT",
       dl=Max[dlmin,leng/ndiv];
       x0=LINE["S",pr1];
       OpticsList[f,pr1,pr2,dl,0,lc,tags,pj<=>False]];
-    {`x000,`leng00}={x0,leng};
     {{fl/.Automatic->Twiss$Label[f],unit,pj,t,
       {x0-0.001,x0+leng+0.001}},op,l}];
 
