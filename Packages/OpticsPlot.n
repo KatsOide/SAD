@@ -8,6 +8,7 @@ System`ListPlot;
 System`CanvasDrawer;
 `Draw$Option;
 OP$XRange;
+OP$Circ;
 
 SetAttributes[
   {Attometer,Femtometer,FrameHeight,Graph,InvKilometer,InvMeter,Kilometer,Lattice,LatticeRegion,ListCoordinate,
@@ -174,7 +175,7 @@ LINE$Functions={"GAMMA","GAMMABETA","S","BZS","BZT",
         Bind[canvas,"<Motion>",OP$InfoLabel[canvas,frid,False]]];
       p=Max[1,l[[1,1]]-1];
       te=StandardForm[$FORM="10.5";Switch[tt=LINE["TYPENAME",p],
-        "BEND",   If[LINE["ANGLE",p]===0,	tt="SteSTEER";
+        "BEND",   If[LINE["ANGLE",p]===0,tt="STEER";
           "K`d0`n ="//LINE["K0",p]//" rad",
           "`fq`n ="//LINE["ANGLE",p]//" rad"],
         "QUAD",   "K`d1`n ="//LINE["K1",p]//" m`u-1`n",
@@ -240,14 +241,12 @@ LINE$Functions={"GAMMA","GAMMABETA","S","BZS","BZT",
       l=If[f1==={},{OpticsList1$[pr,{},FrameLabel->fly,Null@@fopt]},
         Apply[OpticsList1$[pr,##,FrameLabel->fly,Null@@fopt]&,frame,{1}]];
       unit=l[[1,1,2]];
-!      Print["Unit? ",l[[,1]]];
       Scan[If[#[[1,2]]<=>unit,
         Message[`OpticsPlot::`units,Evaluate[#[[1,2]]],Evaluate[unit]]]&,l];
       l=Cases[l,{{_,unit,_,_,_},_,_},1];
       v=l[[,3]];
       opv=l[[,2]];
       {min,max}=MinMax[#[[,2]]&/@v];
-!    Print["OP1$-minmax: ",{min,max,v,l}];
       am=Switch[pra,
         {_Real, _Real},     Max[Abs[pra]],
         {Automatic, _Real}, Max[Abs[min], Abs[pra[[2]]]],
@@ -323,6 +322,7 @@ LINE$Functions={"GAMMA","GAMMABETA","S","BZS","BZT",
         Unit->Twiss$Unit[f],
         ListCoordinate->"POSITION",
         PlotJoined->Head[f]<=>List]},
+    {`pr100,`pr200}={pr1,pr2};
     {ndiv,unit,lc,fl,pj,tags}=
       {PlotDivision,Unit,ListCoordinate,FrameLabel,PlotJoined,PointTags}/.op;
     {l,t}=If[pr2<=pr1,
@@ -332,9 +332,9 @@ LINE$Functions={"GAMMA","GAMMABETA","S","BZS","BZT",
       x0=LINE["S",pr1]-LINE["S",-1]+LINE["S",1];
       If[MatchQ[tags,{_,_String,___}],
         MapThread[Join,
-          {OpticsList[f,pr1,nlat,dl,LINE["S",-1]-LINE["S",1],lc,tags,pj<=>False],
+          {OpticsList[f,pr1,nlat,dl,LINE["S",1]-LINE["S",-1],lc,tags,pj<=>False],
             OpticsList[f,1,pr2,dl,0,lc,tags,pj<=>False]}],
-        {Join[OpticsList[f,pr1,nlat,dl,LINE["S",-1]-LINE["S",1],lc,tags,pj<=>False][[1]],
+        {Join[OpticsList[f,pr1,nlat,dl,LINE["S",1]-LINE["S",-1],lc,tags,pj<=>False][[1]],
           OpticsList[f,1,pr2,dl,0,lc,tags,pj<=>False][[1]]],tags}],
 
       ndiv=Min[resol,Max[ndiv,pr2-pr1]];      
@@ -342,7 +342,7 @@ LINE$Functions={"GAMMA","GAMMABETA","S","BZS","BZT",
       dl=Max[dlmin,leng/ndiv];
       x0=LINE["S",pr1];
       OpticsList[f,pr1,pr2,dl,0,lc,tags,pj<=>False]];
-!    Print[{"OL1 ",l,t}];
+    {`x000,`leng00}={x0,leng};
     {{fl/.Automatic->Twiss$Label[f],unit,pj,t,
       {x0-0.001,x0+leng+0.001}},op,l}];
 

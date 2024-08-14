@@ -9,12 +9,12 @@
       use mathfun, only:outer2
       implicit none
       type (sad_descriptor) ,intent(out):: kx
-      type (sad_rlist), pointer :: klr
+      type (sad_rlist), pointer :: klr,kldash,kbl1,kbl2,kal1,kal2
+      type (sad_dlist), pointer :: kl,kbl
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
-      integer*8 ka,ka1,ka2,kal,kadash,kaxi
-      integer*4 i,j,na,np,n,
-     $     itfmessage,narg,ispa,ndash,k,isp2,isp3,ignore
+      integer*8 kaxi
+      integer*4 i,j,na,np,n,itfmessage,narg,ispa,ndash,k,isp2,isp3,ignore
       real*8 x0,x1,y0,y1,xa,ya,xb,yb,
      $     ux,uy,t(4),dmax,dash,s,s1,v,xm,ym,x,y,ds,
      $     z(2),z0(2),z1(2),dz(2)
@@ -27,18 +27,16 @@
         return
       endif
       ndash=0
-      kadash=0
+      nullify(kldash)
       xm=0.d0
       ym=0.d0
       if(narg == 3)then
-        ka=ktfaddr(ktastk(isp))
-        if(tfreallistq(ktastk(isp)))then
-          ndash=ilist(2,ka-1)
-          if(ndash > 1)then
-            kadash=ktfaddr(klist(ka+1))
+        if(tfreallistq(ktastk(isp),kldash))then
+          ndash=kldash%nl
+          if(ndash <= 1)then
+            nullify(kldash)
           endif
-        elseif(ktfrealq(ktastk(isp)))then
-          v=rtastk(isp)
+        elseif(ktfrealq(ktastk(isp),v))then
           if(v > 0.d0)then
             xm=v
           elseif(v < 0.d0)then
@@ -46,64 +44,53 @@
           endif
         endif
       endif
-      if(.not. tflistq(ktastk(isp1+2)))then
-c        write(*,*)'canvasclip-1'
+      if(.not. tflistq(dtastk(isp1+2),kl))then
         irtc=itfmessage(9,'General::wrongtype','"List for #2"')
         return
       endif
-      kal=ktfaddr(ktastk(isp1+2))
-      if(ilist(2,kal-1) /= 2)then
-c        write(*,*)'canvasclip-2'
+      if(kl%nl /= 2)then
         irtc=itfmessage(9,'General::wrongleng','"#2","2"')
         return
       endif
-      if(ktfreallistq(kal))then
-c        write(*,*)'canvasclip-3'
-        irtc=itfmessage(9,'General::wrongtype',
-     $       '"List for #2[[1]]"')
+      if(ktfreallistqo(kl))then
+        irtc=itfmessage(9,'General::wrongtype','"List for #2[[1]]"')
         return
       endif
-      ka1=ktfaddr(klist(kal+1))
-      ka2=ktfaddr(klist(kal+2))
-      if(ktfnonreallistq(ka1) .or. ktfnonreallistq(ka2))then
-c        write(*,*)'canvasclip-4'
+      if(tfnonreallistq(kl%body(1),kal1) .or. tfnonreallistq(kl%body(2),kal2))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"List of Reals for #2[[1]] and #2[[2]]"')
         return
       endif
-      xmin=anint(rlist(ka1+1))
-      ymin=anint(rlist(ka1+2))
-      xmax=anint(rlist(ka2+1))
-      ymax=anint(rlist(ka2+2))
+      xmin=anint(kal1%rbody(1))
+      ymin=anint(kal1%rbody(2))
+      xmax=anint(kal2%rbody(1))
+      ymax=anint(kal2%rbody(2))
       isp0=isp
-      ka=ktfaddr(ktastk(isp1+1))
-      if(.not. tflistq(ktastk(isp1+1)))then
+      if(.not. tflistq(ktastk(isp1+1),kbl))then
         go to 9100
       endif
-      if(ilist(2,ka-1) /= 2)then
+      if(kbl%nl /= 2)then
         go to 9100
       endif
-      if(ktfreallistq(ka))then
+      if(ktfreallistqo(kbl))then
         go to 9100
       endif
-      ka1=ktfaddr(klist(ka+1))
-      ka2=ktfaddr(klist(ka+2))
-      if(.not. tfreallistq(klist(ka+1)) .or.
-     $     .not. tfreallistq(klist(ka+2)))then
+      if(.not. tfreallistq(kbl%dbody(1),kbl1) .or.
+     $     .not. tfreallistq(kbl%dbody(2),kbl2))then
         go to 9100
       endif
-      np=ilist(2,ka1-1)
-      if(ilist(2,ka2-1) /= np)then
+      np=kbl1%nl
+      if(kbl2%nl /= np)then
         go to 9100
       endif
       isp0=isp
-      x0=anint(rlist(ka1+1))
-      y0=anint(rlist(ka2+1))
+      x0=anint(kbl1%rbody(1))
+      y0=anint(kbl2%rbody(1))
       in0=pin(x0,y0)
       call tfccput(x0,y0)
       do n=2,np
-        x1=anint(rlist(ka1+n))
-        y1=anint(rlist(ka2+n))
+        x1=anint(kbl1%rbody(n))
+        y1=anint(kbl2%rbody(n))
         in1=pin(x1,y1)
         ux=x1-x0
         uy=y1-y0
@@ -185,13 +172,13 @@ c        write(*,*)'canvasclip-4'
 c        write(*,*)na,isp-isp0
         na=isp-isp0
       endif
-      if(kadash /= 0)then
+      if(associated(kldash))then
         isp2=isp
         if(na > 1)then
           isp3=isp
           dash=0.d0
           k=1
-          dmax=max(abs(rlist(kadash+1)),eps)
+          dmax=max(abs(kldash%rbody(1)),eps)
           z0=rtastk(isp0+1:isp0+2)
           isp=isp+2
           rtastk(isp-1:isp)=z0
@@ -217,7 +204,7 @@ c        write(*,*)na,isp-isp0
                   ktastk(isp3)=ktflist+kaxi
                   isp=isp3
                   k=mod(k,ndash)+1
-                  dash=min(-abs(rlist(kadash+k)),-eps)
+                  dash=min(-abs(kldash%rbody(k)),-eps)
                   go to 11
                 endif
               else
@@ -227,14 +214,14 @@ c        write(*,*)na,isp-isp0
                   rtastk(isp-1:isp)=anint(z0)
                   dash=0.d0
                   k=mod(k,ndash)+1
-                  dmax=max(abs(rlist(kadash+k)),eps)
+                  dmax=max(abs(kldash%rbody(k)),eps)
                   go to 11
                 elseif(s1 == 0.d0)then
                   isp=isp+2
                   rtastk(isp-1:isp)=anint(z1)
                   dash=0.d0
                   k=mod(k,ndash)+1
-                  dmax=max(abs(rlist(kadash+k)),eps)
+                  dmax=max(abs(kldash%rbody(k)),eps)
                   z0=z1
                 else
                   dash=s1
