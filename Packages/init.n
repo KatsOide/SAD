@@ -608,9 +608,9 @@ $DisplayFunction=If[Environment["DISPLAY"]<=>"",System`CanvasDrawer,Identity,Ide
 !   AutoLoad[TopDrawer,
 !     PackagesDirectory//"TopDrawer.n"],];
 
-AutoLoad[ListPlot,Plot,Show,Graphics,Rectangle,
+AutoLoad[ListPlot,Show,Graphics,Rectangle,
   PackagesDirectory//"ListPlot.n"];
-AutoLoad[FitPlot,ListContourPlot,ListDensityPlot,
+AutoLoad[FitPlot,ListContourPlot,ListDensityPlot,Plot,ParametricPlot,
   ColumnPlot,HistoPlot,PackagesDirectory//"Plots.n"];
 AutoLoad[OpticsPlot,LatticePlot,BeamPlot,OP$S2Position,
   PackagesDirectory//"OpticsPlot.n"];

@@ -1,5 +1,4 @@
 (* Plots 7/23/2021 *)
-
 Show;
 
 Off[General::unprotconst];
@@ -308,13 +307,17 @@ With[{def={Weight->None,TextSize->1,FunctionLabel->Default,
           fl3={""};
           StandardForm[
             If[fn===Default,
-              fl3=FP$StackLabel[fl3,"Fit function: "//fun//"\n",cw]];
+              fl3=FP$StackLabel[fl3,"Fit function: "//fun//
+                If[`$HaveLaTeX<=>"","\\\\\n","\n"],cw]];
             If[re===Default,
-              $FORM="S8.5";
-              fl3=FP$StackLabel[fl3,"`fc`n`u2`n ="//(ChiSquare/.s),cw];
-              fl3=FP$StackLabel[fl3,"Goodness ="//(GoodnessOfFit/.s)//"\n",cw];
+              $FORM="C8.5";
+              fl3=FP$StackLabel[fl3,If[`$HaveLaTeX<=>"","$\\chi^2="//(ChiSquare/.s)//"$",
+                "`fc`n`u2`n ="//(ChiSquare/.s)],cw];
+              fl3=FP$StackLabel[fl3,"Goodness ="//(GoodnessOfFit/.s)//
+                If[`$HaveLaTeX<=>"","\\\\\n","\n"],cw];
               Do[
-                fl3=FP$StackLabel[fl3,SymbolNameRoot[par[[i,1]]]//" = "//(par[[i,1]]/.s)//"\261 "//ci[[i]],cw],
+                fl3=FP$StackLabel[fl3,SymbolNameRoot[par[[i,1]]]//" = "//(par[[i,1]]/.s)//
+                  If[`$HaveLaTeX<=>""," $\\pm$ ","\261 "]//ci[[i]],cw],
                 {i,Length[par]}]]
             ];
           fl[[3]]=If[fl[[3]]<=>"",fl[[3]]//"\n",""]//(StringJoin@@fl3)
@@ -795,9 +798,202 @@ CP$ContourColor[x_String]:=RGBColor@@[{1,1,1}-
 
 CP$NullColor[x_]:=RGBColor[Restrict[x*3-2,0,1],Restrict[x*3-1,0,1],Restrict[x*3,0,1]];
 
+With[{def={Dashing->{{1},{0.8,0.2},{0.4, 0.15},{0.2,0.1},{0.1,0.07},
+  {0.8,0.07, 0.07, 0.07},{0.4,0.07,0.07,0.07}},
+  PlotColor:>Plot$DefaultColor,
+  Thickness->2,
+  Legend->{False},
+  PlotRange->Automatic,
+  DisplayFunction->Default}},
+
+  Plot[f_List,{x_Symbol,xmin_Real,xmax_Real},opt___]:=Block[{x},Module[
+    {a,b,c,d,da,pc,leg,pr,th,n,g,h=Map[Hold,Unevaluated[f]]},
+    {da,pc,leg,pr,th}={Dashing,PlotColor,Legend,PlotRange,Thickness}/.{opt}/.def;
+    `h00=h;
+    n=Length[h];
+    da=(Dashing->#)&/@Take[Flatten[Table[da,
+      {Ceiling[n/Max[Length[da],1]]}],1],n];
+    pc=(PlotColor->#)&/@Take[Flatten[Table[pc,
+      {Ceiling[n/Max[Length[pc],1]]}]],n];
+    leg=(Legend->#)&/@Take[Flatten[{{leg},Table[False,{n}]}], n];
+    g=MapThread[Function[{a,b,c,d},Plot[Evaluate[ReleaseHold[a]],{x,xmin,xmax},
+      DisplayFunction->Identity,b,c,d,opt,Thickness->th]],{h,da,pc,leg}];
+    pr=PR$Auto[pr,g];
+    If[(DisplayFunction/.{opt}/.def)===Default,
+      g=Show[g,PlotRange->pr,opt]];
+    g]];
+
+  ParametricPlot[f:{{_,_},{_,_}..},{x_Symbol,xmin_,xmax_},opt___]:=Block[{x},Module[
+    {a,b,c,d,da,pc,leg,pr,th,n,g,h=Hold/@Unevaluated[f]},
+    {da,pc,leg,pr,th}={Dashing,PlotColor,Legend,PlotRange,Thickness}/.{opt}/.def;
+    n=Length[h];
+    da=(Dashing->#)&/@Take[Flatten[Table[da,
+      {Ceiling[n/Max[Length[da],1]]}],1],n];
+    pc=(PlotColor->#)&/@Take[Flatten[Table[pc,
+      {Ceiling[n/Max[Length[pc],1]]}]],n];
+    leg=(Legend->#)&/@Take[Flatten[{{leg},Table[False,{n}]}], n];
+    g=MapThread[Function[{a,b,c,d},
+      ParametricPlot[Evaluate[ReleaseHold[a]],{x,xmin,xmax},
+        DisplayFunction->Identity,b,c,d,opt,Thickness->th]],{h,da,pc,leg}];
+    pr=PR$Auto[pr,g];
+    If[(DisplayFunction/.{opt}/.def)===Default,
+      g=Show[g,PlotRange->pr,opt]];
+    g]]];
+
+With[{def={MaxBend->0.01,PlotPoints->32,PlotDivision->1024,PlotRange->Automatic,
+  PlotJoined->True,StepRatio->1,Plot->False,GridLines->{Automatic,Automatic},
+  PlotColor->"dodger blue",Thickness->2}},
+
+  Plot[f_,{x_Symbol,xmin_,xmax_},opt___]:=Block[{x},Module[
+    {d,{maxb,minp,minx,pj,sr,pt,gr,pr,pc,th}=
+      {MaxBend,PlotPoints,PlotDivision,PlotJoined,StepRatio,Plot,
+        GridLines,PlotRange,PlotColor,Thickness}/.{opt}/.def},
+    ListPlot[(d=PlotInterpolate[{x,f},{x,xmin,xmax},minp,Max[minp*3,minx],maxb])[[1]],
+      PlotJoined->pj,StepRatio->sr,Plot->pt,GridLines->gr,
+      PlotColor->pc,Thickness->th,
+      PlotRange->PR$Auto[pr,PlotRange->d[[2]]],opt]
+    ]];
+
+  ParametricPlot[{fx_,fy_},{x_Symbol,xmin_Real,xmax_Real},opt___]:=Block[{x},Module[
+    {d,{maxb,minp,minx,pj,sr,pt,gr,pr,pc,th}=
+      {MaxBend,PlotPoints,PlotDivision,PlotJoined,StepRatio,Plot,
+        GridLines,PlotRange,PlotColor,Thickness}/.{opt}/.def},
+    ListPlot[(d=PlotInterpolate[{fx,fy},{x,xmin,xmax},minp,Max[minp*3,minx],maxb])[[1]],
+      PlotJoined->pj,StepRatio->sr,Plot->pt,GridLines->gr,
+      PlotColor->pc,Thickness->th,
+      PlotRange->PR$Auto[pr,PlotRange->d[[2]]],opt]
+    ]]];
+
+PR$Auto[x_,g_]:=x;
+PR$PRmax[pr1_,Automatic]:=Max[pr1[[,2,2]]];
+PR$PRmax[pr1_,All]:=Max[pr1[[,2,4]]];
+PR$PRmin[pr1_,Automatic]:=Min[pr1[[,2,1]]];
+PR$PRmin[pr1_,All]:=Min[pr1[[,2,3]]];
+PR$Auto[{min_Real,t:(All|Automatic)},g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
+  {min,PR$PRmax[pr1,t]}];
+PR$Auto[{t:(All|Automatic),max_Real},g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
+  {PR$PRmin[pr1,t],max}];
+PR$Auto[t:(All|Automatic),g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
+  {PR$PRmin[pr1,t],PR$PRmax[pr1,t]}];
+PR$Auto[{t1:All|Automatic,t2:All|Automatic},g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
+  {PR$PRmin[pr1,t1],PR$PRmax[pr1,t2]}];
+PR$Auto[{x_List,y_},g_]:={x,PR$Auto[y,g]};
+PR$Auto[{x_,y_List},g_]:={x,PR$Auto[y,g]};
+
+PlotInterpolate[{fxin_,fyin_},{z_Symbol,zmin_Real,zmax_Real},min0_,maxdiv_,maxb_]:=Module[
+  {fx,fy,fxs,fys,s=True,dl,dl0,dl1,la,cos,a,xw,yw,dz,xl,yl,zl,z0,z1,z2,cosm,cosm1=-1,
+    costh=1-maxb^2/2,min=min0,dzmin=Abs[(zmax-zmin)/maxdiv],pth=2e-4,dfx,dfy,per,zlp,plot=fxin===z,
+    fxh=Extract[Hold[fxin],{1},Head],fyh=Extract[Hold[fyin],{1},Head]},
+  If[Head[fxh]===SplineData,
+    min=Max[min,Length[fxh[[1,1]]]]];
+  If[Head[fyh]===SplineData,
+    min=Max[min,Length[fyh[[1,1]]]]];
+  fxs = With[{z = #}, {#, Check[fxin, 0]}]&;
+  fys = With[{z = #}, {#, Check[fyin, 0]}]&;
+  fx= With[{z = Vector[#]},
+    Check[ReleaseVector[fxin], ReleaseVector[fxs[Vector[#]]]]]&;
+  fy= With[{z = Vector[#]},
+    Check[ReleaseVector[fyin], ReleaseVector[fys[Vector[#]]]]]&;
+  dz=(zmax-zmin)/min;
+  xl=Re[fx[zl=Range[0,min]*dz+zmin]];
+  yl=Re[fy[zl]];
+  {xl,yl}=Thread[Thread[{xl,yl}]/.{_,INF|-INF|_?NaNQ}:>Null[]];
+  If[~RealListQ[xl] || ~RealListQ[yl],Return[{}]];
+  xw=-Subtract@@MinMax[xl];
+  yw=-Subtract@@MinMax[yl];
+  per=~plot && 
+    (dfx=D[fxin,z];
+      dfy=D[fyin,z];
+      Abs[xl[[-1]]-xl[[1]]]<xw*pth && Abs[yl[[-1]]-yl[[1]]]<yw*pth &&
+        Abs[(dfx/.z->zl[[1]])-(dfx/.z->zl[[-1]])] < pth*xw/Abs[zl[[-1]]-zl[[1]]] &&
+          Abs[(dfy/.z->zl[[1]])-(dfy/.z->zl[[-1]])] < pth*yw/Abs[zl[[-1]]-zl[[1]]]);
+  While[s && Length[zl]<maxdiv,
+    la=Thread[{xl*yw,yl*xw}];
+    zlp=If[per,
+      la=Prepend[Append[la,la[[2]]],la[[-2]]];
+      Prepend[Append[zl,zl[[-1]]],zl[[1]]],
+      zl];
+    dl=Difference[la];
+    dl0=Drop[dl,-1];
+    dl1=Rest[dl];
+    cos=MapThread[(#.#2)/Max[Abs[Complex@@#]*Abs[Complex@@#2],1e-200]&,{dl1,dl0}];
+    cosm=Min[cos];
+    If[cosm<cosm1-maxb/10 || cosm>cosm1+maxb/10,
+      cosm1=cosm;
+      z0=Take[zlp,{2,-2}];
+      z1=(Drop[zlp,-2]+2*z0)/3;
+      z2=(Drop[zlp,2]+2*z0)/3;
+      a=MapThread[
+        If[#<costh && Abs[#3-#2]>dzmin,
+          Null[#2,#3],
+          Null[]]&,
+        {cos,z1,z2}];
+      If[s=Length[a]>0,
+        {zl,xl,yl}=Thread[
+            Union[Thread[{Join[zl,a],Join[xl,fx[a]],Join[yl,Re[fy[a]]]}]]];
+        xw=-Subtract@@MinMax[xl];
+        yw=-Subtract@@MinMax[yl]],
+      s=False]];
+  RetPI[xl,yl]];
+(*
+PlotInterpolate[fin_,{y_Symbol,xmin_Real,xmax_Real},min0_,maxdiv_,maxb_]:=Module[
+  {f,fs,s=True,dl,dl0,dl1,la,cos,a,yw,ar,dx,xl,yl,x0,x1,x2,cosm,cosm1=-1,
+    costh=1-maxb^2/2,min=min0,fh=Extract[Hold[fin],{1},Head],dxmin=Abs[(xmax-xmin)/maxdiv]},
+  If[Head[fh]===SplineData,
+    min=Max[min,Length[fh[[1,1]]]]];
+  fs = With[{y = #}, {#, Check[fin, 0]}]&;
+  f  = With[{y = Vector[#]},
+    Check[ReleaseVector[fin], ReleaseVector[fs[Vector[#]]]]]&;
+  dx=(xmax-xmin)/min;
+  yl=Re[f[xl=Range[0,min]*dx+xmin]];
+  {xl,yl}=Thread[Thread[{xl,yl}]/.{_,INF|-INF|_?NaNQ}:>Null[]];
+  If[~RealListQ[yl],Return[{}]];
+  While[s && Length[xl]<maxdiv,
+    yw=-Subtract@@MinMax[yl];
+    ar=Abs[yw/(xmax-xmin)];
+    la=Thread[{ar*xl,yl}];
+    dl=Difference[la];
+    dl0=Drop[dl,-1];
+    dl1=Rest[dl];
+    cos=MapThread[(#.#2)/Max[Abs[Complex@@#]*Abs[Complex@@#2],1e-100]&,{dl1,dl0}];
+    cosm=Min[cos];
+    If[cosm<cosm1-maxb/10 || cosm>cosm1+maxb/10,
+      cosm1=cosm;
+      x0=Take[xl,{2,-2}];
+      x1=(Drop[xl,-2]+2*x0)/3;
+      x2=(Drop[xl,2]+2*x0)/3;
+      a=MapThread[
+        If[#<costh && Abs[#3-#2]>dxmin,
+          Null[#2,#3],
+          Null[]]&,
+        {cos,x1,x2}];
+      s=Length[a]>0;
+      If[s,
+        {xl,yl}=Thread[
+          Union[Thread[{Join[xl,a],Join[yl,Re[f[a]]]}]]]],
+      s=False]];
+  RetPI[xl,yl]];
+*)
+
+  RetPI[xl_,yl_]:=Module[{ny=Length[yl],ys=Sort[yl],y0,y1,ym,ymin,ymax,ya},
+    {y0,y1}=ys[[{1,-1}]];
+    ym=(y0+y1)/2;
+    {ymin,ymax}=ys[[{1+(ny-1)*0.05,ny*0.95}]];
+    ya=(ymin+ymax)/2;
+    If[ya-ys[[1]]<(ya-ymin)*1.2,
+      ymin=ys[[1]];
+      ya=(ymin+ymax)/2];
+    If[ys[[-1]]-ya<(ymax-ya)*1.2,
+      ymax=ys[[-1]];
+      ya=(ymin+ymax)/2];
+    {Thread[{xl,yl}],{ya+(ymin-ya)*1.2,ya+(ymax-ya)*1.2,ym+(y0-ym)*1.05,ym+(y1-ym)*1.05}}];
+ 
+SetAttributes[{Plot,ParametricPlot},HoldAll];
+SetAttributes[PlotInterpolate,HoldFirst];
+
 End[];
 
 EndPackage[];
 
 SetAttributes[
-  {ColumnPlot,Plot,FitPlot,HistoPlot,ListContourPlot,ListDensityPlot},Constant];
+  {ColumnPlot,Plot,ParametricPlot,FitPlot,HistoPlot,ListContourPlot,ListDensityPlot},Constant];
