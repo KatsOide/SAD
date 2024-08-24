@@ -3594,7 +3594,9 @@ where list contains data in the form as {{x1,y1}, ..} or {{x1,{y11, y12, ..}}, .
     Integrate[sp[x],{x, x0, x1}]   integral of sp[x] from x0 to x1.\n\n\
 Example:\n\
    sp=Spline[{{1,2},{3,5},{4,2},{5,7}}];\n\
-   Plot[{sp[x],Derivative[1][sp][x],Derivative[2][sp][x],Integrate[sp[y],{y,1,#}]&[x]}, {x,1,5}, FrameLabel->{\"x\"}, Thickness->2, Legend->{\"sp[x]\",\"sp'[x]\",\"sp''[x]\",\"Int sp[x]\"}];\n\
+   Plot[{sp[x],Derivative[1][sp][x],Derivative[2][sp][x],Integrate[sp[y],{y,1,#}]&[x]}, {x,1,5},\n\
+     FrameLabel->{\"x\"}, Thickness->2,\n\
+     Legend->{\"\\\\@\\\\tt sp[x]\",\"\\\\@\\\\tt sp'[x]\",\"\\\\@\\\\tt sp''[x]\",\"\\\\@$\\\\int$\\\\tt sp[x]\"}];\n\
    Update[];\n\n\
 <Spline.png",
          "defining-functions Plot NIntegrate",
@@ -4130,7 +4132,7 @@ Usage: Plot[fun, range, options] or Plot[{fun1, .. }, range, options],\n\n\
 where fun is a function and range is a list given as {x, xmin, xmax}.\n\n\
 options        defaults\n\
 -----------------------------------------\n\
-MaxBend        0.04\n\
+MaxBend        0.01\n\
 PlotPoints     25\n\
 PlotDivision   250\n\
 Dashing        {\"1\",\"0.8 0.24\",\"0.4 0.12\",\"0.2 0.08\",\"0.1 0.08\",\n\
@@ -4144,8 +4146,32 @@ Example:\n\
   Plot[{Cos[x],ff[x]}, {x,0,10}, Thickness->2];\n\
   Update[];\n\n\
 <Plot.png",
-          "Graphics ListPlot",
+          "Graphics ParametricPlot ListPlot",
+          {}},
+
+        {"ParametricPlot",
+          "\
+Usage: ParametricPlot[{funx,funy}, range, options] or Plot[{{funx1, funy1} .. }, range, options],\n\n\
+where {funx, funy} are x- and y- functions and range is a list given as {x, xmin, xmax}.\n\n\
+options        defaults\n\
+-----------------------------------------\n\
+MaxBend        0.01\n\
+PlotPoints     25\n\
+PlotDivision   250\n\
+Dashing        {\"1\",\"0.8 0.24\",\"0.4 0.12\",\"0.2 0.08\",\"0.1 0.08\",\n\
+                  \"0.8 0.08 0.08 0.08\",\"0.4 0.08 0.08 0.08\"}\n\
+Options for ListPlot and Graphics are also available\n\n\
+The independent variable should have been cleared (i.e., no value should\n\
+not be set) when Plot is called. \n\n\
+Example:\n\
+ParametricPlot[{{2 Cos[t], 2 Sin[t]}, {2 Cos[t], Sin[t]},\n\
+   {Cos[t], 2 Sin[t]}, {Cos[t], Sin[t]}}, {t, 0, 2 Pi}, \n\
+   Legend -> \"Expressions\"];\n\
+ Update[];\n\n\
+<ParametricPlot.png",
+          "Graphics Plot ListPlot",
           {}}
+
      }]},
 
        {"DownhillSimplex",
