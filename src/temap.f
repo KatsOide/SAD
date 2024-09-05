@@ -329,8 +329,9 @@ c      write(*,*)'unmap ',ipn,n,np,kzi%rbody(4)
       use iso_c_binding
       use tfcsi,only:icslfnm,lfnm
       implicit none
-      type (sad_descriptor) kx,k2,k3,k4
-      integer*8 k1,kax,ka1,kat1,kbm,krt
+      type (sad_descriptor) kx,k1,k2,k3,k4
+      type (sad_dlist) ,pointer ::klx,kl1
+      integer*8 kat1,kbm,krt
       integer*4 l,isp0,n,m,irtc,i,j
       real*8 trans(6,6),cod(6),beam(42)
       real*8 ,pointer::trat1(:,:)
@@ -338,7 +339,7 @@ c      write(*,*)'unmap ',ipn,n,np,kzi%rbody(4)
       integer*8 , save :: ifv=0,iem=0
 c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       if(iem == 0)then
-        iem=ktfsymbolz('ExternalMap',11)
+        iem=ktfsymbolz('`ExternalMap',12)
         ifv=ktsalocb(0,'EMIT',4)
       endif
       levele=levele+1
@@ -357,29 +358,25 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
         if(ierrorprint /= 0)then
           call tfaddmessage(' ',2,icslfnm())
         endif
-        write(lfnm,*)' Error in ExternalMap(EMIT) of ',l,ord(l),
-     $       ' element.'
+        write(lfnm,*)' Error in ExternalMap(EMIT) of ',l,ord(l),' element.'
         isp=isp0
         return
       endif
-      if(ktfnonlistq(kx))then
+      if(tfnonlistq(kx,klx))then
         go to 9000
       endif
-      kax=ktfaddr(kx)
-      if(ilist(2,kax-1) == 3 .and.
-     $     klist(kax) == ktfsymbol+iem)then
+      if(klx%nl == 3 .and. klx%body(1) == ktfsymbol+iem)then
         go to 9000
       endif
-      k1=klist(kax+1)
-      if(ktfnonlistq(k1))then
+      k1=klx%dbody(1)
+      if(ktfnonlistq(k1,kl1))then
         go to 9100
       endif
-      ka1=ktfaddr(k1)
-      if(ilist(2,ka1-1) /= 6 .or. ktfnonreallistq(ka1))then
+      if(kl1%nl /= 6 .or. ktfnonreallistqo(kl1))then
         go to 9100
       endif
-      cod=rlist(ka1+1:ka1+6)
-      k2=dlist(kax+2)
+      cod=kl1%rbody(1:6)
+      k2=klx%dbody(2)
       kat1=ktfmalocp(k2,n,m,.false.,.false.,
      $     .false.,.false.,irtc)
       if(irtc /= 0)then
@@ -392,9 +389,9 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
       call c_f_pointer(c_loc(rlist(kat1)),trat1,[6,6])
       kbm=0
       krt=0
-      if(ilist(2,kax-1) /= 2)then
-        if(ilist(2,kax-1) == 4)then
-          k3=dlist(kax+3)
+      if(klx%nl /= 2)then
+        if(klx%nl == 4)then
+          k3=klx%dbody(3)
           krt=ktfmalocp(k3,n,m,.false.,.false.,
      $         .false.,.false.,irtc)
           if(irtc /= 0)then
@@ -402,7 +399,7 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
           elseif(n /= 6 .or. m /= 6)then
             go to 9120
           endif
-          k4=dlist(kax+4)
+          k4=klx%dbody(4)
           kbm=ktfmalocp(k4,n,m,.false.,.false.,
      $         .false.,.false.,irtc)
           if(irtc /= 0)then
@@ -415,6 +412,7 @@ c      iaidx(m,n)=((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8
           go to 9100
         endif
       endif
+c      write(*,'(1p6g12.4)')(trat1(i,1:6),i=1,6)
       call tmultr(trans,trat1,irad)
       if(kbm /= 0)then
         do i=0,35

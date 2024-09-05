@@ -898,7 +898,7 @@ PlotInterpolate[{fxin_,fyin_},{z_Symbol,zmin_Real,zmax_Real},min0_,maxdiv_,maxb_
   dz=(zmax-zmin)/min;
   xl=Re[fx[zl=Range[0,min]*dz+zmin]];
   yl=Re[fy[zl]];
-  {xl,yl}=Thread[Thread[{xl,yl}]/.{_,INF|-INF|_?NaNQ}:>Null[]];
+  {xl,yl,zl}=Thread[Thread[{xl,yl,zl}]/.{_,INF|-INF|_?NaNQ,_}:>Null[]];
   If[~RealListQ[xl] || ~RealListQ[yl],Return[{}]];
   xw=-Subtract@@MinMax[xl];
   yw=-Subtract@@MinMax[yl];

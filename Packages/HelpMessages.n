@@ -16,7 +16,7 @@ N$deriv[3]="'''";
 N$deriv[n_]:=StandardForm["^{("//n//")}"];
 
 Help$Messages=(Print["SAD/FFS Help Update: ",Help$Update];{
-{" ",
+{"",
  "\
 Usage: Help [item [subitem ...]]\n\n\
 displays (un)helpful information on the input item. \n\n\
@@ -190,19 +190,19 @@ function-values: a list of length nc (== number of calculated items). Each eleme
        function: name of the function (see matching-function-commands).\n\
        list-of-values: list of the value of the function for each orbit Length nf.\n\
        The central orbit comes at the Floor[(n+1)/2]-th element."),
-   "FIT SHOW matching-function-commands off-momentum-matching FREE FIX VARIABLES(VAR) COUPLE(COUP) ATTRIBUTE(ATTR) CAL VARY SHOW CONV CONVERGENCE MatchingResidual MatchingAmplitude FitFunction FFS OptimizeOptics EXPAND CALEXP KEEPEXP",
+   "FIT SHOW matching-function-commands off-momentum-matching FREE FIX VARIABLES(VAR) COUPLE(COUP) ATTRIBUTE(ATTR) CALCULATE(CAL) VARY SHOW CONV CONVERGENCE MatchingResidual MatchingAmplitude FitFunction FFS OptimizeOptics EXPAND CALEXP KEEPEXP",
    {}},
 
    {"EXPAND",
      "\
  EXPAND distributes all variable keys to each corresponding components. Individual deviations (machine errors) are cleared.",
-     "GO CAL EMIT KEEPEXP CALEXP",
+     "GO CALCULATE(CAL) EMIT KEEPEXP CALEXP",
      {}},
 
   {"CALCULATE(CAL)",
    "\
-Usage: (1) CAL [[NO]EXPAND]]\n\
-       (2) CAL matching-function1[-] [matching-function2[-]..]\n\
+Usage: (1) CALCULATE(CAL) [[NO]EXPAND]]\n\
+       (2) CALCULATE(CAL) matching-function1[-] [matching-function2[-]..]\n\
  \n\
 (1) With no argument or with an option [NO]EXPAND, calculates the optics and the matching-functions using the current values of the components. It prints out the values of the matching-functions specified either by the matching-function-commands or the second usage of CAL, as described below. If an option EXPAND is given, it expands the beam line before the calculation. If NOEXPAND is given, it calculates without any expansion. The default behavior on EXPAND is controlled by the KEEPEXP flag."//
     FFSGO$Message//"\n\n\
@@ -274,14 +274,14 @@ DISP A displays the nominal energy, energy deviation(DDP), longitudinal position
       "extended-Twiss-parameters CALC6D CALC4D",
       {}},
 
-      {"REFERENCE(REF)",
+      {"REFERENCE(RE)",
         "Specify the reference optics to be displayed.",
         "reference-optics REFERENCE(REF) DISPLAY(DISP) DREFERENCE(DRE) Twiss OpticsPlot",
         {}},
 
       {"DREFERENCE(DRE)",
         "Display the difference between the reference optics. (beta - betaR)/betaR are displayed for BX, BY, BZ.",
-        "reference-optics REFERENCE(REF) DISPLAY(DISP) REFERENCE(RE) Twiss OpticsPlot",
+        "reference-optics REFERENCE(REF) DISPLAY(DISP) Twiss OpticsPlot",
         {}},
 
      {"region",
@@ -439,7 +439,7 @@ specifies elements which match element-pattern as the matching variables. The op
    For the MARK element at the beginning of the beam line, a special form can be used for the FREE command. That is a form &lt matching-function &gt I  (appending \"I\" to a matching-function name) which means the incoming condition of the matching-function is varied in the matching.\n\n\
 Example: FREE AXI BXI AYI BYI\n\n\
 changes incoming AX, BX, AY, and BY to find the solution.",
-    "FIX FIT SHOW GO CAL wildcards elements",
+    "FIX FIT SHOW GO CALCULATE(CAL) wildcards elements",
     {
      DefaultKeywordMessage=
      {"default-keyword",
@@ -468,7 +468,7 @@ Example: FIX AXI BXI AYI BYI\n\n\
 removes incoming AX, BX, AY, and BY from the matching variables.\n\n\
 Usage: (2) FIX\n\n\
 sets the standard optics for the orbit correction commands.",
-    "FREE FIT SHOW GO CAL wildcards elements",
+    "FREE FIT SHOW GO CALCULATE(CAL) wildcards elements",
     {}},
 
    {"VARIABLES(VAR)",
@@ -1718,9 +1718,8 @@ Example:   BX 10 3    (beta_x to be 10 at 3 momenta) \n\
            BX 20      (now beta_x to be 20 at 3 momenta (previous setting))\n\
            BX *  5    (now beta_x to be 20 (previous setting) at 5 momenta)\n\n\
 (2) If the letter \"M\" is appended to matching-function, it means the maximum-fitting for the function. The maximum of either the value (for positive-definite functions) or the absolute value (for bipolar functions) are to be limited in the matching.\n\n\
-(3) If the letter \"I\" is appended to matching-function, it specifies the value of the incoming beam.\n\n\
-(4) If SCALE is appended to matching-function, it sets the scale of the input/output of the function to scale. This scale is used in the matching-function commands, DISPLAY(DISP), SHOW, etc.\n\
-(5) If the current fit location is at a MARK, @ for the goal value refers the save value at the MARK. @- refers -(save value). These are useful to match between two beam lines.\n\n\
+(3) If SCALE is appended to matching-function, it sets the scale of the input/output of the function to scale. This scale is used in the matching-function commands, DISPLAY(DISP), SHOW, etc.\n\n\
+(4) If the current fit location is at a MARK, @ refers the saved value at the MARK. @- refers -(saved value), and @* refers (the orientation of MARK)*(saved value).  These are useful to match using the already-saved values, for instance to match between two beam lines having the common MARK.\n\n\
    Available matching-functions are:\n\
 optical-functions (see optical-functions):\n\
 AX BX GMX NX AY BY GMY NY EX EPX EY EPY R1 R2 R3 R4 DETR DX DPX DY DPY DZ DDP PEX PEPX PEY PEPY TRX TRY LENG\n\
@@ -1788,7 +1787,7 @@ BMAGY   BmagY, against the reference optics.\n\
 BMAGZ   BmagZ, against the reference optics.\n\
 LENG    length of the design orbit\t\n\n\
 In the above, upper case X, Px, Y, Py represents the x-y decoupled coordinate. EX, EPX, EY, EPY refer the decoupled coordinate, while PEX, PEPX, PEY, PEPY are in the physical coordinate. On the other hand,  DX, DPX, DY, DPY refer the physical coordinate.",
-    "geometric-functions x-y-coupling matching-function-commands GO CAL DISPLAY(DISP) SHOW REFERENCE(REF) reference-optics",
+    "geometric-functions x-y-coupling matching-function-commands GO CALCULATE(CAL) DISPLAY(DISP) SHOW REFERENCE(REF) reference-optics",
     {}},
 
    {"geometric-functions",
@@ -1869,7 +1868,7 @@ RFSW turns on the acceleration by CAVI and TCAVI element in the particle-trackin
      {"RADTAPER",
       "Scales all magnets except for solenoids according to the local momentum (DDP) of the closed orbit. It uses the average of DDPs at the entrance and the exit. For tracking, RADCOD and ( CAL/GO with CALC6D or EMIT(Emittance[]) ) is necessary. CAL/GO with CALC4D will clear the necessary information for tracking with RADTAPER.\n\
  RADTAPER sets the momentum deviation by the local momentum of the closed orbit + an amount to satisfy the path length condition given by FSHIFT. The momentum deviation at the entrance, DP0, is always maintained.",
-      "RADCOD CALC6D CALC4D EMIT CAL GO DP0 FSHIFT",
+      "RADCOD CALC6D CALC4D EMIT CALCULATE(CAL) GO DP0 FSHIFT",
        {}},
 
      {"COD",
@@ -2012,7 +2011,7 @@ When RADLIGHT is on, the function TrackParticles returns a list of trajectories 
      {"GEOCAL",
       "\
 When GEOCAL is on(default), the geometry of the beam line is always updated by CALCULATE(CAL) or GO commands using the current values of components. The coordinate transformation by SOL is also updated. When GEOCAL is off, the geometry is never updated. It is useful to simulate misalignments within a solenoid, etc.",
-      "GEOFIX CAL GO SOL",
+      "GEOFIX CALCULATE(CAL) GO SOL",
       {}},
 
      {"GEOFIX",
@@ -2083,13 +2082,13 @@ UNIFORM is the antonym of GAUSS. It assumes the momentum distribution to be a un
       {}},
 
      {"CALC6D",
-      "If CALC6D is on, the optics calculation in CAL and GO performs full 6D calculation, which may takes RADCOD into account. The antonyms is CALC4D. The Default is CALC4D.",
-      "CALC4D CAL GO",
+      "If CALC6D is on, the optics calculation in CALCULATE(CAL) and GO performs full 6D calculation, which may takes RADCOD into account. The antonyms is CALC4D. The Default is CALC4D.",
+      "CALC4D CALCULATE(CAL) GO",
       {}},
 
      {"CALC4D",
-      "If CALC4D is on, the optics calculation in CAL and GO performs a 4x5 calculation (4D + dispersion). The antonyms is CALC6D. The Default is CALC4D.",
-      "CALC6D CAL GO",
+      "If CALC4D is on, the optics calculation in CALCULATE(CAL) and GO performs a 4x5 calculation (4D + dispersion). The antonyms is CALC6D. The Default is CALC4D.",
+      "CALC6D CALCULATE(CAL) GO",
       {}},
 
       {"POL",
@@ -2371,7 +2370,7 @@ LOSSDZ is the longitudinal position z beyond which a particle is judged to have 
 
      {"FSHIFT",
       "FSHIFT is the relative shift df/f0 of the revolution (or rf) frequency in a ring. This is valid in EMITTANCE(EMIT), the particle-tracking, and CAL/GO with CALC6D. For CAL/GO with CALC4D, DP0 should be used instead.",
-      "EMIT CAL GO CALC6D CALC4D DP0",
+      "EMIT CALCULATE(CAL) GO CALC6D CALC4D DP0",
       {}},
 
      {"GCUT",
@@ -2848,7 +2847,7 @@ expression  matches expression.",
        }]},
 
   {"defining-functions",
-    "\
+"\
  A function is defined by one of the following forms:\n\n\
 f[pat1 [,pat2...]] (:)= body;\n\
 f[pat1 [,pat2...]] ^(:)= body;\n\
@@ -3907,7 +3906,8 @@ Usage: ListPlot[{{x1,y1},..,{xn,yn}}, options]\n\n\
 makes a graphic with points.\n\
 ListPlot[{y1,..,yn}, options] assumes 1,..n for the x-xoordinate.\n\
 ListPlot[{{x,y,dy}, ..}, options ] plots error bars of length dy in y.\n\
-ListPlot[{{x,y,dx,dy}, ..}, options ] plots error bars in x and y.\n\n\
+ListPlot[{{x,y,dx,dy}, ..}, options ] plots error bars in x and y.\n\
+ListPlot[{{{x,y,___}, ..},..}, options ] plots ListPlot for multiple data.\n\n\
 option           default         optional values\n\
 ------------------------------------------------\n\
 PlotJoined       False           True\n\
@@ -3918,9 +3918,9 @@ Type ? to see other options for Graphics.\n\n\
 Example:\n\
   data1={{1,2},{3,5},{4,-1}};\n\
   data2={{1,4},{2,-2},{3.5,3},{5,3}};\n\
-  g1=ListPlot[data1, PointColor->\"dark slate blue\",PlotJoined->True, Thickness->2, PlotColor->\"dark slate blue\", FrameLabel->{\"x\",\"y\"}, Legend->\"data1\", DisplayFunction->Identity];\n\
-  g2=ListPlot[data2, PointColor->\"tomato\", Legend->\"data2\", DisplayFunction->Identity];\n\
-  Show[g1,g2];\n\
+  ListPlot[{data1, data2},PlotJoined->{True, False}, Thickness->2,\n\
+    PointSize->2,\n\
+    FrameLabel->{\"\\\\@$x$\",\"\\\\@$y$\"}, Legend->{\"data1\",\"data2\"}];\n\
   Update[];\n\n\
 <ListPlot.png",
         "Graphics Plot",
@@ -4039,7 +4039,7 @@ Example:\n\
         {}},
 
         {"GeometryPlot",
-	  "\
+"\
 Usage: GeometryPlot[options]\n\n\
 plots a geometry of beam line.\n\n\
 options       defaults\n\
@@ -4048,7 +4048,7 @@ Region        {1,LINE[\"LENGTH\"]}  {begin, end}, begin and end can be strings.\
                                   Both begin and end point of drawing region\n\
                                   could be given by \"S\" unit by using S[begin|end] form.\n\
 Names         \"*\"                 A pattern of component names to be plotted.",
-	  "Graphics OpticsPlot",
+          "Graphics OpticsPlot",
 	  {}},
 
         {"BeamPlot",
@@ -4263,39 +4263,39 @@ Example:\n\n\
    ....\n\
    FFS USE=A;\n\
      ExternalMap[\"TRACK\",LINE[\"POSITION\",\"P1.2\"],nt_,x_]:=\n\
-	(Print[x];x*2);\n\
+       (Print[x];x*2);\n\
    ....\n\n\
    TRACK USE=A ....;\n\n\
 This example defines ExternalMap to print out the coordinates of all particles at the second P1 in the line A. It also makes all coordinates of all particles twice in every turn.\n\n\
-Optionally a compiled module CompiledMap can be used for ExternalMap[\"TRACK\"] (see below).\n\n\
+   Optionally a compiled module CompiledMap can be used for ExternalMap[\"TRACK\"] (see below).\n\n\
 2) Emittance\n\
 In FFS, define the function ExternalMap as\n\n\
-    ExternalMap[\"EMIT\",n,cod_]:=body;\n\n\
+   ExternalMap[\"EMIT\",n,cod_]:=body;\n\n\
 The second argument n is the position of MAP counting from the beginning, which can be obtained using LINE[\"POSITION\",\"name.m\"]. The last argument cod_ is used to receive the orbit at the entrance of the element, as a list of 6 real numbers. ExternalMap must return a list, either {cod1, trans} or  {cod1, trans, dtrans, dbeam}, where cod1 is the orbit at the exit, trans is the 6 by 6 transfer matrix of this element, dtrans is the radiation damping part of the transfer matrix (6 by 6), and dbeam is the radiation excitation of the beam matrix (6 by 6). Only j >= i parts of dbeam[[i, j]] are taken into account.\n\n\
 Example:\n\n\
-    ExternalMap[\"EMIT\",LINE[\"POSITION\",\"P1\"],cod_]:=(\n\
-      Print[cod];\n\
-      {cod+{0,0.001,0,0,0,0},IdentityMatrix[6]});\n\n\
+   ExternalMap[\"EMIT\",LINE[\"POSITION\",\"P1\"],cod_]:=(\n\
+     Print[cod];\n\
+     {cod+{0,0.001,0,0,0,0},IdentityMatrix[6]});\n\n\
 3) Optics\n\
 In FFS, define the function ExternalMap as\n\n\
-    ExternalMap[\"OPTICS\",n,cod_]:=body;\n\n\
+   ExternalMap[\"OPTICS\",n,cod_]:=body;\n\n\
 The second argument n is the position of MAP counting from the beginning, which can be obtained using LINE[\"POSITION\",\"name.m\"]. The last argument cod_ is used to receive the orbit at the entrance of the element, as a list of 6 real numbers. ExternalMap must return a list {cod1, trans}, where cod1 is the orbit at the exit and trans is the 6 by 6 transfer matrix of this element. In the case of CACL4D (== ~CALC6D), only the 4 by 5 transfer matrix is effective.\n\n\
 Example:\n\n\
-    ExternalMap[\"OPTICS\",LINE[\"POSITION\",\"P1\"],cod_]:=(\n\
-      Print[cod];\n\
-      {cod+{0,0.001,0,0,0,0},IdentityMatrix[6]});\n\n\
+   ExternalMap[\"OPTICS\",LINE[\"POSITION\",\"P1\"],cod_]:=(\n\
+     Print[cod];\n\
+     {cod+{0,0.001,0,0,0,0},IdentityMatrix[6]});\n\n\
 4) Geometry\n\
 In FFS, define the function ExternalMap as\n\n\
-    ExternalMap[\"GEO\",n,geo_,pos_]:=body;\n\n\
+   ExternalMap[\"GEO\",n,geo_,pos_]:=body;\n\n\
 The second argument n is the position of MAP counting from the beginning, which can be obtained using LINE[\"POSITION\",\"name.m\"]. The argument geo_ receives the geometry of the beam line at the MAP element, in the same format as LINE[\"GEO\",n], i.e., {{GX,GY,GZ},{CHI1,CHI2,CHI3}}. The last argument pos_ receives the orbit length S at the element. ExternalMap must return an updated list {geo1, pos1}, as { {{GX,GY,GZ},{CHI1,CHI2,CHI3}}, S} as the values at the exit of the element.\n\
 Example:\n\n\
-    ExternalMap[\"GEO\",LINE[\"POSITION\",\"P1\"],geo_,pos_]:=(\n\
-      Print[cod];\n\
-      { {geo[[1]]+{1,0,0}, geo[[2]]}, pos+0.1})",
-        "MAP CALC4D POL CompiledMap",
-        {
-          {"CompiledMap",
-            "Usage:\n\n\
+   ExternalMap[\"GEO\",LINE[\"POSITION\",\"P1\"],geo_,pos_]:=(\n\
+     Print[cod];\n\
+     { {geo[[1]]+{1,0,0}, geo[[2]]}, pos+0.1})",
+       "MAP CALC4D POL CompiledMap",
+       {
+         {"CompiledMap",
+"Usage:\n\n\
 ExternapMa[\"TRACK\", n, nt_, x_]:=CompiledMap[nt, x, src, prm, opt___];\n\n\
 where n is the location number, nt the number of turns, x the particle coordinates with the alive flag, as described for ExternalMap. It takes options of Rules as shown below. A charachter string src is the source code for the map, which completes a subroutine having a header:\n\n\
 implicit none;\n\

@@ -1,0 +1,4 @@
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+     NaN     INF  .0      .0      .0     $DUMMYMARK .0     0            .0          NaN     INF  .0      .0      .0      .0       1
+     NaN     INF  .0      .0      .0     $DUMMYDRIFT 1.00000 1.0000000  .0          NaN     INF  .0      .0      .0      .0       2
+ 1.0E200 1.0E200 1.6E199  .0      .0      $$$       .0     0           1.000000 1.0E200 1.0E200 1.6E199  .0      .0      .0       3

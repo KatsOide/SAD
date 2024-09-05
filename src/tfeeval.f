@@ -145,11 +145,11 @@
           do i=1,m
             ki=list%dbody(i)
             if(ktfsequenceq(ki,kli))then
-              call tfevallstkall(kli,isp .gt. isp0,.true.,irtc)
+              call tfevallstkall(kli,isp > isp0,.true.,irtc)
               if(irtc /= 0)then
                 return
               endif
-            elseif(isp .gt. isp0)then
+            elseif(isp > isp0)then
               isp=isp+1
               dtastk(isp)=tfeevalref(ki,irtc)
               if(irtc /= 0)then
@@ -340,7 +340,7 @@
         isp0=isp
         dtastk(isp0+1:isp0+m)=list%dbody(1:m)
         isp=isp0+m
-      elseif(m .gt. 0)then
+      elseif(m > 0)then
         ki=list%dbody(1)
         if(ktfrealq(ki))then
           isp=isp+1
@@ -454,12 +454,12 @@
         call loc_namtbl(sym%loc,loc)
         kas=loc%symdef
         ig=max(0,ig)
-        do while(kas .gt. 0)
+        do while(kas > 0)
           call loc1_symdef(kas,symd)
           ig1=max(0,symd%sym%gen)
           if(ig == ig1)then
             exit
-          elseif(ig .lt. ig1)then
+          elseif(ig < ig1)then
             kas=symd%next
           else
             exit
@@ -469,7 +469,7 @@
       kx=symd%value
       if(kx%k /= ktfsymbol+kas .and. ktfnonrealq(kx%k))then
         level=level+1
-        if(level .gt. maxlevel-64)then
+        if(level > maxlevel-64)then
           level1=level
           level=0
           irtc=itfmessage(999,'General::deep','""')
@@ -526,7 +526,7 @@
       case (ktfoper)
         call c_f_pointer(c_loc(klist(klist(ifunbase+kaf)-9)),fun)
         iaf=-fun%id
-        if(fun%narg .lt. 0)then
+        if(fun%narg < 0)then
           go to 100
         endif
       case (ktfsymbol)
@@ -565,7 +565,7 @@
           call c_f_pointer(c_loc(klist(klist(ifunbase+kaf)-9)),fun)
           iaat=klist(ifunbase+kaf)+1
           mf=fun%narg
-          if(mf .lt. 0)then
+          if(mf < 0)then
             iaf=-fun%id
             evalh=.true.
             exit
@@ -613,7 +613,7 @@
           go to 3000
         endif
         if(evalh .or. .not. ref)then
-          if(tfonstackq(ks) .or. kls%ref .gt. 0)then
+          if(tfonstackq(ks) .or. kls%ref > 0)then
             kls1=>tfduplist(kls)
             kls=>kls1
           endif
@@ -635,7 +635,7 @@
         endif
       case(mtfset)
         rep=tfgetseqstk(ks,ns)
-        if(isp .gt. isp1)then
+        if(isp > isp1)then
           dtastk(isp)=tfeevalref(dtastk(isp),irtc)
           if(irtc /= 0)then
             go to 8000
@@ -654,7 +654,7 @@
           isp=isp10
           do j=isp10+1,isp11
             if(ktfrealq(ktastk(j),v))then
-              if(abs(v)==0.d0)then
+              if(abs(v) == 0.d0)then
                 kx%k=0
                 go to 8000
               endif
@@ -865,7 +865,7 @@
           irtc=itfmessage(999,'General::wrongtype','"Number or symbol"')
           return
         endif
-        if(ind .lt. 0)then
+        if(ind < 0)then
           ind=napuref+ind+1
         endif
       endif

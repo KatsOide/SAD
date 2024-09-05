@@ -635,7 +635,7 @@ c         colb%nslice=1
 !      p_in(25)=<z pz>
          emiz=p_in(24)**2*p_in(27)**2-p_in(25)**2
          if(emiz.le.0.) then
-            write(*,*) ' bb.f : Error in emitance z calculation'
+            write(*,'(a,1p4g15.7)')' bb.f : Error in emitance z calculation ',emiz,p_in(24),p_in(27),p_in(25)
             stop
          endif
          emiz=sqrt(emiz)

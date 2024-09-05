@@ -5096,6 +5096,12 @@ c        call omp_set_num_threads(iv)
 
       end module tfstk
 
+      module localseg
+      integer*4 , parameter :: llini=64,mlini=64
+      integer*4 :: llseg=0
+      integer*8 ,allocatable :: lstbl(:)
+      end module
+
       module opdata
       use tfstk
       implicit none
