@@ -8,6 +8,7 @@
       use bendib, only:tbendal
       use photontable, only:tsetpcvt
       use element_drift_common
+      use tparastat,only:setndivelm
       use mathfun, only:sqrt1,pxy2dpz,asinx
       implicit none
       integer*4 , parameter :: ndivmax=1000
@@ -72,6 +73,7 @@
       else
         ndiv=1
       endif
+      call setndivelm(l_track,ndiv)
       n2=ndiv+n2
       alc=al*phic/phib
       aln=alc/ndiv

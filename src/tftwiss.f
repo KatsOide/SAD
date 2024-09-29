@@ -1,10 +1,47 @@
-      subroutine tftwiss(isp1,kx,ref,irtc)
+      module twissf
       use tfstk
       use ffs
       use tffitcode
       use ffs_fit, only:nlist
-      use ffs_pointer, only:twiss
+      use ffs_pointer, only:latt,idelc,idtypec,pnamec,compelc,direlc,twiss
+      use sad_main
+      use tflinepcom
       use gfun
+
+      contains
+      type (sad_descriptor) function tflinek(keyword,ia,cmp,ref) result(kx)
+      implicit none
+      integer*4 ,intent(out):: ia
+      logical*4 ,intent(in):: ref
+      character*(*),intent(in):: keyword
+      type (sad_comp),pointer,intent(inout) ::cmp
+      integer*4 nc
+      integer*8 ip
+      character*64 key1
+      nc=len(keyword)
+      if(keyword == '@GEO')then
+        key1(1:3)='GEO'
+        nc=3
+      else
+        key1(1:nc)=keyword(1:nc)
+      endif
+      if(ia < nlat)then
+        kx=tfkeyv(int(ia),key1(1:nc),ip,cmp,ref,.false.)
+        if(.not. ref)then
+          cmp%update=cmp%nparam <= 0
+          kx%k=ktfref+ip
+        endif
+        tparaed=.false.
+      else
+        kx%k=0
+      endif
+      return
+      end function tflinek
+
+      end module
+
+      subroutine tftwiss(isp1,kx,ref,irtc)
+      use twissf
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer :: klx
@@ -446,6 +483,7 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       use tffitcode
       use ffs_pointer, only:latt,idelc,idtypec,idvalc,sad_comp,compelc
       use tflinepcom
+      use tparastat, only:ndivelm
       implicit none
       type (sad_descriptor) kx
       type (sad_comp), pointer :: cmp
@@ -458,10 +496,11 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       character*(MAXPNAME) key,tfkwrd
       logical*4 ,intent(in):: saved,ref
       irtc=0
-      if(keyword == 'NAME')then
+      select case (keyword)
+      case('NAME')
         id=idelc(ia)
         kx=kxsalocb(-1,pname(id),lpname(id))
-      elseif(keyword == 'VALUE')then
+      case('VALUE')
         iv=nelvx(it)%ival
         if(iv > 0)then
           if(saved)then
@@ -485,12 +524,15 @@ c            kx%k=merge(klist(iax),ktfref+iax,ref)
         else
           kx%k=0
         endif
-      elseif(keyword == 'DEFAULT')then
+      case('DEFAULT')
         iv=nelvx(it)%ival
-        key=merge('                                ',
-     $       tfkwrd(idtypec(ia),iv),iv == 0)
-        Kx=kxsalocb(-1,key,lenw(key))
-      elseif(keyword == 'DEFAULT$SUM')then
+        if(iv == 0)then
+          key='                                '
+        else
+          key=tfkwrd(idtypec(ia),iv)
+        endif
+        kx=kxsalocb(-1,key,lenw(key))
+      case('DEFAULT$SUM')
         iv=nelvx(it)%ival
         if(iv == 0)then
           key=' '
@@ -499,25 +541,26 @@ c            kx%k=merge(klist(iax),ktfref+iax,ref)
           key=key(1:lenw(key))//"$SUM"
         endif
         kx=kxsalocb(-1,key,lenw(key))
-      elseif(keyword == 'KEYWORDS' .or.
-     $       keyword == 'KEYWORDS_ALL')then
+      case('KEYWORDS','KEYWORDS_ALL')
         l=0
         id=idtypec(ia)
         isps=isp
         call tftypekeystk(id,keyword == 'KEYWORDS_ALL')
         kx=kxmakelist(isps)
         isp=isps
-      elseif(keyword == 'TYPE')then
+      case('TYPE')
         kx=dfromr(dble(idtypec(ia)))
-      elseif(keyword == 'TYPENAME')then
+      case('TYPENAME')
         key=pname(kytbl(0,idtypec(ia)))
         kx=kxsalocb(-1,key(2:),lenw(key)-1)
-      elseif(keyword == 'POSITION')then
+      case('POSITION')
         kx=dfromr(dble(it))
-      elseif(keyword == 'COMPONENT')then
+      case('COMPONENT')
         call elcompl(it,kl)
         kx=sad_descr(kl)
-      else
+      case('NDIV')
+        kx%x(1)=dble(ndivelm(ia))
+      case default
         kx=tfkeyv(-it,keyword,iax,cmp,ref,saved)
         if(.not. ref)then
           kx%k=ktfref+iax
@@ -525,7 +568,7 @@ c            kx%k=merge(klist(iax),ktfref+iax,ref)
             cmp%update=cmp%nparam <= 0
           endif
         endif
-      endif
+      end select
       return
       end
 
@@ -670,25 +713,22 @@ c              k=ilist(ie,ifklp)
       end
 
       subroutine tfline1(isp1,kx,keyword,ref,irtc)
-      use tfstk
-      use ffs
-      use tffitcode
-      use ffs_pointer, only:latt,idelc,idtypec,pnamec,compelc,
-     $     direlc,twiss
+      use twissf
       use sad_main
       use tflinepcom
       use geolib
+      use tparastat,only:ndivelm
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_comp), pointer ::cmp
       integer*8 kax,ktfgeol,kai,i,ip,j
       integer*4 ,intent(out):: irtc
       integer*4 ,intent(in):: isp1
-      integer*4 lenw,lxp,ibz,ia,nc
+      integer*4 lenw,lxp,ibz,ia
       real*8 v,beam(42),xp,fr,
-     $     gv(3,4),ogv(3,4),cod(6),vtwiss(ntwissfun),tfbzs
+     $     gv(3,4),ogv(3,4),cod(6),vtwiss(ntwissfun),tfbzs,tfbzt
       character*(*) ,intent(in):: keyword
-      character*64 name,key1
+      character*64 name
       integer*4 lv
       logical*4 ,intent(in):: ref
       logical*4 over
@@ -697,102 +737,68 @@ c      iaidx(m,n)=int(((m+n+abs(m-n))**2+2*(m+n)-6*abs(m-n))/8)
       ip=itastk(1,isp1)
       ia=itastk(2,isp1)
       v=vstk2(isp1)
-      if(keyword == 'S' .or. keyword == 'LENG')then
+      select case (keyword)
+      case ('S','LENG')
         kx=dfromr(rlist(ifpos+ia-1)*(1.d0-v)+
      $       rlist(ifpos+min(nlat-1,ia))*v)
-      elseif(keyword == 'GAMMABETA')then
+      case('GAMMABETA')
         kx=dfromr(rlist(ifgamm+ia-1)*(1.d0-v)+
      $       rlist(ifgamm+min(nlat-1,ia))*v)
-      elseif(keyword == 'GAMMA')then
+      case('GAMMA')
         kx=dfromr(sqrt(1.d0+(rlist(ifgamm+ia-1)*(1.d0-v)+
      $       rlist(ifgamm+min(nlat-1,ia))*v)**2))
-      elseif(keyword(1:3) == 'SIG' .and.
-     $       keyword(4:4) /= 'E' .and.
-     $       keyword(1:5) /= 'SIGMA')then
-c        write(*,*)'tfline1-beamkey ',keyword(1:len_trim(keyword))
-        if(keyword(1:3) == 'SIG')then
-          call tfbeamkey(keyword(4:),i,j,irtc)
-        else
-          call tfbeamkey(keyword(6:),i,j,irtc)
-        endif
-        if(irtc /= 0)then
-          return
-        endif
-        if(ifsize == 0)then
-          call tfsize(.true.)
-        endif
-        call tfbeamfrac(ia,v,0.d0,beam)
-        if(i == 0)then
-          if(j == 0)then
-            kax=ktadaloc(-1,6)
-            do i=1,6
-              kai=ktavaloc(0,6)
-              klist(kax+i)=ktflist+kai
-c              do j=1,6
-              rlist(kai+1:kai+6)=beam(iaidx(i,1:6))
-c              enddo
-            enddo
-            kx%k=ktflist+kax
-          else
-            kx=dfromr(sqrt(beam(iaidx(j,j))))
-          endif
-        else
-          kx=dfromr(merge(sqrt(beam(iaidx(i,i))),beam(iaidx(i,j)),
-     $         j == 0))
-        endif
-      elseif(keyword == 'MULT')then
+      case('MULT')
         kx=dfromr(dble(ilist(ia,ifmult)))
-      elseif(keyword == 'TYPE')then
+      case('TYPE')
         if(ia == nlat)then
           kx=dxzero
         else
           kx=dfromr(dble(idtypec(ia)))
         endif
-      elseif(keyword == 'TYPENAME')then
+      case('TYPENAME')
         if(ia == nlat)then
           kx=dxnulls
         else
           name=pname(kytbl(0,idtypec(ia)))
           kx=kxsalocb(-1,name(2:),lenw(name)-1)
         endif
-      elseif(keyword == 'NAME')then
+      case('NAME')
         call elname(ia,name)
         kx=kxsalocb(-1,name,lenw(name))
-      elseif(keyword == 'ELEMENT')then
+      case('ELEMENT')
         if(ia == nlat)then
           name='$$$'
         else
           name=pnamec(ia)
         endif
         kx=kxsalocb(-1,name,lenw(name))
-      elseif(keyword == 'POSITION')then
+      case('POSITION')
         kx=dfromr(dble(ia))
-      elseif(keyword == 'GEO')then
+      case('GEO')
         xp=v+ia
         lxp=int(xp)
         fr=xp-lxp
         kx%k=ktflist+ktfgeol(tfgeofrac(lxp,fr,irtc))
-      elseif(keyword == 'GX' .or. keyword == 'GY' .or.
-     $       keyword == 'GZ' .or. keyword == 'GCHI1' .or.
-     $       keyword == 'GCHI2' .or. keyword == 'GCHI3')then
+      case('GX' ,'GY' ,'GZ' ,'GCHI1' ,'GCHI2' ,'GCHI3')
         xp=v+ia
         lxp=int(xp)
         fr=xp-lxp
         gv=tfgeofrac(lxp,fr,irtc)
-        if(keyword == 'GX')then
+        select case (keyword)
+        case('GX')
           kx=dfromr(gv(1,4))
-        elseif(keyword == 'GY')then
+        case('GY')
           kx=dfromr(gv(2,4))
-        elseif(keyword == 'GZ')then
+        case('GZ')
           kx=dfromr(gv(3,4))
-        elseif(keyword == 'GCHI1')then
+        case('GCHI1')
           kx=dfromr(tfchi(gv,1))
-        elseif(keyword == 'GCHI2')then
+        case('GCHI2')
           kx=dfromr(tfchi(gv,2))
-        elseif(keyword == 'GCHI3')then
+        case('GCHI3')
           kx=dfromr(tfchi(gv,3))
-        endif
-      elseif(keyword == 'OGEO')then
+        end select
+      case('OGEO')
         xp=v+ia
         lxp=int(xp)
         fr=xp-lxp
@@ -807,9 +813,7 @@ c              enddo
           lv=itfdownlevel()
         endif
         kx%k=ktflist+ktfgeol(tforbitgeo(gv,cod))
-      elseif(keyword == 'OGX' .or. keyword == 'OGY' .or.
-     $       keyword == 'OGZ' .or. keyword == 'OCHI1' .or.
-     $       keyword == 'OCHI2' .or. keyword == 'OCHI3')then
+      case('OGX' ,'OGY' ,'OGZ' ,'OCHI1' ,'OCHI2' ,'OCHI3')
         xp=v+ia
         lxp=int(xp)
         fr=xp-lxp
@@ -824,21 +828,22 @@ c              enddo
           lv=itfdownlevel()
         endif
         ogv=tforbitgeo(gv,cod)
-c        write(*,'(a,i5,1p10g12.4)')'ogeo ',lxp,gv(:,4),ogv(:,4),cod(1:4)
-        if(keyword == 'OGX')then
+c        write(*,'(a,i5,1p12g10.2)')'ogeo ',lxp,fr,gv(:,4),ogv(:,4),cod(1:4)
+        select case (keyword)
+        case('OGX')
           kx=dfromr(ogv(1,4))
-        elseif(keyword == 'OGY')then
+        case('OGY')
           kx=dfromr(ogv(2,4))
-        elseif(keyword == 'OGZ')then
+        case('OGZ')
           kx=dfromr(ogv(3,4))
-        elseif(keyword == 'OCHI1')then
+        case('OCHI1')
           kx=dfromr(tfchi(ogv,1))
-        elseif(keyword == 'OCHI2')then
+        case('OCHI2')
           kx=dfromr(tfchi(ogv,2))
-        elseif(keyword == 'OCHI3')then
+        case('OCHI3')
           kx=dfromr(tfchi(ogv,3))
-        endif
-      elseif(keyword == 'DIR')then
+        end select
+      case('DIR')
         if(ia /= nlat)then
           if(ref)then
             kx=dfromr(direlc(ia))
@@ -850,20 +855,26 @@ c        write(*,'(a,i5,1p10g12.4)')'ogeo ',lxp,gv(:,4),ogv(:,4),cod(1:4)
         else
           kx%k=ktftrue
         endif
-      elseif(keyword == 'BZS')then
+      case('BZS')
         if(ref)then
           kx=dfromr(tfbzs(ia,ibz))
         else
           kx=dxzero
         endif
-      elseif(keyword == 'UPDATE')then
+      case('BZT')
+        if(ref)then
+          kx=dfromr(tfbzt(ia,ibz))
+        else
+          kx=dxzero
+        endif
+      case('UPDATE')
         if(ia .lt. nlat)then
           call compelc(ia,cmp)
           kx%k=merge(ktftrue,ktffalse,cmp%update)
         else
           kx%k=ktftrue
         endif
-      elseif(keyword == 'DK')then
+      case('DK')
         kax=iferrk-2+ia*2
         if(ref)then
           kx=dfromr(rlist(kax))
@@ -872,25 +883,37 @@ c        write(*,'(a,i5,1p10g12.4)')'ogeo ',lxp,gv(:,4),ogv(:,4),cod(1:4)
           call compelc(ia,cmp)
           cmp%update=cmp%nparam <= 0
         endif
-      else
-        nc=len(keyword)
-        if(keyword == '@GEO')then
-          key1(1:3)='GEO'
-          nc=3
-        else
-          key1(1:nc)=keyword(1:nc)
-        endif
-        if(ia .lt. nlat)then
-          kx=tfkeyv(int(ia),key1(1:nc),ip,cmp,ref,.false.)
-          if(.not. ref)then
-            cmp%update=cmp%nparam <= 0
-            kx%k=ktfref+ip
+      case('NDIV')
+        kx%x(1)=dble(ndivelm(ia))
+      case default
+        if(keyword(1:3) == 'SIG' .and. keyword(4:4) /= 'E' .and. keyword(1:5) /= 'SIGMA')then
+          call tfbeamkey(keyword(4:),i,j,irtc)
+          if(irtc == 0)then
+            if(ifsize == 0)then
+              call tfsize(.true.)
+            endif
+            call tfbeamfrac(ia,v,0.d0,beam)
+            if(i == 0)then
+              if(j == 0)then
+                kax=ktadaloc(-1,6)
+                do i=1,6
+                  kai=ktavaloc(0,6)
+                  klist(kax+i)=ktflist+kai
+                  rlist(kai+1:kai+6)=beam(iaidx(i,1:6))
+                enddo
+                kx%k=ktflist+kax
+              else
+                kx=dfromr(sqrt(beam(iaidx(j,j))))
+              endif
+            else
+              kx=dfromr(merge(sqrt(beam(iaidx(i,i))),beam(iaidx(i,j)),
+     $             j == 0))
+            endif
+            return
           endif
-          tparaed=.false.
-        else
-          kx%k=0
         endif
-      endif
+        kx=tflinek(keyword,ia,cmp,ref)
+      end select
       return
       end
 
@@ -901,8 +924,7 @@ c        write(*,'(a,i5,1p10g12.4)')'ogeo ',lxp,gv(:,4),ogv(:,4),cod(1:4)
       integer*4 lk,l1,k1,k,lenw,itfmessage
       character*(*) ,intent(in):: key
       character*2 key1
-      character*2 ,parameter ::keyname(6)=[
-     $     'X ','PX','Y ','PY','Z ','DP']
+      character*2 ,parameter ::keyname(6)=['X ','PX','Y ','PY','Z ','DP']
       lk=lenw(key)
       if(lk == 0)then
         i=0

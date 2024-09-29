@@ -18,6 +18,8 @@
       real*8 ,pointer :: transa(:,:)
       logical*4 ,intent(in):: ent
       logical*4 mcal
+      real*8 trans0(6,6)
+      trans0=trans(:,1:6)
       mcal=irad .ge. 6
       if(phig /= 0.d0)then
         th=theta
@@ -48,7 +50,7 @@
           pxi=cod(2)
           cod(2)= cost*pxi-sint*cod(4)
           cod(4)= sint*pxi+cost*cod(4)
-          if(calpol .and. irad .gt. 6)then
+          if(calpol .and. irad > 6)then
             sx=srot(1,:)
             srot(1,:)= cost*sx-sint*srot(2,:)
             srot(2,:)= sint*sx+cost*srot(2,:)
@@ -70,6 +72,7 @@
           cost=cos(th)
           sint=sin(th)
           dx= cost*dx0-sint*dy
+c          write(*,'(a,1p7g15.7)')'tchge-exit ',th,phig,alg,dx,dz,dtheta,dchi2
         else
           cost=1.d0
           sint=0.d0
@@ -102,7 +105,7 @@
           cod(2)= cost*pxi+sint*cod(4)
           cod(4)=-sint*pxi+cost*cod(4)
           if(mcal)then
-            if(calpol .and. irad .gt. 6)then
+            if(calpol .and. irad > 6)then
               sx=srot(1,:)
               srot(1,:)= cost*sx+sint*srot(2,:)
               srot(2,:)=-sint*sx+cost*srot(2,:)
@@ -119,9 +122,15 @@
       endif
       if(associated(transa))then
         trans(:,1:irad)=matmul(transa,trans(:,1:irad))
-        if(irad .gt. 6)then
+        if(irad > 6)then
           call tmulbs(beam,transa,.true.)
         endif
+c        if(abs(trans(3,6)) > 2.d0)then
+c          write(*,'(a,l3)')'tchge ',ent
+c          write(*,'(1p6g15.7)')transa(:,1:6)
+c          write(*,'(1p6g15.7)')trans0(:,1:6)
+c          write(*,'(1p6g15.7)')trans(:,1:6)
+c        endif
       endif
       return
       end
@@ -185,7 +194,7 @@
         endif
         cod(1)=cod(1)+dx1
       endif
-      if(calpol .and. irad .gt. 6)then
+      if(calpol .and. irad > 6)then
         do concurrent (i=1:9)
           srot(1,i)=dot_product(rr(1,:),srot(:,i))+srot(1,i)
           srot(2,i)=dot_product(rr(2,:),srot(:,i))+srot(2,i)

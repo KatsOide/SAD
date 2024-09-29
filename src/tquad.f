@@ -8,6 +8,7 @@ c      use ffs_pointer, only:inext,iprev
       use sol,only:tsolrot
       use mathfun, only:pxy2dpz,sqrt1,akang
       use element_drift_common
+      use tparastat,only:setndivelm
       use kradlib
       implicit none
       integer*4 ,intent(in):: np,mfring
@@ -23,6 +24,7 @@ c      use ffs_pointer, only:inext,iprev
      $       dx,dy,theta,.false.,.false.)
         return
       elseif(ak0 == 0.d0)then
+        call setndivelm(l_track,1)
         if(bz == 0.d0)then
           call tdrift_free(np,x,px,y,py,z,dv,al)
         else
@@ -77,6 +79,7 @@ c      theta2=theta+akang(dcmplx(ak0,0.d0),al,cr1)
         call tsolqur(np,x,px,y,py,z,g,dv,sx,sy,sz,al,ak,
      $       bzs,0.d0,0.d0,eps0,alr)
       else
+        call setndivelm(l_track,0)
         call tsolqu(np,x,px,y,py,z,g,dv,sx,sy,sz,
      $       al,ak,bzs,0.d0,0.d0,0,eps0)
       endif
@@ -123,6 +126,7 @@ c
       use photontable
       use kyparam, only:nmult
       use element_drift_common
+      use tparastat,only:setndivelm
       implicit none
 c     alpha=1/sqrt(12),beta=1/6-alpha/2,gamma=1/40-1/24/sqrt(3)
       real*8,parameter::alpha=2.88675134594812882d-1,
@@ -143,6 +147,7 @@ c     begin initialize for preventing compiler warning
       alb=0.d0
       aki=0.d0
 c     end   initialize for preventing compiler warning
+      call setndivelm(l_track,1)
       if(ak == 0.d0)then
         call tdrift_free(np,x,px,y,py,z,dv,al)
         return

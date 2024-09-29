@@ -25,6 +25,19 @@ Graphics$Options=AspectRatio|FrameLabel|PlotRange|GridLines|Alignment|DataRange|
 
 Plot$DefaultColor={"royal blue","tomato3","forest green","dark goldenrod",
       "dodger blue","orange3","blue violet","lime green","hot pink","yellow4"};
+Plot$DefaultSymbol={"CI","LT","RT","DT","UT","SQ","DI","PL","TI"};
+Plot$DefaultDashing={{1},{0.75,0.25},{0.4, 0.15},{0.2,0.1},{0.1,0.08},
+  {0.8,0.08, 0.08, 0.08},{0.4,0.08,0.08,0.08}};
+LP$Ldef={PointSymbol->Plot$DefaultSymbol,
+  PointSize->1,
+  PointColor->Plot$DefaultColor,
+  PlotColor->Plot$DefaultColor,
+  PointBorderColor->Plot$DefaultColor,
+  PlotJoined->False,
+  ErrorBarTickSize->1,ErrorBarThickness->1,ErrorBarColor->Default,
+  Dashing->Plot$DefaultDashing,
+  Thickness->1,Legend->False};
+LP$Lopt=LP$Ldef[[,1]];
 
 With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
   AspectRatio->Automatic,PlotJoined->False,StepRatio->1,
@@ -45,51 +58,119 @@ With[{LP$def={Scale->{Linear,Linear},PlotRange->{Automatic,Automatic},
   Background->"#ffffff"},
   r=(Rule|RuleDelayed)[Graphics$Options,_]},
 
+  FillList[a_,n_]:=Module[{l=Length[a]},
+    If[l,
+      Take[Flatten[Table[a,{Ceiling[n/l]}],1],n],
+      Table[a,{n}]]];
+ 
+  LPOptions[n_,opt_]:=Module[{l=LP$Lopt/.opt},
+    Thread[LP$Lopt->(FillList[#,n]&/@l)]];
+
+  LPOption1[lop_,k_]:=MapAt[#[[k]]&,lop,{,2}];
+
   ListPlot[ll_List,opt___]:=Module[
-    {ld,d,op=Override[{opt},LP$def],sc,pg,eg,pj,of,in,pr,pl,body,gopt,dr,g,la},
-    If[Length[ll]>0,
-      d=Length[First[ll]];
-      {ld,dr}=Switch[d,
-        0,
-        {Thread[{Range[Length[ll]],ll}],{{1,Length[ll]},MinMax[ll]}},
-        2,
-        {ll,MapThread[MinMax,ll]},
-        3,
-        la=MapAt[Abs,Thread[ll],{3}];
-        {Thread[{First[la],Second[la],Table[0,{Length[ll]}],Third[la]}],
-          {MinMax[First[la]],
-            {Min[Second[la]-Third[la]],Max[Second[la]+Third[la]]}}},
-        4,
-        la=MapAt[Abs,Thread[ll],{{3},{4}}];
-        {ll,
-          {{Min[First[la]-Third[la]],Max[First[la]+Third[la]]},
-            {Min[Second[la]-la[[4]]],Max[Second[la]+la[[4]]]}}},
-        _,
-        Message[ListPlot::wrongsize];
-        Return[]],
-      {ld,dr}={{},{{0,1},{0,1}}}];
-    ({sc,pg,eg,pj,of,in,pr,pl}={Scale,Prolog,Epilog,PlotJoined,DisplayFunction,
-      Initialize,PlotRegion,Plot}/.op);
-    sc=Flatten[{Linear,sc}][[{-2,-1}]];
-    gopt=Override[Scale->sc,
-      Cases[op,r,1],DataRange->dr];
-    body=Flatten[
-      {pg,
-      Switch[pj,
-        False,
-        Point[ld,SetOption[{PointSize,PointColor,PointSymbol,PlotColor,
-          PointBorderColor,
-          ErrorBarTickSize,ErrorBarThickness,ErrorBarColor,PointTags,Legend},op]],
+    {op,ld,d,sc,pg,eg,pj,of,in,pr,pl,body,gopt,dr,g,la,lop,n},
+    If[Length[Dimensions[ll[[1]]]]==2,
+      op=Override[{opt},LP$Ldef,LP$def];
+      n=Length[ll];
+      lop=LPOptions[n,op];
+      pr=PlotRegion/.op;
+      g=Table[
+        ListPlot[ll[[k]],DisplayFunction->Identity,Null@@Override[LPOption1[lop,k],op]],{k,n}],
 
-        Step|True,
-        Line[ld,SetOption[
-          {Plot,PointSize,PointColor,PointBorderColor,PointSymbol,PointTags,
-	    PlotJoined,StepRatio,Thickness,PlotColor,Dashing,LineTags,
-            ErrorBarTickSize,ErrorBarThickness,ErrorBarColor,Legend,Arrow,ArrowShape},op]],
+      op=Override[{opt},LP$def];
+      If[Length[ll]>0,
+        d=Length[First[ll]];
+        {ld,dr}=Switch[d,
+          0,
+          {Thread[{Range[Length[ll]],ll}],{{1,Length[ll]},MinMax[ll]}},
+          2,
+          {ll,MapThread[MinMax,ll]},
+          3,
+          la=MapAt[Abs,Thread[ll],{3}];
+          {Thread[{First[la],Second[la],Table[0,{Length[ll]}],Third[la]}],
+            {MinMax[First[la]],
+              {Min[Second[la]-Third[la]],Max[Second[la]+Third[la]]}}},
+          4,
+          la=MapAt[Abs,Thread[ll],{{3},{4}}];
+          {ll,
+            {{Min[First[la]-Third[la]],Max[First[la]+Third[la]]},
+              {Min[Second[la]-la[[4]]],Max[Second[la]+la[[4]]]}}},
+          _,
+          Message[ListPlot::wrongsize];
+          Return[]],
+        {ld,dr}={{},{{0,1},{0,1}}}];
+      ({sc,pg,eg,pj,of,in,pr,pl}={Scale,Prolog,Epilog,PlotJoined,DisplayFunction,
+        Initialize,PlotRegion,Plot}/.op);
+      sc=Flatten[{Linear,sc}][[{-2,-1}]];
+      gopt=Override[Scale->sc,
+        Cases[op,r,1],DataRange->dr];
+      body=Flatten[
+        {pg,
+          Switch[pj,
+            False,
+            Point[ld,SetOption[{PointSize,PointColor,PointSymbol,PlotColor,
+              PointBorderColor,
+              ErrorBarTickSize,ErrorBarThickness,ErrorBarColor,PointTags,Legend},op]],
 
-	_, (* Unsupported *)],
-      eg}];
-    g=Graphics[body,gopt];
+            Step|True,
+            Line[ld,SetOption[
+              {Plot,PointSize,PointColor,PointBorderColor,PointSymbol,PointTags,
+	        PlotJoined,StepRatio,Thickness,PlotColor,Dashing,LineTags,
+                ErrorBarTickSize,ErrorBarThickness,ErrorBarColor,Legend,Arrow,ArrowShape},op]],
+
+	    _, (* Unsupported *)],
+          eg}];
+      g=Graphics[body,gopt];
+      If[of<=>Identity && None<=>of<=>Null,
+        Show[g,
+          Initialize->in,
+          PlotRegion->pr
+          ]];
+
+      If[Length[ll]>0,
+        d=Length[First[ll]];
+        {ld,dr}=Switch[d,
+          0,
+          {Thread[{Range[Length[ll]],ll}],{{1,Length[ll]},MinMax[ll]}},
+          2,
+          {ll,MapThread[MinMax,ll]},
+          3,
+          la=MapAt[Abs,Thread[ll],{3}];
+          {Thread[{First[la],Second[la],Table[0,{Length[ll]}],Third[la]}],
+            {MinMax[First[la]],
+              {Min[Second[la]-Third[la]],Max[Second[la]+Third[la]]}}},
+          4,
+          la=MapAt[Abs,Thread[ll],{{3},{4}}];
+          {ll,
+            {{Min[First[la]-Third[la]],Max[First[la]+Third[la]]},
+              {Min[Second[la]-la[[4]]],Max[Second[la]+la[[4]]]}}},
+          _,
+          Message[ListPlot::wrongsize];
+          Return[]],
+        {ld,dr}={{},{{0,1},{0,1}}}];
+      ({sc,pg,eg,pj,of,in,pr,pl}={Scale,Prolog,Epilog,PlotJoined,DisplayFunction,
+        Initialize,PlotRegion,Plot}/.op);
+      sc=Flatten[{Linear,sc}][[{-2,-1}]];
+      gopt=Override[Scale->sc,
+        Cases[op,r,1],DataRange->dr];
+      body=Flatten[
+        {pg,
+          Switch[pj,
+            False,
+            Point[ld,SetOption[{PointSize,PointColor,PointSymbol,PlotColor,
+              PointBorderColor,
+              ErrorBarTickSize,ErrorBarThickness,ErrorBarColor,PointTags,Legend},op]],
+
+            Step|True,
+            Line[ld,SetOption[
+              {Plot,PointSize,PointColor,PointBorderColor,PointSymbol,PointTags,
+	        PlotJoined,StepRatio,Thickness,PlotColor,Dashing,LineTags,
+                ErrorBarTickSize,ErrorBarThickness,ErrorBarColor,Legend,Arrow,ArrowShape},op]],
+
+	    _, (* Unsupported *)],
+          eg}];
+      g=Graphics[body,gopt]];
     If[of<=>Identity && None<=>of<=>Null,
       Show[g,
         Initialize->in,
@@ -122,7 +203,7 @@ With[{
 	(_Rule|_RuleDelayed),
 	_}],
       pr,dr,prl,drl,pr0,prg},
-    gl=Replace[#,{Graphics[x_,y___]:>Graphics[x,Flatten[{y}]]}]&/@gl;
+    gl00=gl=Replace[#,{Graphics[x_,y___]:>Graphics[x,Flatten[{y}]]}]&/@gl;
     df=DisplayFunction/.df/.DisplayFunction:>$DisplayFunction/.Default:>$DisplayFunction;
     opt=Override[opt,gl[[1,2]],def0];
     If[df<=>Identity && None<=>df<=>Null,
@@ -156,116 +237,6 @@ PRM1$$[y:{_Real,_Real}]:={{Automatic,Automatic},y};
 PRM1$$[{Automatic,y:{_,_}}]:={{Automatic,Automatic},y};
 PRM1$$[{x:{_,_},Automatic}]:={x,{Automatic,Automatic}};
 PRM1$$[x_]:=x;
-
-With[{def={MaxBend->0.01,PlotPoints->32,PlotDivision->1024,PlotRange->Automatic,
-  PlotJoined->True,StepRatio->1,Plot->False,GridLines->{Automatic,Automatic},
-  PlotColor->"dodger blue",Thickness->2}},
-
-  Plot[f_,{x_,xmin_,xmax_},opt___]:=Block[{x},Module[
-    {d,{maxb,minp,minx,pj,sr,pt,gr,pr,pc,th}=
-      {MaxBend,PlotPoints,PlotDivision,PlotJoined,StepRatio,Plot,
-        GridLines,PlotRange,PlotColor,Thickness}/.{opt}/.def},
-    ListPlot[(d=PlotInterpolate[f,{x,xmin,xmax},minp,Max[minp*3,minx],maxb])[[1]],
-      PlotJoined->pj,StepRatio->sr,Plot->pt,GridLines->gr,
-      PlotColor->pc,Thickness->th,
-      PlotRange->PR$Auto[pr,PlotRange->d[[2]]],opt]
-    ]]];
-
-With[{def={Dashing->{{1},{0.8,0.2},{0.4, 0.15},{0.2,0.1},{0.1,0.07},
-  {0.8,0.07, 0.07, 0.07},{0.4,0.07,0.07,0.07}},
-  PlotColor:>Plot$DefaultColor,
-  Thickness->2,
-  Legend->{False},
-  PlotRange->Automatic,
-  DisplayFunction->Default}},
-
-  Plot[f_List,{x_,xmin_,xmax_},opt___]:=Block[{x},Module[
-    {a,b,c,d,da,pc,leg,pr,th,n,g,h=Map[Hold,Unevaluated[f]]},
-    x=xmin;
-    {da,pc,leg,pr,th}={Dashing,PlotColor,Legend,PlotRange,Thickness}/.{opt}/.def;
-    n=Length[h];
-    da=(Dashing->#)&/@Take[Flatten[Table[da,
-      {Ceiling[n/Max[Length[da],1]]}],1],n];
-    pc=(PlotColor->#)&/@Take[Flatten[Table[pc,
-      {Ceiling[n/Max[Length[pc],1]]}]],n];
-    leg=(Legend->#)&/@Take[Flatten[{{leg},Table[False,{n}]}], n];
-    g=MapThread[Function[{a,b,c,d},Plot[ReleaseHold[a],{x,xmin,xmax},
-      DisplayFunction->Null,b,c,d,opt,Thickness->th]],{h,da,pc,leg}];
-    pr=PR$Auto[pr,g];
-    If[(DisplayFunction/.{opt}/.def)===Default,
-      g=Show[g,PlotRange->pr,opt]];
-    g]]];
-
-PR$Auto[x_,g_]:=x;
-PR$PRmax[pr1_,Automatic]:=Max[pr1[[,2,2]]];
-PR$PRmax[pr1_,All]:=Max[pr1[[,2,4]]];
-PR$PRmin[pr1_,Automatic]:=Min[pr1[[,2,1]]];
-PR$PRmin[pr1_,All]:=Min[pr1[[,2,3]]];
-PR$Auto[{min_Real,t:(All|Automatic)},g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
-  {min,PR$PRmax[pr1,t]}];
-PR$Auto[{t:(All|Automatic),max_Real},g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
-  {PR$PRmin[pr1,t],max}];
-PR$Auto[t:(All|Automatic),g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
-  {PR$PRmin[pr1,t],PR$PRmax[pr1,t]}];
-PR$Auto[{t1:All|Automatic,t2:All|Automatic},g_]:=With[{pr1=Cases[g,_[PlotRange,_],{0,-1}]},
-  {PR$PRmin[pr1,t1],PR$PRmax[pr1,t2]}];
-PR$Auto[{x_List,y_},g_]:={x,PR$Auto[y,g]};
-PR$Auto[{x_,y_List},g_]:={x,PR$Auto[y,g]};
-
-PlotInterpolate[fin_,{y_,xmin_,xmax_},min0_,maxdiv_,maxb_]:=Module[
-  {f,fs,s,dl,dl0,dl1,la,cos,a,yw,ar,dx,xl,yl,x0,x1,x2,cosm,cosm1=-1,la0=0,
-    costh=1-maxb^2/2,min=min0,fh=Extract[Hold[fin],{1},Head],ny,ys,ymin,ymax,ya,
-    y0,y1,ym,dxmin=Abs[(xmax-xmin)/maxdiv]},
-  If[Head[fh]===SplineData,
-    min=Max[min,Length[fh[[1,1]]]]];
-  fs = With[{y = #}, {#, Check[fin, 0]}]&;
-  f  = With[{y = Vector[#]},
-    Check[ReleaseVector[fin], ReleaseVector[fs[Vector[#]]]]]&;
-  dx=(xmax-xmin)/min;
-  yl=Re[f[xl=Range[0,min]*dx+xmin]];
-  {xl,yl}=Thread[Thread[{xl,yl}]/.{_,INF|-INF|_?NaNQ}:>Null[]];
-  If[~RealListQ[yl],Return[{}]];
-  s=True;
-  While[s && Length[xl]<maxdiv,
-    yw=Max[yl]-Min[yl];
-    ar=Abs[yw/(xmax-xmin)];
-    la=Thread[{ar*xl,yl}];
-    dl=Difference[la];
-    dl0=Drop[dl,-1];
-    dl1=Rest[dl];
-    cos=MapThread[(#.#2)/Max[Abs[Complex@@#]*Abs[Complex@@#2],1e-100]&,{dl1,dl0}];
-    cosm=Min[cos];
-    If[cosm<cosm1-maxb/10 || cosm>cosm1+maxb/10,
-      cosm1=cosm;
-      x0=Take[xl,{2,-2}];
-      x1=(Drop[xl,-2]+2*x0)/3;
-      x2=(Drop[xl,2]+2*x0)/3;
-      a=MapThread[
-        If[#<costh && Abs[#3-#2]>dxmin,
-          Null[#2,#3],
-          Null[]]&,
-        {cos,x1,x2}];
-      s=Length[a]>0;
-      If[s,
-        {xl,yl}=Thread[
-          Union[Thread[{Join[xl,a],Join[yl,Re[f[a]]]}]]]],
-      s=False]];
-  ny=Length[yl];
-  ys=Sort[yl];
-  {y0,y1}=ys[[{1,-1}]];
-  ym=(y0+y1)/2;
-  {ymin,ymax}=ys[[{1+(ny-1)*0.05,ny*0.95}]];
-  ya=(ymin+ymax)/2;
-  If[ya-ys[[1]]<(ya-ymin)*1.2,
-    ymin=ys[[1]];
-    ya=(ymin+ymax)/2];
-  If[ys[[-1]]-ya<(ymax-ya)*1.2,
-    ymax=ys[[-1]];
-    ya=(ymin+ymax)/2];
-  {Thread[{xl,yl}],{ya+(ymin-ya)*1.2,ya+(ymax-ya)*1.2,ym+(y0-ym)*1.05,ym+(y1-ym)*1.05}}];
-
-SetAttributes[Plot,HoldAll];
-SetAttributes[PlotInterpolate,HoldFirst];
 
 SetAttributes[
   {ListPlot,SetOption,PRM1$$,

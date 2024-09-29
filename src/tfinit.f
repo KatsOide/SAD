@@ -141,11 +141,34 @@ c      enddo
       else
         tfbzs=0.d0
       endif
-c      write(*,*)'tfbzs ',i,ibz,brho,
-c     $     rlist(ifgamm+i-1),rlist(ifgamm),tfbzs
       return
       end
 
+      real*8 function tfbzt(i,ibz)
+      use kyparam
+      use tfstk
+      use ffs
+      use sad_main, only:sad_comp
+      use ffs_pointer, only:direlc,compelc
+      implicit none
+      integer*4 ,intent(in):: i
+      integer*4 ,intent(out):: ibz
+      type (sad_comp), pointer ::cmp
+      real*8 ,parameter ::bzthre=1.d-15
+      ibz=ilist(i*3-2,ifibzl)
+      if(ibz .gt. 0)then
+        call compelc(ibz,cmp)
+        tfbzt=charge*(cmp%value(ky_BZ_SOL)
+     $       +cmp%value(ky_DBZ_SOL))
+     $       *direlc(ibz)
+        if(abs(tfbzt) .lt. bzthre)then
+          tfbzt=0.d0
+        endif
+      else
+        tfbzt=0.d0
+      endif
+      return
+      end
       subroutine tfbndsol(i,ibg,ibb)
       use ffs_pointer
       implicit none

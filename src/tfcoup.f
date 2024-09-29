@@ -7,10 +7,10 @@
       use ffsa, only:tffssetupcouple
       implicit none
       type (sad_comp), pointer :: cmp
+      logical*4 ,intent(out):: exist
       integer*4 kk1,k1,i,kk2,k2,ielm,lenw
       real*8 co,v,getva
       character*(MAXPNAME+16) ele1,ele2,name
-      logical*4 ,intent(out):: exist
       logical*4 comp
       call getwdlp(ele1)
       if(ele1 == '*')then
@@ -202,7 +202,8 @@ c        call tfsetcmp(v*errk(1,kk1)*co,cmp,ival(k1))
       use ffs_pointer
       use tffitcode
       implicit none
-      integer*4 i,lenw
+      integer*4 ,intent(in):: i
+      integer*4 lenw
       character*(MAXPNAME+16)name,name1
       call elname(i,name)
       call elnameK(nelvx(iele1(i))%klp,name1)

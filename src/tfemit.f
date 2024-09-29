@@ -95,8 +95,7 @@ c        write(*,'(a,1p2g15.7,3i5)')'tfemit ',klr%rbody(1:2),is,ie,nlat
       endif
       if(nel == nlat)then
         cod=codin
-        call temit(trans,cod,beam,btr,
-     $       .not. trpt .and. mode .ge. 0,iae,codplt,param,stab,lno)
+        call temit(trans,cod,beam,btr,.not. trpt .and. mode .ge. 0,iae,codplt,param,stab,lno)
       else
         call tffsbound1(is,ie-1,fbound)
         cod=codin
@@ -106,8 +105,7 @@ c        write(*,'(a,1p2g15.7,3i5)')'tfemit ',klr%rbody(1:2),is,ie,nlat
         beam(1:21)=beamin
         beam(22:42)=0.d0
         call tinitr12(trans)
-        call tturneg(trans,cod,beam,srot,fbound,
-     $     iae,.true.,rt,.false.)
+        call tturneg(trans,cod,beam,srot,fbound,iae,.true.,rt,.false.)
         call setparams(param,cod)
         call rotri(is,ris)
         dummy=dnotanumber

@@ -1408,6 +1408,98 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
         return
         end subroutine
 
+        integer*4 function ndivelm(ia) result(ndiv)
+        use tfstk
+        use kyparam
+        use ffs_pointer, only:idelc,idvalc,compelc,tsetfringep
+        use multa, only:fact,aninv
+        use tmacro
+        implicit none
+        type (sad_comp), pointer :: cmp
+        integer*4 ,intent(in):: ia
+        integer*4 ltyp
+        if(ia < 1 .or. ia >= nlat)then
+          ndiv=0
+          return
+        endif
+        call compelc(ia,cmp)
+        ltyp=idtype(cmp%id)
+        select case (ltyp)
+        case (icBEND)
+          ndiv=cmp%ivalue(1,p_NDIV_BEND)
+        case (icQUAD)
+          ndiv=cmp%ivalue(1,p_NDIV_QUAD)
+        case (icSEXT,icOCTU,icDECA,icDODECA)
+          ndiv=cmp%ivalue(1,p_NDIV_THIN)
+        case (icMULT)
+          ndiv=cmp%ivalue(1,p_NDIV_MULT)
+        case (icCAVI)
+          ndiv=cmp%ivalue(1,p_NDIV_CAVI)
+        case default
+          ndiv=1
+        end select
+        return
+        end function
+
+        subroutine setndivelm(ia,ndiv)
+        use tfstk
+        use kyparam
+        use ffs_pointer, only:compelc
+        use tmacro
+        implicit none
+        type (sad_comp), pointer :: cmp
+        integer*4 ,intent(in):: ia,ndiv
+        integer*4 ltyp
+        if(ia < 1 .or. ia >= nlat)then
+          return
+        endif
+        call compelc(ia,cmp)
+        ltyp=idtype(cmp%id)
+c        write(*,*)'setndivelm ',ia,ltyp,ndiv
+        select case (ltyp)
+        case (icBEND)
+          cmp%ivalue(1,p_NDIV_BEND)=ndiv
+        case (icQUAD)
+          cmp%ivalue(1,p_NDIV_QUAD)=ndiv
+        case (icSEXT,icOCTU,icDECA,icDODECA)
+          cmp%ivalue(1,p_NDIV_THIN)=ndiv
+        case (icMULT)
+          cmp%ivalue(1,p_NDIV_MULT)=ndiv
+        case (icCAVI)
+          cmp%ivalue(1,p_NDIV_CAVI)=ndiv
+        end select
+        return
+        end subroutine
+
+        subroutine addndivelm(ia,ndiv)
+        use tfstk
+        use kyparam
+        use ffs_pointer, only:compelc
+        use tmacro
+        implicit none
+        type (sad_comp), pointer :: cmp
+        integer*4 ,intent(in):: ia,ndiv
+        integer*4 ltyp
+        if(ia < 1 .or. ia >= nlat)then
+          return
+        endif
+        call compelc(ia,cmp)
+        ltyp=idtype(cmp%id)
+        select case (ltyp)
+        case (icBEND)
+          cmp%ivalue(1,p_NDIV_BEND)=cmp%ivalue(1,p_NDIV_BEND)+ndiv
+        case (icQUAD)
+          cmp%ivalue(1,p_NDIV_QUAD)=cmp%ivalue(1,p_NDIV_QUAD)+ndiv
+        case (icSEXT,icOCTU,icDECA,icDODECA)
+          cmp%ivalue(1,p_NDIV_THIN)=cmp%ivalue(1,p_NDIV_THIN)+ndiv
+        case (icMULT)
+          cmp%ivalue(1,p_NDIV_MULT)=cmp%ivalue(1,p_NDIV_MULT)+ndiv
+        case (icCAVI)
+          cmp%ivalue(1,p_NDIV_CAVI)=cmp%ivalue(1,p_NDIV_CAVI)+ndiv
+        end select
+        return
+        end subroutine
+
       end module
 
       module ffs_fit
@@ -2958,8 +3050,10 @@ c      call tfree(ifibzl)
       use ffsfile
       use tfcsi,only:lfni
       implicit none
-      type (sad_descriptor) kx
-      integer*4 isp1,irtc,infl0,itfmessage,lfn,ierrfl,ierr,lfnb0,lfni0
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 infl0,itfmessage,lfn,ierrfl,ierr,lfnb0,lfni0
       ierr=0
       if(isp == isp1+2)then
         ierr=int(rtastk(isp))

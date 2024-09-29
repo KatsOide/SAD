@@ -410,14 +410,7 @@ c     below is incorrect for fra <> 0
      $             dtfcopy1(kxm2l(cod,0,6,1,.false.))
             endif
           endif
-c            if(l == 1)then
-c              r=1.d0
-c            else
-c              r=gammab(l-1)/gammab(l)
-c            endif
-c          write(*,*)'tturne1-setetwiss ',l,beamplt,idp,cod(5)
           call tsetetwiss(trans,cod,beam,ibegin,l,idp)
-c          write(*,*)'tturne1-setetwiss-end ',l,plot,cod(5)
         elseif(radtaper .and. radcod)then
           twiss(l,idp,mfitddp)=cod(6)*
      $         merge(1.d0,gammab(l-1)/gammab(l),l == 1)
@@ -462,7 +455,9 @@ c          write(*,*)'tturne1-setetwiss-end ',l,plot,cod(5)
             klist(iae%iabmi+l)=ktflist+ktfcopy1(kbmz)
           endif
         endif
-c        WRITE(*,*)lele,' ',PNAME(ILIST(2,LATT(L)))(1:16)
+c        if(abs(trans(3,6)) > 1.d0)then
+c          WRITE(*,'(2i5,1p15g15.7)')l,lele,trans(3,6)
+c        endif
 c        if(mod(l,100) == 0)then
 c          write(*,*)'tturne1-l ',l,lele
 c        endif
@@ -579,7 +574,7 @@ c              rtaper=1.d0-dp0+cod(6)
      $         ftable(1),ftable(2),ftable(3),ftable(4),
      $         mfr,cmp%value(ky_EPS_QUAD),
      $         cmp%value(ky_KIN_QUAD) == 0.d0,
-     $         cmp%value(ky_CHRO_QUAD) /= 0.d0)
+     $         cmp%value(ky_CHRO_QUAD) /= 0.d0,l)
 
         case (icSEXT,icOCTU,icDECA,icDODECA)
           ak1=cmp%value(ky_K_THIN)

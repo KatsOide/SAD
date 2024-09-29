@@ -8,26 +8,25 @@
       use ffs_pointer, only: gammab
       use temw,only:tmulbs
       use chg,only:tchge
+      use tparastat,only:setndivelm
       use mathfun
       use sad_basics
       implicit none
       real*8 eps,oneev
       parameter (eps=1.d-2)
       parameter (oneev=1.d0+3.83d-12)
-      integer*4 l,ndiv,n,mfring
-      real*8 trans(6,12),cod(6),beam(42),srot(3,9)
+      integer*4 ,intent(in):: l,mfring
+      integer*4 n,ndiv
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       real*8 trans1(6,6)
-      real*8 al,vc,harm,phi,freq,w,v,vn,vcn,p1,h1,
-     $     aln,phis,phic,dhg,v1,t,phii,dh,a,
-     $     h2,p2,pf,v2,dgb,rg2,
-     $     dx,dy,theta,v10,v20,v11,v02,
-     $     v10a,v11a,v20a,v02a,ddhdx,ddhdy,ddhdz,ddhdp,
+      real*8 ,intent(in):: al,vc,harm,phi,freq,dx,dy,theta,v10,v20,v11,v02
+      real*8 w,v,vn,vcn,p1,h1,aln,phis,phic,dhg,v1,t,phii,dh,a,
+     $     h2,p2,pf,v2,dgb,rg2,v10a,v11a,v20a,v02a,ddhdx,ddhdy,ddhdz,ddhdp,
      $     wi,offset1,va,sp,cp,av,dpxa,dpya,dav,davdz,davdp,
      $     dpx,dpy,dv,s0
-      logical*4 fringe,autophi
-      call tchge(trans,cod,beam,srot,
-     $     dx,dy,0.d0,theta,0.d0,0.d0,0.d0,0.d0,.true.)
-      if(harm .eq. 0.d0)then
+      logical*4 ,intent(in):: fringe,autophi
+      call tchge(trans,cod,beam,srot,dx,dy,0.d0,theta,0.d0,0.d0,0.d0,0.d0,.true.)
+      if(harm == 0.d0)then
         w=pi2*freq/c
       else
         w=omega0*harm/c
@@ -46,6 +45,7 @@ c      h1=p1*sqrt(1.d0+1.d0/p1**2)
 c      h1=sqrt(p1**2+1.d0)
       v=vc/amass*abs(charge)
       ndiv=1+int(min(abs(w*al),sqrt((v*(1.d0/h0+1.d0/h1))**2/3.d0/eps)))
+      call setndivelm(l,ndiv)
       vn=v/ndiv
       vcn=vc/ndiv
       aln=al/ndiv
@@ -74,9 +74,9 @@ c      write(*,'(a,1p5g15.7)')'tcave ',phi,phis,phic,trf0
           offset1=sin(phis)
         endif
         if(al /= 0.d0 .and. fringe
-     $       .and. mfring .ge. 0 .and. mfring /= 2)then
+     $       .and. mfring >= 0 .and. mfring /= 2)then
           call tcavfrie(trans,cod,beam,al,v,w,phic,phis-phic,s0,p0,
-     $         irad,irad .gt. 6 .or. calpol,autophi)
+     $         irad,irad > 6 .or. calpol,autophi)
         endif
         call tinitr(trans1)
         dgb=0.d0
@@ -159,7 +159,7 @@ c          trans1(6,6)=(p1-a*t/p1/h1)/h1/v2
           cod(5)=-t*v2
           trans(:,1:irad)=matmul(trans1,trans(:,1:irad))
 c          call tmultr(trans,trans1,irad)
-          if(irad .gt. 6)then
+          if(irad > 6)then
             call tmulbs(beam,trans1,.true.)
           endif
           dgb=dgb+dhg
@@ -168,9 +168,9 @@ c          call tmultr(trans,trans1,irad)
           call tdrife0(trans,cod,beam,srot,aln*.5d0,0.d0,0.d0,.true.,.false.,irad)
           call tgetdvh(dgb,dv)
           cod(5)=cod(5)+dv*aln*.5d0
-          if(fringe .and. mfring .ge. 0 .and. mfring /= 1)then
+          if(fringe .and. mfring >= 0 .and. mfring /= 1)then
             call tcavfrie(trans,cod,beam,al,-v,w,phic,phis-phic,s0,p0,
-     $           irad,irad .gt. 6 .or. calpol,autophi)
+     $           irad,irad > 6 .or. calpol,autophi)
           endif
         endif
       else
@@ -194,7 +194,7 @@ c        rg=sqrt(rg2)
         trans(2,1:irad)=trans(2,1:irad)*rg2
         trans(4,1:irad)=trans(4,1:irad)*rg2
         trans(6,1:irad)=trans(6,1:irad)*rg2
-        if(irad .gt. 6)then
+        if(irad > 6)then
           call tmulbs(beam,trans1,.true.)
         endif
         cod(2)=cod(2)*rg2

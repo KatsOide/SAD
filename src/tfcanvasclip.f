@@ -9,12 +9,12 @@
       use mathfun, only:outer2
       implicit none
       type (sad_descriptor) ,intent(out):: kx
-      type (sad_rlist), pointer :: klr
+      type (sad_rlist), pointer :: klr,kldash,kbl1,kbl2,kal1,kal2
+      type (sad_dlist), pointer :: kl,kbl
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
-      integer*8 ka,ka1,ka2,kal,kadash,kaxi
-      integer*4 i,j,na,np,n,
-     $     itfmessage,narg,ispa,ndash,k,isp2,isp3,ignore
+      integer*8 kaxi
+      integer*4 i,j,na,np,n,itfmessage,narg,ispa,ndash,k,isp2,isp3,ignore
       real*8 x0,x1,y0,y1,xa,ya,xb,yb,
      $     ux,uy,t(4),dmax,dash,s,s1,v,xm,ym,x,y,ds,
      $     z(2),z0(2),z1(2),dz(2)
@@ -27,18 +27,16 @@
         return
       endif
       ndash=0
-      kadash=0
+      nullify(kldash)
       xm=0.d0
       ym=0.d0
       if(narg == 3)then
-        ka=ktfaddr(ktastk(isp))
-        if(tfreallistq(ktastk(isp)))then
-          ndash=ilist(2,ka-1)
-          if(ndash > 1)then
-            kadash=ktfaddr(klist(ka+1))
+        if(tfreallistq(ktastk(isp),kldash))then
+          ndash=kldash%nl
+          if(ndash <= 1)then
+            nullify(kldash)
           endif
-        elseif(ktfrealq(ktastk(isp)))then
-          v=rtastk(isp)
+        elseif(ktfrealq(ktastk(isp),v))then
           if(v > 0.d0)then
             xm=v
           elseif(v < 0.d0)then
@@ -46,64 +44,53 @@
           endif
         endif
       endif
-      if(.not. tflistq(ktastk(isp1+2)))then
-c        write(*,*)'canvasclip-1'
+      if(.not. tflistq(dtastk(isp1+2),kl))then
         irtc=itfmessage(9,'General::wrongtype','"List for #2"')
         return
       endif
-      kal=ktfaddr(ktastk(isp1+2))
-      if(ilist(2,kal-1) /= 2)then
-c        write(*,*)'canvasclip-2'
+      if(kl%nl /= 2)then
         irtc=itfmessage(9,'General::wrongleng','"#2","2"')
         return
       endif
-      if(ktfreallistq(kal))then
-c        write(*,*)'canvasclip-3'
-        irtc=itfmessage(9,'General::wrongtype',
-     $       '"List for #2[[1]]"')
+      if(ktfreallistqo(kl))then
+        irtc=itfmessage(9,'General::wrongtype','"List for #2[[1]]"')
         return
       endif
-      ka1=ktfaddr(klist(kal+1))
-      ka2=ktfaddr(klist(kal+2))
-      if(ktfnonreallistq(ka1) .or. ktfnonreallistq(ka2))then
-c        write(*,*)'canvasclip-4'
+      if(tfnonreallistq(kl%body(1),kal1) .or. tfnonreallistq(kl%body(2),kal2))then
         irtc=itfmessage(9,'General::wrongtype',
      $       '"List of Reals for #2[[1]] and #2[[2]]"')
         return
       endif
-      xmin=anint(rlist(ka1+1))
-      ymin=anint(rlist(ka1+2))
-      xmax=anint(rlist(ka2+1))
-      ymax=anint(rlist(ka2+2))
+      xmin=anint(kal1%rbody(1))
+      ymin=anint(kal1%rbody(2))
+      xmax=anint(kal2%rbody(1))
+      ymax=anint(kal2%rbody(2))
       isp0=isp
-      ka=ktfaddr(ktastk(isp1+1))
-      if(.not. tflistq(ktastk(isp1+1)))then
+      if(.not. tflistq(ktastk(isp1+1),kbl))then
         go to 9100
       endif
-      if(ilist(2,ka-1) /= 2)then
+      if(kbl%nl /= 2)then
         go to 9100
       endif
-      if(ktfreallistq(ka))then
+      if(ktfreallistqo(kbl))then
         go to 9100
       endif
-      ka1=ktfaddr(klist(ka+1))
-      ka2=ktfaddr(klist(ka+2))
-      if(.not. tfreallistq(klist(ka+1)) .or.
-     $     .not. tfreallistq(klist(ka+2)))then
+      if(.not. tfreallistq(kbl%dbody(1),kbl1) .or.
+     $     .not. tfreallistq(kbl%dbody(2),kbl2))then
         go to 9100
       endif
-      np=ilist(2,ka1-1)
-      if(ilist(2,ka2-1) /= np)then
+      np=kbl1%nl
+      if(kbl2%nl /= np)then
         go to 9100
       endif
       isp0=isp
-      x0=anint(rlist(ka1+1))
-      y0=anint(rlist(ka2+1))
+      x0=anint(kbl1%rbody(1))
+      y0=anint(kbl2%rbody(1))
       in0=pin(x0,y0)
       call tfccput(x0,y0)
       do n=2,np
-        x1=anint(rlist(ka1+n))
-        y1=anint(rlist(ka2+n))
+        x1=anint(kbl1%rbody(n))
+        y1=anint(kbl2%rbody(n))
         in1=pin(x1,y1)
         ux=x1-x0
         uy=y1-y0
@@ -185,13 +172,13 @@ c        write(*,*)'canvasclip-4'
 c        write(*,*)na,isp-isp0
         na=isp-isp0
       endif
-      if(kadash /= 0)then
+      if(associated(kldash))then
         isp2=isp
         if(na > 1)then
           isp3=isp
           dash=0.d0
           k=1
-          dmax=max(abs(rlist(kadash+1)),eps)
+          dmax=max(abs(kldash%rbody(1)),eps)
           z0=rtastk(isp0+1:isp0+2)
           isp=isp+2
           rtastk(isp-1:isp)=z0
@@ -217,7 +204,7 @@ c        write(*,*)na,isp-isp0
                   ktastk(isp3)=ktflist+kaxi
                   isp=isp3
                   k=mod(k,ndash)+1
-                  dash=min(-abs(rlist(kadash+k)),-eps)
+                  dash=min(-abs(kldash%rbody(k)),-eps)
                   go to 11
                 endif
               else
@@ -227,14 +214,14 @@ c        write(*,*)na,isp-isp0
                   rtastk(isp-1:isp)=anint(z0)
                   dash=0.d0
                   k=mod(k,ndash)+1
-                  dmax=max(abs(rlist(kadash+k)),eps)
+                  dmax=max(abs(kldash%rbody(k)),eps)
                   go to 11
                 elseif(s1 == 0.d0)then
                   isp=isp+2
                   rtastk(isp-1:isp)=anint(z1)
                   dash=0.d0
                   k=mod(k,ndash)+1
-                  dmax=max(abs(rlist(kadash+k)),eps)
+                  dmax=max(abs(kldash%rbody(k)),eps)
                   z0=z1
                 else
                   dash=s1
@@ -321,11 +308,13 @@ c      write(*,*)'canvasclip-4'
       subroutine tfcanvas3dcliptriangle(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer :: klx,klxi
       type (sad_rlist), pointer :: klxj
       integer*8 ka,kas,kac,kai,kavc,kavs
-      integer*4 isp1,irtc,iav(3),nt,m,itfmessage,isp0,j,i,ii,m3
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 iav(3),nt,m,itfmessage,isp0,j,i,ii,m3
       real*8 xs,ys,zs,xc,yc,zc
       if(isp /= isp1+3)then
         irtc=itfmessage(9,'General::narg','"3"')
@@ -403,8 +392,9 @@ c      write(*,*)'canvasclip-4'
       subroutine tfcliptriangle1(m,x,y,z)
       use tfstk
       implicit none
-      integer*4 isp0,m,i,isp1
-      real*8 x(3,m),y(3,m),z(3,m)
+      integer*4 ,intent(in):: m
+      real*8 ,intent(in):: x(3,m),y(3,m),z(3,m)
+      integer*4 isp0,i,isp1
       isp0=isp
       do i=1,m
         rtastk(isp+1)=x(1,i)
@@ -439,9 +429,10 @@ c      write(*,*)'canvasclip-4'
       recursive subroutine tfcliptriangle2(isp1,idir,chg)
       use tfstk
       implicit none
-      integer*4 isp1,idir,i,j
+      integer*4 ,intent(in):: isp1
+      integer*4 idir,i,j
       real*8 x1,x2,x3,y1,y2,y3,z1,z2,z3,r1,r2,r3,x,y,z
-      logical*4 chg
+      logical*4 ,intent(in):: chg
       if(isp1 >= isp)then
         return
       endif
@@ -562,8 +553,11 @@ c      write(*,*)'canvasclip-4'
       subroutine tfcanvas3dlighttriangle(isp1,kx,irtc)
       use tfstk
       implicit none
-      integer*8 kx,kat,kac,kaci,kaci1,kaci2
-      integer*4 isp1,irtc,itfmessage,nt,nc,isp0,i
+      integer*8 ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*8 kat,kac,kaci,kaci1,kaci2
+      integer*4 itfmessage,nt,nc,isp0,i
       if(isp1+2 /= isp)then
         irtc=itfmessage(9,'General::narg','"2"')
         return
@@ -634,11 +628,15 @@ c      write(*,*)'canvasclip-4'
       subroutine tfcanvas3dlighttriangle1(nt,kat,nc,slight,kx,irtc)
       use tfstk
       implicit none
-      integer*8 kat,kx,kaci,kati,kati1,kati2,kati3
-      integer*4 nt,nc,irtc,i,j,isp0,itfmessage
-      real*8 slight(3,2,nc),rgb(3,nt),u0(nc),
-     $     x1,x2,x3,y1,y2,y3,cx,cy,cz,anx,any,anz,an,vx,vy,vz,u,
-     $     z1,z2,z3
+      integer*8 ,intent(in):: kat
+      integer*8 ,intent(out):: kx
+      integer*8 kaci,kati,kati1,kati2,kati3
+      integer*4 ,intent(in):: nt,nc
+      integer*4 ,intent(out):: irtc
+      integer*4 i,j,isp0,itfmessage
+      real*8 ,intent(in):: slight(3,2,nc)
+      real*8 rgb(3,nt),u0(nc),
+     $     x1,x2,x3,y1,y2,y3,cx,cy,cz,anx,any,anz,an,vx,vy,vz,u,z1,z2,z3
       do j=1,nc
         u0(j)=slight(1,1,j)**2+slight(2,1,j)**2+slight(3,1,j)**2
       enddo
@@ -718,8 +716,11 @@ c      write(*,*)'canvasclip-4'
       subroutine tfcanvas3dprojection(isp1,kx,irtc)
       use tfstk
       implicit none
-      integer*8 kx,kae,kapx,kapy,kaoff,kave,kavx,kavy,kavoff
-      integer*4 isp1,irtc,itfmessage
+      integer*8 ,intent(out):: kx
+      integer*8 kae,kapx,kapy,kaoff,kave,kavx,kavy,kavoff
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 itfmessage
       real*8 d,e(3)
       if(isp /= isp1+5)then
         irtc=itfmessage(9,'General::narg','"5"')
@@ -838,9 +839,9 @@ c      write(*,*)'canvasclip-4'
       type (sad_descriptor) ,intent(out):: kx
       type (sad_strbuf), pointer :: strb
       type (sad_string), pointer :: str
-      integer*8 ka,kad,kad1,kad2,ks
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
+      integer*8 ka,kad,kad1,kad2,ks
       integer*4 itfmessage,i,np
       real*8 x,y,s,a,xmin,ymin,xmax,ymax,yoff,sa,sh,ar(32),s1
 c      parameter (a=sqrt(0.75d0))
@@ -930,35 +931,39 @@ c      parameter (a=sqrt(0.75d0))
           s1=s*sqrt(m_pi/a/1.5d0)
           sa=s1*a
           sh=s1*.5d0
-          if(sym(1:1) == "6")then
+          select case(sym(1:1))
+          case("6")
             ar(1:6)=(/x-s1,y,x+sh,y-sa,x+sh,y+sa/)
-          elseif(sym(1:1) == "7")then
+          case("7")
             ar(1:6)=(/x+s1,y,x-sh,y-sa,x-sh,y+sa/)
-          elseif(sym(1:1) == "8")then
+          case("8")
             ar(1:6)=(/x,y+s1,x-sa,y-sh,x+sa,y-sh/)
-          elseif(sym(1:1) == "9")then
+          case("9")
             ar(1:6)=(/x,y-s1,x-sa,y+sh,x+sa,y+sh/)
-          endif
+          end select
           np=6
-        elseif(sym == "BX")then
-          s1=s*sqrt(m_pi_4)
-          ar(1:8)=(/x+s1,y-s1,x+s1,y+s1,x-s1,y+s1,x-s1,y-s1/)
-          np=8
-        elseif(sym == "RH")then
-          s1=s*sqrt(m_pi_2)
-          ar(1:8)=(/x+s1,y,x,y+s1,x-s1,y,x,y-s1/)
-          np=8
-        elseif(sym == "PL")then
-          ar(1:24)=(/x+s,y-1,x+s,y+1,x+1,y+1,x+1,y+s,
-     $         x-1,y+s,x-1,y+1,x-s,y+1,x-s,y-1,x-1,y-1,
-     $         x-1,y-s,x+1,y-s,x+1,y-1/)
-          np=24
-        elseif(sym == "TI")then
-          ar(1:24)=(/x+s+1,y+s-1,x+s-1,y+s+1,
-     $         x,y+1,x-s+1,y+s+1,x-s-1,y+s-1,x-1,y,
-     $         x-s-1,y-s+1,x-s+1,y-s-1,x,y-1,x+s-1,y-s-1,
-     $         x+s+1,y-s+1,x+1,y/)
-          np=24
+        else
+          select case (sym)
+          case("BX")
+            s1=s*sqrt(m_pi_4)
+            ar(1:8)=(/x+s1,y-s1,x+s1,y+s1,x-s1,y+s1,x-s1,y-s1/)
+            np=8
+          case("RH")
+            s1=s*sqrt(m_pi_2)
+            ar(1:8)=(/x+s1,y,x,y+s1,x-s1,y,x,y-s1/)
+            np=8
+          case("PL")
+            ar(1:24)=(/x+s,y-1,x+s,y+1,x+1,y+1,x+1,y+s,
+     $           x-1,y+s,x-1,y+1,x-s,y+1,x-s,y-1,x-1,y-1,
+     $           x-1,y-s,x+1,y-s,x+1,y-1/)
+            np=24
+          case("TI")
+            ar(1:24)=(/x+s+1,y+s-1,x+s-1,y+s+1,
+     $           x,y+1,x-s+1,y+s+1,x-s-1,y+s-1,x-1,y,
+     $           x-s-1,y-s+1,x-s+1,y-s-1,x,y-1,x+s-1,y-s-1,
+     $           x+s+1,y-s+1,x+1,y/)
+            np=24
+          end select
         endif
         do i=1,np
           call tfconvround(strb,ar(i))
@@ -1081,6 +1086,7 @@ c        irtc=itfmessage(9,'General::wrongtype',
 c     $       '"TkCanvasPointer for #1"')
 c        return
 c      endif
+
       if(ktfstringq(ktastk(isp1+2)))then
         kat=ktfaddr(ktastk(isp1+2))
       elseif(ktflistq(ktastk(isp1+2)))then
@@ -1103,28 +1109,30 @@ c      endif
         ol=.false.
       endif
       isp=isp0
-      isym=1
-      if(sym == "1O" .or. sym == "CI" .or. sym == "CL")then
+      select case (sym)
+      case("1O","CI","CL")
         isym=1
-      elseif(sym == "6O" .or. sym == "LT")then
+      case("6O","LT")
         isym=2
-      elseif(sym == "7O" .or. sym == "RT")then
+      case("7O","RT")
         isym=3
-      elseif(sym == "8O" .or. sym == "DT")then
+      case("8O","DT")
         isym=4
-      elseif(sym == "9O" .or. sym == "UT")then
+      case("9O","UT")
         isym=5
-      elseif(sym == "BX" .or. sym == "SQ")then
+      case("BX","SQ")
         isym=6
-      elseif(sym == "RH" .or.  sym == "DM" .or. sym == "DI")then
+      case("RH", "DM","DI")
         isym=7
-      elseif(sym == "PL")then
+      case("PL")
         isym=8
-      elseif(sym == "TI" .or. sym == "ML" .or. sym == "MU")then
+      case("TI","ML","MU")
         isym=9
-      elseif(sym == "BA" .or. sym == "BR")then
+      case("BA","BR")
         isym=99
-      endif
+      case default
+        isym=1
+      end select
       do i=1,m
         x=rlist(kavx+i)
         y=rlist(kavy+i)
@@ -1140,7 +1148,6 @@ c      endif
           endif
         endif
         isp=isp+1
-        rtastk(isp)=rtastk(isp1+1)
         rtastk(isp)=rtastk(isp1+1)
         isp=isp+1
         select case (isym)

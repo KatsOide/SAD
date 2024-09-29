@@ -12,8 +12,8 @@ FFS;
      Labels[s_]:=s;
      Labels[""]="";
      outf[_]=Undefined;
-     lt=LaTeX[style->"align",pt->11,margins->"'3 3 3 0'",pw->pw,dpi->120];
-     ltt=LaTeX[style->"text",pt->11,margins->"'3 3 3 0'",pw->pw,dpi->120]
+     lt=LaTeX[style->"align",pt->11,margins->"'3 3 3 0'",`pw->pw,dpi->120,tw->"18 cm"];
+     ltt=LaTeX[style->"text",pt->11,margins->"'3 3 3 0'",`pw->pw,dpi->120,tw->"18 cm"]
      );
 
      SelfIndent[in_]:=Module[{f=StringToStream[in],r,ind,tab,con,w,p,ps,r1},

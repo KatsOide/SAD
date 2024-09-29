@@ -1,7 +1,9 @@
       subroutine tsolqu(np,x,px,y,py,z,gp,dv,sx,sy,sz,
      $     al,ak,bz0,ak0x,ak0y,ibsi,eps0)
       use tsolz
+      use tmacro,only:l_track
       use kradlib, only:bsi
+      use tparastat,only:ndivelm,setndivelm,addndivelm
       use mathfun
       implicit none
       type (tzparams) tz
@@ -31,6 +33,7 @@
         write(*,*)'tsolqu-implementation error ',al,ak,bz0
         stop
       elseif(ak == 0.d0)then
+        call addndivelm(l_track,1)
         call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,
      $       al,bz0,ak0x,ak0y,.false.)
         return
@@ -38,7 +41,7 @@
       bz=bz0
       eps=merge(epsdef,epsdef*eps0,eps0 == 0.d0)
       ndiv=1+int(abs(al*hypot(ak,bz)/eps))
-c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
+      call addndivelm(l_track,ndiv)
       aln0=al/ndiv
       dx0=ak0x/ak
       dy0=ak0y/ak
@@ -152,8 +155,9 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
       subroutine tsolqum(np,x,px,y,py,z,gp,dv,sx,sy,sz,
      $     al,ak,bz,ak0x,ak0y,ibsi,eps0,tzs,ini)
       use tsolz
+      use tmacro,only:l_track
       use kradlib, only:bsi
-c      use tmacro,only:l_track
+      use tparastat,only:ndivelm,setndivelm,addndivelm
       use mathfun
       implicit none
       integer*4 ,intent(in):: np,ibsi
@@ -173,13 +177,14 @@ c      type (tzparams)  tzs(np),tz
         write(*,*)'tsolqu-implementation error ',al,ak,bz
         stop
       elseif(ak == 0.d0)then
+        call addndivelm(l_track,1)
         call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,
      $       al,bz,ak0x,ak0y,.false.)
         return
       endif
       eps=merge(epsdef,epsdef*eps0,eps0 == 0.d0)
       ndiv=1+int(abs(al*hypot(ak,bz)/eps))
-c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
+      call addndivelm(l_track,ndiv)
       aln0=al/ndiv
       dx0=ak0x/ak
       dy0=ak0y/ak
@@ -317,9 +322,11 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
       subroutine tsolqur(np,x,px,y,py,z,gp,dv,sx,sy,sz,al,ak,
      $     bz0,ak0x,ak0y,eps0,alr)
       use tsolz
+      use tmacro,only:l_track
       use kradlib, only:bsi,tradk
       use ffs_flag, only:ndivrad
       use photontable,only:tgswap,pcvt
+      use tparastat,only:setndivelm,ndivelm
       use mathfun
       implicit none
       type (tzparams) tz
@@ -352,6 +359,7 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
         write(*,*)'tsolqur-implementation error ',al,ak,bz0
         stop
       elseif(ak == 0.d0)then
+        call setndivelm(l_track,1)
         call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,
      $       al,bz0,ak0x,ak0y,.false.)
         alr=al
@@ -363,6 +371,7 @@ c      ndiv=1+int(abs(al*dcmplx(ak,bz))/eps)
       ndiv=1+int(abs(al)*aka/eps)
       ndiv=min(ndivmax,
      $     max(ndiv,ndivrad(hypot(ak0x,ak0y),ak,bz,eps0)))
+      call setndivelm(l_track,ndiv)
       aln=al/ndiv
       dx0=ak0x/ak
       dy0=ak0y/ak

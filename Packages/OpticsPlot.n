@@ -1,18 +1,20 @@
 (* OpticsPlot 7/24/2023 *)
 
 PkgConfig$DefaultList["OpticsPlot"->{
-  "PlotDivision"->80,
+  "PlotDivision"->128,
   }];
 
 System`ListPlot;
 System`CanvasDrawer;
 `Draw$Option;
 OP$XRange;
+OP$Circ;
 
 SetAttributes[
   {Attometer,Femtometer,FrameHeight,Graph,InvKilometer,InvMeter,Kilometer,Lattice,LatticeRegion,ListCoordinate,
     Meter,Micron,Microradian,Milimeter,Miliradian,NameFilter,Nanometer,Percent,Pi2,Picometer,PPB,PPM,Radian,Ratio,RemoveOperlap,
-    SqrtMeter,SquareMeter,SquareMicrometer,SquareMilimeter,Unit,Region,Initialize,FrameHeight,InfoLabel,InfoBind},
+    SqrtMeter,SquareMeter,SquareMicrometer,SquareMilimeter,Tesla,
+    Unit,Region,Initialize,FrameHeight,InfoLabel,InfoBind},
   Constant];
 
 Twiss$Functions={"AX","BX","NX","AY","BY","NY","EX","EPX","EY","EPY",
@@ -23,12 +25,16 @@ Twiss$Functions={"AX","BX","NX","AY","BY","NY","EX","EPX","EY","EPY",
 RTwiss$Functions=("R"//#)&/@Twiss$Functions;
 DTwiss$Functions=("D"//#)&/@Twiss$Functions;
 XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"}];
+LINE$Functions={"GAMMA","GAMMABETA","S","BZS","BZT",
+  "GX","GY","GZ","GCHI1","GCHI2","GCHI3",
+  "OGX","OGY","OGZ","OCHI1","OCHI2","OCHI3"
+    };
 
 !BeginPackage[`OPlot`,`Global`,`System`];
 
 !Begin[`OPlot`];
 
-`OPlot=Class[{},{},{},
+`OPlot=Class[{},{dlmin=1e-6,resol=2048},{},
 
   Constructor[]:=();
 
@@ -112,7 +118,7 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
 
   OP$XRange=Null;
   OP$Bind[_,_]=True;
-  OP$Element[s_]:=If[s<LINE["S","^^^"],
+  OP$Element[s_]:=If[s<LINE["S",1],
     With[{s1=s+OP$Circ},
       Position[LINE["S"],_?(#>=s1&),1,1]],
     Position[LINE["S"],_?(#>=s&),1,1]];
@@ -120,7 +126,7 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
     length = LINE["LENGTH"];
     pos = Select[Range[1, length], (LINE["L", #] > 0)&];
     tbl = Reverse[Thread[{LINE["S", pos], pos}]];
-    length = LINE["S", "$$$"]-LINE["S","^^^"];
+    length = LINE["S",-1]-LINE["S",1];
 
     Which[
       Not[RealQ[s2$]],	With[{s = Mod[s1$, length]},
@@ -144,7 +150,7 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
   OPBind[frid_]:=Module[{xs,ys,xo,yo,minmax},
     {xs,ys,xo,yo}=Flatten[`The$CanvasObject@GraphicsList[[frid,1,2,{6,7}]]];
     minmax=`The$CanvasObject@GraphicsList[[frid,1,2,4,1]];
-    OP$Circ=LINE["S","$$$"]-LINE["S","^^^"];
+    OP$Circ=LINE["S",-1]-LINE["S",1];
     With[{`The$Canvas,frid,xo,yo,xs,ys,minmax,xmargin=2/xs},
       OP$S[`The$Canvas,frid,x_]:=(x-xo)/xs;
       OP$Y[`The$Canvas,frid,y_]:=(y-yo)/ys;
@@ -169,7 +175,7 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
         Bind[canvas,"<Motion>",OP$InfoLabel[canvas,frid,False]]];
       p=Max[1,l[[1,1]]-1];
       te=StandardForm[$FORM="10.5";Switch[tt=LINE["TYPENAME",p],
-        "BEND",   If[LINE["ANGLE",p]===0,	tt="STEER";
+        "BEND",   If[LINE["ANGLE",p]===0,tt="STEER";
           "K`d0`n ="//LINE["K0",p]//" rad",
           "`fq`n ="//LINE["ANGLE",p]//" rad"],
         "QUAD",   "K`d1`n ="//LINE["K1",p]//" m`u-1`n",
@@ -182,7 +188,7 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
         _,        ""]];
       t=StandardForm[$FORM="10.5";
         "Entrance of "//LINE["NAME",p]//":   s = "//
-	  LINE["S",p]-If[s<LINE["S","^^^"],LINE["S","$$$"],0]//" m"//
+	  LINE["S",p]-If[s<LINE["S",1],LINE["S",-1],0]//" m"//
      If[te==="","","\n"//StringFill[tt, " ", 6]//": "//te]//
        "\n`fb`n`dx,y `n = "//Twiss["BX",p]//", "//Twiss["BY",p]//
          " m\n`fa`n`dx,y`n = "//Twiss["AX",p]//", "//Twiss["AY",p]//
@@ -235,14 +241,12 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
       l=If[f1==={},{OpticsList1$[pr,{},FrameLabel->fly,Null@@fopt]},
         Apply[OpticsList1$[pr,##,FrameLabel->fly,Null@@fopt]&,frame,{1}]];
       unit=l[[1,1,2]];
-!      Print["Unit? ",l[[,1]]];
       Scan[If[#[[1,2]]<=>unit,
         Message[`OpticsPlot::`units,Evaluate[#[[1,2]]],Evaluate[unit]]]&,l];
       l=Cases[l,{{_,unit,_,_,_},_,_},1];
       v=l[[,3]];
       opv=l[[,2]];
       {min,max}=MinMax[#[[,2]]&/@v];
-!    Print["OP1$-minmax: ",{min,max,v,l}];
       am=Switch[pra,
         {_Real, _Real},     Max[Abs[pra]],
         {Automatic, _Real}, Max[Abs[min], Abs[pra[[2]]]],
@@ -321,19 +325,20 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
     {ndiv,unit,lc,fl,pj,tags}=
       {PlotDivision,Unit,ListCoordinate,FrameLabel,PlotJoined,PointTags}/.op;
     {l,t}=If[pr2<=pr1,
-      ndiv=Min[2048,Max[ndiv,nlat+pr2-pr1]];
-      leng=LINE["S",nlat]-LINE["S","^^^"]+LINE["S",pr2]-LINE["S",pr1];
-      dl=Max[1e-6,leng/ndiv];
-      x0=LINE["S",pr1]-LINE["S",nlat]+LINE["S","^^^"];
+      ndiv=Min[resol,Max[ndiv,nlat+pr2-pr1]];
+      leng=LINE["S",-1]-LINE["S",1]+LINE["S",pr2]-LINE["S",pr1];
+      dl=Max[dlmin,leng/ndiv];
+      x0=LINE["S",pr1]-LINE["S",-1]+LINE["S",1];
       If[MatchQ[tags,{_,_String,___}],
         MapThread[Join,
-          {OpticsList[f,pr1,nlat,dl,LINE["S","^^^"]-LINE["S",nlat],lc,tags,pj<=>False],
+          {OpticsList[f,pr1,nlat,dl,LINE["S",1]-LINE["S",-1],lc,tags,pj<=>False],
             OpticsList[f,1,pr2,dl,0,lc,tags,pj<=>False]}],
-        {Join[OpticsList[f,pr1,nlat,dl,LINE["S","^^^"]-LINE["S",nlat],lc,tags,pj<=>False][[1]],
+        {Join[OpticsList[f,pr1,nlat,dl,LINE["S",1]-LINE["S",-1],lc,tags,pj<=>False][[1]],
           OpticsList[f,1,pr2,dl,0,lc,tags,pj<=>False][[1]]],tags}],
-      ndiv=Min[2560,Max[ndiv,pr2-pr1]];      
+
+      ndiv=Min[resol,Max[ndiv,pr2-pr1]];      
         leng=LINE["S",pr2]-LINE["S",pr1];
-      dl=Max[1e-6,leng/ndiv];
+      dl=Max[dlmin,leng/ndiv];
       x0=LINE["S",pr1];
       OpticsList[f,pr1,pr2,dl,0,lc,tags,pj<=>False]];
     {{fl/.Automatic->Twiss$Label[f],unit,pj,t,
@@ -412,7 +417,8 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
         0,
         True,
         Floor[(LINE["L",i])/dl]+1];
-      Null@@Table[{LINE["S",i]+(LINE["L",i])*j/ndiv+off,fun[i+j/ndiv]},{j,0,ndiv-1}],
+!      Print["OL ",{LINE["NAME",i],dl,ndiv,fun}];
+      Null@@Table[{LINE["S",i]+LINE["L",i]*j/ndiv+off,fun[i+j/ndiv]},{j,0,ndiv-1}],
       {i,i1,i2}],tags}];
 
   With[{def={Names->"*",Tags->False,NameFilter->Identity,
@@ -426,7 +432,7 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
         yoff=-0.7,w,ltotal},
       w=pr[[1,2]]-pr[[1,1]];
       l=If[pr2<=pr1,
-        ltotal=LINE["S",nlat]-LINE["S","^^^"];
+        ltotal=LINE["S",-1]-LINE["S",1];
         s1=s1-ltotal;
         leng=LINE["S",pr2]-s1;
         Join[LatticePlot1$[{pr1,nlat},-ltotal,tag,w,eh,ss],
@@ -599,7 +605,6 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
       unit
       ];
 
-
   Twiss$Positive["BX"|"BY"|"BZ"|"GMX"|"GMY"|"GMZ"|
     "SIGX"|"SIGY"|"SIGZ"|"SIGXX"|"SIGYY"|"SIGZZ"|
       "SIZEX"|"SIZEY"|"SIZEZ"|"SIZEXX"|"SIZEYY"|"SIZEZZ"]=True;
@@ -608,7 +613,8 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
   Twiss$Unit[
     "EX"|"EY"|"R2"|"DX"|"DY"|"S"|"PEX"|"PEY"|"DZ"|
       "REX"|"REY"|"RR2"|"RDX"|"RDY"|"RPEX"|"RPEY"|"RDZ"|
-        "DEX"|"DEY"|"DR2"|"DDX"|"DDY"|"DPEX"|"DPEY"|"DDZ"]=Meter;
+        "DEX"|"DEY"|"DR2"|"DDX"|"DDY"|"DPEX"|"DPEY"|"DDZ"|
+          "GX"|"GY"|"GZ"|"OGX"|"OGY"|"OGZ"|"S"]=Meter;
   Twiss$Unit[
     "DPX"|"DPY"|"EPX"|"EPY"|"PEPX"|"PEPY"|
       "RDPX"|"RDPY"|"REPX"|"REPY"|"RPEPX"|"RPEPY"|
@@ -618,8 +624,11 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
     "R3"|"ZPX"|"ZPY"|"PZPX"|"PZPY"|
       "RR3"|"RZPX"|"RZPY"|"RPZPX"|"RPZPY"|
         "DR3"|"DZPX"|"DZPY"|"DPZPX"|"DPZPY"|
-          "GMX"|"GMY"|"GMZ"|"RGMX"|"RGMY"|"RGMZ"]=InvMeter;
+          "GMX"|"GMY"|"GMZ"|"RGMX"|"RGMY"|"RGMZ"|
+            "BZS"]=InvMeter;
   Twiss$Unit["BX"|"BY"|"BZ"|"RBX"|"RBY"|"RBZ"]=SqrtMeter;
+  Twiss$Unit["GCHI1"|"GCHI2"|"GCHI3"|"OCHI1"|"OCHI2"|"OCHI3"]=Radian;
+  Twiss$Unit["BZT"]=Tesla;
   Twiss$Unit[
     "NX"|"NY"|"NZ"|
       "RNX"|"RNY"|"RNZ"|
@@ -690,7 +699,6 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
     Twiss$Unit$Label[PPM]="ppm";
     Twiss$Unit$Label[PPB]="ppb";
     Twiss$Unit$Label[Percent]="\\%";
-!    Twiss$Unit$Label[Micron]="$\\muup$m";
     Twiss$Unit$Label[Micron]="$\\muup$m";
     Twiss$Unit$Label[Microradian]="$\\muup$rad";
     Twiss$Unit$Label[SqrtMeter]="$\\sqrt{\\rm m}$";
@@ -700,6 +708,7 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
     Twiss$Unit$Label[InvMeter]="m$^{-1}$";
     Twiss$Unit$Label[InvKilometer]="km$^{-1}$";
     Twiss$Unit$Label[Pi2]="$2\\pi$";
+    Twiss$Unit$Label[Tesla]="T";
     Twiss$Unit$Label[_]="";
     Twiss$Label["AX"]="\\@$\\alpha_x$";
     Twiss$Label["RAX"]="\\@$\\alpha_{x{\\rm R}}$";
@@ -818,9 +827,23 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
     Twiss$Label["PZPY"]="\\@$\\zeta_{py{\\rm P}}$";
     Twiss$Label["RPZPY"]="\\@$\\zeta_{py{\\rm PR}}$";
     Twiss$Label["DPZPY"]="\\@$\\delta\\zeta_{py{\\rm P}}$";
-    Twiss$Label["BMAGX"]="\\@B_{{\\rm MAG}x}";
-    Twiss$Label["BMAGY"]="\\@B_{{\\rm MAG}y}";
-    Twiss$Label["BMAGZ"]="\\@B_{{\\rm MAG}z}",
+    Twiss$Label["BMAGX"]="\\@$B_{{\\rm MAG}x}$";
+    Twiss$Label["BMAGY"]="\\@$B_{{\\rm MAG}y}$";
+    Twiss$Label["BMAGZ"]="\\@$B_{{\\rm MAG}z}$";
+    Twiss$Label["BZS"]="\\@$B_z/B\\rho$";
+    Twiss$Label["BZT"]="\\@$B_z$";
+    Twiss$Label["GX"]="\\@$G_x$";
+    Twiss$Label["GY"]="\\@$G_y$";
+    Twiss$Label["GZ"]="\\@$G_z$";
+    Twiss$Label["OGX"]="\\@$G_{x,{\\rm orb}}$";
+    Twiss$Label["OGY"]="\\@$G_{y,{\\rm orb}}$";
+    Twiss$Label["OGZ"]="\\@$G_{z,{\\rm orb}}$";
+    Twiss$Label["GCHI1"]="\\@$\\chi_1$";
+    Twiss$Label["GCHI2"]="\\@$\\chi_2$";
+    Twiss$Label["GCHI3"]="\\@$\\chi_3$";
+    Twiss$Label["OCHI1"]="\\@$\\chi_{1,{\\rm orb}}$";
+    Twiss$Label["OCHI2"]="\\@$\\chi_{2,{\\rm orb}}$";
+    Twiss$Label["OCHI3"]="\\@$\\chi_{3,{\\rm orb}}$",
 
     Twiss$Unit$Label[Meter]="m";
     Twiss$Unit$Label[Kilometer]="km";
@@ -1024,7 +1047,6 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
 
   LINE$FunctionsQ[f_]:=
     MemberQ[LINE$Functions,f] || f[1,3]=="SIG" || f[1,4]=="SIZE";
-  LINE$Functions={"GAMMA","GAMMABETA","S","BZS"};
 
   ];
 
@@ -1032,7 +1054,7 @@ XTwiss$Functions=Join[RTwiss$Functions,DTwiss$Functions,{"BMAGX","BMAGY","BMAGZ"
 
 !EndPackage[];
 
-OpticsPlot::units="Different units in one window: `1` `2`";
+OpticsPlot::units="Different units in one frame: `1` `2`";
 OpticsPlot::frameheight=
   "FrameHeight must be a List of heights, length of number of frames";
 OpticsPlot::wronglist=

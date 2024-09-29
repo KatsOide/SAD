@@ -1,8 +1,8 @@
       module codm
       real*8, parameter :: 
-     $     conv0=1.d-10,epsr0=1.d-6,ddpmax=3.e-5,
+     $     conv0=1.d-4,epsr0=1.d-6,ddpmax=3.e-5,
      1     epsrr=1.d-4,rmax=1.d200,fmin=1.d-4,a=0.25d0, dpthre=3.e-4
-      real*8 , parameter :: codw0(6)=[1.d-6,1.d-5,1.d-6,1.d-5,1.d-8,1.d-8]
+      real*8 , parameter :: codw0(6)=[1.d-6,1.d-7,1.d-7,1.d-8,1.d-5,1.d-6]
       integer*8 ::kcodconv=0
 
       contains
@@ -50,10 +50,19 @@
       logical*4 rt,rtr
       vcalpha=1.d0
       trf0=0.d0
+      rtr=radcod .and. radtaper
       if(rfsw)then
         rfsw=.false.
+        if(rtr)then
+          radcod=.false.
+          radtaper=.false.
+        endif
         call tcod(trans,cod,beam,optics,fndcod)
         rfsw=.true.
+        if(rtr)then
+          radcod=.true.
+          radtaper=.true.
+        endif
         if(fndcod .and. vceff /= 0.d0)then
           cod(5)=asinz((u0*pgev-vcacc)/vceff)/wrfeff-trf0
         endif
@@ -63,7 +72,6 @@ c     $       fndcod,vceff,wrfeff,trf0,vcacc,u0*pgev,cod(5)
       else
         im=5
       endif
-      rtr=radcod .and. radtaper
       trf0s=trf0
       v0=p0/h0
       rt=.false.
@@ -82,14 +90,12 @@ c     $       fndcod,vceff,wrfeff,trf0,vcacc,u0*pgev,cod(5)
       conv=conv0
       trw=codw(5)
       if(radcod .and. radtaper)then
-        if(rtr)then
-        else
+        if(.not. rtr)then
           conv=conv*1.d2
         endif
         trw=codw(5)
         codi(6)=dp0
       endif
-      conv=1.d0
  1    loop=loop-1
       if(loop <= 0)then
         if(rtr)then
@@ -121,9 +127,9 @@ c     $       fndcod,vceff,wrfeff,trf0,vcacc,u0*pgev,cod(5)
       if(.not. radcod)then
         r=r+(dtrf0/trw)**2
       endif
-c      write(6,'(a,1p7g12.5)')' tcod ',r,r0,fact,trf0,dtrf0,dleng
+c      write(6,'(a,2l3,1p10g12.5)')' tcod ',rtr,rfsw,r,r0,fact,trf0,dtrf0,dleng
 c      write(6,'(1p6g12.5)')codi,codf,dcod1
-      if(r .lt. conv)then
+      if(r < conv)then
         cod=codi
         return
       endif
@@ -132,10 +138,10 @@ c      write(6,'(1p6g12.5)')codi,codf,dcod1
         loop=0
         go to 1
       endif
-      if(r .ge. r0)then
+      if(r >= r0)then
         fact=fact*.5d0
         codi=cod+fact*dcod
-        if(fact .lt. fmin)then
+        if(fact < fmin)then
           cod=codi
           loop=0
         endif
@@ -145,9 +151,9 @@ c      write(6,'(1p6g12.5)')codi,codf,dcod1
       trf0s=trf0
       r0=r
       s=sum(dcod*dcod0/codw**2)
-      if(red .lt. 1.0d0)then
+      if(red < 1.0d0)then
         fact=min(fact*(2.d0-max(red-0.7d0,0.d0)/0.3d0),1.d0)
-      elseif(s .lt. 0.d0)then
+      elseif(s < 0.d0)then
         fact=max(fact*0.5d0,fmin)
       endif
       trs(:,1:6)=trans(:,1:6)

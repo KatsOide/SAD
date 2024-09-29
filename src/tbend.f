@@ -546,6 +546,7 @@ c     $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
       use tbendcom
       use kradlib
       use photontable
+      use tparastat,only:setndivelm
       use mathfun, only:akang
       implicit none
       integer*4 ,parameter::ndivmax=1024
@@ -604,8 +605,6 @@ c     $       /(pz3+ph2*cosp2)/(pz2+ph2*cosp1)
       if(dtheta /= 0.d0 .or. dchi2 /= 0.d0)then
         call tbrot(np,x,px,y,py,z,sx,sy,sz,alg,phig,dtheta,dchi2,.true.)
       endif
-c      write(*,'(a,1p10g12.4)')'tbend-1 ',x(1)-x(2),px(1)-px(2),
-c     $     y(1)-y(2),py(1)-py(2),z(1)-z(2),g(1)-g(2)
       if(phib == 0.d0)then
         call tbdrift(np,x,px,y,py,z,dv,sx,sz,al,phi0)
         go to 9000
@@ -653,6 +652,7 @@ c              call tsetphotongeo(al/ndiv,phi0/ndiv,0.d0,.false.)
 c          end select
 c        endif
       endif
+      call setndivelm(l_track,ndiv)
       n2=ndiv+n2
       if(n1 == n2)then
         call tbendcore(np,x,px,y,py,z,g,dv,sx,sy,sz,
