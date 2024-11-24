@@ -770,7 +770,7 @@ c End of the lines added by N. Yamamoto Apr. 25, '93
         if(.not. exist)then
           iorgr=1
           geo0=geoini
-          call termes('?ORG-Reset to the initial setting.',' ')
+          call termes('Info-ORG-Reset to the initial setting.',' ')
           go to 12
         endif
         do i=1,3
@@ -1044,8 +1044,7 @@ c          ilist(2,iwakepold+6)=int(ifsize)
           call tfprintout(16.d0,irtc)
           go to 10
         else
-          call termes(
-     1         '?Undefined command or element: ',word)
+          call termes('?Undefined command or element: ',word)
         endif
         if(ios /= 0)then
           go to 10
@@ -1113,8 +1112,7 @@ c          ilist(2,iwakepold+6)=int(ifsize)
       if(calexp)then
         call tffsadjustvar
       else
-        call termes(
-     $         'Info-Element values are not expanded.',' ')
+        call termes('Info-Element values are not expanded.',' ')
       endif
       if(fitflg)then
         nvevx(1:flv%nvar)%valvar2=nvevx(1:flv%nvar)%valvar

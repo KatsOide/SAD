@@ -53,7 +53,7 @@ c     end   initialize for preventing compiler warning
         iepilog=ktfsymbolz('OpticsEpilog',12)
         imr=    ktfsymbolz('MatchingResidual',16)-4
         inr=    ktfsymbolz('NetResidual',11)-4
-        isl=    ktfsymbolz('StabilityLevel',14)-4
+        isl=    ktfsymbolz('UnstableLevel',14)-4
       endif
       ifpe=itgetfpe()
       call tclrfpe

@@ -384,8 +384,8 @@ c      endif
       use sad_main, ia=>iaidx
       use ffs_pointer,only:gammab
       implicit none
-      integer*4 ,intent(in):: l
-      integer*4 np,i
+      integer*4 ,intent(in):: l,np
+      integer*4 i
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),
      $     z(np),g(np),dv(np),sx(np),sy(np),sz(np)
       real*8 ,intent(in):: al,cod(6),beam(21)

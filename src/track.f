@@ -11,8 +11,7 @@
 c      use tfcsi, only:ipoint,lrecl,lfni
       implicit none
       type (sad_descriptor) kx
-      integer*8 ikptbl,ig,ipz,ix,ixx,iy,iyy,iz,izz,ifz,
-     $     latt,iparam,lscal
+      integer*8 ikptbl,ig,ipz,ix,ixx,iy,iyy,iz,izz,ifz,latt,iparam,lscal
       integer*4 irtc,l,isp1,nts,naz,ltpara,IgetGL
       character*20 title
       logical*4, save :: trackinit=.false.
@@ -33,16 +32,14 @@ c      use tfcsi, only:ipoint,lrecl,lfni
         call tfinitn
         call tfinittws
         call tinitintm
-        call tfevals('CONVERGENCE=1E-9;ExponentOfResidual=2;CODCONV=1'//
-     $       'OffMomentumWeight=1;MatchingResidual='//
-     $       'NetResidual=StabilityLevel=0;'//
+        call tfevals('CONVERGENCE=1E-9;ExponentOfResidual=2;CODCONV=1;'//
+     $       'OffMomentumWeight=1;MatchingResidual=NetResidual=UnstableLevel=0;'//
      $       'FFS$NumericalDerivative=False;'//
      $       'DP=0.01;DPM=XIX=XIY=0;TITLE=CASE="";NFAMP=4;'//
-     $       '(DP0=v_)^:=(LINE["DDP",1]=v);'//
-     $       'DP0:=LINE["DDP",1];'//
-     $       'System$Names=Select[Names["*"],'//
-     $       'ToUpperCase[#[1]]==#[1]&];Protect[DP0];',
+     $       'Clear[DP0];(DP0=v_)^:=(LINE["DDP",1]=v);DP0:=LINE["DDP",1];Protect[DP0];'//
+     $       'System$Names=Select[Names["*"],ToUpperCase[#[1]]==#[1]&];',
      $       kx,irtc)
+        write(*,*)'track ',latt,iparam
         initmessage=0
         ifibzl=0
         ifgamm=0

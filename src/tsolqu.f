@@ -1,5 +1,5 @@
       subroutine tsolqu(np,x,px,y,py,z,gp,dv,sx,sy,sz,
-     $     al,ak,bz0,ak0x,ak0y,ibsi,eps0)
+     $     al,ak,bz,ak0x,ak0y,ibsi,eps0)
       use tsolz
       use tmacro,only:l_track
       use kradlib, only:bsi
@@ -10,10 +10,10 @@
       integer*4 ,intent(in):: np,ibsi
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),dv(np),
      $     gp(np),sx(np),sy(np),sz(np)
-      real*8 ,intent(in):: al,ak,eps0,bz0,ak0x,ak0y
+      real*8 ,intent(in):: al,ak,eps0,bz,ak0x,ak0y
       real*8, parameter::phieps=1.d-7,epsdef=0.2d0
       integer*4 i,n,ndiv
-      real*8 bz,a,c,akk,eps,bw,dw,r,ap,dpz,aln0,
+      real*8 a,c,akk,eps,bw,dw,r,ap,dpz,aln0,
      $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,
      $     dx0,dy0,xi,yi,a12,a14,a22,a24,pxi,pyi,
      $     awu,dwu,dz1,dz2
@@ -30,16 +30,20 @@
      $     cxs2=>tz%tz1%cxs2,aw1=>tz%tz1%aw1,aw2=>tz%tz1%aw2,
      $     wr1=>tz%tz1%wr1,wr2=>tz%tz1%wr2,dxs=>tz%tz1%dxs)
       if(ak*al < 0.d0)then
-        write(*,*)'tsolqu-implementation error ',al,ak,bz0
+        write(*,*)'tsolqu-implementation error ',al,ak,bz
         stop
       elseif(ak == 0.d0)then
         call addndivelm(l_track,1)
         call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,
-     $       al,bz0,ak0x,ak0y,.false.)
+     $       al,bz,ak0x,ak0y,.false.)
         return
       endif
-      bz=bz0
-      eps=merge(epsdef,epsdef*eps0,eps0 == 0.d0)
+c      eps=merge(epsdef,epsdef*eps0,eps0 == 0.d0)
+      if(eps0 == 0.d0)then
+        eps=epsdef
+      else
+        eps=epsdef*eps0
+      endif
       ndiv=1+int(abs(al*hypot(ak,bz)/eps))
       call addndivelm(l_track,ndiv)
       aln0=al/ndiv
@@ -59,7 +63,11 @@
             pyi=py(i)
             ap=pxi**2+pyi**2
             dpz=sqrt1(-ap)
-            r=-dpz/(1.d0+dpz)*merge(aln0*.5d0,aln0,n == 1)
+            r=-dpz/(1.d0+dpz)*aln0
+            if(n == 1)then
+              r=r*.5d0
+            endif
+c            r=-dpz/(1.d0+dpz)*merge(aln0*.5d0,aln0,n == 1)
             x(i)=x(i)+pxi*r
             y(i)=y(i)+pyi*r
             xi=x(i)+dx0
@@ -102,7 +110,11 @@
           do n=1,ndiv
             ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
-            r=-dpz/(1.d0+dpz)*merge(aln0*.5d0,aln0,n == 1)
+            r=-dpz/(1.d0+dpz)*aln0
+            if(n == 1)then
+              r=r*0.5d0
+            endif
+c            r=-dpz/(1.d0+dpz)*merge(aln0*.5d0,aln0,n == 1)
             call xsincos(r*bzp,a24,a12,a22,a14)
             pxi=px(i)
             x(i) =x(i)+(a24*pxi-a14*py(i))/bzp
@@ -182,7 +194,12 @@ c      type (tzparams)  tzs(np),tz
      $       al,bz,ak0x,ak0y,.false.)
         return
       endif
-      eps=merge(epsdef,epsdef*eps0,eps0 == 0.d0)
+      if(eps0 == 0.d0)then
+        eps=epsdef
+      else
+        eps=epsdef*eps0
+      endif
+c      eps=merge(epsdef,epsdef*eps0,eps0 == 0.d0)
       ndiv=1+int(abs(al*hypot(ak,bz)/eps))
       call addndivelm(l_track,ndiv)
       aln0=al/ndiv
@@ -210,7 +227,11 @@ c      type (tzparams)  tzs(np),tz
             pyi=py(i)
             ap=pxi**2+pyi**2
             dpz=sqrt1(-ap)
-            r=-dpz/(1.d0+dpz)*merge(aln0*.5d0,aln0,n == 1)
+            r=-dpz/(1.d0+dpz)*aln0
+            if(n == 1)then
+              r=r*0.5d0
+            endif
+c            r=-dpz/(1.d0+dpz)*merge(aln0*.5d0,aln0,n == 1)
             x(i)=x(i)+pxi*r
             y(i)=y(i)+pyi*r
             xi=x(i)+dx0
@@ -269,7 +290,11 @@ c      type (tzparams)  tzs(np),tz
           do n=1,ndiv
             ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
-            r=-dpz/(1.d0+dpz)*merge(aln0*.5d0,aln0,n == 1)
+            r=-dpz/(1.d0+dpz)*aln0
+            if(n == 1)then
+              r=r*0.5d0
+            endif
+c            r=-dpz/(1.d0+dpz)*merge(aln0*.5d0,aln0,n == 1)
             call xsincos(r*bzp,a24,a12,a22,a14)
             pxi=px(i)
             x(i) =x(i)+(a24*pxi-a14*py(i))/bzp
@@ -320,7 +345,7 @@ c      type (tzparams)  tzs(np),tz
       end
 
       subroutine tsolqur(np,x,px,y,py,z,gp,dv,sx,sy,sz,al,ak,
-     $     bz0,ak0x,ak0y,eps0,alr)
+     $     bz,ak0x,ak0y,eps0,alr)
       use tsolz
       use tmacro,only:l_track
       use kradlib, only:bsi,tradk
@@ -333,12 +358,12 @@ c      type (tzparams)  tzs(np),tz
       integer*4 ,intent(in):: np
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),dv(np),
      $     gp(np),sx(np),sy(np),sz(np)
-      real*8 ,intent(in):: al,ak,eps0,bz0,ak0x,ak0y
+      real*8 ,intent(in):: al,ak,eps0,bz,ak0x,ak0y
       real*8 ,intent(out):: alr
       real*8, parameter::phieps=1.d-7,epsdef=0.2d0,arad=0.01d0
       integer*4 ,parameter ::ndivmax=1000
       integer*4 i,n,ndiv
-      real*8 bz,a,c,akk,eps,bw,dw,r,ap,dpz,aka,b,d,
+      real*8 a,c,akk,eps,bw,dw,r,ap,dpz,aka,b,d,
      $     u1,u1w,u2,u2w,v1,v1w,v2,v2w,
      $     dx0,dy0,xi,yi,a12,a14,a22,a24,pxi,pyi,
      $     awu,dwu,dz1,dz2
@@ -356,17 +381,21 @@ c      type (tzparams)  tzs(np),tz
      $       cxs2=>tz%tz1%cxs2,aw1=>tz%tz1%aw1,aw2=>tz%tz1%aw2,
      $       wr1=>tz%tz1%wr1,wr2=>tz%tz1%wr2,dxs=>tz%tz1%dxs)
       if(ak*al < 0.d0)then
-        write(*,*)'tsolqur-implementation error ',al,ak,bz0
+        write(*,*)'tsolqur-implementation error ',al,ak,bz
         stop
       elseif(ak == 0.d0)then
         call setndivelm(l_track,1)
         call tdrift(np,x,px,y,py,z,gp,dv,sx,sy,sz,
-     $       al,bz0,ak0x,ak0y,.false.)
+     $       al,bz,ak0x,ak0y,.false.)
         alr=al
         return
       endif
-      bz=bz0
-      eps=merge(epsdef,epsdef*eps0,eps0 == 0.d0)
+      if(eps0 == 0.d0)then
+        eps=epsdef
+      else
+        eps=epsdef*eps0
+      endif
+c      eps=merge(epsdef,epsdef*eps0,eps0 == 0.d0)
       aka=hypot(ak,bz)
       ndiv=1+int(abs(al)*aka/eps)
       ndiv=min(ndivmax,
@@ -383,7 +412,12 @@ c!$OMP PARALLEL
 c!$OMP DO
           do i=1,np
             call tzsetparam0(tz%tz0,gp(i),aln,akk)
-            bsi(i)=merge(akk*(x(i)+dx0)*(y(i)+dy0),0.d0,n == 1)
+c            bsi(i)=merge(akk*(x(i)+dx0)*(y(i)+dy0),0.d0,n == 1)
+            if(n ==1)then
+              bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)
+            else
+              bsi(i)=0.d0
+            endif
             ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
             r=-dpz/(1.d0+dpz)*alr
@@ -436,8 +470,13 @@ c!$OMP END PARALLEL
         do n=1,ndiv
           do i=1,np
             call tzsetparams(tz,gp(i),aln,akk,bz)
-            bsi(i)=merge(akk*(x(i)+dx0)*(y(i)+dy0)+bzp*alr,
-     $           bzp*alr,n == 1)
+            if(n == 1)then
+              bsi(i)=akk*(x(i)+dx0)*(y(i)+dy0)+bzp*alr
+            else
+              bsi(i)=bzp*alr
+            endif
+c            bsi(i)=merge(akk*(x(i)+dx0)*(y(i)+dy0)+bzp*alr,
+c     $           bzp*alr,n == 1)
             ap=px(i)**2+py(i)**2
             dpz=sqrt1(-ap)
             r=-dpz/(1.d0+dpz)*alr

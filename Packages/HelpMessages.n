@@ -2229,7 +2229,7 @@ MatchingResidual holds the convergence in the last GO or CALCULATE(CAL) commands
      woff = 1                               for on-momentum optics\n\
           = Sqrt[number-of-momentum-points] for off-momentum optics.\n The weight of the function is lighter in the case of off-momentum-matching so that all off-momentum deviations functions weight equal to the on-momentum one. However, the relative weight for the off-momentum part can be changed by setting OffMomentumWeight. \n\
    The weight of each function at each point with each momentum can be specified by defining the FitWeight function.",
-      "ExponentOfResidual CONVERGENCE OffMomentumWeight off-momentum-matching FitWeight",
+      "UnstableLevel ExponentOfResidual CONVERGENCE OffMomentumWeight off-momentum-matching FitWeight",
       {}},
 
       {"ExponentOfResidual",
@@ -2241,10 +2241,10 @@ The exponent to calculate MatchinResidual. The default is 2.",
      {"NetResidual",
       "\
 The net residual of convergence except the penalty for unstable optics.",
-      "MatchingResidual StablilityLevel",
+      "MatchingResidual UnstableLevel",
        {}},
 
-     {"StabilityLevel",
+     {"UnstableLevel",
       "\
 Number of unstable planes in the optics calculations. Equal to zero if all x and y optics are stable for on/off-momentum and finite amplitude matching.",
        "NetResidual MatchingResidual",
