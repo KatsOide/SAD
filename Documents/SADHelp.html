@@ -13,7 +13,7 @@ eqs img{
 <body>
 <center><h2>Welcome to SAD/FFS & SADScript
 </h2></center>
-<center> SAD/FFS SADScript Version: 1.3.5.5k64,      Updated: 09/12/2024</center>
+<center> SAD/FFS SADScript Version: 1.3.5.6k64,      Updated: 11/01/2024</center>
 
 <pre> Please use browser's search to find an item.
 
@@ -577,8 +577,8 @@ alt="SAD" width=90>Back to SAD Home Page</h4></a>
       <a href=#L%special-variables%SIGE>SIGE</a>
       <a href=#L%special-variables%SIGZ>SIGZ</a>
       <a href=#L%special-variables%SpeedOfLight>SpeedOfLight</a>
-      <a href=#L%special-variables%StabilityLevel>StabilityLevel</a>
       <a href=#L%special-variables%TITLE>TITLE</a>
+      <a href=#L%special-variables%UnstableLevel>UnstableLevel</a>
    <a href=#L%SAVE>SAVE</a>
    <a href=#L%SEED>SEED</a>
    <a href=#L%SHOW>SHOW</a>
@@ -6343,7 +6343,7 @@ part can be changed by setting OffMomentumWeight.
    The weight of each function at each point with each momentum can be specified by defining the
 FitWeight function.</pre>
 <pre>See also:
- <a href=#L%special-variables%ExponentOfResidual>ExponentOfResidual</a> <a href=#L%special-variables%CONVERGENCE>CONVERGENCE</a> <a href=#L%special-variables%OffMomentumWeight>OffMomentumWeight</a> <a href=#L%off-momentum-matching>off-momentum-matching</a> <a href=#L%functions%FFS-dedicated-functions%FitWeight>FitWeight</a></pre>
+ <a href=#L%special-variables%UnstableLevel>UnstableLevel</a> <a href=#L%special-variables%ExponentOfResidual>ExponentOfResidual</a> <a href=#L%special-variables%CONVERGENCE>CONVERGENCE</a> <a href=#L%special-variables%OffMomentumWeight>OffMomentumWeight</a> <a href=#L%off-momentum-matching>off-momentum-matching</a> <a href=#L%functions%FFS-dedicated-functions%FitWeight>FitWeight</a></pre>
 <LI>
 <h3><a name=L%special-variables%MASS>MASS</a></h3>
 <pre>MASS is the rest mass of the particle in eV. The default is the electron mass.</pre>
@@ -6367,7 +6367,7 @@ calculation. Accessible in MAIN.</pre>
 <h3><a name=L%special-variables%NetResidual>NetResidual</a></h3>
 <pre>The net residual of convergence except the penalty for unstable optics.</pre>
 <pre>See also:
- <a href=#L%special-variables%MatchingResidual>MatchingResidual</a> </pre>
+ <a href=#L%special-variables%MatchingResidual>MatchingResidual</a> <a href=#L%special-variables%UnstableLevel>UnstableLevel</a></pre>
 <LI>
 <h3><a name=L%special-variables%NP>NP</a></h3>
 <pre>NP is the number of particles in the tracking. Accessible in MAIN.</pre>
@@ -6461,16 +6461,16 @@ it is calculated based on "effective voltage". Effective with RING only.</pre>
 <h3><a name=L%special-variables%SpeedOfLight>SpeedOfLight</a></h3>
 <pre>SpeedOfLight is 299792458.</pre>
 <LI>
-<h3><a name=L%special-variables%StabilityLevel>StabilityLevel</a></h3>
-<pre>Number of unstable planes in the optics calculations. Equal to zero if all x and y optics are stable
-for on/off-momentum and finite amplitude matching.</pre>
-<pre>See also:
- <a href=#L%special-variables%NetResidual>NetResidual</a> <a href=#L%special-variables%MatchingResidual>MatchingResidual</a></pre>
-<LI>
 <h3><a name=L%special-variables%TITLE>TITLE</a></h3>
 <pre>TITLE is a character-string to make the title of the plot in DRAW or GEO commands.</pre>
 <pre>See also:
  <a href=#L%special-variables%CASE>CASE</a> <a href=#L%DRAW>DRAW</a> <a href=#L%elements%SOL%GEO>GEO</a></pre>
+<LI>
+<h3><a name=L%special-variables%UnstableLevel>UnstableLevel</a></h3>
+<pre>Number of unstable planes in the optics calculations. Equal to zero if all x and y optics are stable
+for on/off-momentum and finite amplitude matching.</pre>
+<pre>See also:
+ <a href=#L%special-variables%NetResidual>NetResidual</a> <a href=#L%special-variables%MatchingResidual>MatchingResidual</a></pre>
 </ul>
 <h3><a name=L%SAVE>SAVE</a></h3>
 <pre>Usage: SAVE [element-pattern]

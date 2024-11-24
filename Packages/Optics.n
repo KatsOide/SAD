@@ -77,7 +77,7 @@ With[{def={Fold->False,Symplectic->False,Calc6D->False}},
     sinpsix=Sin[dpsix];
     cospsiy=Cos[dpsiy];
     sinpsiy=Sin[dpsiy];
-    If[?CALC6D || Calc6D,
+    If[?CALC6D || c6d,
       dpsiz=param[[2,mfnz]]-param[[1,mfnz]];
       cospsiz=Cos[dpsiz];
       sinpsiz=Sin[dpsiz];

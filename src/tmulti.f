@@ -21,8 +21,10 @@
           cx=(cx+akn(kord))*cx0*aninv(kord)
         enddo
         cx=fe*(cx+akn(0))*cx0
-        cx=dcmplx(min(pmax,max(-pmax,dble(cx))),min(pmax,max(-pmax,imag(cx))))
+c        cx=dcmplx(min(pmax,max(-pmax,dble(cx))),min(pmax,max(-pmax,imag(cx))))
         pr=1.d0+g(i)
+c        px(i)=min(pmax,max(-pmax,px(i)-dble(cx)/pr))
+c        py(i)=min(pmax,max(-pmax,py(i)+imag(cx)/pr))
         px(i)=px(i)-dble(cx)/pr
         py(i)=py(i)+imag(cx)/pr
       enddo

@@ -17,7 +17,7 @@
         couple(l)=1.d0
         errk(1,l)=1.d0
         errk(2,l)=0.d0
-        if(ikx .gt. 0)then
+        if(ikx > 0)then
           lele=idtypec(nelvx(ikx)%klp)
           nelvx(ikx)%vlim=(/-1.d10,1.d10/)
 c          go to (110,120,10,140,10,160,10,160,10,160,10,160),lele
@@ -40,7 +40,7 @@ c          go to 210
             nelvx(ikx)%ival=0
             cycle
           end select
-          if(nelvx(ikx)%ival .gt. 0)then
+          if(nelvx(ikx)%ival > 0)then
             call loc_comp(idvalc(nelvx(ikx)%klp),cmps)
             v=cmps%value(nelvx(ikx)%ival)
 c            v=rlist(idvalc(klp(ikx))+ival(ikx))
@@ -69,8 +69,7 @@ c      enddo
      $         /= 0.d0)then
             ibznext=0
             if(ibzb /= 0)then
-              if(rlist(idvalc(i)+ky_GEO_SOL)
-     $             /= 0.d0)then
+              if(rlist(idvalc(i)+ky_GEO_SOL) /= 0.d0)then
                 ibg=i
                 ibb=ibzb
               else
@@ -87,7 +86,7 @@ c      enddo
             if(ibz == 0)then
               ibzb=i
             endif
-            if(direlc(i) .gt. 0.d0)then
+            if(direlc(i) > 0.d0)then
               ibz=i
               ibznext=i
             else
@@ -109,7 +108,7 @@ c      enddo
         ibz=ibznext
       enddo
       if(ibz /= 0)then
-        Write(*,*)'Missing end of solenoid: ',ibz
+        Write(*,*)'Missing end of solenoid: ',ibz,pnamec(ibz)
         call abort
       endif
       ibzl(1,nlat)=0
@@ -129,7 +128,7 @@ c      enddo
       type (sad_comp), pointer ::cmp
       real*8 ,parameter ::bzthre=1.d-20
       ibz=ilist(i*3-2,ifibzl)
-      if(ibz .gt. 0)then
+      if(ibz > 0)then
         call compelc(ibz,cmp)
         tfbzs=charge*(cmp%value(ky_BZ_SOL)
      $       +cmp%value(ky_DBZ_SOL))
@@ -156,7 +155,7 @@ c      enddo
       type (sad_comp), pointer ::cmp
       real*8 ,parameter ::bzthre=1.d-15
       ibz=ilist(i*3-2,ifibzl)
-      if(ibz .gt. 0)then
+      if(ibz > 0)then
         call compelc(ibz,cmp)
         tfbzt=charge*(cmp%value(ky_BZ_SOL)
      $       +cmp%value(ky_DBZ_SOL))
@@ -195,7 +194,7 @@ c      enddo
           tfinsol=.true.
         else
           ld=idelc(i)
-          if(ibz .gt. i)then
+          if(ibz > i)then
             if(idtype(ld) /= icSOL)then
               tfinsol=.true.
             elseif(rlist(idval(ld)+ky_BND_SOL) == 0.d0)then
@@ -255,7 +254,7 @@ c      enddo
           if(mult(k) == 0)then
             mult(k)=1
             ltyp=idtypec(ii)
-            if(ltyp .gt. icNULL .and. ltyp .lt. icMXEL)then
+            if(ltyp > icNULL .and. ltyp .lt. icMXEL)then
               idx=kytbl(kwINDX,ltyp)
               if(idx /= 0)then
                 mult(k)=max(1,
