@@ -2,18 +2,17 @@ FFS;
 
  EquAlign[t_,_]:="::<"//t//">::";
 
- Help2HTML=Class[{},{},{help,nlabel=0,Labels,col=96,
-   lt,ltt,form="svg",svg,outf,pw="16 cm"},
+ Help2HTML=Class[{},{},{help,nlabel=0,Labels,col=96,delimh="%",
+   lt,ltt,form="pdf",svg,outf,pw="20 cm",ew="700"},
 
    Constructor[]:=(
      SetDirectory[DocumentsDirectory];
      help=Help$Messages;
      help[[1,2]]="";
-     Labels[s_]:=s;
-     Labels[""]="";
+     Labels[_]="";
      outf[_]=Undefined;
-     lt=LaTeX[style->"align",pt->11,margins->"'3 3 3 0'",dpi->120];
-     ltt=LaTeX[style->"text",pt->11,margins->"'3 3 3 0'",dpi->120]
+     lt=LaTeX[style->"align",pt->11,margins->"'3 3 3 0'",`pw->pw,dpi->120,tw->"18 cm"];
+     ltt=LaTeX[style->"text",pt->11,margins->"'3 3 3 0'",`pw->pw,dpi->120,tw->"18 cm"]
      );
 
      SelfIndent[in_]:=Module[{f=StringToStream[in],r,ind,tab,con,w,p,ps,r1},
@@ -50,7 +49,7 @@ FFS;
          If[s[p1-3,p1]<=>".png" && s[p1-3,p1]<=>".jpg",
            ReplaceIndent[s[1,p1]]//"\n",
            ReplaceIndent[s[1,Max[0,p-2]]]//
-             "<img src=\"SADHelp_img/"//s[p,p1]//"\" align=\"middle\" width=540>\n"]//
+             "<img SRC=\"SADHelp_img/"//s[p,p1]//"\" ALIGN=\"middle\" WIDTH=540>\n"]//
                ReplaceDraw[s[p1+2,-1]]]];
 
      ReplaceLaTeX[""]="";
@@ -92,7 +91,7 @@ FFS;
              Exit[]]
            ];
          s[1,Max[p0,0]]//
-           "<img  class=\"eqs\" src=\""//equ//"\" />"//
+           "<img class=\"eqs\" width=\""//ew//"\" SRC=\""//equ//"\" />"//
              ReplaceLaTeX[s[p2,-1]]
          ]];
 
@@ -115,26 +114,34 @@ FFS;
          ]
        ];
 
-     WriteHTML[f_,h_,ul_]:=Module[{r,c=0},
-       If[h[[1]]=="example",Return[]];
-       If[ul<0,WriteString[f,"<li>"]];
+   FindLabel[h_]:=Module[{l=Labels[h],p=StringPosition[h,delimh]},
+     {b=h[p[[-1,1]]+1,-1]},
+     While[l==="",
+       If[p==={},Print["FindLabel ",h," ",p];Return[""]];
+       l=Labels[h[1,p[[-1,1]]]//b];
+       p=Drop[p,-1]];
+     l];
+
+   WriteHTML[f_,h_,ul_,lh_:""]:=Module[{r,c=0,h1=lh//h[[1]],l},
+     If[h[[1]]=="example",Return[]];
+       If[ul<0,Write[f,"<LI>"]];
        nlabel=nlabel+1;
 !       Write[f,"<H3><A NAME=L",nlabel,">\n",h[[1]],"</A></H3>"];
-       Write[f,"<h3><a name=L",h[[1]],">",h[[1]],"</a></h3>"];
+       Write[f,"<h3><a name=L",lh//h[[1]],">",h[[1]],"</a></h3>"];
        Flush[f];
        Write[f,"<pre>",ReplaceLaTeX[h[[2]]],"</pre>\n"];
        r=GetLabel[h[[3]]];
        If[r<=>{},
          Write[f,"<pre>See also:"];
-         (WriteString[f," ",Labels[#]];
-           If[(c+=StringLength[Labels[#]]-15)>col,
+         (WriteString[f," ",l=FindLabel[lh//#]];
+           If[(c+=StringLength[#]-15)>col,
              Write[f,""];
              c=0])&/@r;
          Write[f,"</pre>"]
          ];
        If[Length[h[[4]]]>0,
          If[ul<=0,Write[f,"<ul>"]];
-         Scan[WriteHTML[f,#,ul-1]&,h[[4]]];
+         Scan[WriteHTML[f,#,ul-1,h1//delimh]&,h[[4]]];
          If[ul<=0,Write[f,"</ul>"]]]];
 
      GetLabel[""]={};
@@ -151,23 +158,24 @@ FFS;
          p=p[[1,1]];
          {l,l[1,p-1],l[p+1,-2]}]];
 
-     SetLabel[tag_,l_]:=
-       If[
-         Labels[tag]<=>tag,
-         Print["Duplicated Label: ",tag," ",Labels[tag]," <=> ",l],
-         Labels[tag]=l];
+     SetLabel[tag_,lab_,lh_:""]:=With[{ht=lh//tag},
+       If[Labels[delimh//tag]==="",
+         Labels[delimh//tag]=lab];
+       If[""<=>Labels[ht]<=>lab,
+         Print["Duplicated Label: ",tag," ",Labels[ht]," <=> ",lab],
+         Labels[ht]=lab];
+       lab];
 
-     WriteHTMLIndex[f_,h_,tab_]:=Module[{tab1,lab,h1=h[[1]]},
+     WriteHTMLIndex[f_,h_,tab_,lh_:""]:=Module[{tab1,lab,h1=lh//h[[1]]},
        If[h1=="example",Return[]];
        nlabel++;
-!       lab="<A HREF=#L"//nlabel//">"//h1//"</A>";
-       lab="<a href=#L"//LabelTitle[h1][[1]]//">"//h1//"</a>";
-       Scan[SetLabel[#,lab]&,LabelTitle[h1]];
+       lab="<a href=#L"//h1//">"//h[[1]]//"</a>";
+       SetLabel[h[[1],lab,lh];
        Write[f,tab,lab];
        If[Length[h[[4]]]>0,
          tab1=tab//"   ";
 !     Write[f,"("];
-         Scan[WriteHTMLIndex[f,#,tab1]&,h[[4]]]
+         Scan[WriteHTMLIndex[f,#,tab1,h1//delimh]&,h[[4]]]
 !     Write[f,")"]
          ]];
 
@@ -195,7 +203,8 @@ eqs img{\n\
 </pre><a href=\"/SAD/\"><h4><img src=\"SADHelp_img/SAD.jpg\" align=\"middle\" alt=\"SAD\" width=90>Back to SAD Home Page</h4></a>\n\
 <a href=\"/SAD/how-to-use-sad/sad-ffs-examples/\">\n\
 <h4>SAD/FFS Examples</h4></a><hr>\n"];
- Write[f,"<pre>"];
+ HH@WriteHTMLIndex[0,HH@help[[1]],""];
+Write[f,"<pre>"];
  HH@WriteHTMLIndex[f,HH@help[[1]],""];
  Write[f,"</pre><hr>"];
  HH@nlabel=0;

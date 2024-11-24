@@ -201,7 +201,7 @@ With[{def={PlotStyle->ColumnPlot,Orientation->Vertical,
         Scan[(hist[[First[#]]]+=Second[#])&,col];
         hist)&/@l,
       {min,max}=BinR[br,l];
-      Print["HP ",{br,min,max}];
+!      Print["HP ",{br,min,max}];
       dc=(max-min)/nc*fact;
       histall=(
         col=Select[Floor[(#-min)/dc]+1,(1<=#<=nc)&];
@@ -809,14 +809,14 @@ With[{def={Dashing->{{1},{0.8,0.2},{0.4, 0.15},{0.2,0.1},{0.1,0.07},
   Plot[f_List,{x_Symbol,xmin_Real,xmax_Real},opt___]:=Block[{x},Module[
     {a,b,c,d,da,pc,leg,pr,th,n,g,h=Map[Hold,Unevaluated[f]]},
     {da,pc,leg,pr,th}={Dashing,PlotColor,Legend,PlotRange,Thickness}/.{opt}/.def;
-    `h00=h;
     n=Length[h];
     da=(Dashing->#)&/@Take[Flatten[Table[da,
       {Ceiling[n/Max[Length[da],1]]}],1],n];
     pc=(PlotColor->#)&/@Take[Flatten[Table[pc,
       {Ceiling[n/Max[Length[pc],1]]}]],n];
     leg=(Legend->#)&/@Take[Flatten[{{leg},Table[False,{n}]}], n];
-    g=MapThread[Function[{a,b,c,d},Plot[Evaluate[ReleaseHold[a]],{x,xmin,xmax},
+!    Print[Thread[{h,da,pc,leg}]];
+    g=MapThread[Function[{a,b,c,d},Plot[a/.Hold->Null,{x,xmin,xmax},
       DisplayFunction->Identity,b,c,d,opt,Thickness->th]],{h,da,pc,leg}];
     pr=PR$Auto[pr,g];
     If[(DisplayFunction/.{opt}/.def)===Default,
@@ -890,6 +890,7 @@ PlotInterpolate[{fxin_,fyin_},{z_Symbol,zmin_Real,zmax_Real},min0_,maxdiv_,maxb_
     min=Max[min,Length[fyh[[1,1]]]]];
   fxs = With[{z = #}, {#, Check[fxin, 0]}]&;
   fys = With[{z = #}, {#, Check[fyin, 0]}]&;
+!  Print[{fxin,fyin,fxs,fys}];
   fx= With[{z = Vector[#]},
     Check[ReleaseVector[fxin], ReleaseVector[fxs[Vector[#]]]]]&;
   fy= With[{z = Vector[#]},
@@ -897,7 +898,7 @@ PlotInterpolate[{fxin_,fyin_},{z_Symbol,zmin_Real,zmax_Real},min0_,maxdiv_,maxb_
   dz=(zmax-zmin)/min;
   xl=Re[fx[zl=Range[0,min]*dz+zmin]];
   yl=Re[fy[zl]];
-  {xl,yl}=Thread[Thread[{xl,yl}]/.{_,INF|-INF|_?NaNQ}:>Null[]];
+  {xl,yl,zl}=Thread[Thread[{xl,yl,zl}]/.{_,INF|-INF|_?NaNQ,_}:>Null[]];
   If[~RealListQ[xl] || ~RealListQ[yl],Return[{}]];
   xw=-Subtract@@MinMax[xl];
   yw=-Subtract@@MinMax[yl];
