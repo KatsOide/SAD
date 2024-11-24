@@ -104,7 +104,7 @@ Monitor[mon_,options___]:=
   ];
 
 Steer[str_,options___]:=
-  Module[{def,istr,nstr,mast,dx,dddk,hor,qp1=Pi/4,qp3=3*Pi/4,def={Jitter->0,Type->(LINE["type",#]>0&)}},
+  Module[{istr,nstr,mast,dx,dddk,hor,qp1=Pi/4,qp3=3*Pi/4,def={Jitter->0,Type->(LINE["type",#]>0&)}},
     op=Join[{options},def];
     If[NumberQ[Type/.op],op=Join[{ToExpression["Type->(LINE['type',#]=="//(Type/.op)//"&)"]},op]];
    !istr=Select[Range[LINE["length"]], LINE['TYPE',#]==type&];

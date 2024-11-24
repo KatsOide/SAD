@@ -91,10 +91,10 @@ Linux)
 #        echo $(eval echo ${HOSTNAME}|egrep -o '[^0-9]+'|head -n 1)
     case $(eval hostname|egrep -o '[^0-9]+'|head -n 1) in
         hpc)
-            machine="_HPC"
+#            machine="_HPC"
             ;;
         slurmgate)
-            machine="_HPC"
+#            machine="_HPC"
             ;;
 #           hpc)
 #               cc_vers="_7"
