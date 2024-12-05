@@ -12,13 +12,14 @@
       use ffs_wake
       use tparastat
       use photontable,only:tphotoninit,tphotonlist
+      use trexc
       use tfcsi
       use tftr
       use maloc,only:ktfmalocp,tfmsize
       use iso_c_binding
       implicit none
       type (sad_descriptor) ,intent(out):: kx
-      type (sad_descriptor) kx1,kx2,ks,kp
+      type (sad_descriptor) kx1,kx2,ks,kp,kxe
       type (sad_dlist), pointer :: klx,kl
       integer, parameter :: nkptbl = 6
       integer*4, parameter :: npparamin=9,npnlatmin=3000
@@ -115,6 +116,7 @@
         endif
         mcf=7
       endif
+      call tfsetupex
       call tftclupdate(7)
       call tfsetparam
       wake=(twake .or. lwake) .and. trpt

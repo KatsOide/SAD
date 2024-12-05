@@ -13,7 +13,7 @@ eqs img{
 <body>
 <center><h2>Welcome to SAD/FFS & SADScript
 </h2></center>
-<center> SAD/FFS SADScript Version: 1.3.5.6k64,      Updated: 11/01/2024</center>
+<center> SAD/FFS SADScript Version: 1.3.6k64,      Updated: 12/06/2024</center>
 
 <pre> Please use browser's search to find an item.
 
@@ -578,6 +578,7 @@ alt="SAD" width=90>Back to SAD Home Page</h4></a>
       <a href=#L%special-variables%SIGZ>SIGZ</a>
       <a href=#L%special-variables%SpeedOfLight>SpeedOfLight</a>
       <a href=#L%special-variables%TITLE>TITLE</a>
+      <a href=#L%special-variables%Track$Excitation>Track$Excitation</a>
       <a href=#L%special-variables%UnstableLevel>UnstableLevel</a>
    <a href=#L%SAVE>SAVE</a>
    <a href=#L%SEED>SEED</a>
@@ -6465,6 +6466,20 @@ it is calculated based on "effective voltage". Effective with RING only.</pre>
 <pre>TITLE is a character-string to make the title of the plot in DRAW or GEO commands.</pre>
 <pre>See also:
  <a href=#L%special-variables%CASE>CASE</a> <a href=#L%DRAW>DRAW</a> <a href=#L%elements%SOL%GEO>GEO</a></pre>
+<LI>
+<h3><a name=L%special-variables%Track$Excitation>Track$Excitation</a></h3>
+<pre>An artificial random beam exciation is added in the tracking, by setting
+
+  Track$Excitation = {sqrte, tru},
+
+where sqrte is the square root of the eigen values of the beam excitation per tuen, and tru is the
+transpose of the eigenvector  matric of an exciatation matrix B. The matrix B is a 6 by 6 symmetric
+matrix and {e, tru} = Eigensystem[B], and sqrte = Sqrt[e]. The excitation is represented in the physical
+coordinate at the end of the beam line. Emittance[] gives that matrix for synchrotron radiation and
+intrabeam scattering. This exciation is applied at the end of a beam line. To stop the scattering,
+say Track$Excitation = Null .</pre>
+<pre>See also:
+ <a href=#L%functions%FFS-dedicated-functions%TrackParticles>TrackParticles</a> <a href=#L%functions%FFS-dedicated-functions%Emittance>Emittance</a></pre>
 <LI>
 <h3><a name=L%special-variables%UnstableLevel>UnstableLevel</a></h3>
 <pre>Number of unstable planes in the optics calculations. Equal to zero if all x and y optics are stable
