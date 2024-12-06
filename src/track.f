@@ -39,7 +39,7 @@ c      use tfcsi, only:ipoint,lrecl,lfni
      $       'Clear[DP0];(DP0=v_)^:=(LINE["DDP",1]=v);DP0:=LINE["DDP",1];Protect[DP0];'//
      $       'System$Names=Select[Names["*"],ToUpperCase[#[1]]==#[1]&];',
      $       kx,irtc)
-        write(*,*)'track ',latt,iparam
+c        write(*,*)'track ',latt,iparam
         initmessage=0
         ifibzl=0
         ifgamm=0
