@@ -307,7 +307,9 @@ With[{def={Weight->None,TextSize->1,FunctionLabel->Default,
           fl3={""};
           StandardForm[
             If[fn===Default,
-              fl3=FP$StackLabel[fl3,"Fit function: "//fun//
+              fl3=FP$StackLabel[fl3,
+                If[`$HaveLaTeX<=>"","\\@\\centering ",""]//
+                  "Fit function: "//fun//
                 If[`$HaveLaTeX<=>"","\\\\\n","\n"],cw]];
             If[re===Default,
               $FORM="C8.5";

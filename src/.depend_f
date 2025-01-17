@@ -291,7 +291,7 @@ tfchgv.o: tfchgv.f tffs.o tfstk.o toplvl.o
 tfchro.o: tfchro.f initb1.o tffs.o tfstk.o
 tfconvstr.o: tfconvstr.f tfeeval.o tfreplace.o tfstk.o tfstrbuf.o
 tfcoup.o: tfcoup.f tffs.o tffsa.o tfstk.o toplvl.o
-tfdapert.o: tfdapert.f tffs.o tfstk.o toplvl.o
+tfdapert.o: tfdapert.f tffs.o tfstk.o toplvl.o trackd.o
 tfdbun.o: tfdbun.f tffs.o
 tfdisp.o: tfdisp.f initb1.o tffs.o tfstk.o tgfun.o tgrot.o toplvl.o
 tfdot.o: tfdot.f itfmaloc.o tfloor.o tfstk.o

@@ -1,7 +1,7 @@
       subroutine tracka(latt,kptbl,x,px,y,py,z,g,dv,pz,
      $                  sjx,sjxjx,sjy,sjyjy,sjz,sjzjz,zbuf,lsp,zbufa)
       use tfstk
-      use trackdlib,only:tmap
+      use trackdlib,only:tmap,tinip
       use ffs_flag
       use tmacro
       use ffs_pointer, only:idelc,idtypec

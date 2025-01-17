@@ -4721,6 +4721,17 @@ EquAlign["\
         "",
         {}},
 
+        {"TransferMatrix",
+"\
+TransferMatrix[from_, to_, options___] returns the 4x4 or 6x6 transfer matrix (TM) from component 'from' to component 'to', depending on the flag CALC4D or CALC6D, respectively. Locations from and to can be the name or the component number. If to < from, the inverse Matrix of TM[to, from] is returned, If Fold option is False (default).  Possible options are:\n\n\
+Options           Default      Description\n\
+-------------------------------------------------------------\n\
+Fold              False        If True && to < from, returns TM[1, to].TM(from,-1] .\n\
+Symplectic        False        If True, returns the symplectic matrix considering acceleration.\n\
+Calc6D            False        If True, returns 6x6 TM even under CALC4D.",
+          "CALC6D CALC4D",
+          {}},
+
        {"SetElement",
         "\
 Create/set/read a MAIN-level element.\n\n\
