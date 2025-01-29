@@ -18,9 +18,9 @@
           if(d <= s*re .or. d <= ae)then
             lx=.true.
           endif
+c          write(*,'(a,l2,1p10g12.4)')'nsmq ',lx,cx1,cx2,s,d,re,ae
         endif
       elseif(tfnumberq(k2))then
-      elseif(k1%k /= k2%k)then
       elseif(ktfnonlistq(k1,kl1))then
         lx=tfsameq(k1,k2)
       elseif(ktfnonlistq(k2,kl2))then
