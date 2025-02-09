@@ -189,7 +189,7 @@ c$$$     $      c8=-4.93961492826482964d-7,
       real*8 ,parameter,private :: epsx=0.3d0
       integer*4 ,parameter,private :: itmaxg=67
       real*8 ,parameter,private :: zimth=1.4d0,
-     $     chgth=12.d0,veryl=1.d250,arth=0.8d0,vlim=1.d30,
+     $     chgth=36.d0,veryl=1.d250,arth=0.8d0,vlim=1.d30,
      $     slimpl=1.d-4,slims=4.5d0,lgzlim=1.4d0,plith=4.d0,
      $     plrth=4.d0,pllzth=1.5d0*m_pi,simth=4.d0
       integer*4 ,parameter,private ::kg2max=20
@@ -1146,7 +1146,7 @@ c        write(*,'(a,1p10g12.4)')'czcb-k ',k,s,a,df,f1
       f1=(cgamma2(sh,lm*a2)*cgi+cgamma2(sh1,lm*a2)*cgi1)
      $     /a2**sh+2.d0*m_pi**sh/(s-1.d0)*cgi
       if(dble(a) <= 0.d0 .or. dble(a) > 1.d0)then
-        write(*,'(a,1p10g12.4)')'czc-00 ',a,sh,sh1,lm*a2,f1
+c        write(*,'(a,1p10g12.4)')'czc-00 ',a,sh,sh1,lm*a2,f1
       endif
       n=1.d0
       no=(nogam2+nolog)*2
@@ -2629,7 +2629,7 @@ c        write(*,'(a,1p10g12.4)')'hlp-n ',n,z,a,f1,df
       cgi=cgammai(sh)
       cgi1=cgammai(sh1)
       f1=(cgamma2(sh,lm*a2)*cgi+cgamma2(sh1,lm*a2)*cgi1)/a2**sh
-      write(*,'(a,1p10g12.4)')'chlcg ',z,s,a,f1
+c      write(*,'(a,1p10g12.4)')'chlcg ',z,s,a,f1
       n=1.d0
       no=nogam2*2
       adf0=veryl
@@ -3804,7 +3804,7 @@ c          write(*,'(a,1p10g12.4)')'hg1-2 ',a,c,xac,f1
             endif
             f1=f1+u
             no=no+2
-c            write(*,'(a,i5,1p10g12.4)')'hg1-2 ',s,a,c,x,u,f1
+c            write(*,'(a,1p10g12.4)')'hg1-2 ',s,a,c,x,u,f1
             if(u**2 <= no*abs(f1)**2*epso)then
               exit
             endif
@@ -3962,10 +3962,10 @@ c            write(*,'(a,i5,1p10g12.4)')'hg1-2 ',s,a,c,x,u,f1
       integer*4 na,nb,m
       logical*4 cmplm,realm,veca,vecb
       irtc=-1
+      kx=dxnullo
       if(.not. tfnumberq(dtastk(isp)))then
         return
       endif
-      kx=dxnullo
       call tfmatrixmaybeq(dtastk(isp1+1),cmplm,realm,veca,na,m,kla)
       if(m /= 0)then
         return
@@ -4084,10 +4084,10 @@ c      write(*,'(a,2i5,1p10g12.4)')'chgpq ',na,nb,b(1)
         k=k+1.d0
         u=u*z/k
         au=abs(u)
-        if(au > au0)then
+c        if(au > au0)then
 c          write(*,'(a,1p10g12.4)')'hgpq-nc ',k,au,au0,u,f
-          return
-        endif
+c          return
+c        endif
         au0=au
         no=no+2*(na+nb+1)
         f=f+u
@@ -4158,14 +4158,14 @@ c            write(*,'(a,3i5,1p10g12.4)')'hgpq-u0 ',i,na,nb,k,a(i),u
         k=k+1.d0
         u=u*z/k
         au=abs(u)
-        if(au > au0)then
-          f=f1
-          return
-        endif
+c        if(au > au0)then
+c          f=f1
+c          return
+c        endif
         au0=au
         no=no+2*(na+nb+1)
         f1=f1+u
-c        write(*,'(a,3i5,1p10g12.4)')'hgpq-0 ',i,na,nb,z,u,f
+c        write(*,'(a,2i5,1p10g12.4)')'hgpq-0 ',na,nb,k,z,u,au0,f1
         if(u**2 <= no*f1**2*epso)then
           f=f1
           return
@@ -5237,6 +5237,7 @@ c     $             pochh(2.d0-ra,ra-2.d0),f1
       real*8 lx,u,k,k1,ab1,df
       integer*4 n,i,no
       ab1=a-b+1.d0
+      write(*,'(a,1p10g12.4)')'hgu ',a,b,x
       if(x == 0.d0)then
         if(b < 1.d0)then
           f1=pochh(ab1,-a)
