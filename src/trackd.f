@@ -1,4 +1,5 @@
       module trackdlib
+      use tfstk
       integer*4 ,parameter ::n1p0=256,n2p=51,maxturn=2**29,
      $     maxpara=256,nw=16,nkptbl = 6, minnp=16,limw=600
       real*8, parameter :: big=1.d300
@@ -32,12 +33,8 @@
       return
       end subroutine
 
-      end module
-
 c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       subroutine trackd(range,r1,n1,nturn,trval,phi,dampr,dampenough,ivar1,ivar2,lfno)
-      use trackdlib
-      use tfstk
       use ffs_flag
       use tmacro,only:np0,codin,dvfs,omega0,taurdx,taurdy,taurdz,nparallel,tsetintm,nlat
       use ffs_pointer, only:idelc
@@ -55,7 +52,7 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       integer*4 ,pointer ::ntloss(:,:),kzx(:,:)
       integer*4 ,allocatable::kptbl(:,:),mturn(:)
       integer*4 n1p,j,n,jzout,np1,k,np,kp,kx,kz,irw,nsc,iw,
-     $     jj,ip,isw,kseed,npmax,npara,nxm(n1p0),np00,
+     $     jj,ip,isw,kseed,npmax,npara,nxm(n1p0),np00,muld,mule,
      $     muls,irtc,i,waitpid_nohang,ncons,nscore,ivar3,iwtime
       integer*8 intlm
       real*8 ,allocatable ::x(:),px(:),y(:),py(:),z(:),g(:),dv(:),
@@ -65,7 +62,6 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
      $     trval,phi(3),a1i(n1p0)
       character*12 autos
       logical*4 damp,ini,remain,pol0,normal
-      character rad62a
 c     begin initialize for preventing compiler warning
       ipr=0
 c     end   initialize for preventing compiler warning
@@ -90,7 +86,21 @@ c      write(*,*)'trackd0 ',damp,dampx,t0,omega0,taurdx
       call tsetdvfs
       trval=0.d0
       nscore=0
-      muls=merge((nturn/6200+1)*100,10,nturn > 600)
+c      muls=merge((nturn/6200+1)*100,10,nturn > 600)
+      muld=1;
+      mule=1;
+      do while (muld*mule*62 < nturn)
+        select case (muld)
+        case (1)
+        muld=2
+        case (2)
+        muld=5
+        case (5)
+        muld=1
+        mule=mule*10
+        end select
+      enddo
+      muls=muld*mule
 c      write(*,*)'trackd-muls: ',nturn,muls,nturn/6200
       a2min=range(1,1)
       a2max=range(2,1)
@@ -445,7 +455,6 @@ c            write(*,*)'trackd-wait-k ',k
       end
 
       subroutine tinip1(x,px,y,py,z,g,dv,emx,emz,codin,dvfs)
-      use trackdlib
       implicit none
       real*8 ,intent(inout):: x,px,y,py,z,dv,g
       real*8 ,intent(in):: codin(6),dvfs,emx,emz
@@ -470,7 +479,6 @@ c            write(*,*)'trackd-wait-k ',k
       end
 
       subroutine tinip(np,x,px,y,py,z,g,dv,emx,emz,codin,dvfs,cmplot)
-      use trackdlib
       implicit none
       integer*4 ,intent(in):: np
       integer*4 i
@@ -514,8 +522,6 @@ c      write(*,'(a,1p6g15.7)')'tinip ',xa(6),emx,emz
 
       subroutine tpdamp(np,x,px,y,py,z,g,dv,dampx,dampy,dampz,
      $     damp,aenox,aenoy,aenoz,kptbl,mturn)
-      use tfstk
-      use trackdlib
       use tmacro
       implicit none
       integer*4 ,intent(in):: np,kptbl(np)
@@ -563,3 +569,5 @@ c          write(*,*)'tpdamp ',j,nturn-1
       call tconvm(np,px,py,g,dv,-1)
       return
       end
+
+      end module

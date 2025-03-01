@@ -15,7 +15,7 @@ LaTeX=Class[{},{eqn=0,pre0="\
 %\\usepackage{newtxmath} \n\
 %\\usepackage[utf8]{inputenc} \n\
 \\definecolor{red}{rgb}{1,0,0}\n\
-\\thispagestyle{empty}\n"},
+\\thispagestyle{empty}\n",imv6=True},
 
   {style="align",pt=11,margins="'3 3 3 0'",dpi=150,maxtext=50,
     tw="22 cm",pw="23 cm", th="40 cm", ph="45 cm",
@@ -25,7 +25,8 @@ LaTeX=Class[{},{eqn=0,pre0="\
     wdir=(style==="standalone" && Check[Module[{f=OpenRead["!echo '0' > "//ldir//"dummy"]},Close[f];1],0]);
     If[Environmrnt["MAGICK_TEMPORARY_PATH"]==="",
       Environmrnt["MAGICK_TEMPORARY_PATH"]="/tmp"];
-    {style,pt,margins,dpi,eqn});
+    {style,pt,margins,dpi,eqn};
+    imv6=(IMVersion[][1]==="6"));
 
   Preamble["align"]:=StandardForm["\
 \\documentclass["//pt//"pt]{article}\n"//pre0//"\
@@ -74,10 +75,10 @@ LaTeX=Class[{},{eqn=0,pre0="\
       StandardForm[
         If[rot<=>0,s=" -rotate "//rot];
         If[res<=>"",s=s//" -resize "//res];
-        If[~bg,s=s//" -opaque"]];
+        If[~bg,s=s//" -alpha set "]];
       s//" "];
 
-    TypesetPDF[text_]:=(TypesetPDF[tex]=
+    TypesetPDF[text_]:=(TypesetPDF[text]=
       If[FileQ[ldir//`$LTPDF[text]],ldir//`$LTPDF[text],
         StandardForm[
           Module[{f,fn=TemporaryName[],fnr,fn1,pdf,dir0=Directory[],out},
@@ -107,7 +108,6 @@ LaTeX=Class[{},{eqn=0,pre0="\
     Typeset[text_,opt___]:=(Typeset[text,opt]=
       Module[{out,form=`Format/.{opt}/.def,fn,
         s=CVOption[opt],pdf=TypesetPDF[text]},
-!        Print["CVOpton: ",`cvo00={form,s}];
         If[form==="pdf",Return[pdf]];
         fn=TemporaryName[];
         out=fn//"."//form;
@@ -116,11 +116,15 @@ LaTeX=Class[{},{eqn=0,pre0="\
           System["pdf2svg "//pdf//" "//out//" > /dev/null"];
           System["svgcleaner --quiet "//out//" "//out//" > /dev/null"],
           _,
-!          Print["convert -quiet -density "//dpi//" -quality 100 "//pdf//s//
-!            " -sharpen 0x2 -sharpen 0x3 -morphology Erode Disk:2.0 "//out//" > /dev/null"];
+!          System["cp "//pdf//" ~/Desktop"];
+!          Print[">>> convert -quiet -density "//dpi//" -quality 100 "//pdf//s//
+!            " -adaptive-sharpen 0 "//
+!              If[imv6," -morphology Erode Disk:2.0 ",""]//out//" > /dev/null"];
           System["convert -quiet -density "//dpi//" -quality 100 "//pdf//s//
-            " -sharpen 0x2 -sharpen 0x3 "//
-              If[IMVersion[][1]==="6","-morphology Erode Disk:2.0 ","",""]//out//" > /dev/null"]];
+            " -adaptive-sharpen 0 "//
+              If[imv6," -morphology Erode Disk:2.0 ",""]//out//" > /dev/null"];
+!          System["cp "//out//" ~/Desktop"];
+          ];
         System["rm "//fn];
         out
         ]);

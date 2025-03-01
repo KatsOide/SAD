@@ -149,6 +149,7 @@ c        call tt6621(ss,rlist(isb+21*(nlat-1)))
       use ffs_seg
       use tspin
       use kradlib
+      use trexc
       use element_drift_common
       use mathfun
       use tracklim
@@ -581,6 +582,9 @@ c     print *,'tturn l sspac2',l,sspac2
      $           lend,lend,pspac_nturn,pspac_nturncalc)
           endif
         endif
+      endif
+      if(fexp .and. lend == nlat-1)then
+        call trackexc(np,x,px,y,py,z,g,dv)
       endif
       return
       end

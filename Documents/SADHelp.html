@@ -13,7 +13,7 @@ eqs img{
 <body>
 <center><h2>Welcome to SAD/FFS & SADScript
 </h2></center>
-<center> SAD/FFS SADScript Version: 1.3.5.6k64,      Updated: 11/01/2024</center>
+<center> SAD/FFS SADScript Version: 1.3.6k64,      Updated: 12/17/2024</center>
 
 <pre> Please use browser's search to find an item.
 
@@ -438,6 +438,7 @@ alt="SAD" width=90>Back to SAD Home Page</h4></a>
          <a href=#L%functions%FFS-dedicated-functions%SynchroBetaEmittance>SynchroBetaEmittance</a>
          <a href=#L%functions%FFS-dedicated-functions%TouschekLifetime>TouschekLifetime</a>
          <a href=#L%functions%FFS-dedicated-functions%TrackParticles>TrackParticles</a>
+         <a href=#L%functions%FFS-dedicated-functions%TransferMatrix>TransferMatrix</a>
          <a href=#L%functions%FFS-dedicated-functions%Twiss>Twiss</a>
          <a href=#L%functions%FFS-dedicated-functions%VariableRange>VariableRange</a>
          <a href=#L%functions%FFS-dedicated-functions%VariableWeight>VariableWeight</a>
@@ -578,6 +579,7 @@ alt="SAD" width=90>Back to SAD Home Page</h4></a>
       <a href=#L%special-variables%SIGZ>SIGZ</a>
       <a href=#L%special-variables%SpeedOfLight>SpeedOfLight</a>
       <a href=#L%special-variables%TITLE>TITLE</a>
+      <a href=#L%special-variables%Track$Excitation>Track$Excitation</a>
       <a href=#L%special-variables%UnstableLevel>UnstableLevel</a>
    <a href=#L%SAVE>SAVE</a>
    <a href=#L%SEED>SEED</a>
@@ -4548,6 +4550,20 @@ loss of each particle is detected.</pre>
 <pre>See also:
  <a href=#L%components>components</a> <a href=#L%functions%FFS-dedicated-functions%LINE>LINE</a> <a href=#L%flags%PHOTONS>PHOTONS</a> <a href=#L%special-variables%PhotonList>PhotonList</a> <a href=#L%flags%RADLIGHT>RADLIGHT</a> <a href=#L%functions%FFS-dedicated-functions%TouschekLifetime>TouschekLifetime</a> <a href=#L%functions%FFS-dedicated-functions%WakeFunction>WakeFunction</a> <a href=#L%functions%FFS-dedicated-functions%SurvivedParticles>SurvivedParticles</a> <a href=#L%flags%LOSSMAP>LOSSMAP</a> <a href=#L%flags%POL>POL</a> <a href=#L%flags%RADPOL>RADPOL</a></pre>
 <LI>
+<h3><a name=L%functions%FFS-dedicated-functions%TransferMatrix>TransferMatrix</a></h3>
+<pre>TransferMatrix[from_, to_, options___] returns the 4x4 or 6x6 transfer matrix (TM) from component
+'from' to component 'to', depending on the flag CALC4D or CALC6D, respectively. Locations from and
+to can be the name or the component number. If to < from, the inverse Matrix of TM[to, from] is returned,
+If Fold option is False (default).  Possible options are:
+
+Options           Default      Description
+-------------------------------------------------------------
+Fold              False        If True && to < from, returns TM[1, to].TM(from,-1] .
+Symplectic        False        If True, returns the symplectic matrix considering acceleration.
+Calc6D            False        If True, returns 6x6 TM even under CALC4D.</pre>
+<pre>See also:
+ <a href=#L%flags%CALC6D>CALC6D</a> <a href=#L%flags%CALC4D>CALC4D</a></pre>
+<LI>
 <h3><a name=L%functions%FFS-dedicated-functions%Twiss>Twiss</a></h3>
 <pre> Twiss[optical-function, component] returns the value of the optical-function at the entrance of
 component. The values are those calculated by the last CALCULATE(CALC) or GO commands, or CalculateOptics
@@ -5785,7 +5801,7 @@ matrix on {x,px/p0(s),y,py/p0(s),dp/p0(s)} is printed out.
 If to-component is upstream the from-component, it gives the inverse matrix (TRPT) or one-turn-wrapped
 matrix (RING).</pre>
 <pre>See also:
- <a href=#L%DISPLAY(DISP)>DISPLAY(DISP)</a> <a href=#L%flags%TRPT>TRPT</a> <a href=#L%flags%RING>RING</a> <a href=#L%flags%CALC4D>CALC4D</a> <a href=#L%flags%CALC6D>CALC6D</a> </pre>
+ <a href=#L%DISPLAY(DISP)>DISPLAY(DISP)</a> <a href=#L%flags%TRPT>TRPT</a> <a href=#L%flags%RING>RING</a> <a href=#L%flags%CALC4D>CALC4D</a> <a href=#L%flags%CALC6D>CALC6D</a> <a href=#L%functions%FFS-dedicated-functions%TransferMatrix>TransferMatrix</a></pre>
 <h3><a name=L%MEASURE(MEA)>MEASURE(MEA)</a></h3>
 <pre>Usage: MEA [end-component] [OUT file plot-spaces]
 
@@ -6465,6 +6481,20 @@ it is calculated based on "effective voltage". Effective with RING only.</pre>
 <pre>TITLE is a character-string to make the title of the plot in DRAW or GEO commands.</pre>
 <pre>See also:
  <a href=#L%special-variables%CASE>CASE</a> <a href=#L%DRAW>DRAW</a> <a href=#L%elements%SOL%GEO>GEO</a></pre>
+<LI>
+<h3><a name=L%special-variables%Track$Excitation>Track$Excitation</a></h3>
+<pre>An artificial random beam exciation is added in the tracking, by setting
+
+  Track$Excitation = {sqrte, tru},
+
+where sqrte is the square root of the eigen values of the beam excitation per tuen, and tru is the
+transpose of the eigenvector  matric of an exciatation matrix B. The matrix B is a 6 by 6 symmetric
+matrix and {e, tru} = Eigensystem[B], and sqrte = Sqrt[e]. The excitation is represented in the physical
+coordinate at the end of the beam line. Emittance[] gives that matrix for synchrotron radiation and
+intrabeam scattering. This exciation is applied at the end of a beam line. To stop the scattering,
+say Track$Excitation = Null .</pre>
+<pre>See also:
+ <a href=#L%functions%FFS-dedicated-functions%TrackParticles>TrackParticles</a> <a href=#L%functions%FFS-dedicated-functions%Emittance>Emittance</a></pre>
 <LI>
 <h3><a name=L%special-variables%UnstableLevel>UnstableLevel</a></h3>
 <pre>Number of unstable planes in the optics calculations. Equal to zero if all x and y optics are stable

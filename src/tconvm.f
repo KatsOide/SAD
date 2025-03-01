@@ -4,9 +4,8 @@
       implicit none
       integer*4 ,intent(in):: np,idir
       real*8 ,intent(inout):: px(np),py(np),dv(np),g(np)
-c      real*8 pr(np),h1(np),p1(np)
       real*8 ,dimension(:),allocatable::pr,h1,p1
-      if(idir .ge. 0)then
+      if(idir >= 0)then
         px=px+g*px
         py=py+g*py
       else

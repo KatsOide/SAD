@@ -369,6 +369,7 @@ c$$$susp;
       real*8, pointer :: emx,emy,emz,dpmax,xixf,xiyf,
      $     sizedp,sigzs,fshifts
       real*8, pointer, dimension(:,:) :: geo0
+      type (sad_dlist), pointer :: kexl
       integer*4, pointer :: ndim,ndima,nele,nfit,marki,iorgx,iorgy,
      $     iorgr,mfpnt,mfpnt1,id1,id2,nve,ntouch,modesize
       logical*4 , pointer :: setref,evarini
@@ -1053,6 +1054,74 @@ c        use ffs_pointer
        endif
        return
        end function
+
+      end module
+
+      module trexc
+      use tfstk
+      type (sad_descriptor) kexp
+      real*8 exeig(6),exr(6,6)
+      logical*4 fexp
+
+      contains
+
+      subroutine tfsetupex
+      use maloc
+      implicit none
+      integer*8 :: ktrex=0
+      integer*4 irtc,n,m
+      type (sad_dlist) ,pointer :: kexl,kexrm
+      type (sad_rlist) ,pointer :: kexb
+
+      fexp=.false.
+      if(ktrex == 0)then
+        ktrex=ktfsymbolz('`Track$Excitation',17)-4
+      endif
+      kexp=dlist(ktrex)
+      if(tflistq(kexp,kexl))then
+        if(kexl%nl /= 2)then
+          return
+        endif
+        if(.not. tfreallistq(kexl%dbody(1),kexb) .or. kexb%nl /= 6)then
+          return
+        endif
+        if( .not. tflistq(kexl%dbody(2),kexrm))then
+          return
+        endif
+        call tfmsize(kexl%dbody(2),n,m,irtc)
+        if(irtc /= 0 .or. n /= 6 .or. m /= 6)then
+          return
+        endif
+        exeig=kexb%rbody(1:6)
+        call tfl2m(kexrm,exr,n,m,.false.)
+        fexp=.true.
+      endif
+      return
+      end subroutine
+
+      subroutine trackexc(np,x,px,y,py,z,g,dv)
+      implicit none
+      integer*4 ,intent(in):: np
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),g(np),dv(np)
+      real*8 ,dimension(:,:),allocatable :: b
+      integer*4 i
+      allocate(b(np,6))
+      call tconvm(np,px,py,g,dv,1)
+      call tgauss_array(b,np*6)
+      do i=1,6
+        b(:,i)=b(:,i)*exeig(i)
+      enddo
+c      write(*,'(a,i5,1p10g12.4)')'trackexc ',np,b(1:5,1)
+      b=matmul(b,exr)
+      x = x+b(:,1)
+      px=px+b(:,2)
+      y = y+b(:,3)
+      py=py+b(:,4)
+      z = z+b(:,5)
+      g = g+b(:,6)
+      call tconvm(np,px,py,g,dv,-1)
+      return
+      end subroutine
 
       end module
 

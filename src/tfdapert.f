@@ -104,7 +104,7 @@
 
       subroutine tfdapert1(range,r1,n1,trval,phi,damp,dampenough,
      $     ivar1,ivar2,lfno)
-      use tfstk
+      use trackdlib
       use ffs_pointer
       use ffs_flag
       use tmacro,only:nturn
@@ -122,8 +122,7 @@ c      write(*,*)'tfda1 ',phix,phiy,phiz,ivar1,ivar2
 c      x(1:2)=range(1:2,1)
 c      y(1:2)=range(1:2,2)
 c      g(1:n1)=r1
-      call trackd(range,r1,n1,nturn,
-     1     trval,phi,damp,dampenough,ivar1,ivar2,lfno)
+      call trackd(range,r1,n1,nturn,trval,phi,damp,dampenough,ivar1,ivar2,lfno)
       call tftclupdate(7)
       dapert=dapert0
       if(itgetfpe() /= 0)then

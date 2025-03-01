@@ -2265,6 +2265,13 @@ Number of unstable planes in the optics calculations. Equal to zero if all x and
       "GO off-momentum-matching",
       {}},
 
+     {"Track$Excitation",
+       "An artificial random beam exciation is added in the tracking, by setting\n\n\
+  Track$Excitation = {sqrte, tru},\n\n\
+where sqrte is the square root of the eigen values of the beam excitation per tuen, and tru is the transpose of the eigenvector  matric of an exciatation matrix B. The matrix B is a 6 by 6 symmetric matrix and {e, tru} = Eigensystem[B], and sqrte = Sqrt[e]. The excitation is represented in the physical coordinate at the end of the beam line. Emittance[] gives that matrix for synchrotron radiation and intrabeam scattering. This exciation is applied at the end of a beam line. To stop the scattering, say Track$Excitation = Null .",
+       "TrackParticles Emittance",
+       {}},
+
      {"CASE",
       "CASE is a character-string to be attached with TITLE to issue the CASE command of TopDrawer in DRAW or GEO commands.",
       "TITLE DRAW GEO",
@@ -4713,6 +4720,17 @@ EquAlign["\
    {{0, 1, ...}, {-1, 0, ...}, {0, 0, 0, 1, ...}, {0, 0, -1, 0, ...}, ...} ."],
         "",
         {}},
+
+        {"TransferMatrix",
+"\
+TransferMatrix[from_, to_, options___] returns the 4x4 or 6x6 transfer matrix (TM) from component 'from' to component 'to', depending on the flag CALC4D or CALC6D, respectively. Locations from and to can be the name or the component number. If to < from, the inverse Matrix of TM[to, from] is returned, If Fold option is False (default).  Possible options are:\n\n\
+Options           Default      Description\n\
+-------------------------------------------------------------\n\
+Fold              False        If True && to < from, returns TM[1, to].TM(from,-1] .\n\
+Symplectic        False        If True, returns the symplectic matrix considering acceleration.\n\
+Calc6D            False        If True, returns 6x6 TM even under CALC4D.",
+          "CALC6D CALC4D",
+          {}},
 
        {"SetElement",
         "\

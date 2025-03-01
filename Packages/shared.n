@@ -24,11 +24,9 @@ CloseShared=Close;
 With[{`tfork=0.01,`tsupdate=0.1,`nwu=100,`twcomp=1, `nos=32,
   def={`Timeout->2000}},
   Parallelize[`f_,`n_,`lshare_,`npara_,`opt0___]:=
-      Module[{`shared,`sharedpid,`l={},`fk,`r,`k,`i,`np,`w,`wp,`kw,
-        `nw, `nwm, {`opt, `fcomp}=SwitchCases[{opt0}, {_Rule|_RuleDelayed,_}]},
-        {nwm,fcomp}={`Timeout,`Competion}/.opt/.Completion->fcomp/.def;
-!        Print[{nwm,{fcomp,opt}}];
-        np=OpenShared[nos];
+      Module[{`shared,`sharedpid,`l={},`fk,`k,`np=OpenShared[nos], `w, `wp=True,`nw=-1, `nwm,
+        {`opt, `fcomp}=SwitchCases[{opt0}, {_Rule|_RuleDelayed,_}]},
+        {nwm,fcomp}={`Timeout,`Completion}/.opt/.Completion->fcomp/.def;
         Shared[np]=0;
         Do[
           While[Shared[np]>=npara,Sleep[1]];
@@ -43,17 +41,15 @@ With[{`tfork=0.01,`tsupdate=0.1,`nwu=100,`twcomp=1, `nos=32,
             Shared[np]--;
             Exit[]],
           {k,n}];
-        wp=True;
-        nw=-1;
         While[wp,
           wp=False;
-          kw=0;
           Do[
 !          Print["Parallelize-Wait4: ",{k,sharedpid[k],Shared[shared[k]]}];
             If[(Shared[shared[k]]<=>Undefined),
               If[sharedpid[k],
-                Do[If[w=Wait4[sharedpid[k],WNOHANG][[1]],
-                  Break[]];
+                Do[
+                  If[w=Wait4[sharedpid[k],WNOHANG][[1]],
+                    Break[]];
                   Sleep[tsupdate],
                   {nwu}];
                 If[w==0,
@@ -64,14 +60,16 @@ With[{`tfork=0.01,`tsupdate=0.1,`nwu=100,`twcomp=1, `nos=32,
                 nw=Max[nw,0]],
               wp=True],
             {k,n}];
-!        Print["Parallelize-Wait4-end ",{kw,w,wp,nw,nwm}];
+!        Print["Parallelize-Wait4-end ",{w,wp,nw,nwm}];
           If[wp,
             If[nw>=0,nw++];
             If[nw>=nwm,
-              Do[If[sharedpid[k],
-                Print["Parallelize-Killed (Shared timeout): ",{k,sharedpid[k]}];
-                Kill[sharedpid[k]];
-                shared[k]=$Failed],{k,n}];
+              Do[
+                If[sharedpid[k],
+                  Print["Parallelize-Killed (Shared timeout): ",{k,sharedpid[k]}];
+                  Kill[sharedpid[k]];
+                  shared[k]=$Failed],
+                {k,n}];
               Break[]];
             Sleep[twcomp]]];
 !        Print["Parallelize-While-end ",{nw,nwm}];
