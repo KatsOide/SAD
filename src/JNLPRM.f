@@ -63,8 +63,8 @@ cccccccccccccK. Oide 9/1/2000
                 file=' '
               endif
             endif
-            argv='OFF LOG ECHO;READ 77'
-            slen=20
+            argv='OFF LOG;ON ECHO;READ 77'
+            slen=23
             ex=.true.
           endif
         endif

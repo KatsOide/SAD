@@ -52,7 +52,7 @@ c     CAUTION: kptbl(#,3) MUST be `0' before trackd() called
       integer*4 ,pointer ::ntloss(:,:),kzx(:,:)
       integer*4 ,allocatable::kptbl(:,:),mturn(:)
       integer*4 n1p,j,n,jzout,np1,k,np,kp,kx,kz,irw,nsc,iw,
-     $     jj,ip,isw,kseed,npmax,npara,nxm(n1p0),np00,
+     $     jj,ip,isw,kseed,npmax,npara,nxm(n1p0),np00,muld,mule,
      $     muls,irtc,i,waitpid_nohang,ncons,nscore,ivar3,iwtime
       integer*8 intlm
       real*8 ,allocatable ::x(:),px(:),y(:),py(:),z(:),g(:),dv(:),
@@ -86,7 +86,21 @@ c      write(*,*)'trackd0 ',damp,dampx,t0,omega0,taurdx
       call tsetdvfs
       trval=0.d0
       nscore=0
-      muls=merge((nturn/6200+1)*100,10,nturn > 600)
+c      muls=merge((nturn/6200+1)*100,10,nturn > 600)
+      muld=1;
+      mule=1;
+      do while (muld*mule*62 < nturn)
+        select case (muld)
+        case (1)
+        muld=2
+        case (2)
+        muld=5
+        case (5)
+        muld=1
+        mule=mule*10
+        end select
+      enddo
+      muls=muld*mule
 c      write(*,*)'trackd-muls: ',nturn,muls,nturn/6200
       a2min=range(1,1)
       a2max=range(2,1)
