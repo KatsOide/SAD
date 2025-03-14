@@ -2130,9 +2130,9 @@ CanvasGraphics=Class[{},
     LegendPos = p;
     ];
 
-  AdjustLegend1[ls_,r_,r1_,ida_,d_:0]:=Module[{
+  AdjustLegend1[ls_,r_,r1_,ida_,d0_:0]:=Module[{
     id=Join[BGItems,ida],
-    novmin=Infinity,zrmin,zr=CanvasWidget[BBox[ls]]+{d,d,-d,-d},ov,nov,d=10,dx,dy},
+    novmin=Infinity,zrmin,zr=CanvasWidget[BBox[ls]]+{d0,d0,-d0,-d0},ov,nov,d=10,dx,dy},
     If[zr[[1]]>=zr[[3]] || zr[[2]]>=zr[[4]],
       Return[INF]];
     If[r<=>r1,
@@ -2175,7 +2175,7 @@ CanvasGraphics=Class[{},
     novmin
     ];
 
-  AdjustLegend2[ls_,r_,r1_,ida_]:=Module[{res,d=0},
+  AdjustLegend2[ls_,r_,r1_,ida_]:=Module[{res,d=-5},
     While[
       (res=AdjustLegend1[ls,r,r1,ida,d])<=>INF,
       d+=5];

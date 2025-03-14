@@ -31,6 +31,7 @@ MODULE_ROOT=$(SAD_SHARE_ROOT)/Extension
 endif
 
 SADEXE=sad1.exe
+#SADEXE=sad11.exe
 LIBSAD=libsad.a
 
 ## Check Compiler Setup

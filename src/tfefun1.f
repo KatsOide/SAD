@@ -1,6 +1,6 @@
       recursive function tfefun1(isp1,id0,ref,irtc)
      $     result(kx)
-      use tfstk
+      use tftr
       use tflinepcom
       use temw, only:tfnormalcoord,tfinitemip
       use ffsa,only:tfffs

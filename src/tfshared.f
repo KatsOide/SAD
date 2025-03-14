@@ -1,4 +1,5 @@
       module tfshare
+      use tfstk
       integer*4, parameter:: nshmax=1024
       integer*8, save:: kashare(nshmax)=0,lshare(nshmax)=0
       integer*4, save :: ishared(nshmax)=0,kstshare(0:nshmax)=0
@@ -7,7 +8,6 @@
       
       contains
       integer*8 function ktfallocshared(n)
-      use tfstk
       use iso_c_binding
       implicit none
       integer*4, save :: lps=0
@@ -76,7 +76,6 @@ c     $     transfer(c_loc(klist(kpb)),k)/8
       end function
 
       subroutine tfreeshared(kpb,ist)
-      use tfstk
       implicit none
       integer*4, optional ,intent(in):: ist
       integer*4 i,is
@@ -99,7 +98,6 @@ c     $     transfer(c_loc(klist(kpb)),k)/8
       end subroutine
 
       subroutine tfreleaseshared(kpb)
-      use tfstk
       implicit none
       integer*8 ,intent(in):: kpb
       integer*8 k
@@ -187,7 +185,6 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       end module
 
       subroutine tfsavesharedmap()
-      use tfstk
       use tfshare
       use tmacro, only:tsetintm
       implicit none
@@ -199,7 +196,6 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       end subroutine
 
       subroutine tfresetsharedmap()
-      use tfstk
       use tfshare
       implicit none
       integer*4 i
@@ -212,7 +208,6 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       end subroutine
 
       subroutine ktfinitshare
-      use tfstk
       use iso_c_binding
       use tfshare
       implicit none
@@ -225,7 +220,6 @@ c      write(*,*)'tfreeshared ',kpb,klist(kpb-1),irtc
       end
 
       recursive subroutine tfrecallshared(isp0,k,kx,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_descriptor) ,intent(in):: k
@@ -294,7 +288,6 @@ c        call tfdebugprint(k,'recallshared',3)
       end
 
       subroutine tfstoreshared(isp0,k,kap)
-      use tfstk
       implicit none
       integer*8 ,intent(in):: k,kap
       integer*8 ka,kh,ki,kt
@@ -352,7 +345,6 @@ c          enddo
       end
 
       recursive subroutine tfsharedsize(isp0,k,n,irtc)
-      use tfstk
       implicit none
       integer*8 ,intent(in):: k
       integer*8 ka,kt,ki,kh

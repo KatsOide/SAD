@@ -36,7 +36,8 @@
       use temw, only:nparams
       use tfrbuf
       use calc,only:twmov
-      use tfshare, only:tfresetsharedmap,tmunmapp
+c      use tfshare, only:tfresetsharedmap,tmunmapp
+      use tfshare, only:tmunmapp
       use ffsfile
       use radint
       use geolib
@@ -342,7 +343,7 @@ c        call corfree(newcor,nster,nmon,itstr,itestr,itmon,itemon)
 c        call corfree(newcor,nster,nmon,itstr,itestr,itmon,itemon)
         go to 8900
       elseif(word == 'ABORT')then
-        call tfresetsharedmap()
+c        call tfresetsharedmap()
         stop
       elseif(word == 'USE' .or. word == 'VISIT')then
         visit=word == 'VISIT'

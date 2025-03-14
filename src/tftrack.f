@@ -1,10 +1,11 @@
       module tftr
-      integer*4 ,parameter :: nprmax=256;
-      integer*4 :: npz=0,ipn=0,npr=0,npri=0,iprid=0,ipr(nprmax)
-      end module
-
-      subroutine tftrack(isp1,kx,irtc)
       use tfstk
+      integer*4 ,parameter :: nprmax=256, nkptbl = 6, nkptbl1=3,
+     $     npparamin=9,npnlatmin=3000
+      integer*4 :: npz=0,ipn=0,npr=0,npri=0,iprid=0,ipr(nprmax)
+
+      contains
+      subroutine tftrack(isp1,kx,irtc)
       use ffs
       use ffs_pointer
       use tffitcode
@@ -14,25 +15,22 @@
       use photontable,only:tphotoninit,tphotonlist
       use trexc
       use tfcsi
-      use tftr
       use maloc,only:ktfmalocp,tfmsize
       use iso_c_binding
       implicit none
-      type (sad_descriptor) ,intent(out):: kx
-      type (sad_descriptor) kx1,kx2,ks,kp,kxe
-      type (sad_dlist), pointer :: klx,kl
-      integer, parameter :: nkptbl = 6
-      integer*4, parameter :: npparamin=9,npnlatmin=3000
-      integer*8 kz,kzp,kzf,kaxl,ktfresetparticles,kdv,kpsx,kpsy,kpsz
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_descriptor) kx1,kx2,ks,kp
+      type (sad_dlist), pointer :: klx,kl
+      integer*8 kz,kzp,kzf,kaxl,kdv,kpsx,kpsy,kpsz
       integer*4 narg,itfloc,outfl0,ld,ls,mc,npa,np00,
      $     np1,ne,nend,npara,npp,m,itfmessage,nt,mt,kseed,mcf
       integer*8 ikptblw,ikptblm
       real*8 trf00,p00,vcalpha0
       real*8 , pointer::zx(:,:),zx0(:,:)
       integer*4 , pointer::iptbl(:,:),jptbl(:,:)
-      logical*4 dapert0,normal
+      logical*4 :: dapert0,normal=.true.
       character*32 autos
       narg=isp-isp1
       if(narg > 4)then
@@ -167,7 +165,7 @@
         npara=min(npara,npz/npparamin+1,ne*npz/npnlatmin+1)
         if(npara > 1)then
           irtc=1
-          ikptblm=ktfallocshared(npz*int((nkptbl+1)/2))
+          ikptblm=ktfallocshared(npz*nkptbl1)
           npr=npara-1
           np1=npz/npara
           ipn=0
@@ -177,6 +175,7 @@
             npri=npr
             npr=npr+1
             iprid=itffork()
+c            write(*,'(a,6i7)')'fork ',iprid,ipn
             if(iprid == 0)then
               call tfaddseed(kseed,irtc)
               if(irtc /= 0)then
@@ -202,7 +201,7 @@
         vcalpha=1.d0
       endif
       kdv=ktaloc(npz)
-      ikptblw=ktaloc(npp*int((nkptbl+1)/2))
+      ikptblw=ktaloc(npp*nkptbl1)
       kzp=kz+ipn
       kzf=kzp+npz*(mcf-1)
       if(calpol)then
@@ -210,9 +209,9 @@
         kpsy=kzp+npz*7
         kpsz=kzp+npz*8
       else
-        kpsx=ktaloc(npz)
-        kpsy=ktaloc(npz)
-        kpsz=ktaloc(npz)
+        kpsx=kdv
+        kpsy=kdv
+        kpsz=kdv
       endif
       p00=pgev
       pgev=rlist(ifgamm+ls-1)*amass
@@ -223,6 +222,9 @@
       call c_f_pointer(c_loc(ilist(1,ikptblm)),jptbl,[npz,nkptbl])
       call tfsetparticles(zx,rlist(kdv:kdv+npp-1),
      $     iptbl,npp,npa,npz,mc,nlat,nt,mcf)
+c      jptbl(ipn+1:ipn+npp,1)=iptbl(1:npp,1)+ipn
+c      write(*,'(a,6i7,1p8g15.7)')'after-setparticles',iprid,npz,npa,ipn,m,jptbl(398,1)
+c     $     zx0(iptbl(398,1),1),zx0(iptbl(398,1),7)
       if(npa > 0)then
         outfl0=outfl
         outfl=0
@@ -230,6 +232,14 @@
         dapert=.false.
         np00=np0
         np0=npp
+c        jptbl(ipn+1:ipn+npp,1)=iptbl(1:npp,1)+ipn
+c        do m=1,npp
+c          if(iptbl(m,1)+ipn == jptbl(398,1))then
+c            write(*,'(a,6i7,1p8g15.7)')'tftrack-setparticles',iprid,npz,npa,ipn,m,jptbl(398,1),
+c     $           zx0(jptbl(398,1),1),zx0(jptbl(398,1),7)
+c            exit
+c          endif
+c        enddo
         if(mt > 1)then
           call tturn(npa,ls,nlat,
      $         zx(1:npa,1),zx(1:npa,2),zx(1:npa,3),zx(1:npa,4),
@@ -283,13 +293,16 @@ c        ilist(ipn+1:ipn+npp,ikptblm)=ilist(1:npp,ikptblw)+ipn
 c       - Don't copy kptbl(#,2) becuase reversed map is not used at post process
 c       - Copy iptbl(*,3:nkptbl)
         jptbl(ipn+1:ipn+npp,3:nkptbl)=iptbl(1:npp,3:nkptbl)
-c        do j=3,nkptbl
-c          ilist( ipn+(j-1)*npz+1:ipn+(j-1)*npz+npp,ikptblm)=
-c     $         ilist((j-1)*npp+1:    (j-1)*npp+npp,ikptblw)
+c        do m=1,npp
+c          if(iptbl(m,1)+ipn == jptbl(398,1))then
+c            write(*,'(a,6i7,1p8g15.7)')'tftrack-wait      ',iprid,npz,npa,ipn,m,jptbl(398,1),
+c     $           zx0(jptbl(398,1),1),zx0(jptbl(398,1),7)
+c            exit
+c          endif
 c        enddo
-c        write(*,*)'tftrack-wait ',npz,npa,ipn,zx(npa,3)
         call tffswait(iprid,npr+1,ipr,i00,100000,'tftrack',irtc)
-c        write(*,*)'tftrack-afterwait ',npz,npa,ipn,zx(npz,3),zx(npa,3)
+c        write(*,'(a,6i7,1p8g15.7)')'tftrack-afterwait ',iprid,npz,npa,ipn,0,jptbl(398,1),
+c     $         zx0(jptbl(398,1),1),zx0(jptbl(398,1),7)
         kaxl=ktfresetparticles(zx0,jptbl,npz,nlat,nend,mc)
         call tfreeshared(ikptblm)
       else
@@ -306,11 +319,11 @@ c        write(*,*)'tftrack-afterwait ',npz,npa,ipn,zx(npz,3),zx(npa,3)
       call tphyzp
       call tfree(ikptblw)
       call tfree(kdv)
-      if(.not. calpol)then
-        call tfree(kpsx)
-        call tfree(kpsy)
-        call tfree(kpsz)
-      endif
+c      if(.not. calpol)then
+c        call tfree(kpsx)
+c        call tfree(kpsy)
+c        call tfree(kpsz)
+c      endif
       kx=kxadaloc(-1,2,klx)
       klx%rbody(1)=merge(dble(ld),dble(ls),normal)
       klx%dbody(2)%k=ktflist+ktfcopy1(kaxl)
@@ -339,7 +352,6 @@ c      return
       end
 
       subroutine tfsurvivedparticles(isp1,kx,irtc)
-      use tfstk
       use ffs_flag, only:calpol
       implicit none
       type llist
@@ -423,22 +435,23 @@ c      return
       end
       
       integer*8 function ktfresetparticles(zx,iptbl,np,nlati,tend,mc)
-      use tfstk
       use ffs
       use tspin
       use ffs_flag, only:calpol
+      use trexc
       implicit none
-      integer*8 ka,kaj(9)
-      integer*4 np,iptbl(np,6),i,j,k,nlati,tend,mc,mcf,nv
-      real*8 zx(np,mc)
+      integer*4 ,intent(in):: np,iptbl(np,6),nlati,mc,tend
+      real*8 ,intent(inout):: zx(np,mc)
+      integer*8 ka,kaj(11)
+      integer*4 i,j,k,mcf,nv
       mcf=merge(9,7,calpol)
       nv=merge(mcf+2,mcf,lossmap)
-      call tconvm(np,zx(:,2),zx(:,4),zx(:,6),(/0.d0/),1)
       ka=ktadaloc(-1,nv)
       do j=1,nv
         kaj(j)=ktavaloc(0,np)
         klist(ka+j)=ktflist+kaj(j)
       enddo
+      call tconvm(np,zx(:,2),zx(:,4),zx(:,6))
       do i=1,np
         k=iptbl(i,1)
         rlist(kaj(1:6)+i)=zx(k,1:6)
@@ -464,13 +477,12 @@ c      return
       return
       end
 
-      subroutine tfsetparticles(zx,dv,iptbl,np,npa,npc,mc,nlat,
-     $     tbegin,mcf)
+      subroutine tfsetparticles(zx,dv,iptbl,np,npa,npc,mc,nlat,tbegin,mcf)
       use tspin
       use ffs_flag,only:calpol
+      use trexc
       use mathfun, only: sqrt1
       implicit none
-      integer, parameter :: nkptbl = 6
       real(8),    intent(inout) :: zx(npc,mc), dv(np)
       integer(4), intent(out)   :: iptbl(np,nkptbl)
       integer(4), intent(in)    :: np
@@ -492,7 +504,8 @@ c                 10: (x, x', y, y', z, delta, phis, sz, alive, lost-position)
 c                 11: (x, x', y, y', z, delta, phis, sz, alive, lost-position, lost-turns)
 
 c     Initialize iptbl
-      iptbl(1:np,1:nkptbl)=0
+c      iptbl(1:np,1:nkptbl)=0
+      iptbl=0
       do i=1,np
 c       Initialize map between particle ID and array index
         iptbl(i,1)=i
@@ -582,7 +595,7 @@ c              - Swap particle coordinates
          i=i+1
       enddo
       if(npa > 0)then
-        call tconvm(npa,zx(:,2),zx(:,4),zx(:,6),dv,-1)
+        call tconvm(npa,zx(:,2),zx(:,4),zx(:,6),dv)
         if(calpol)then
           do i=1,npa
             st=1.d0+sqrt1(-zx(i,8)**2)
@@ -614,11 +627,12 @@ c              - Swap particle coordinates
       end
 
       subroutine tfaddseed(kseed,irtc)
-      use tfstk
       implicit none
+      integer*4 ,intent(in):: kseed
+      integer*4 ,intent(out):: irtc
       type (sad_descriptor) kx,kn
       type (sad_dlist), pointer :: klx
-      integer*4 kseed,isp1,irtc
+      integer*4 isp1
       real*8 vn
       isp1=isp
       isp=isp1+1
@@ -647,3 +661,5 @@ c      call tfdebugprint(kx,'=> ',1)
       irtc=0
       return
       end
+
+      end module

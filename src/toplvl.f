@@ -667,8 +667,16 @@ c          enddo
       integer*4 function itffork() result(ip)
       use tmacro, only:tsetintm
       implicit none
-      integer*4 fork_worker
-      ip=fork_worker()
+      integer*4 :: fork_worker,i,npause=5000
+      integer*4 ,parameter :: nrpt=10
+      do i=1,nrpt
+        ip=fork_worker()
+        if(ip /= -1)then
+          exit
+        endif
+        call tpause(npause)
+        npause=npause*2
+      enddo
       if(ip == 0)then
         call tsetintm(-1.d0)
         call tfsavesharedmap()
@@ -689,7 +697,7 @@ c          enddo
         if(kash /= 0)then
           call tfreeshared(kash,-1)
         endif
-        call tfresetsharedmap()
+c        call tfresetsharedmap()
         call exit_without_hooks(0)
       elseif(ipr > 0)then
         iwait=-1

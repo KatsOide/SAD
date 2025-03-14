@@ -5,6 +5,7 @@
       use tffitcode
       use tmacro
       use ffs_pointer, only:idelc,idtypec
+      use trexc
       implicit real*8 (a-h,o-z)
       integer*8 latt(nlat),kx
       dimension x(np0),px(np0),y(np0),py(np0),z(np0),g(np0),dv(np0)
@@ -210,6 +211,6 @@ c      else
 120       continue
         endif
 c      endif
-      call tconvm(np0,px,py,g,dv,-1)
+      call tconvm(np0,px,py,g,dv)
       return
       end

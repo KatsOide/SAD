@@ -523,6 +523,7 @@ c      write(*,'(a,1p6g15.7)')'tinip ',xa(6),emx,emz
       subroutine tpdamp(np,x,px,y,py,z,g,dv,dampx,dampy,dampz,
      $     damp,aenox,aenoy,aenoz,kptbl,mturn)
       use tmacro
+      use trexc
       implicit none
       integer*4 ,intent(in):: np,kptbl(np)
       real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
@@ -532,7 +533,7 @@ c      write(*,'(a,1p6g15.7)')'tinip ',xa(6),emx,emz
       integer*4 ,intent(inout):: mturn(np)
       integer*4 i,j
       logical*4 damp
-      call tconvm(np,px,py,g,dv,1)
+      call tconvm(np,px,py,g)
       do i=1,np
         xa(1)=x(i)-codin(1)
         xa(2)=px(i)-codin(2)
@@ -566,7 +567,7 @@ c          write(*,*)'tpdamp ',j,nturn-1
           g(i) =xa(6)+codin(6)
         endif
       enddo
-      call tconvm(np,px,py,g,dv,-1)
+      call tconvm(np,px,py,g,dv)
       return
       end
 
