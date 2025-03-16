@@ -594,8 +594,8 @@ CanvasGraphics=Class[{},
       Do[
         If[OverlapQ[r1,r[[k]]],
           If[r[[k,3]]-r[[k,1]]>r1[[3]]-r1[[1]],
-            CanvasWidget[Delete]=w[[1]],
-            CanvasWidget[Delete]=w[[k]]];
+            CanvasWidget[Delete]=w[[k]],
+            CanvasWidget[Delete]=w[[1]]];
           w=Delete[w,{{1},{k}}];
           r=Delete[r,{{1},{k}}];
           Break[]],
