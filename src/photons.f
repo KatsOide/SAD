@@ -994,15 +994,14 @@ c        write(*,'(a,1p10g12.4)')'pols ',matmul(rm1,epol)
       real*8 , allocatable :: pxr0(:),pyr0(:),zr0(:),bsi(:)
 
       contains
-        subroutine tradkf1(x,px,y,py,z,g,dv,sx,sy,sz,
-     $     px00,py0,zr00,bsi,al,k)
+        subroutine tradkf1(x,px,y,py,z,g,dv,sx,sy,sz,px00,py0,zr00,bsi,al,k)
         use ffs_flag
         use tmacro
         use photontable, only:tphrec
         use mathfun, only:pxy2dpz,p2h,asinz
+        use rndsr
         use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0
         implicit none
-        integer*4 ,parameter :: npmax=10000
         integer*4 , intent(in)::k
         integer*4 i
         real*8 , intent(inout)::x,px,y,py,z,g,dv
@@ -1079,10 +1078,10 @@ c     $             dpr(i),p,h1,-rph(i)*al,k)
         use ffs_flag
         use tmacro
         use photontable, only:tphrec
+        use rndsr
         use mathfun, only:pxy2dpz,p2h,asinz
         use tspin, only:cave,cl,cuu,gmin,sflc,cphi0,sphi0
         implicit none
-        integer*4 ,parameter :: npmax=10000
         integer*4 , intent(in)::np
         real*8 , intent(inout)::
      $       xn(np),pxn(np),yn(np),pyn(np),zn(np),gn(np),dvn(np),

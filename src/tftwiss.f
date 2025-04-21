@@ -42,6 +42,7 @@
 
       subroutine tftwiss(isp1,kx,ref,irtc)
       use twissf
+      use geto
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_dlist), pointer :: klx
@@ -573,7 +574,7 @@ c            kx%k=merge(klist(iax),ktfref+iax,ref)
       end
 
       subroutine tfelementstk(k,isp0,narg,irtc)
-      use tfstk
+      use geto
       use ffs
       use tffitcode
       use ffs_pointer, only:idelc,pnamec
@@ -974,7 +975,7 @@ c        write(*,'(a,i5,1p12g10.2)')'ogeo ',lxp,fr,gv(:,4),ogv(:,4),cod(1:4)
       end
 
       subroutine tflinestk(k,narg,isp0,irtc)
-      use tfstk
+      use geto
       use ffs
       use tffitcode
       use ffs_pointer, only:idelc,pnamec,ielma

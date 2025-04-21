@@ -17,17 +17,17 @@
       character*32 namer,name1r
       character*12 autofg,vout,sout
       irtc=0
-      if(lfno .gt. 0)then
+      if(lfno > 0)then
         write(lfno,'(2a)')'!    component1   component2',
      $       '   fun       goal-value  np     scale'
       endif
       nc=0
       do i=1,flv%nfc
         if(flv%mfitp(i) /= 0)then
-          if(lfno .gt. 0)then
+          if(lfno > 0)then
             call elname(flv%ifitp(i),name)
             kf=flv%kfit(i)
-            x=flv%fitval(i)/scale(kf)
+            x=flv%fitval(i)%x(1)/scale(kf)
             vout=autofg(x,'12.9')
             sout=autofg(scale(kf),'12.9')
             if(flv%ifitp(i) /= flv%ifitp1(i))then
@@ -53,7 +53,7 @@
           if(flv%mfitp(i) /= 0)then
             call elname(flv%ifitp(i),namer)
             kf=flv%kfit(i)
-            x=flv%fitval(i)/scale(kf)
+            x=flv%fitval(i)%x(1)/scale(kf)
             if(flv%ifitp(i) /= flv%ifitp1(i))then
               call elname(flv%ifitp1(i),name1r)
             else

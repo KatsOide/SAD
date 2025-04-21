@@ -20,13 +20,13 @@ c
         if(flv%ifitp(i) == flv%measp .and.
      $       flv%ifitp1(i) == flv%measp)then
           if(flv%kfit(i) == 32 .and. ndp(i) .ne. 0)then
-            flv%fitval(i)=(xa1-xa)*.5d0*alphad+
-     $           flv%fitval(i)*(1.d0-alphad)
+            flv%fitval(i)%x(1)=(xa1-xa)*.5d0*alphad+
+     $           flv%fitval(i)%x(1)*(1.d0-alphad)
           endif
           if(flv%kfit(i) == 34 .and.
      $         ndp(i) .ne. 0)then
-            flv%fitval(i)=(ya1-ya)*.5d0*alphad+
-     $           flv%fitval(i)*(1.d0-alphad)
+            flv%fitval(i)%x(1)=(ya1-ya)*.5d0*alphad+
+     $           flv%fitval(i)%x(1)*(1.d0-alphad)
           endif
 c          print *,'tfgetm:',i,flv%kfit(i),ndp(i),flv%fitval(i)
         endif

@@ -135,12 +135,17 @@ c     pz2=sqrt((1.d0-px(i))*(1.d0+px(i))-py(i)**2)
           bzs=bz
           bxs=0.d0
           bys=0.d0
-          fx= bzs*dy*.5d0
-          fy=-bzs*dx*.5d0
-          x=x-dx
-          y=y-dy
-          px=px+fx/(1.d0+g)
-          py=py+fy/(1.d0+g)
+          if(dx /= 0.d0 .or. dy /= 0.d0)then
+            fx= bzs*dy*.5d0
+            fy=-bzs*dx*.5d0
+            x=x-dx
+            y=y-dy
+            px=px+fx/(1.d0+g)
+            py=py+fy/(1.d0+g)
+          else
+            fx=0.d0
+            fy=0.d0
+          endif
         endif
         if(chi3 /= 0.d0)then
           cchi3=cos(chi3)
@@ -225,7 +230,7 @@ c              endif
               z(i) =z(i)+a
             enddo
           endif
-        else
+        elseif(dx /= 0.d0 .or. dy /= 0.d0)then
           px=px-fx/(1.d0+g)
           py=py-fy/(1.d0+g)
           x=x+dx

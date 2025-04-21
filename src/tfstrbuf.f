@@ -1,5 +1,7 @@
       module strbuf
       use tfstk
+      character*3 , save:: patstr
+      data patstr/'___'/
 
       type sad_strbuf
       sequence
@@ -230,8 +232,6 @@ c'\
         character*27 buff
         character*26 form1,tfgetform,autos1,autofg
         character*(*) form
-        character*3 patstr
-        data patstr/'___'/
         logical*4 str,gens
         if(ktfstringq(k,strx))then
           nc=strx%nch

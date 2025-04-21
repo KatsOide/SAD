@@ -1,10 +1,13 @@
       module calc
+      use tfstk
+      real*8 ,parameter :: coum0=1.d-3
+      type (sad_descriptor) ,save::kfv
+      data kfv%k /0/
 
       contains
       subroutine tffscalc(kdp,df,iqcol,lfp,
      $     nqcola,nqcola1,ibegin,
      $     r,residual1,zcal,wcal,parallel,lout,error)
-      use tfstk
       use maccode
       use ffs, only:ndim,nlat,flv,maxcond,ffs_bound,nvevx,nelvx,tsetintm
       use ffs_flag
@@ -104,7 +107,6 @@ c      call tfmemcheckprint('tffscalc-before-prolog',.true.,irtc)
       if(wake)then
         call tffswake(ibound,beg)
       else
-c        write(*,'(a,2l3)')'tffscalc ',cell,wake
         call qcell1(ibound,0,optstat(0),.false.,chgini,lout)
         call tffssetutwiss(0,fbound,beg,.true.,.true.)
         if(cell)then
@@ -411,11 +413,9 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       end
       
       subroutine twfit(kfit,ifitp,kfitp,kdp,nqcola,iqcol,maxf,wcal)
-      use tfstk
       use ffs, only:emx,emy,dpmax,coumin,emminv
       use ffs_pointer
       use ffs_fit
-c      use ffs_flag, only:cell
       use tffitcode
       use eeval
       use tfcsi,only:icslfnm
@@ -427,8 +427,6 @@ c      use ffs_flag, only:cell
       integer*4 level,irtc,idp
       character*16 name
       type (sad_descriptor) kx
-      type (sad_descriptor) ,save::kfv
-      data kfv%k /0/
       type (sad_dlist), pointer , save::klv
       type (sad_rlist), pointer , save::klid
       integer*8 , save:: ifvloc,ifvfun
@@ -445,7 +443,7 @@ c      use ffs_flag, only:cell
       endif
       em=max(emminv,abs(emx)+abs(emy))
       coum=min(1.d0,
-     $     max(coumin,0.01d0,
+     $     max(coumin,coum0,
      $     1.d0/(abs(emx/max(emminv,emy))+abs(emy/max(emminv,emx)))))
       coum=coum/(1.d0+coum)
       emxx=max(emx,coum*em)
@@ -460,13 +458,11 @@ c      use ffs_flag, only:cell
           case (mfitex,mfitpex)
             wfit(i)=dpm/sqrt(emxx*twiss(j,0,mfitbx))
           case (mfitepx,mfitpepx)
-            wfit(i)=dpm*sqrt(twiss(j,0,mfitbx)
-     1           /(1.d0+twiss(j,0,mfitax)**2)/emxx)
+            wfit(i)=dpm*sqrt(twiss(j,0,mfitbx)/(1.d0+twiss(j,0,mfitax)**2)/emxx)
           case (mfitey,mfitpey)
             wfit(i)=dpm/sqrt(emyy*twiss(j,0,mfitby))
           case (mfitepy,mfitpepy)
-            wfit(i)=dpm*sqrt(twiss(j,0,mfitby)
-     1           /(1.d0+twiss(j,0,mfitay)**2)/emyy)
+            wfit(i)=dpm*sqrt(twiss(j,0,mfitby)/(1.d0+twiss(j,0,mfitay)**2)/emyy)
           case (mfitr1)
             wfit(i)=coup*sqrt(twiss(j,0,mfitbx)/twiss(j,0,mfitby))
           case (mfitr2)
@@ -476,18 +472,15 @@ c      use ffs_flag, only:cell
           case (mfitr4)
             wfit(i)=coup*sqrt(twiss(j,0,mfitby)/twiss(j,0,mfitbx))
           case (mfitdx)
-            wfit(i)=1.d0/sqrt(twiss(j,0,mfitbx)*em)
+            wfit(i)=1.d0/sqrt(twiss(j,0,mfitbx)*emxx)
           case (mfitdpx)
-            wfit(i)=sqrt(twiss(j,0,mfitbx)/
-     $           (1.d0+twiss(j,0,mfitax)**2)/em)
+            wfit(i)=sqrt(twiss(j,0,mfitbx)/(1.d0+twiss(j,0,mfitax)**2)/emxx)
           case (mfitdy)
-            wfit(i)=1.d0/sqrt(twiss(j,0,mfitby)*em)
+            wfit(i)=1.d0/sqrt(twiss(j,0,mfitby)*emyy)
           case (mfitdpy)
-            wfit(i)=sqrt(twiss(j,0,mfitby)/
-     $           (1.d0+twiss(j,0,mfitay)**2)/em)
+            wfit(i)=sqrt(twiss(j,0,mfitby)/(1.d0+twiss(j,0,mfitay)**2)/emyy)
           case (mfitleng)
-            wfit(i)=1.d0/(pos(maxf)-pos(1))*
-     $           max(twiss(maxf,0,mfitnx),twiss(maxf,0,mfitny))
+            wfit(i)=1.d0/(pos(maxf)-pos(1))*max(twiss(maxf,0,mfitnx),twiss(maxf,0,mfitny))
           case (mfitdz)
             wfit(i)=0.01d0*sqrt(
      $           max(twiss(maxf,0,mfitnx),twiss(maxf,0,mfitny))
@@ -547,7 +540,6 @@ c          endif
       end
 
       subroutine twmov(l,twiss,n1,n2,right)
-      use tfstk
       use ffs
       use tffitcode
       use sad_main
@@ -599,7 +591,6 @@ c
       end
 
       subroutine tffssetutwiss(idp,fbound,beg,begin,end)
-      use tfstk
       use ffs, only:ffs_bound,nlat
       use ffs_pointer
       use tffitcode

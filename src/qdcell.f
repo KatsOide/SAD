@@ -1,8 +1,55 @@
       module dfun
+      use tfstk
 
       contains
+
+      recursive subroutine tgetfvx(fitval,fmin,fmax,fitv,fitminmax,rec)
+      use eeval,only:tfeevalref
+      implicit none
+      type (sad_descriptor) ,intent(in):: fitval
+      real*8 ,intent(out):: fmin,fmax
+      logical*4 ,intent(in):: rec
+      logical*4 ,intent(out):: fitv,fitminmax
+      type (sad_dlist),pointer:: kl
+      type (sad_descriptor) :: ev
+      integer*4 irtc
+      fitv=.false.
+      fitminmax=.false.
+      if(ktfrealq(fitval,fmin))then
+        fitv=.true.
+        fmax=fmin
+      elseif(tflistq(fitval,kl))then
+        if(kl%nl == 1)then
+          call tgetfvx(kl%dbody(1),fmin,fmax,fitv,fitminmax,rec)
+          return
+        elseif(kl%nl == 2)then
+          if(ktfreallistq(fitval))then
+            fitv=.true.
+            fitminmax=.true.
+            fmin=kl%rbody(1)
+            fmax=kl%rbody(2)
+            return
+          endif
+        endif
+      endif
+      if(rec)then
+        ev=tfeevalref(fitval,irtc)
+        if(irtc > 0)then
+          if(ierrorprint /= 0)then
+            call tferrorhandle(fitval,irtc)
+          else
+            call tfdebugprint(fitval,'... in',3)
+          endif
+        elseif(irtc < 0)then
+          return
+        endif
+        call tgetfvx(ev,fmin,fmax,fitv,fitminmax,.false.)
+        return
+      endif
+      return
+      end
+
       subroutine tdfun(iqcol,lfp,nqcola,nqcola1,kdp,df1,error)
-      use tfstk
       use ffs
       use ffs_pointer
       use ffs_fit
@@ -12,8 +59,7 @@
       real*8 ,parameter :: abmax=1.d-8
       real*8 ,parameter::factor=0.97d0,dmax=1.d10
       integer*4 ,parameter::npeak=10
-      integer*4 ,intent(out):: nqcola,nqcola1,
-     $     iqcol(*),lfp(2,maxcond),kdp(*)
+      integer*4 ,intent(out):: nqcola,nqcola1,iqcol(*),lfp(2,maxcond),kdp(*)
       real*8 ,intent(out):: df1(*)
       real*8 vpeak(npeak),vf,vb,ve,v,vf1
       logical*4 ,intent(out):: error
@@ -65,7 +111,7 @@ c        endif
         if(flv%mfitp(ka) /= 0)then
           mp=(abs(flv%mfitp(ka))-1)/2
           do20:     do idp=nfam1,nfam
-            vf=flv%fitval(ka)
+            vf=flv%fitval(ka)%x(1)
             if((kfam(idp) == 0 .and. idp >= -mp .and. idp <= mp)
      $           .or. jfam(idp) >= -mp .and. jfam(idp) <= mp)then
               if(kf >= mfitdx .and. kf <= mfitdpy .and.
@@ -130,6 +176,7 @@ c     $             .or. inicond .and. idp /= 0))then
                       vf1=vb
                       call tfgetfitval(nlist(kf),kpb,kpe,dp(idp),
      $                     iuid(idp),kfam(idp),vb,ve,vf,vf1,irtc)
+c                      write(*,'(a,3i5,1p10g12.4)')'tdfun-3 ',kpb,kpe,idp,dp(idp),vb,ve,vf,vf1
                       if(irtc == -1)then
                         cycle
                       endif
@@ -137,7 +184,9 @@ c     $             .or. inicond .and. idp /= 0))then
                         ve=ve-vf1
                         vf1=vf
                       endif
+c                      write(*,'(a,2l2,2i5,1p10g12.4)')'tdfun-4 ',maxfit,ttrans(idp),idp,kf,vf1,ve
                       df1(i)=tdfun1(vf1,ve,kf,maxfit,idp,ttrans(idp))
+c                      write(*,'(a,l2,3i5,1p10g12.4)')'tdfun-5 ',maxfit,i,ka,nfc0,df1(i),ve,vf1
                       if(cell .and. ka > nfc0 .and. ka <= nfc0+2 .and. abs(df1(i)) < abmax)then
                         cycle
                       endif
@@ -240,11 +289,11 @@ c     $             .or. inicond .and. idp /= 0))then
       vf1=vf
       call tfpadstr(funname,ifvfun+1,len_trim(funname))
       ilist(1,ifvfun)=len_trim(funname)
-c      call tfdebugprint(kfid,'gfv-1',1)
       klid%rbody(1)=dble(merge(iuid,kfam,inicond))
       klid%rbody(2)=dp
       call elname(kp,name)
       ln=lenw(name)
+c      write(*,'(a,i5,1p10g12.4)')'getfitval ',kp1,vf0,vf,v
       if(kp1 == 0)then
         retry1=.false.
         klv%rbody(4)=vf
@@ -463,6 +512,7 @@ c     v1=pi2*(anint(v/pi2)+sign(.5d0*sin(.5d0*v)**2,sin(v)))
         if(ttrans)then
           tdfun1=tdfun1-anint(tdfun1/pi2)*pi2
         endif
+c        write(*,'(a,1p10g12.4)')'tdfun-n ',vf,v,tdfun1
 
 c      case (mfitbmagx,mfitbmagy,mfitbmagz)
 c        tdfun1=sqrt(vf-1.d0)-sqrt(v-1.d0)

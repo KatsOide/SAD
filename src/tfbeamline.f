@@ -1,13 +1,16 @@
       module beamline
+      use tfstk
       use maccbk, only:MAXPNAME
       implicit none
+      integer*4 ,save::itfdummyptr=0
+      integer*8 ,save::ifbeamline=0
       character*(MAXPNAME) :: lname=' '
-      end module
 
+      contains
       subroutine tfbeamline(k,idx,ename,irtc)
-      use tfstk
       use mackw
       use maccbk, only:MAXPNAME
+      use geto
       implicit none
       type (sad_descriptor) ,intent(in):: k
       type (sad_descriptor) ki,k1
@@ -32,7 +35,7 @@
         go to 9900
       endif
       n=kl%nl
-      if(n .lt. 1)then
+      if(n < 1)then
         go to 9900
       endif
       kdx1=ktaloc(n+1)
@@ -61,10 +64,10 @@
           endif
         else
           ename=tfgetstrs(ki%k,nc)
-          if(nc .gt. 0)then
+          if(nc > 0)then
             idxi=hsrchz(ename)
             idti=idtype(idxi)
-            if(idti == icNULL .or. idti .gt. icMXEL)then
+            if(idti == icNULL .or. idti > icMXEL)then
               irtc=itfmessagestr(9,'MAIN::wrongtype',ename(1:nc))
               go to 9000
             elseif(i == 1 .and. idti /= icMARK)then
@@ -102,12 +105,10 @@
 
       integer function itfdummyline()
       use kyparam
-      use tfstk
       use mackw
       implicit none
       integer*8 kdx1,idxm1,idxd1
-      integer*4 itfdummyptr,idx,hsrchz,idxm,n,idxd
-      data itfdummyptr /0/
+      integer*4 idx,hsrchz,idxm,n,idxd
       if(itfdummyptr == 0)then
         idx=hsrchz('$DUMMYLINE')
         idtype(idx)=icLINE
@@ -146,8 +147,8 @@
       end
 
       function tfsetelement(isp1,irtc) result(kx)
-      use tfstk
       use mackw
+      use geto
       use funs
       implicit none
       type (sad_descriptor) kx,kr
@@ -160,7 +161,7 @@
       character*(MAXPNAME) ename,type,tfgetstrs,key,tfkwrd
       kx=dxnullo
       ename=tfgetstrs(ktastk(isp1+1),nce)
-      if(nce .lt. 0)then
+      if(nce < 0)then
         irtc=itfmessage(9,'General::wrongleng',
      $       '"name of element","nonzero"')
         return
@@ -226,7 +227,7 @@
 c      kas=merge(ka1,merge(klist(klist(ifunbase+ka1)),klist(ka1),
 c     $     ktfoperq(ktastk(isp1+1))),ktfstringq(ktastk(isp1+1)))
       if(itype == icNULL)then
-        if(narg .gt. 2)then
+        if(narg > 2)then
           irtc=itfmessage(9,'General::narg','"1 or 2"')
           return
         endif
@@ -234,7 +235,7 @@ c     $     ktfoperq(ktastk(isp1+1))),ktfstringq(ktastk(isp1+1)))
         klx%dbody(1)%k=ktfstring+ktfcopy1(kas)
         klx%dbody(2)=dtfcopy1(dxnulls)
       else
-        if(isp .gt. isp1+2)then
+        if(isp > isp1+2)then
           kr=tfoverride(isp1+2,irtc)
           if(irtc /= 0)then
             return
@@ -250,7 +251,7 @@ c     $     ktfoperq(ktastk(isp1+1))),ktfstringq(ktastk(isp1+1)))
         kx=kxadaloc(-1,max(2,min(3,2+m)),klx)
         klx%dbody(1)%k=ktfstring+ktfcopy1(kas)
         klx%dbody(2)=kxsalocb(0,type,lenw(type))
-        if(m .gt. 0)then
+        if(m > 0)then
           isp0=isp
           do i=1,m
             key=tfkwrd(itype,i)
@@ -271,7 +272,6 @@ c     $     ktfoperq(ktastk(isp1+1))),ktfstringq(ktastk(isp1+1)))
       end
 
       recursive subroutine tfsetelementkey(idx,k,irtc)
-      use tfstk
       use mackw
       use eeval
       implicit none
@@ -339,12 +339,10 @@ c     $     ktfoperq(ktastk(isp1+1))),ktfstringq(ktastk(isp1+1)))
       end
 
       subroutine tfbeamlinename(isp1,kx,irtc)
-      use beamline, only: lname
-      use tfstk
       implicit none
       type (sad_descriptor) kx
       integer*4 isp1,irtc,itfmessage
-      if(isp .gt. isp1+1 .or.
+      if(isp > isp1+1 .or.
      $     ktastk(isp) /= ktfoper+mtfnull)then
         irtc=itfmessage(9,'General::wrongtype','"[]"')
         return
@@ -355,22 +353,13 @@ c     $     ktfoperq(ktastk(isp1+1))),ktfstringq(ktastk(isp1+1)))
       end
 
       subroutine tfsetbeamlinename(name)
-      use beamline
       implicit none
       character*(*) name
       lname=name
       return
       end
 
-      character*(*) function tfgetbeamlinename()
-      use beamline
-      implicit none
-      tfgetbeamlinename=lname
-      return
-      end
-
       function tfextractbeamline(isp1,irtc) result(kx)
-      use tfstk
       use sad_main
       use mackw
       use eeval
@@ -392,7 +381,7 @@ c     $     ktfoperq(ktastk(isp1+1))),ktfstringq(ktastk(isp1+1)))
         endif
         eval=.false.
       endif
-      if(isp .gt. isp1+1)then
+      if(isp > isp1+1)then
         irtc=itfmessage(9,'General::narg','"0 or 1"')
         return
       endif
@@ -400,7 +389,7 @@ c     $     ktfoperq(ktastk(isp1+1))),ktfstringq(ktastk(isp1+1)))
         idx=itfilattp()
       else
         ename=tfgetstrs(ktastk(isp),nc)
-        if(nc .lt. 0)then
+        if(nc < 0)then
           irtc=itfmessage(9,'General::wrongtype','"Character-string"')
           return
         elseif(nc == 0 .or. ename == '*')then
@@ -436,7 +425,6 @@ c     $     ktfoperq(ktastk(isp1+1))),ktfstringq(ktastk(isp1+1)))
       end
 
       recursive subroutine tfexpandbeamline(isp1,kx,irtc)
-      use tfstk
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       type (sad_descriptor) kx1
@@ -445,8 +433,6 @@ c     $     ktfoperq(ktastk(isp1+1))),ktfstringq(ktastk(isp1+1)))
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       integer*4 i,j,isp0,m,n,isp2
-      integer*8 ifbeamline
-      data ifbeamline/0/
       if(ifbeamline == 0)then
         call tfevals('BeamLine',kx,irtc)
         if(irtc /= 0)then
@@ -465,7 +451,7 @@ c     $     ktfoperq(ktastk(isp1+1))),ktfstringq(ktastk(isp1+1)))
                   if(kl%rbody(j) /= -1.d0)then
                     n=int(kl%rbody(j))
 c                    write(*,*)'expandbeamline ',j,kl%rbody(j),n
-                    if(n .gt. 0)then
+                    if(n > 0)then
                       dtastk(isp+1:isp+n)=kl%dbody(3-j)
                       isp=isp+n
 c                      do k=1,n
@@ -512,3 +498,13 @@ c                      enddo
       irtc=0
       return
       end
+
+      end module
+
+      character*(*) function tfgetbeamlinename()
+      use beamline
+      implicit none
+      tfgetbeamlinename=lname
+      return
+      end
+

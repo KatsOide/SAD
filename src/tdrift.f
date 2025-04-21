@@ -7,7 +7,7 @@ c     Maximum amplitude of (px/p0)^2 + (py/p0)^2
 
       contains
 c     drift in the free space
-      subroutine tdrift_free(np,x,px,y,py,z,dv,al)
+      pure subroutine tdrift_free(np,x,px,y,py,z,dv,al)
       use mathfun, only:pxy2dpz
       implicit none
       integer*4 ,intent(in):: np

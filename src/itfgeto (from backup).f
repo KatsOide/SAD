@@ -1,8 +1,5 @@
-      module geto
-      use tfstk
-
-      contains
       integer*4 function itfgeto(kx)
+      use tfstk
       use tfcsi
       use tfrbuf
       implicit none
@@ -35,11 +32,12 @@ c      endif
       end
 
       integer*4 function itfpeeko(kx,next)
+      use tfstk
       use tfcsi, only:ipoint
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(out):: next
-      integer*4 ip0
+      integer*4 ip0,itfgeto
       ip0=ipoint
       itfpeeko=itfgeto(kx)
       next=ipoint
@@ -47,7 +45,34 @@ c      endif
       return
       end
 
+      character*(*) function tfgetstrs(k,nc)
+      use tfstk
+      implicit none
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_symbol), pointer :: sym
+      type (sad_namtbl), pointer :: nam
+      type (sad_string), pointer :: str
+      integer*4 ,intent(inout):: nc
+      if(ktfsymbolq(k,sym))then
+        call sym_namtbl(sym,nam)
+        str=>nam%str
+      elseif(.not. ktfstringq(k,str))then
+        tfgetstrs=' '
+        nc=-1
+        return
+      endif
+      nc=min(str%nch,len(tfgetstrs))
+      if(nc .gt. 0)then
+        tfgetstrs(1:nc)=str%str(1:nc)
+        tfgetstrs(nc+1:)=' '
+      else
+        tfgetstrs=' '
+      endif
+      return
+      end
+
       subroutine tfgetstrns(k,str,nc)
+      use tfstk
       implicit none
       type (sad_descriptor) ,intent(in):: k
       type (sad_string), pointer :: ks
@@ -68,7 +93,46 @@ c      endif
       return
       end
 
+      character*(*) function tfgetstr(k,nc)
+      use tfstk
+      implicit none
+      type (sad_descriptor) ,intent(in):: k
+      type (sad_string), pointer :: str
+      integer*4 ,intent(out):: nc
+      if(ktfaddr(k) == 0)then
+        tfgetstr=' '
+        nc=0
+      else
+        call descr_sad(k,str)
+        nc=min(str%nch,len(tfgetstr))
+        if(nc .gt. 0)then
+          tfgetstr(1:nc)=str%str(1:nc)
+          tfgetstr(nc+1:)=' '
+        else
+          tfgetstr=' '
+        endif
+      endif
+      return
+      end
+
+      character*(*) function tfgetstrv(name)
+      use tfstk
+      implicit none
+      type (sad_descriptor) k
+      type (sad_string), pointer :: str
+      character*(*) ,intent(in):: name
+      k=kxsymbolv(name,len_trim(name))
+      if(ktfstringq(k,str))then
+        tfgetstrv(1:str%nch)=str%str(1:str%nch)
+        tfgetstrv(str%nch+1:)=' '
+      else
+        tfgetstrv=' '
+      endif
+      return
+      end
+
       subroutine tfgettok(word)
+      use tfstk
       use tfcsi
       implicit none
       type (sad_descriptor) kx
@@ -107,70 +171,3 @@ c     $     buffer(istop-nc:istop-1)
       call capita(word(1:nc))
       return
       end
-
-      end module
-
-      character*(*) function tfgetstrv(name)
-      use geto
-      implicit none
-      type (sad_descriptor) k
-      type (sad_string), pointer :: str
-      character*(*) ,intent(in):: name
-      k=kxsymbolv(name,len_trim(name))
-      if(ktfstringq(k,str))then
-        tfgetstrv(1:str%nch)=str%str(1:str%nch)
-        tfgetstrv(str%nch+1:)=' '
-      else
-        tfgetstrv=' '
-      endif
-      return
-      end
-
-      character*(*) function tfgetstr(k,nc)
-      use geto
-      implicit none
-      type (sad_descriptor) ,intent(in):: k
-      type (sad_string), pointer :: str
-      integer*4 ,intent(out):: nc
-      if(ktfaddr(k) == 0)then
-        tfgetstr=' '
-        nc=0
-      else
-        call descr_sad(k,str)
-        nc=min(str%nch,len(tfgetstr))
-        if(nc .gt. 0)then
-          tfgetstr(1:nc)=str%str(1:nc)
-          tfgetstr(nc+1:)=' '
-        else
-          tfgetstr=' '
-        endif
-      endif
-      return
-      end
-
-      character*(*) function tfgetstrs(k,nc)
-      use tfstk
-      implicit none
-      type (sad_descriptor) ,intent(in):: k
-      type (sad_symbol), pointer :: sym
-      type (sad_namtbl), pointer :: nam
-      type (sad_string), pointer :: str
-      integer*4 ,intent(inout):: nc
-      if(ktfsymbolq(k,sym))then
-        call sym_namtbl(sym,nam)
-        str=>nam%str
-      elseif(.not. ktfstringq(k,str))then
-        tfgetstrs=' '
-        nc=-1
-        return
-      endif
-      nc=min(str%nch,len(tfgetstrs))
-      if(nc .gt. 0)then
-        tfgetstrs(1:nc)=str%str(1:nc)
-        tfgetstrs(nc+1:)=' '
-      else
-        tfgetstrs=' '
-      endif
-      return
-      end
-

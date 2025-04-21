@@ -1,9 +1,19 @@
       module match
+      use tfstk
+      real*8 , parameter :: flim1=-4.d0,flim2=-3.d0,aimp1=-1.8d0,
+     $     aimp2=-.8d0,badc1=-3.5d0,badc2=-2.5d0,amedc1=-2.3d0,
+     $     amedc2=-1.3d0,alit=0.75d0,wlmin=0.009d0,eps=1.d-5,
+     $     eps1=1.d-8,rtol=1.05d0,rtol1=1.05d0,tstol=1.d-6,amtol=1.d-9
+      real*8, parameter :: aloadmax=2.d4
+      type (sad_descriptor) , save ::ifvr,ifvw
+      data ifvr%k/0/
+      integer*8 , save:: intffs,inumderiv,iexponent,inumw,iconvergence
+      data intffs,inumderiv,iexponent,inumw,iconvergence
+     $     /0,0,0,0,0/
 
       contains
       subroutine tffsmatch(df,dp01,r,lfno,irtc)
       use kyparam
-      use tfstk
       use calc
       use ffs, only: flv,dpmax,nele,ndim,nlat,maxcond,nvevx,nelvx,tsetintm,nparallel
       use ffs_pointer
@@ -20,11 +30,6 @@
 c      type (sad_descriptor) kx
 c      include 'DEBUG.inc'
       integer*8 ifqu,ifquw,iuta1,kqu
-      real*8 , parameter :: flim1=-4.d0,flim2=-3.d0,aimp1=-1.8d0,
-     $     aimp2=-.8d0,badc1=-3.5d0,badc2=-2.5d0,amedc1=-2.3d0,
-     $     amedc2=-1.3d0,alit=0.75d0,wlmin=0.009d0,eps=1.d-5,
-     $     eps1=1.d-8,rtol=1.05d0,rtol1=1.05d0,tstol=1.d-6,amtol=1.d-9
-      real*8, parameter :: aloadmax=2.d4
       integer*4 ,intent(in):: lfno
       integer*4 ,intent(out):: irtc
       real*8 ,intent(out):: df(maxcond),dp01
@@ -49,9 +54,6 @@ c      include 'DEBUG.inc'
       integer*4 , external :: itfgetrecl
       character ch
       character*10 sexp
-      integer*8 intffs,inumderiv,iexponent,inumw,iconvergence
-      data intffs,inumderiv,iexponent,inumw,iconvergence
-     $     /0,0,0,0,0/
 c
       fuzz(x,a,b)=max(0.d0,min(1.d0,(x-a)/(b-a)))
 c     
@@ -155,8 +157,7 @@ c          write(*,'(a,i5,7l2,i5,1p8g12.4)')'tffsmatch-21 ',iter,chgmod,newton,w
           if(convgo)then
             write(lfno,9501)' Matched. (',res2r(r),')',dpmax,dp01,wexponent,ch,offmw,sexp
  9501       format(a,1pG11.4,a,' DP =',0pf8.5,'  DP0 =',f8.5,
-     $           '  ExponentOfResidual =',f4.1,a,
-     $           ' OffMomentumWeight =',f8.3,a)
+     $           '  ExponentOfResidual =',f4.1,a,' OffMomentumWeight =',f8.3,a)
             fitflg=.false.
             if(.not. geomet)then
               call tfgeo(latt,.true.)
@@ -171,10 +172,8 @@ c          write(*,'(a,i5,7l2,i5,1p8g12.4)')'tffsmatch-21 ',iter,chgmod,newton,w
               write(lfno,9502)'Unstable = ',r%nstab,' Residual =',r%r,' ',
      $             dpmax,dp01,wexponent,ch,offmw,sexp
               exit do9000
- 9502         format(a,i5,a,1pG11.4,a,
-     $           ' DP =',0pf8.5,'  DP0 =',f8.5,
-     $           '  ExponentOfResidual =',f4.1,a,
-     $           ' OffMomentumWeight =',f8.3,a)
+ 9502         format(a,i5,a,1pG11.4,a,' DP =',0pf8.5,'  DP0 =',f8.5,
+     $           '  ExponentOfResidual =',f4.1,a,' OffMomentumWeight =',f8.3,a)
             endif
           else
             if(chgini .and. cell)then
@@ -306,8 +305,7 @@ c                  write(*,'(a,1p10g12.4)')'tffsmatch-imprv ',r%r,r0%r,r00%r
                 else
                   v00=0.d0
                 endif
-                wvar(kc)=tweigh(idelc(nelvx(i)%klp),
-     $               idtypec(nelvx(i)%klp),
+                wvar(kc)=tweigh(idelc(nelvx(i)%klp),idtypec(nelvx(i)%klp),
      $               nvevx(kc)%ivvar,bestval(kc),v00,absweit)
                 if(.not. nderiv)then
                   nderiv=idtypec(nelvx(i)%klp) == icSOL
@@ -706,8 +704,6 @@ c     $             .and. dble(nvar*nfam*nlat) < aloadmax
       use tfcsi,only:icslfnm
       implicit none
       type (sad_string), pointer, save :: svarn, skey
-      type (sad_descriptor) , save ::ifvr,ifvw
-      data ifvr%k/0/
       type (sad_descriptor) ,intent(out):: kx
       type (sad_descriptor) tfefunrefd
       type (sad_symdef) ,pointer:: symd

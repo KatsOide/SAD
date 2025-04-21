@@ -1,4 +1,5 @@
       subroutine tfif(word,iflevel,exist)
+      use geto
       implicit none
       integer*4 ,intent(inout):: iflevel
       character*(*) ,intent(inout):: word

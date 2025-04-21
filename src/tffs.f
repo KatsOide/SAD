@@ -233,7 +233,8 @@ c        el%elmv%k=0
      $       ielmhash,ifnvev,ifnelv
         real*8 emx,emy,emz,sigzs,fshifts,
      $       dpmax,geo0(3,4),xixf,xiyf,sizedp,
-     $       ctime0,ctime2,rsconv,fitval(maxcond)
+     $       ctime0,ctime2,rsconv
+        type (sad_descriptor) fitval(maxcond)
         integer*4 mfitp(maxcond),ifitp(maxcond),ifitp1(maxcond),
      $       kdp(maxcond),kfitp(maxcond),kfit(maxcond),
      $       icalc(3,maxcond),iqcol(maxcond),lfp(2,maxcond),
@@ -1534,7 +1535,6 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
         end function
 
         subroutine setndivelm(ia,ndiv)
-        use tfstk
         use kyparam
         use ffs_pointer, only:compelc
         use tmacro

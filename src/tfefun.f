@@ -1888,6 +1888,14 @@ c        if(ka1 > 0 .and. ktfrealq(k2))then
 
       module efun
       use tfstk
+      type (sad_descriptor), save :: ilog2
+      data ilog2%k /0/
+      type (sad_descriptor), save::kxcheckmessage,kxmessagelist
+      data kxmessagelist%k,kxcheckmessage%k /0,0/
+      type (sad_descriptor) ,save::kaopt(1)
+      character*4 ,save::optname(1)
+      data kaopt%k /0/
+      data optname /'Wrap'/
 
       contains
       recursive function tfefunref(isp1,upvalue,irtc) result(kx)
@@ -1895,7 +1903,8 @@ c        if(ka1 > 0 .and. ktfrealq(k2))then
       use tfshare
       use tfcsi,only:cssetlfno,icslfno,icslfnm
       use findr,only:tffindroot,tffit
-      use tfcx,only:tfatt,tfsolvemember
+      use tfcx,only:tfatt,tfsolvemember,tfreplacemember
+      use objsym, only:tfobjectsymbol
       use mathfun
       use eexpr
       use funs
@@ -1909,6 +1918,7 @@ c        if(ka1 > 0 .and. ktfrealq(k2))then
       use table,only:tftable,tfrange
       use take,only:tfdifference,tfprotect,tfreverse,tfrotateright1,tftake,tfrest
       use attrib,only:tfattributes,tfsetattributes,tfreleasehold
+      use tfcx,only:tfclearmemberobject,tfmemberscan
       use dot
       use sameq
       use convstr
@@ -1938,8 +1948,6 @@ c        if(ka1 > 0 .and. ktfrealq(k2))then
       character*8 char8
       logical*4 ,intent(in):: upvalue
       logical*4 euv,rep
-      type (sad_descriptor), save :: ilog2
-      data ilog2%k /0/
 
 c     DOUBLE specific math intrinsic function
 c     from Fortran77    77   77   77
@@ -3431,12 +3439,11 @@ c        go to 6001
       use eeval
       use tfcsi
       implicit none
-      type (sad_descriptor) kx,kf,kxcheckmessage,kxmessagelist
+      type (sad_descriptor) kx,kf
       type (sad_symdef), pointer,save :: symd
       integer*4 ,intent(in):: isp1
       integer*4 ,intent(out):: irtc
       integer*4 isp0,itgetfpe,itfmessage,narg,irtc1
-      data kxmessagelist%k,kxcheckmessage%k /0,0/
       narg=isp-isp1
       if(narg .lt. 2)then
         kx=dxnullo
@@ -4349,11 +4356,6 @@ c     DOUBLE COMPLEX proxy of ZTAN vendor extension
       type (sad_dlist), pointer :: kl
       integer*8 kai,ktsydefc,ktfsymbolc,ktcontaloc
       integer*4 isp1,irtc,itfmessage,i,isp0,nc,ispopt,isp2
-      character*4 optname(1)
-      type (sad_descriptor) kaopt(1)
-      save kaopt,optname
-      data kaopt%k /0/
-      data optname /'Wrap'/
       isp0=isp
       call tfgetoptionstk(isp1,kaopt,optname,1,ispopt,irtc)
       ic%k=itfcontroot
