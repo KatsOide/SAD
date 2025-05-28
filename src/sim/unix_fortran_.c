@@ -56,7 +56,7 @@ integer fork_worker_(void) {
   /*  if(id == -1){
       err(1, "Failed to fork");}*/
   if(id == 0){
-    setpriority(PRIO_PROCESS, 0, 1); 
+    /*    setpriority(PRIO_PROCESS, 0, 1); */
     /*    setpriority(PRIO_PROCESS, 0, 19); */
     /* omp_set_num_threads(1); */
     /* tfsavesharedmap_(); */

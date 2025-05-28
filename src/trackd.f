@@ -213,6 +213,7 @@ c      write(*,*)'trackd-muls: ',nturn,muls,nturn/6200
       sy=sin(phi(2))
       cz=cos(phi(3))
       sz=sin(phi(3))
+c      write(*,'(a,3i5,1p10g12.4)')'trackd ',ivar1,ivar2,ivar3,cx,sx,cy,sy,cz,sz
       loop_1: do
         np1=npmax
         iw=nw
@@ -258,6 +259,9 @@ c      write(*,*)'trackd-muls: ',nturn,muls,nturn/6200
                         g(ip)=-z(ip)*sz
                         z(ip)=z(ip)*cz
                       end select
+c                      if(ip <= 2)then
+c                        write(*,'(a,i5,1p10g12.4)')'trackd-ip ',ip,x(ip),px(i),y(ip),py(ip)
+c                      endif
                       select case(ivar3)
                       case (1)
                         x(ip)=a3step*(j-1)+a3min

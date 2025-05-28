@@ -1,44 +1,51 @@
       subroutine tfshow(stab,df,mfpnta,mfpnta1,kx,irtc,ret,lfno)
-      use tfstk
+      use dfun
       use ffs
       use ffs_pointer
       use ffs_fit
       use tffitcode
       use gfun
       implicit none
-      integer*8 kx,kax,kax1,kax2,kax3,kax4,kax3i,kaxi,kaxi4
-      integer*4 namel,mfpnta,mfpnta1,
-     $     lfno,lw,lf,lfs,nn,mf,m,i,k,l,jshowi,
-     $     ncc,iq,kpa,kpb,jm,lfs1,ln,
-     $     mm,lb,ip,j,nf,nl
-      parameter (namel=11)
-      integer*4 icalc1(3,ndim1)
-      real*8 df(nqcol),fm
-      integer*4 jshow(64),itfgetrecl,irtc
+      type (sad_descriptor) ,intent(out):: kx
+      logical*4 ,intent(in):: stab,ret
+      integer*4 ,intent(in):: lfno,mfpnta,mfpnta1
+      integer*4 ,intent(out):: irtc
+      real*8 ,intent(in):: df(nqcol)
+      integer*8 kax,kax1,kax2,kax3,kax4,kax3i,kaxi,kaxi4
+      integer*4 ,parameter :: namel=11,lcf=20
+      integer*4 lw,lf,lfs,lfv,nn,mf,m,i,k,l,jshowi,ncc,iq,kpa,kpb,
+     $     jm,lfs1,ln,mm,lb,ip,j,nf,nl
+      integer*4 icalc1(3,ndim1),jshow(64),itfgetrecl
+      real*8 fm,ftv1(flv%nfc),ftv2(flv%nfc)
       character*5 fun,form,forms
       character*31 name
       character*15 name1,namea
       character*10 autofg
       character*11 vout
-      character*256 buf2
-      character*256 buf0,buf1
+      character*256 buf0,buf1,buf2
       character*3 famlabel
-      logical*4 err,stab,trx,try,ret,tftype1fit
+      logical*4 trx,try,tftype1fit,err,fmm,fvi(flv%nfc),fmmi(flv%nfc)
       external trim
+      fmm=.false.
+      do i=1,flv%nfc
+        call tgetfvx(flv%fitval(i),ftv1(i),ftv2(i),fvi(i),fmmi(i),.true.)
+        fmm=fmm .or. fmmi(i)
+      enddo
       lw=max(79,min(256,itfgetrecl()))
-      lf=max(6,min(10,(lw-20)/(2*nfam+2)))
+      lf=max(6,min(10,(lw-lcf)/(2*nfam+2)))
       if(lf > 6)then
-        lfs=max(6,min(8,lf,lw-lf*(2*nfam+1)-22))
-        nn=(lw-22-lfs)/lf
+        lfs=max(6,min(8,lf,lw-lf*(2*nfam+1)-lcf-2))
+        nn=(lw-lcf-2-lfs)/lf
       else
-        lfs=max(6,min(8,lf,lw-lf*(2*nfam+1)-20))
-        nn=(lw-20-lfs)/lf
+        lfs=max(6,min(8,lf,lw-lf*(2*nfam+1)-lcf))
+        nn=(lw-lcf-lfs)/lf
       endif        
       write(form,'(i2,''.'',i1,1x)')lfs,min(6,lfs-3)
       call trim(form)
       forms='S'//form(1:len_trim(form))
       write(form,'(i2,''.'',i1,1x)')lf,min(6,lf-3)
       call trim(form)
+c      write(*,'(2a,10i5)')'tfshow ',form(1:len_trim(form)),lf,lw,nfam,lfs,nn
       mf=nfam1
       if(nfam > 0)then
         nn=min(nn,nfam-mf+1)
@@ -76,16 +83,13 @@
  303      continue
         enddo
         do m=1,nn
-          buf0((m-1)*lf+1:m*lf)=
-     $         autofg(dp(jshow(m))+dp0,form)
+          buf0((m-1)*lf+1:m*lf)=autofg(dp(jshow(m))+dp0,form)
         enddo
         vout(1:lfs+3)=' DP '
         if(lfs > 6)then
-          buf1='           '//vout(1:lfs+3)
-     $         //'       '//buf0(1:nn*lf)
+          buf1='           '//vout(1:lfs+3)//'       '//buf0(1:nn*lf)
         else
-          buf1='          '//vout(1:lfs+3)
-     $         //'      '//buf0(1:nn*lf)
+          buf1='          '//vout(1:lfs+3)//'      '//buf0(1:nn*lf)
         endif
         write(lfno,'(A)')buf1(1:len_trim(buf1))
         if(nfam > nfr)then
@@ -94,11 +98,9 @@
           enddo
           vout(1:lfs+3)=' '
           if(lfs > 6)then
-            buf1='                '//vout(1:lfs+3)
-     $           //'  '//buf0(1:nn*lf)
+            buf1='                '//vout(1:lfs+3)//'  '//buf0(1:nn*lf)
           else
-            buf1='               '//vout(1:lfs+3)
-     $           //' '//buf0(1:nn*lf)
+            buf1='               '//vout(1:lfs+3)//' '//buf0(1:nn*lf)
           endif
           write(lfno,'(A)')buf1(1:len_trim(buf1))
         elseif(inicond)then
@@ -107,11 +109,9 @@
           enddo
           vout(1:lfs+3)=' Orbit ID '
           if(lfs > 6)then
-            buf1='           '//vout(1:lfs+3)
-     $           //'       '//buf0(1:nn*lf)
+            buf1='           '//vout(1:lfs+3)//'       '//buf0(1:nn*lf)
           else
-            buf1='          '//vout(1:lfs+3)
-     $           //'      '//buf0(1:nn*lf)
+            buf1='          '//vout(1:lfs+3)//'      '//buf0(1:nn*lf)
           endif
           write(lfno,'(A)')buf1(1:len_trim(buf1))
         endif
@@ -120,11 +120,9 @@
         enddo
         vout(1:lfs+3)=' Res.'
         if(lfs > 6)then
-          buf1='           '//vout(1:lfs+3)
-     $         //'       '//buf0(1:nn*lf)
+          buf1='           '//vout(1:lfs+3)//'       '//buf0(1:nn*lf)
         else
-          buf1='          '//vout(1:lfs+3)
-     $         //'      '//buf0(1:nn*lf)
+          buf1='          '//vout(1:lfs+3)//'      '//buf0(1:nn*lf)
         endif
         write(lfno,'(A)')buf1(1:len_trim(buf1))
         mm=nn
@@ -137,7 +135,7 @@
       ncc=flv%ncalc
       trx=.false.
       try=.false.
-      do 3000 i=1,ncc
+      do i=1,ncc
         icalc1(1,i)=flv%icalc(1,i)
         icalc1(2,i)=flv%icalc(2,i)
         icalc1(3,i)=flv%icalc(3,i)
@@ -148,7 +146,7 @@
             try=.true.
           endif
         endif
-3000  continue
+      enddo
       if(.not. stab)then
         if(.not. trx)then
           ncc=ncc+1
@@ -169,18 +167,16 @@
         icalc1(2,ncc)=nlat
         icalc1(3,ncc)=nqcol1-i
       enddo
-      do 3010 i=1,nqcol1
+      do i=1,nqcol1
         iq=flv%kfitp(flv%iqcol(i))
         if(flv%ifitp(iq) /= flv%ifitp1(iq))then
           if(flv%lfp(2,i) == 0)then
-            call txcalc(icalc1,ncc,flv%lfp(1,i),flv%lfp(1,i),
-     $           flv%kfit(iq),.true.,err)
+            call txcalc(icalc1,ncc,flv%lfp(1,i),flv%lfp(1,i),flv%kfit(iq),.true.,err)
           endif
         elseif(flv%mfitp(iq) .lt. 0)then
-          call txcalc(icalc1,ncc,flv%lfp(1,i),flv%lfp(1,i),flv%kfit(iq),
-     $         .true.,err)
+          call txcalc(icalc1,ncc,flv%lfp(1,i),flv%lfp(1,i),flv%kfit(iq),.true.,err)
         endif
-3010  continue
+      enddo
       kax4=0
       kaxi4=0
       if(ret)then
@@ -204,22 +200,22 @@
         klist(kax+2)=ktflist+kax2
         klist(kax+3)=ktflist+kax3
         klist(kax+4)=ktflist+kax4
-        kx=ktflist+kax
+        kx%k=ktflist+kax
       endif
       ip=0
-      do 10 i=1,ncc
+      do i=1,ncc
         kpa=icalc1(1,i)
         kpb=icalc1(2,i)
         k=icalc1(3,i)
         jm=0
         fm=1.d100
         if(k > 0)then
-          do 20 j=1,flv%nfc
+          do j=1,flv%nfc
             if(flv%mfitp(j) > 0)then
               if(kpa == flv%ifitp(j) .and. kpb == flv%ifitp1(j))then
                 if(flv%kfit(j) == k)then
                   jm=j
-                  go to 21
+                  exit
                 endif
               endif
             elseif(flv%mfitp(j) .lt. 0)then
@@ -228,12 +224,11 @@
      $               kpb == flv%ifitp1(j))then
                   if(flv%kfit(j) == k)then
                     jm=j
-                    go to 21
+                    exit
                   endif
                 endif
               else
-                if(kpa .ge. flv%ifitp(j) .and.
-     $               kpb .le. flv%ifitp1(j))then
+                if(kpa >= flv%ifitp(j) .and. kpb <= flv%ifitp1(j))then
                   if(flv%kfit(j) == k)then
                     if(abs(flv%fitval(j)%x(1)) .lt. fm)then
                       jm=j
@@ -243,7 +238,7 @@
                 endif
               endif
             endif
- 20       continue
+          enddo
  21       if(jm == 0)then
             vout=' #######'
             vout(lfs+1:lfs+3)='  #'
@@ -251,18 +246,14 @@
             fun=nlist(k)(1:nl)
           else
             lfs1=lfs+1
-            write(vout(lfs1:lfs1+2),9001)abs(flv%mfitp(jm))-1
- 9001       format(I3)
-c     write(*,*)jm,flv%mfitp(jm),lfs,vout(lfs+1:lfs+2)
+            write(vout(lfs1:lfs1+2),'(I3)')abs(flv%mfitp(jm))-1
             if(flv%mfitp(jm) > 0)then
+c              write(*,'(a,10i6)')'tfshow-fitval ',lfs
               if(flv%ifitp(jm) /= flv%ifitp1(jm))then
-                if(k == mfitbx .or. k == mfitby
-     $               .or. k == mfitbz)then
+                if(k == mfitbx .or. k == mfitby .or. k == mfitbz)then
                   vout(1:lfs)=autofg(flv%fitval(jm)%x(1),forms)
                 else
                   vout(1:lfs)=autofg(flv%fitval(jm)%x(1)/scale(k),forms)
-c                  x=tgfun(k,flv%ifitp(jm),0)
-c                  vout(1:lfs)=autofg(x/scale(k),forms)
                 endif
               else
                 vout(1:lfs)=autofg(flv%fitval(jm)%x(1)/scale(k),forms)
@@ -346,17 +337,17 @@ c          name(ln+1:namel)='/'//name1
               enddo
             endif
           end select
-        elseif(k .le. mfittry .and. k > 0)then
-          do 1010 m=1,mm
+        elseif(k <= mfittry .and. k > 0)then
+          do m=1,mm
             j=jshow(m)
-c            if(k .le. mfitddp)then
+c            if(k <= mfitddp)then
 c              write(*,*)'tfshow ',m,j,k,kpb,nfam,
 c     $             utwiss(1,0,1),
 c     $             utwiss(k,j,itwissp(kpb))
 c            endif
             buf0((m-1)*lf+1:m*lf)=
      1           autofg(tgfun(k,kpb,j)/scale(k),form)
-1010      continue
+          enddo
           buf0(mm*lf+1:)=' '
           if(ret)then
             do j=mf,nfam
@@ -395,7 +386,7 @@ c            endif
           buf2(ip+1:ip+lb+1)=' '//buf1(1:lb)
           ip=ip+lb+1
         endif
-10    continue
+      enddo
       if(ip > 0)then
         write(lfno,'(A)')buf2(1:ip)
       endif
@@ -407,7 +398,7 @@ c            endif
       implicit none
       integer*4 ,intent(in):: k
       tftype1fit=k == mfitnx .or. k == mfitny .or.
-     $     (k .ge. mfitleng .and. k .le. mfitgz)
+     $     (k >= mfitleng .and. k <= mfitgz)
       return
       end
 

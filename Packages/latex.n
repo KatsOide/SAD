@@ -60,6 +60,9 @@ LaTeX=Class[{},{eqn=0,pre0="\
 
   Preamble["standalone"]:=StandardForm["\
 \\documentclass[varwidth,border={0pt 1pt 1pt 2pt}]{standalone}\n"//pre0//"\
+\\setlength{\\paperwidth}{"//pw//"}\n\
+\\setlength{\\pdfpagewidth}{"//pw//"}\n\
+\\setlength{\\textwidth}{"//tw//"}\n\
 \\begin{document}\n"];
 
   Postamble["standalone"]="\

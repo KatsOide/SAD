@@ -13,6 +13,8 @@
       integer*4 ,intent(inout):: nfc,ncalc
       logical*4 ,intent(out):: exist,err
       type (sad_descriptor) kx1
+      type (sad_rlist) ,pointer::kl1
+      type (sad_dlist) ,pointer::kl1d
       integer*4 i,l,lenw,ix2,kp,j,next,lw,lnf,lne,ir
       real*8 sc,x1,x,getva,sig
       character*8 name1
@@ -66,6 +68,7 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
             ipoint=next
             word='*'
             x1=1.d0
+            kx1%x(1)=1.d0
             realv=.true.
           elseif(ch == '@')then
             ipoint=next
@@ -94,6 +97,7 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
               if(i .le. ntwissfun)then
                 realv=.true.
                 x1=rlist(idvalc(mfpnt)+i)*sig
+                kx1%x(1)=x1
               else
                 call termes('No Marked value for '//nlist(i),
      1               ' at '//tname(mfpnt))
@@ -115,15 +119,35 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
             realv=ktfrealq(kx1,x1)
             if(realv)then
               x1=x1*sc
+            elseif(tfreallistqd(kx1,kl1))then
+              if(kl1%nl == 1)then
+                realv=.true.
+                x1=kl1%rbody(1)*sc
+              elseif(kl1%nl == 2)then
+                if(kl1%rbody(1) == kl1%rbody(2))then
+                  realv=.true.
+                  x1=kl1%rbody(1)*sc
+                else
+                  call descr_dlist(kx1,kl1d)
+                  kl1d=>tfclonelist(kl1d)
+                  kl1d%rbody(1)=kl1d%rbody(1)*sc
+                  kl1d%rbody(2)=kl1d%rbody(2)*sc
+                  kx1=dlist_descr(kl1d)
+                endif
+              elseif(kx1%k == dxnull%k)then
+                obj=.false.
+                exist=.false.
+                return
+              else
+                obj=.false.
+                exist=.false.
+                return
+              endif
             else
-              x1=0.d0
+              obj=.false.
               exist=.false.
               return
             endif
-c            x1=getva(exist)*sc
-c            if(.not. exist)then
-c              return
-c            endif
           endif
           exist=.true.
           ix2=int(max(-1.d0,getva(exist1)))
@@ -164,7 +188,7 @@ c            endif
           ifitp1(kp)=max(mfpnt,mfpnt1)
           kfit(kp)=i
           mfitp(kp)=0
-111       if(word /= '*')then
+111       if(realv .or. obj)then
             if((i == mfitbx .or. i == mfitby) .and. x1 <= 0.d0)then
               lnf=len_trim(nlist(i))
               call elname(ifitp(kp),namee)
@@ -175,13 +199,16 @@ c            endif
               return
             endif
             if(realv)then
+              call tflocald(fitval(kp))
               fitval(kp)%x(1)=x1
             elseif(obj)then
               call tfdebugprint(kx1,'tgetfv',1)
-              exist=.false.
-              return
-c              fitval(kp)=kx1
+              call tflocald(fitval(kp))
+              fitval(kp)=dtfcopy(kx1)
             endif
+          else
+            exist=.false.
+            return
           endif
           if(ix2 /= 0)then
             mfitp(kp)=ix2+1
