@@ -19,12 +19,7 @@
       integer*4 i,j,k,kptmp(nkptbl)
       logical eli, dodrop
 
-      call limitnan(x(1:np),xlimit)
-      call limitnan(px(1:np),plimit)
-      call limitnan(y(1:np),xlimit)
-      call limitnan(py(1:np),plimit)
-      call limitnan(z(1:np),zlimit)
-
+      call limittrack(np,x,px,y,py,z)
       if(calpol)then
         do i=1,np
           s=norm2((/sx(i),sy(i),sz(i)/))

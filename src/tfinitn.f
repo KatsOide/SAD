@@ -203,20 +203,20 @@ c      write(*,*)'tfinitn 1 '
 
       subroutine tfexit(isp1,kx,irtc)
       use tfstk
-      use tfshare, only:tfresetsharedmap
+c      use tfshare, only:tfresetsharedmap
       implicit none
       type (sad_descriptor) kx
       integer*4 isp1,irtc,itfmessage,istatus
       if(isp == isp1)then
-        call tfresetsharedmap()
+c        call tfresetsharedmap()
         call exit(0)
       elseif(isp == isp1+1)then
         if(ktfrealq(ktastk(isp)))then
-          call tfresetsharedmap()
+c          call tfresetsharedmap()
           istatus=int(rtastk(isp1+1))
           call exit(istatus)
         elseif(ktastk(isp) == ktfoper+mtfnull)then
-          call tfresetsharedmap()
+c          call tfresetsharedmap()
           call exit(0)
         endif
       endif

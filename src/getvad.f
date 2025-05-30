@@ -29,11 +29,11 @@
       end
 
       real*8 function getval()
-      use tfstk
+      use geto
       use tfcsi
       implicit none
       type (sad_descriptor) kx
-      integer*4 irtype,itfpeeko,next
+      integer*4 irtype,next
       irtype=itfpeeko(kx,next)
       if(irtype == 0 .and. ktfrealq(kx,getval))then
         ipoint=next

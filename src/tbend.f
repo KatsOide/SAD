@@ -14,12 +14,12 @@
 
       contains
 
-      subroutine tbendal(n,ndiv,f1r,f2r,aln,alx,alr)
+      pure subroutine tbendal(n,ndiv,f1r,f2r,aln,alx,alr)
       implicit none
       integer*4 , intent(in)::n,ndiv
       real*8 , intent(in) ::f1r,f2r,aln
       real*8 , intent(out)::alx,alr
-      if(n .gt. 0 .and. n .le. ndiv)then
+      if(n > 0 .and. n <= ndiv)then
         alx=aln
         alr=aln
       elseif(n == -1)then
@@ -60,7 +60,7 @@ c     $         akxsq,-1.d0/rhosq-akk/p,akx,sqrt(akxsq),phix,akx*al
       akk=ak1/al
       akxsq=-1.d0/rhosq-akk/p
       akysq=akk/p
-      if(akxsq .gt. 0.d0)then
+      if(akxsq > 0.d0)then
         akx=sqrt(akxsq)
         phix=akx*al
         dcx=2.d0*sinh(.5d0*phix)**2
@@ -70,7 +70,7 @@ c        spx=sinh(phix)
         dcxkx=dcx/akxsq
         sxkx=spx/akx
         xsxkx=xspx/akx/akxsq
-      elseif(akxsq .lt. 0.d0)then
+      elseif(akxsq < 0.d0)then
         akx=sqrt(-akxsq)
         phix=akx*al
         dcx=-2.d0*sin(.5d0*phix)**2
@@ -90,14 +90,14 @@ c        spx=sin(phix)
         sxkx=al
         xsxkx=-1.d0/6.d0*al**3
       endif
-      if(akysq .gt. 0.d0)then
+      if(akysq > 0.d0)then
         aky=sqrt(akysq)
         phiy=aky*al
         dcy=2.d0*sinh(.5d0*phiy)**2
         spy=sinh(phiy)
         aksy=aky*spy
         syky=spy/aky
-      elseif(akysq .lt. 0.d0)then
+      elseif(akysq < 0.d0)then
         aky=sqrt(-akysq)
         phiy=aky*al
         dcy=-2.d0*sin(.5d0*phiy)**2
@@ -246,7 +246,6 @@ c        write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),
         end subroutine
 
         pure subroutine tbshift(np,x,px,y,py,z,dx,dy,phi0,cost,sint,ent)
-        use tfstk
         use mathfun
         implicit none
         integer*4 ,intent(in):: np
@@ -307,7 +306,6 @@ c        write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),
      $     al,phi0,psi1,psi2,
      1     cosp1,sinp1,cosp2,sinp2,
      1     mfring,fringe,n1,n2,ndiv)
-        use tfstk
         use ffs_flag
         use tmacro
         use tspin
@@ -338,7 +336,7 @@ c        write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),
           bsi2=0.d0
           call tbendal(n,ndiv,f1r,f2r,aln,alx,alr)
           if(n == n1)then
-            if(mfring .gt. 0 .or. mfring == -1)then
+            if(mfring > 0 .or. mfring == -1)then
               mfr1=-1
             endif
             psi1n=psi1
@@ -346,7 +344,7 @@ c        write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),
             sinp1n=sinp1
             bsi1=1.d0
           elseif(n == n2)then
-            if(mfring .gt. 0 .or. mfring == -2)then
+            if(mfring > 0 .or. mfring == -2)then
               mfr1=-2
             endif
             psi2n=psi2
@@ -355,7 +353,7 @@ c        write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),
             bsi2=1.d0
           endif
           phi0n=alx/al*phi0
-          if(n .le. 2 .or. n .ge. ndiv)then
+          if(n <= 2 .or. n >= ndiv)then
             wn=phi0n-psi1n-psi2n
             call xsincos(wn,sinwn,xsinwn,coswn,sqwhn)
             sinwpn=sin(phi0n-psi2n)
@@ -377,7 +375,6 @@ c        write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),
      1     mfring,fringe,
      $     cosw,sinw,sqwh,sinwp1,
      1     krad,alr,bsi1,bsi2)
-        use tfstk
         use ffs_flag
         use tmacro
         use multa, only:nmult
@@ -400,7 +397,7 @@ c        write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),
         real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np),
      $       dv(np),g(np),sx(np),sy(np),sz(np)
         logical*4 ,intent(in):: krad,fringe
-        if((mfring .gt. 0 .or. mfring == -1) .and. fb1 /= 0.d0)then
+        if((mfring > 0 .or. mfring == -1) .and. fb1 /= 0.d0)then
           dxfr1=fb1**2/rhob/24.d0
           dyfr1=fb1/rhob**2/6.d0
           dzfr1=dxfr1*sinp1
@@ -415,7 +412,7 @@ c        write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),
           dyfra1=0.d0
           dzfr1=0.d0
         endif
-        if((mfring .gt. 0 .or. mfring == -2) .and. fb2 /= 0.d0)then
+        if((mfring > 0 .or. mfring == -2) .and. fb2 /= 0.d0)then
           dxfr2=fb2**2/rhob/24.d0
           dyfr2=fb2/rhob**2/6.d0
           dzfr2=dxfr2*sinp2
@@ -430,7 +427,7 @@ c        write(*,'(a,l2,1p10g12.4)')'tbrot ',ent,alg,phig,x(1),px(1),y(1),py(1),
           dyfra2=0.d0
           dzfr2=0.d0
         endif
-        if(cosp1*cosp2 .gt. 0.d0)then
+        if(cosp1*cosp2 > 0.d0)then
           dcosp=(sinp2-sinp1)*(sinp2+sinp1)/(cosp1+cosp2)
         else
           dcosp=cosp1-cosp2
@@ -693,7 +690,7 @@ c      cp=1.d0-dcp
 c      cp=cos(phi0)
       call xsincos(phi0,sp,xsp,cp,dcp)
 c      sp=sin(phi0)
-c      if(cp .ge. 0.d0)then
+c      if(cp >= 0.d0)then
 c        dcp=sp**2/(1.d0+cp)
 c      else
 c        dcp=1.d0-cp

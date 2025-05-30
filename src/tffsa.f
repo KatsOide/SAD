@@ -34,13 +34,16 @@
       use track_tt
       use tparastat
       use temw, only:nparams
+      use geto
       use tfrbuf
       use calc,only:twmov
-      use tfshare, only:tfresetsharedmap,tmunmapp
+c      use tfshare, only:tfresetsharedmap,tmunmapp
+      use tfshare, only:tmunmapp
       use ffsfile
       use radint
       use geolib
       use modul,only:tfunblocksym
+      use beamline,only:tfbeamline,tfsetbeamlinename
       use iso_c_binding
       implicit none
       integer*4 maxrpt,hsrchz
@@ -54,7 +57,7 @@
       integer*4 ,intent(out):: irtcffs
       integer*4 kk,i,ia,iflevel,j,ielm,ielme,igelme,k1,k,igetgl,
      $     irtc0,it,itt,iuse,l,levelr,lfnl0,lpw,meas0,mfpnta,lenw,
-     $     mphi2,next,nextt,nfp,nrpt1,itfpeeko,itfgetrecl,nl
+     $     mphi2,next,nextt,nfp,nrpt1,itfgetrecl,nl
       real*8 rmax,amus0,amus1,amusstep,apert,axi,ayi,ctime1,
      $     dpm2,dpxi,dpyi,em,emxe,emye,epxi,epyi,pspan,r2i,r3i,
      $     trval,rese,v,wa,wd,wl,xa,ya,xxa,xya,yya,getva,rgetgl1,
@@ -342,7 +345,7 @@ c        call corfree(newcor,nster,nmon,itstr,itestr,itmon,itemon)
 c        call corfree(newcor,nster,nmon,itstr,itestr,itmon,itemon)
         go to 8900
       elseif(word == 'ABORT')then
-        call tfresetsharedmap()
+c        call tfresetsharedmap()
         stop
       elseif(word == 'USE' .or. word == 'VISIT')then
         visit=word == 'VISIT'
@@ -510,11 +513,12 @@ c$$$          endif
           endif
           call getwdl2(word,wordp)
           mfpnta=ielme(wordp,exist,lfno)
+          mfpnt1=mfpnt
           if(exist)then
-            mfpnt1=max(mfpnt,mfpnta)
-            mfpnt=min(mfpnt,mfpnta)
+            mfpnt=mfpnta
+c            mfpnt1=max(mfpnt,mfpnta)
+c            mfpnt=min(mfpnt,mfpnta)
           else
-            mfpnt1=mfpnt
             go to 12
           endif
         endif
@@ -1667,16 +1671,16 @@ c                  write(*,*)'setupcouple ',k,iet,ik,nk
         endif
       enddo
       flv%nfc=flv%nfc+1
-      flv%kfit(flv%nfc)=mfitbmagx
+      flv%kfit(flv%nfc)=mfitax
       flv%ifitp(flv%nfc)=1
       flv%ifitp1(flv%nfc)=nlat
-      flv%fitval(flv%nfc)=1.d0
+      flv%fitval(flv%nfc)%x(1)=0.d0
       flv%mfitp(flv%nfc)=mfc
       flv%nfc=flv%nfc+1
-      flv%kfit(flv%nfc)=mfitbmagy
+      flv%kfit(flv%nfc)=mfitay
       flv%ifitp(flv%nfc)=1
       flv%ifitp1(flv%nfc)=nlat
-      flv%fitval(flv%nfc)=1.d0
+      flv%fitval(flv%nfc)%x(1)=0.d0
       flv%mfitp(flv%nfc)=mfc
 c      write(*,*)'setupcell ',flv%nfc
 c$$$      flv%nfc=flv%nfc+1

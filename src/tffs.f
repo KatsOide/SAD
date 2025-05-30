@@ -233,7 +233,8 @@ c        el%elmv%k=0
      $       ielmhash,ifnvev,ifnelv
         real*8 emx,emy,emz,sigzs,fshifts,
      $       dpmax,geo0(3,4),xixf,xiyf,sizedp,
-     $       ctime0,ctime2,rsconv,fitval(maxcond)
+     $       ctime0,ctime2,rsconv
+        type (sad_descriptor) fitval(maxcond)
         integer*4 mfitp(maxcond),ifitp(maxcond),ifitp1(maxcond),
      $       kdp(maxcond),kfitp(maxcond),kfit(maxcond),
      $       icalc(3,maxcond),iqcol(maxcond),lfp(2,maxcond),
@@ -1106,7 +1107,7 @@ c        use ffs_pointer
       real*8 ,dimension(:,:),allocatable :: b
       integer*4 i
       allocate(b(np,6))
-      call tconvm(np,px,py,g,dv,1)
+      call tconvm(np,px,py,g)
       call tgauss_array(b,np*6)
       do i=1,6
         b(:,i)=b(:,i)*exeig(i)
@@ -1119,7 +1120,30 @@ c      write(*,'(a,i5,1p10g12.4)')'trackexc ',np,b(1:5,1)
       py=py+b(:,4)
       z = z+b(:,5)
       g = g+b(:,6)
-      call tconvm(np,px,py,g,dv,-1)
+      call tconvm(np,px,py,g,dv)
+      return
+      end subroutine
+
+      subroutine tconvm(np,px,py,g,dv)
+      use tmacro
+      use mathfun
+      implicit none
+      integer*4 ,intent(in):: np
+      real*8 ,intent(inout):: px(np),py(np),g(np)
+      real*8 ,intent(out),optional :: dv(np)
+      real*8 ,dimension(:),allocatable::pr,h1,p1
+      if(present(dv))then
+        allocate(pr(np),h1(np),p1(np))
+        pr=1.d0+g
+        px=px/pr
+        py=py/pr
+        p1=p0*pr
+        h1=p2h(p1)
+        dv=-g*(1.d0+pr)/h1/(h1+pr*h0)+dvfs
+      else
+        px=px+g*px
+        py=py+g*py
+      endif
       return
       end subroutine
 
@@ -1511,7 +1535,6 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
         end function
 
         subroutine setndivelm(ia,ndiv)
-        use tfstk
         use kyparam
         use ffs_pointer, only:compelc
         use tmacro

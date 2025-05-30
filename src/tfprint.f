@@ -1,5 +1,5 @@
       subroutine tfprint(word,lfno,force,itx,next,exist)
-      use tfstk
+      use geto
       use tfcode
       use iso_c_binding
       use tfcsi,only:ipoint
@@ -11,7 +11,7 @@
       integer*8 kax
       integer*4 ,intent(in):: lfno
       integer*4 ,intent(out):: itx,next
-      integer*4 nc,itfpeeko,next1,ip0
+      integer*4 nc,next1,ip0
       logical*4 ,intent(out):: exist
       logical*4 ,intent(in):: force
       character*(*) ,intent(inout):: word

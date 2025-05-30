@@ -82,9 +82,11 @@ c
       subroutine tfcsrhaissin(isp1,kx,irtc)
       use tfstk
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) ,intent(out):: kx
       type (sad_rlist), pointer :: klr,klzl,kll
-      integer*4 isp1,irtc,nr,itfmessage
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      integer*4 nr,itfmessage
       real*8 dz,aw,sigz,r65
       if(isp /= isp1+2)then
         go to 9000

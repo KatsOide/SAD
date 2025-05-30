@@ -1,28 +1,31 @@
       subroutine tgetfv(word,nfc,icalc,ncalc,
-     1    kfit,fitval,mfitp,ifitp,ifitp1,
-     $    exist,err)
-      use tfstk
+     1    kfit,fitval,mfitp,ifitp,ifitp1,exist,err)
+      use geto
       use ffs
       use ffs_pointer
       use ffs_fit
       use tffitcode
       use tfcsi,only:ipoint
       implicit none
-      integer*4 nfc,i,l,lenw,ix2,kp,j,next,ncalc
+      integer*4 ,intent(inout):: kfit(*),mfitp(*),ifitp(*),ifitp1(*),icalc(3,maxcond)
+      type (sad_descriptor),intent(inout)::  fitval(*)
+      character*(*) ,intent(inout):: word
+      integer*4 ,intent(inout):: nfc,ncalc
+      logical*4 ,intent(out):: exist,err
+      type (sad_descriptor) kx1
+      type (sad_rlist) ,pointer::kl1
+      type (sad_dlist) ,pointer::kl1d
+      integer*4 i,l,lenw,ix2,kp,j,next,lw,lnf,lne,ir
       real*8 sc,x1,x,getva,sig
       character*8 name1
       character*(MAXPNAME) tname
       character*(MAXPNAME+8) name4,name3,namee
-      character*(*) word
       character peekch,ch
-      integer*4 kfit(*),mfitp(*),ifitp(*),ifitp1(*),
-     $     icalc(3,maxcond),lw,lnf,lne
-      real*8 fitval(*)
-      logical*4 exist,maxfit,err,err1,exist1
+      logical*4 maxfit,err1,exist1,realv,obj
       exist=.true.
       err=.false.
       lw=lenw(word)
-      do 10 i=1,mfit1
+      do i=1,mfit1
         l=lenw(nlist(i))
 c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
         if(word(:l) /= nlist(i)(:l))then
@@ -54,6 +57,8 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
           endif
           sc=scale(i)
  11       continue
+          realv=.false.
+          obj=.false.
           ch=peekch(next)
           if(peekch(next) == ':')then
             ipoint=next
@@ -63,6 +68,8 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
             ipoint=next
             word='*'
             x1=1.d0
+            kx1%x(1)=1.d0
+            realv=.true.
           elseif(ch == '@')then
             ipoint=next
             ch=peekch(next)
@@ -88,7 +95,9 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
             endif
             if(idtypecx(mfpnt) == icMARK)then
               if(i .le. ntwissfun)then
+                realv=.true.
                 x1=rlist(idvalc(mfpnt)+i)*sig
+                kx1%x(1)=x1
               else
                 call termes('No Marked value for '//nlist(i),
      1               ' at '//tname(mfpnt))
@@ -96,27 +105,60 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
                 return
               endif
             else
-              call termes('No MARK element at ',
-     $             tname(mfpnt))
+              call termes('No MARK element at ',tname(mfpnt))
               err=.true.
               return
             endif
           else
-            x1=getva(exist)*sc
-            if(.not. exist)then
+            ir=itfgeto(kx1)
+            if(ir /= 0)then
+              exist=.false.
+              return
+            endif
+            obj=.true.
+            realv=ktfrealq(kx1,x1)
+            if(realv)then
+              x1=x1*sc
+            elseif(tfreallistqd(kx1,kl1))then
+              if(kl1%nl == 1)then
+                realv=.true.
+                x1=kl1%rbody(1)*sc
+              elseif(kl1%nl == 2)then
+                if(kl1%rbody(1) == kl1%rbody(2))then
+                  realv=.true.
+                  x1=kl1%rbody(1)*sc
+                else
+                  call descr_dlist(kx1,kl1d)
+                  kl1d=>tfclonelist(kl1d)
+                  kl1d%rbody(1)=kl1d%rbody(1)*sc
+                  kl1d%rbody(2)=kl1d%rbody(2)*sc
+                  kx1=dlist_descr(kl1d)
+                endif
+              elseif(kx1%k == dxnull%k)then
+                obj=.false.
+                exist=.false.
+                return
+              else
+                obj=.false.
+                exist=.false.
+                return
+              endif
+            else
+              obj=.false.
+              exist=.false.
               return
             endif
           endif
           exist=.true.
           ix2=int(max(-1.d0,getva(exist1)))
-          do 110 j=1,nfc
+          do j=1,nfc
             if(ifitp(j) == mfpnt .and. ifitp1(j) == mfpnt1)then
               if(kfit(j) == i)then
                 kp=j
                 go to 111
               endif
             endif
-110       continue
+          enddo
           if(word == '*')then
             call termes('No default value of ',nlist(i))
             err=.true.
@@ -126,7 +168,7 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
             if(ix2 .lt. 0)then
               call termes(' The value of '//nlist(i),' is not stored.')
             else
-              do 130 j=1,nfc
+              do j=1,nfc
                 if(mfitp(j) == 0)then
                   kp=j
                   ifitp(j)=min(mfpnt,mfpnt1)
@@ -134,7 +176,7 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
                   kfit(j)=i
                   go to 111
                 endif
-130           continue
+              enddo
               call termes('Too many conditions ',nlist(i))
             endif
             err=.true.
@@ -146,9 +188,8 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
           ifitp1(kp)=max(mfpnt,mfpnt1)
           kfit(kp)=i
           mfitp(kp)=0
-111       if(word /= '*')then
-            if((i == mfitbx .or. i == mfitby)
-     $           .and. x1 .le. 0.d0)then
+111       if(realv .or. obj)then
+            if((i == mfitbx .or. i == mfitby) .and. x1 <= 0.d0)then
               lnf=len_trim(nlist(i))
               call elname(ifitp(kp),namee)
               lne=len_trim(namee)
@@ -157,7 +198,17 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
               err=.true.
               return
             endif
-            fitval(kp)=x1
+            if(realv)then
+              call tflocald(fitval(kp))
+              fitval(kp)%x(1)=x1
+            elseif(obj)then
+              call tfdebugprint(kx1,'tgetfv',1)
+              call tflocald(fitval(kp))
+              fitval(kp)=dtfcopy(kx1)
+            endif
+          else
+            exist=.false.
+            return
           endif
           if(ix2 /= 0)then
             mfitp(kp)=ix2+1
@@ -199,7 +250,7 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
           endif
           return
         endif
-10    continue
+      enddo
       exist=.false.
       return
       end

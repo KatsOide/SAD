@@ -5,6 +5,7 @@
       use macphys
       use macvar
       use macfile
+      use beamline, only:itfdummyline,tfsetbeamlinename
       implicit none
 c     export
       integer*8 parptr,xbase,pbase
@@ -25,7 +26,6 @@ c      integer*4 idxtws
       integer*4 sync,nxl(3),nxl0
       integer*8 nxp(3),nxp0
       integer*4 span$,cent$e
-      integer*4 itfdummyline
       real*8  p0,charge,mass,em(2),sigs,sige
       real*8  v0,dist,comp,df,de,ex,ey,r0,r
       real*8 RgetGL

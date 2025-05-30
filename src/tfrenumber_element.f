@@ -1,5 +1,5 @@
       subroutine tfrenumber_element(isp1, kx, irtc)
-      use tfstk
+      use geto
       use ffs
       use tffitcode
       use ffs_pointer, only:idelc,pnamec
@@ -31,7 +31,7 @@ c     Checking number of arguments
 
 c     Checking 1st argument
          index = -1
-         call tfgetstrns(ktastk(isp1 + 1), name, namel)
+         call tfgetstrns(dtastk(isp1 + 1), name, namel)
          if(namel .le. 0)exit BODY
          if(ifany1(name(1:namel), namel, '*%{<|.', 1) .gt. 0)exit BODY
 

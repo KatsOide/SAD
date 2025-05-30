@@ -1,0 +1,19 @@
+FFS;
+
+SetDirectory[Environment["SAD_ROOTPATH"]//"/Documents/LaTeX/"];
+d=Delete[Get["LTData.sad"],{1,1,1}];
+f=d[[1,1,,2]];
+ReleaseHold[d[[1]]];
+Do[
+  If[~FileQ[f[[k]]],
+    Print[{f[[k]],d[[1,1,k,1,1]]}];
+    System["rm "//f[[k]]];
+    $LTPDF[d[[1,1,k,1,1]]]=.],
+  {k,Length[f]}];
+
+d1={?$LTPDF,Hold[{$LTPNG:=$LTPNG,$LTPNG[__]:=""}]};
+Put[d1,"LTData.sad"];
+
+susp;
+
+

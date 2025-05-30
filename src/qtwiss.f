@@ -134,7 +134,7 @@ c     end   initialize for preventing compiler warning
         endif
 c        if(l > 20200 .and. l < 20300)then
 c        if(l > 20200 .and. mod(l,100) == 0)then
-c        write(*,'(a,2i5,1p6g15.7)')'qtwiss1 ',l,ltyp,cod
+c        write(*,'(a,2i5,1p10g12.4)')'qtwiss1-1 ',l,ltyp,cod
 c        endif
         if(ltyp > icMARK)then
           if(.not. mat)then
@@ -145,13 +145,11 @@ c        endif
             if(itgetfpe() /= 0)then
               call tclrfpe
               over=.true.
-c              write(*,*)'qtwis1-getfpe',
               go to 9000
             endif
             trtr=tr(1,1)+tr(2,2)+tr(3,3)+tr(4,4)
             if(ktfenanq(trtr))then
               over=.true.
-c              write(*,*)'qtwis1-enanq',
               go to 9000
             endif
             if(insmat)then
@@ -165,7 +163,6 @@ c              write(*,*)'qtwis1-enanq',
             by0=twiss(ip1,mfitby)
             if(bx0 > 0.d0 .and. by0 > 0.d0 .and. itgetfpe() == 0)then
             else
-c              write(*,'(a,4i8,1p2g15.7)')'qtwiss-over 3 ',l,ip1,ip0,l1,bx0,by0
               do j=ip1-1,ip0+la,-1
                 if(twiss(j,mfitbx) > 0.d0
      $               .and. twiss(j,mfitby) > 0.d0)then
@@ -506,7 +503,6 @@ c            write(*,*)'qtwiss-qwsapc ',l1,ifsize,rlist(ifsize+(l1-1)*21)
             endif
             twiss(ip,mfitnx)=twiss(ip1,mfitnx)+dpsix
             twiss(ip,mfitny)=twiss(ip1,mfitny)+dpsiy
-c            write(*,'(a,i8,2l2,106g15.7)')'qtwiss1-8 ',ip,coup,normal,twiss(ip,1:6)
             call limitnan(twiss(ip,:),twissnan)
           endif
         endif

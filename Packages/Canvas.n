@@ -585,25 +585,24 @@ CanvasGraphics=Class[{},
           p=Rest[p],
           Break[]]]]];
 
-  DeleteOverlapLabel[]:=Module[{p=Union[TickLabels],r,t,rt},
+  DeleteOverlapLabel[]:=Module[{p=Union[TickLabels],r,w,r1},
     TickLabels=p;
-    If[Length[p]>1,
-      r={CanvasWidget[BBox[p[[1]]]]};
-      p=Rest[p];
-      While[Length[p],
-        t=CanvasWidget[Find$WithTag[p[[1]]]];
-        Do[
-          If[Length[t]<=1,Break[]];
-          rt=CanvasWidget[BBox[t[[1]]]];
-          Scan[
-            If[OverlapQ[rt,#],
-              CanvasWidget[Delete]=t[[1]];
-              Break[]]&,
-            r];
-          t=Reverse[Rest[t]],
-          {2}];
-        AppendTo[r,CanvasWidget[BBox[p[[1]]]]];
-        p=Rest[p]]]];
+    w=Flatten[CanvasWidget[Find$WithTag[#]][[{1,-1}]]&/@p];
+    r=CanvasWidget[BBox[#]]&/@w;
+    While[Length[w]>2,
+      r1=r[[1]];
+      Do[
+        If[OverlapQ[r1,r[[k]]],
+          If[r[[k,3]]-r[[k,1]]>r1[[3]]-r1[[1]],
+            CanvasWidget[Delete]=w[[k]],
+            CanvasWidget[Delete]=w[[1]]];
+          w=Delete[w,{{1},{k}}];
+          r=Delete[r,{{1},{k}}];
+          Break[]],
+        {k,2,Length[w]}];
+      r=Rest[r];
+      w=Rest[w]];
+    ];
 
   ExpandFrameTicks[Automatic]={True,True,Ticks,Ticks};
   ExpandFrameTicks[{Automatic,l__}]:=ExpandFrameTicks[{True,l}];
@@ -1411,23 +1410,33 @@ CanvasGraphics=Class[{},
   UnitLabelY[""|" ",__]=Null;
   UnitLabelY[exps_,fltag_,font_,"e"]:=
     Module[{bb=CanvasWidget[BBox[fltag]],bbf=CanvasWidget[BBox[fltag[2,-1]]],
-      et="E"//fltag},
+      et="E"//fltag,p,w,bbw},
+      p={Max[bb[[1]],bbf[[1]]],Max[bb[[2]],bbf[[2]]]};
+      If[p[[2]]<=bbf[[2]],
+        w=CanvasWidget[Find$WithTag[fltag]][[-1]];
+        bbw=CanvasWidget[BBox[w]];
+        p={bbw[[1]],bbw[[4]]}];
       CanvasWidget[Create$Text] = {
-        {bbf[[1]]-2,Max[bb[[2]],bbf[[2]]]-2},
+        p,
         Text->exps,Font->font,Tags->{et,FrameTag},
-        Anchor->"ne"};
-      If[CanvasWidget[BBox[et]][[4]]>=bb[[2]],
-        CanvasWidget[Move]={et,bb[[1]]-bbf[[1]],0}]
+        Anchor->"se"};
+!      If[CanvasWidget[BBox[et]][[4]]>=bb[[2]],
+!        CanvasWidget[Move]={et,bb[[1]]-bbf[[1]],0}]
       ];
   UnitLabelY[exps_,fltag_,font_,"w"]:=
     Module[{bb=CanvasWidget[BBox[fltag]],bbf=CanvasWidget[BBox[fltag[2,-1]]],
-      et="E"//fltag},
+      et="E"//fltag,p,w,bbw},
+      p={bbf[[3]],Max[bb[[2]],bbf[[2]]]};
+      If[p[[2]]<=bbf[[2]],
+        w=CanvasWidget[Find$WithTag[fltag]][[-1]];
+        bbw=CanvasWidget[BBox[w]];
+        p={bbw[[3]],bbw[[4]]}];
       CanvasWidget[Create$Text] = {
-        {bbf[[3]]+2,Max[bb[[2]],bbf[[2]]]-2},
+        p,
         Text->exps,Font->font,Tags->{et,FrameTag},
-        Anchor->"nw"};
-      If[CanvasWidget[BBox[et]][[4]]>=bb[[2]],
-        CanvasWidget[Move]={et,bb[[3]]-bbf[[3]],0}]
+        Anchor->"sw"};
+!      If[CanvasWidget[BBox[et]][[4]]>=bb[[2]],
+!        CanvasWidget[Move]={et,bb[[3]]-bbf[[3]],0}]
       ];
 
   FrameTickX[yy_,anc_,Mt_,logdt_,fltag_,font_,fun_List,ful_]:=
@@ -1556,7 +1565,7 @@ CanvasGraphics=Class[{},
 
   TickExp[Mt_]:=Module[{x=Max[Abs[Mt]]},
     If[10^5>x>10^-3,{0,"",1},
-      {x=Floor[Log[10,x]],If[x<>0,"x10`u"//x//"`n ","",""],10^x}]];
+      {x=Floor[Log[10,x]],If[x<>0,"x10`u"//x//"`n","",""],10^x}]];
 
   DateForm[s_,s0_]:=SuppressZero[
     If[s[12,-1]==s0[12,-1]=="00:00:00",
@@ -2130,9 +2139,9 @@ CanvasGraphics=Class[{},
     LegendPos = p;
     ];
 
-  AdjustLegend1[ls_,r_,r1_,ida_,d_:0]:=Module[{
+  AdjustLegend1[ls_,r_,r1_,ida_,d0_:0]:=Module[{
     id=Join[BGItems,ida],
-    novmin=Infinity,zrmin,zr=CanvasWidget[BBox[ls]]+{d,d,-d,-d},ov,nov,d=10,dx,dy},
+    novmin=Infinity,zrmin,zr=CanvasWidget[BBox[ls]]+{d0,d0,-d0,-d0},ov,nov,d=10,dx,dy},
     If[zr[[1]]>=zr[[3]] || zr[[2]]>=zr[[4]],
       Return[INF]];
     If[r<=>r1,
@@ -2175,7 +2184,7 @@ CanvasGraphics=Class[{},
     novmin
     ];
 
-  AdjustLegend2[ls_,r_,r1_,ida_]:=Module[{res,d=0},
+  AdjustLegend2[ls_,r_,r1_,ida_]:=Module[{res,d=-5},
     While[
       (res=AdjustLegend1[ls,r,r1,ida,d])<=>INF,
       d+=5];

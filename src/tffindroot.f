@@ -1,6 +1,14 @@
       module findr
       use tfstk
       real*8 ,parameter :: alarge=1.d300
+      integer*8 ,save :: itfres=0
+      type (sad_descriptor), save ::
+     $     itfchisq,itfsigma,itfgood,itfconf,itfcov,itfdm
+      data itfchisq%k,itfsigma%k,itfgood%k,itfconf%k,itfcov%k,
+     $     itfdm%k
+     $     /0,0,0,0,0,0/
+      type(sad_descriptor) ,save::iads,iader
+      data iads%k /0/
 
       type symv
       sequence
@@ -65,8 +73,6 @@ c        f=merge(-dg/(s+b),(s-b)/3.d0/a,b > 0.d0)
       real*8 eps,d0,frac
       real*8 , allocatable :: v0(:),vmin(:),vmax(:)
       logical*4 trace,used
-      integer*8 itfres
-      data itfres /0/
       if(isp < isp1+2)then
         irtc=itfmessage(9,'General::narg','"2 or more"')
         return
@@ -496,11 +502,6 @@ c     endif
       real*8 r,vx,cut,cutoff
       real*8 , pointer :: datap(:,:)
       logical*4 used
-      type (sad_descriptor), save ::
-     $     itfchisq,itfsigma,itfgood,itfconf,itfcov,itfdm
-      data itfchisq%k,itfsigma%k,itfgood%k,itfconf%k,itfcov%k,
-     $     itfdm%k
-     $     /0,0,0,0,0,0/
       if(isp1 > isp-4)then
         irtc=itfmessage(9,'General::narg','"4 or more"')
         return
@@ -1039,8 +1040,6 @@ c          df(i)=merge(vx,vx-a(2,i),deriv)
       type (symv) ,intent(in):: sav(nvar)
       integer*8 ierr0
       logical*4 euv
-      type(sad_descriptor) ,save::iads,iader
-      data iads%k /0/
       if(iads%k == 0)then
         iads=kxsymbolz('System`D',8)
         ks=tfsyeval(iads,irtc)

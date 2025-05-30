@@ -1,3 +1,8 @@
+      module rndsr
+      real*8 , parameter :: cutoff=0.9999d0
+      integer*4 , parameter :: npmax=10000
+
+      contains
       real*8 function drndsr()
 C  YOKOYA's subroutine for
 C  RANDOM NUMBER GENERATOR OF SYNCHROTRON RADIATION SPECTRUM.
@@ -40,10 +45,8 @@ c returns: a random energy loss due to SR in unit of uc
 c cutoff: threshold to ingnore multiple photons beyond this probability 
 c npmax: the maximum number of photons to try
       implicit none
-      real*8 anp,p,p0,pn,tran,drndsr,an,x
-      real*8 , parameter :: cutoff=0.9999d0
+      real*8 anp,p,p0,pn,tran,an,x
       integer*4 np
-      integer*4, parameter:: npmax=10000
       p0=exp(-anp)
       pn=p0
       p=tran()
@@ -76,9 +79,7 @@ c npmax: the maximum number of photons to try
       implicit none
       real*8 , intent(in)::anp
       real*8 ,intent(out)::dph,an,r1,r2
-      real*8 p,p0,pn,tran,drndsr,x,r,dph1
-      real*8 , parameter :: cutoff=0.9999d0
-      integer*4 , parameter :: npmax=10000
+      real*8 p,p0,pn,tran,x,r,dph1
       integer*4 k
       p0=exp(-anp)
       pn=p0
@@ -116,11 +117,9 @@ c
 c Same as tdusrn, with photonlist generation
 c      
       implicit none
-      integer*4 , parameter :: npmax=10000
       real*8 , intent(in)::anp
       real*8 ,intent(out)::dph,an,r1,r2,dpr(npmax),rph(npmax)
-      real*8 p,p0,pn,tran,drndsr,x,r,dph1
-      real*8 , parameter :: cutoff=0.9999d0
+      real*8 p,p0,pn,tran,x,r,dph1
       integer*4 k
       p0=exp(-anp)
       pn=p0
@@ -154,3 +153,5 @@ c
       endif
       return
       end
+
+      end module

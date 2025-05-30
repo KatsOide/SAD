@@ -460,7 +460,7 @@ c      enddo
       end
 
       recursive function tfget(k,irtc) result(kx)
-      use tfstk
+      use geto
       use tfrbuf
       use tfcsi
       implicit none
@@ -468,7 +468,7 @@ c      enddo
       type (sad_descriptor) kx,kf,kfn
       type (csiparam) sav
       integer*4 ,intent(out):: irtc
-      integer*4 itfgeto,lfn,isp0,itf
+      integer*4 lfn,isp0,itf
       isp0=isp
       isp=isp+1
       dtastk(isp)=k
@@ -511,14 +511,14 @@ c      call tfdebugprint(kx,'tfget-r',1)
       end
 
       subroutine tfread1(lfn,kx)
-      use tfstk
+      use geto
       use tfrbuf
       use tfcsi
       implicit none
       type (sad_descriptor) , intent(out)::kx
       type (csiparam) sav
       integer*4 , intent(in)::lfn
-      integer*4 itfgeto,itf
+      integer*4 itf
       logical*4 openf
       if(lfn <= 0)then
         kx%k=kxeof

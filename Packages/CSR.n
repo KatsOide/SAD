@@ -473,38 +473,40 @@ CSR=Class[{},{},
     ZLr=Spline[zlrlist];
     ZLi=Spline[zlilist]];
 
-  ReadWake[f_,fact_:1]:=Module[{fn=OpenRead[f],d,zc,n,dz1,pos,wl,zl,zx,zr,zi,n1,sigzc,unit,s,opt,fs,c,k},
-    While[Head[unit]<=>Real,
-      s=ReadString[fn];
-      k=0;
-      While[s[++k]===" ",];
-      If[StringPosition["{0123456789.+-",s[k],1]<=>{},
-        fs=StringToStream[s];
-        Check[
-          opt=Read[fs];
-          Switch[Head[opt],
-            Real,
-            zc=opt;
-            {sigzc,unit}=Read[fs,{Real,Real,Real}];
-            unit=1/unit,
-            List,
-            {zc,sigzc,unit}={CenterOfBunch,WakeBunchLength,Unit}/.opt;
-            unit=Switch[unit,
-              "V/pC",1e12,
-              "V/nC",1e9,
-              "V/C",1,
-              _Real,unit];
+  ReadWake[f_,fact_:1]:=Block[{V=1,pC=1e-12,C=1,nC=1e-9},
+    Module[{fn=OpenRead[f],d,zc,n,dz1,pos,wl,zl,zx,zr,zi,n1,sigzc,unit,s,opt,fs,c,k,zunit},
+      While[Head[unit]<=>Real,
+        s=ReadString[fn];
+        k=0;
+        While[s[++k]===" "||s[k]==="#",];
+        If[StringPosition["{0123456789.+-",s[k],1]<=>{},
+          fs=StringToStream[s];
+          Check[
+            opt=Read[fs];
+            Switch[Head[opt],
+              Real,
+              zc=opt;
+              {sigzc,unit}=Read[fs,{Real,Real,Real}];
+              unit=1/unit,
+              List,
+              {zc,sigzc,unit,zunit}={CenterOfBunch,WakeBunchLength,Unit,zUnit}/.opt/.{zUnit->1,CenterOfBunch->0};
+              unit=Switch[unit,
+                "V/pC",1e12,
+                "V/nC",1e9,
+                "V/C",1,
+                _Real,unit];
             ],];
         StandardForm[$FORM="S10.4";
-          Print[{s,k,Head[opt],unit}]];
+          Print[{s,k,Head[opt],unit,zunit}]];
         Close[fs]]
       ];
     unit=fact*1e-12*unit;
-    d=Table[{z,w}=Read[fn,{Real,Real}];
+    d00=d=Sort[Table[{z,w}=Read[fn,{Real,Real},WordSeparators->" ,"];
       If[z===EndOfFile,Close[fn];Break[]];
-      {z-zc,w*unit},{Infinity}];
+      {(z-zc)*zunit,w*unit},{Infinity}]];
     dz1=(d[[-1,1]]-d[[1,1]])/(Length[d]-1);
     n1=Floor[zspan/dz1];
+!    Print[{Dimensions[d],dz1,n1}];
     If[Mod[n1+Length[d],2],n1++];
     d=Join[Thread[{Range[-n1,-1]*dz1+d[[1,1]],Table[0,{n1}]}],d];
     pos=Position[d,_?((#[[1]]>=-dz1/2)&),1,1][[1,1]];
@@ -515,7 +517,7 @@ CSR=Class[{},{},
     zr=Thread[{zx,RotateRight[Re[zl],n/2]}];
     zi=Thread[{zx,RotateRight[Im[zl],n/2]}];
     ZLr=Spline[zr];
-    ZLi=Spline[zi]];
+    ZLi=Spline[zi]]];
 
   WriteZL[file_,opt___]:=Module[{f=OpenWrite[file]},
     Write[f,Override[{opt,"BunchLength"->sigz,"ZL"->{ZLr,ZLi}}]];
@@ -556,7 +558,7 @@ CSR=Class[{},{},
       "M,  Free: ",Floor[frm/2^20],"M"]
     ];
 
-  With[{def={Literal[BunchLength]:>BunchLength,Literal[PipePlot]:>True,Label->True,
+  With[{def={Literal[BunchLength]:>BunchLength,Literal[PipePlot]:>False,Label->True,
     PipePlotOffset->{0,0}}},
     WLPlot[min_,max_,opt___]:=Module[{gr,z,label,gp,nz=Length[ZLr[[1,1]]],
       {sz,pp,lp,ppo}={Literal[BunchLength],Literal[PipePlot],Label,Literal[PipePlotOffset]}/.{opt}/.def},
@@ -574,6 +576,7 @@ CSR=Class[{},{},
           ""]];
       gr=Plot[WL[z,sz],{z,min,max},
         opt,
+        PlotRange->All,
         PlotPoints->nz*2,
         GridLines->{Automatic,Automatic},
         DisplayFunction->Identity,
@@ -599,7 +602,7 @@ CSR=Class[{},{},
               "Mesh Ratio = "//MeshRatio//",  "//
                 "`fs`n`dz`n = "//BunchLength*1000//" mm",
           ""]];
-      gr=Plot[{ZLr[x]*ZUnit,ZLi[x]*ZUnit},{x,If[omin<omax/10,0,omin],omax},
+      gr00=gr=Plot[{ZLr[x]*ZUnit,ZLi[x]*ZUnit},{x,If[omin<omax/10,0,omin],omax},
         DisplayFunction->Identity,
         opt,
         PlotLabel->label,

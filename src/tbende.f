@@ -372,7 +372,7 @@ c      endif
      $     dxfr1,dyfr1,dxfr2,dyfr2,phi1,
      $     eps,akn,tanp1,tanp2,f,
      $     dyfra1,dyfra2,psi1,psi2,cod11,
-     $     cn,sn,xsn,dcn,phin,aln,alx0,akx0,
+     $     cn,sn,xsn,dcn,phin,aln,alx0,akx0,epsr1,
      $     rbc,akc,alc,phic,f1r,f2r
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       complex*16 akm(0:nmult)
@@ -448,18 +448,19 @@ c      write(*,'(a,1p10g12.4)')'tbende-2 ',cod(1:5)
       rbc=1.d0-(f1r+f2r)/al0
       phic=phi0*rbc
       eps=merge(epsbend,epsbend*eps0,eps0 == 0.d0)
+      epsr1=merge(epsrad,epsrad*eps0,eps0 == 0.d0)
       drhob=rhob-rho0
       aind=rho0/phi0*ak
       b=brhoz/rhob
       b1=b*aind/rhob
       ndiv=merge(1,1+int(abs(phic/eps)),ak == 0.d0)
       if(enarad)then
-        nrad=int(abs(al0*rbc/epsrad*crad*(h0*b)**2))
+        nrad=1+int(abs(al0*rbc/epsr1*crad*(h0*b)**2))
         ndiv=max(ndiv,int(nrad*emidiv*emidib),
-     1       int(abs(phib*h0*anrad)/epsrad/1.d6*emidiv*emidib))
+     $       1+int(abs(phib*h0*anrad)/epsr1/1.d6*emidiv*emidib))
       endif
       if(calpol)then
-        ndiv=max(ndiv,int(max(abs(phic),1.d-6)*h0*gspin/dphipol))
+        ndiv=max(ndiv,1+int(max(abs(phic),1.d-6)*h0*gspin/dphipol))
       endif
       call setndivelm(l,ndiv)
       call tinitr(trans1)

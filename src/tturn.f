@@ -2,6 +2,21 @@
       real*8, parameter ::plimit=0.9999d0,zlimit=1.d10,vmax=.9d0,
      $     ampmax=0.9999d0,txmax=1.d100
       real*8 xlimit
+
+      contains
+      pure subroutine limittrack(np,x,px,y,py,z)
+      use tfstk,only:limitnan
+      implicit none
+      integer*4 ,intent(in):: np
+      real*8 ,intent(inout):: x(np),px(np),y(np),py(np),z(np)
+      call limitnan(x,xlimit)
+      call limitnan(px,plimit)
+      call limitnan(y,xlimit)
+      call limitnan(py,plimit)
+      call limitnan(z,zlimit)
+      return
+      end subroutine
+
       end module
 
 c$$$      subroutine tturn(np,x,px,y,py,z,g,dv,sx,sy,sz,kptbl,n)

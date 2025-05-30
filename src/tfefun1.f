@@ -1,12 +1,12 @@
       recursive function tfefun1(isp1,id0,ref,irtc)
      $     result(kx)
-      use tfstk
+      use tftr
       use tflinepcom
       use temw, only:tfnormalcoord,tfinitemip
       use ffsa,only:tfffs
+      use beamline,only:tfbeamlinename,tfexpandbeamline,tfextractbeamline,tfsetelement
       implicit none
-      type (sad_descriptor) kx,kxj,kispi,tfextractbeamline,
-     $     tfsetelement,teunmapp
+      type (sad_descriptor) kx,kxj,kispi,teunmapp
       type (sad_dlist), pointer :: kli
       type (sad_rlist), pointer :: klx
       integer*8 ka

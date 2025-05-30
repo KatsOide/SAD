@@ -961,8 +961,9 @@ c          endif
       use tfcode
       use repl,only:tfsortsymbolstk
       use sameq,only:tfsymbollistqo
+      use tfcx,only:tfrecompilearg
       implicit none
-      type (sad_descriptor) kx,tfrecompilearg
+      type (sad_descriptor) kx
       type (sad_deftbl) dtbl
       type (sad_dlist), pointer :: klx
       type (sad_pat), pointer :: pat

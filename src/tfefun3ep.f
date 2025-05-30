@@ -283,7 +283,7 @@ c            ,    ,    ,    ,    ,    ,    ,    ,    ,    ,
         irtc=itfmessage(9,'General::wrongtype','"Real Number"')
         return
       endif
-      t = rtastk(isp)
+      t = real(rtastk(isp))
       call ecapendio(t)
       kx=0
       irtc=0
@@ -323,7 +323,7 @@ c      endif
         irtc=itfmessage(9,'General::wrongtype','"Real Number"')
         return
       endif
-      t = rtastk(isp)
+      t = real(rtastk(isp))
       call ecapendevent(t)
       kx=0
       irtc=0
