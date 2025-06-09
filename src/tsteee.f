@@ -1,5 +1,5 @@
       subroutine tsteee(trans,cod,beam,srot,al,phib,dx,dy,theta,enarad,
-     $     apsi1,apsi2,fb1,fb2,mfring,fringe,next,l)
+     $     apsi1,apsi2,fb1,fb2,mfring,fringe,eps0,next,l)
       use ffs_flag
       use tmacro
       use bendib, only:rbh,rbl,tbendal
@@ -17,17 +17,18 @@
      1           a9=35.d0/1152.d0,a11=63.d0/2816.d0,
      1           a13=231.d0/13312.d0,a15=143.d0/10240.d0)
       integer*4 ,intent(in):: mfring,l
+      real*8 ,intent(in):: al,phib,dx,dy,theta,eps0,fb1,fb2,apsi1,apsi2
+      logical*4 ,intent(in):: next,enarad,fringe
       integer*4 nrad,ndiv,n,n1,n2
-      real*8 trans(6,12),cod(6),beam(42),srot(3,9),
-     $     al,phib,dx,dy,theta,f1r,f2r,
-     $     fb1,fb2,rhob,rbc,alc,phic,alx,alr,
+      real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
+      real*8 f1r,f2r,rhob,rbc,alc,phic,alx,alr,
      $     dxfr1,dyfr1,
      $     dxfr2,dyfr2,
      $     b,aln,phin,pr,pxi,pyi,rhoe,s,dpz1,
      $     pz1,dpx,pxf,d,w,u,spz,spx,phsq,dl,dpz2,pz2,
-     $     dyfra1,dyfra2,apsi1,apsi2,tanp1,tanp2
+     $     dyfra1,dyfra2,tanp1,tanp2,epsr1
       real*8 trans1(6,6)
-      logical*4 enarad,fringe,next,prev,krad
+      logical*4 prev,krad
       if(al == 0.d0)then
         call tthine(trans,cod,beam,srot,2,al,-phib,dx,dy,theta,.false.,l)
         return
@@ -75,9 +76,10 @@
         tanp1=tan(apsi1)
         tanp2=tan(apsi2)
         b=-brhoz/rhob
-        nrad=int(abs(alc/epsrad*crad*(h0*b)**2))
-        ndiv=1+max(int(nrad*emidiv*emidib),
-     1       int(abs(phib*h0*anrad)/epsrad/1.d6*emidiv*emidib))
+        epsr1=merge(epsrad,epsrad*eps0,eps0 == 0.d0)
+        nrad=1+int(abs(alc/epsr1*crad*(h0*b)**2))
+        ndiv=max(int(nrad*emidiv*emidib),
+     1       1+int(abs(phib*h0*anrad)/epsr1/1.d6*emidiv*emidib))
 c        write(*,*)'tsteee ',ndiv,nrad,phib,b,epsrad,crad
       else
 c     begin initialize for preventing compiler warning
