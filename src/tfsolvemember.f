@@ -1,4 +1,3 @@
-
       module objsym
       use tfstk
       implicit none
@@ -252,143 +251,6 @@ c        call tfstk2l(listx,listx)
       endif
       return
       end
-
-      subroutine tfatt(isp1,kx,eval,irtc)
-      implicit none
-      type (sad_descriptor) ,intent(out):: kx
-      integer*4 ,intent(in):: isp1
-      integer*4 ,intent(out):: irtc
-      type (sad_descriptor) k1
-      integer*4 isp0,i
-      logical*4 ,intent(in):: eval
-      if(isp == isp1+2)then
-        call tfclassmember(dtastk(isp1+1),dtastk(isp),kx,eval,irtc)
-        return
-      endif
-      k1=dtastk(isp1+1)
-      do i=isp1+2,isp
-        call tfclassmember(k1,dtastk(i),k1,eval,irtc)
-c        call tfdebugprint(k1,'tfatt',1)
-c        write(*,*)'with: ',irtc,i
-        if(irtc /= 0)then
-          go to 10
-        endif
-      enddo
-      kx=k1
-      return
- 10   if(irtc > 0)then
-        return
-      endif
-      isp=isp+1
-      isp0=isp
-      ktastk(isp)=ktfoper+mtfatt
-      isp=isp+1
-      dtastk(isp)=k1
-      dtastk(isp+1:isp+isp0-i)=dtastk(i:isp0-1)
-      isp=isp+isp0-1
-      kx=kxcompose(isp0)
-      isp=isp0-1
-      irtc=0
-      return
-      end
-
-      recursive function tfrecompilearg(k,rep,irtc) result(kx)
-      use tfcode
-      implicit none
-      type (sad_descriptor) kx,k,k1,k2,kd
-      type (sad_dlist), pointer :: list,klx
-      type (sad_rlist), pointer :: klr
-      type (sad_pat), pointer :: pat
-      type (sad_symbol), pointer :: sym2
-      integer*8 ka1
-      integer*4 irtc,i,m,isp1
-      logical*4 rep,rep1,rep2
-      irtc=0
-      rep=.false.
-      kx=k
-      if(ktflistq(k,list))then
-        if(iand(list%attr,lmemberlist) == 0)then
-          return
-        endif
-        k1=list%head
-        if(k1%k == ktfoper+mtfhold)then
-          return
-        endif
-        k1=tfrecompilearg(k1,rep,irtc)
-        if(ktfreallistq(list))then
-          if(rep)then
-            m=list%nl
-            kx=kxavaloc(-1,m,klr)
-            klr%rbody(1:m)=list%rbody(1:m)
-c            call tmov(rlist(ka+1),rlist(kax+1),m)
-            klr%attr=ior(larglist,list%attr)
-            klr%head=dtfcopy(k1)
-          endif
-          return
-        endif
-        isp1=isp
-        isp=isp+1
-        dtastk(isp)=k1
-        rep2=.false.
-        do i=1,list%nl
-          isp=isp+1
-          dtastk(isp)=tfrecompilearg(list%dbody(i),rep1,irtc)
-          if(irtc /= 0)then
-            isp=isp1
-            return
-          endif
-          rep2=rep2 .or. rep1
-        enddo
-        if(list%head%k == ktfoper+mtfatt)then
-          if(isp == isp1+3)then
-            k2=dtastk(isp1+2)
-            if(ktfsymbolq(k2,sym2))then
-              if(sym2%override /= 0)then
-                if(iand(sym2%attr,iattrdynamic) /= 0)then
-                  go to 120
-                endif
-              endif
-c              call tfdebugprint(ktastk(isp1+1),'rcmparg',3)
-              call tfatt(isp1+1,kx,.false.,irtc)
-              if(irtc > 0)then
-                isp=isp1
-                return
-              elseif(irtc == 0)then
-c                call tfdebugprint(kx,'==>',3)
-                isp=isp1
-                rep=.true.
-                return
-              endif
-              irtc=0
-            endif
-          endif
-        endif
- 120    if(rep .or. rep2)then
-          kx%k=ktflist+ktfcompose(isp1+1,klx)
-          klx%attr=ior(larglist,list%attr)
-          rep=.true.
-        endif
-        isp=isp1
-      elseif(ktfpatq(k,pat))then
-        k1=pat%expr
-        if(ktfrefq(k1,ka1) .and. ka1 > 3)then
-          k1=tfrecompilearg(k1,rep,irtc)
-          if(irtc /= 0)then
-            return
-          endif
-        endif
-        kd=pat%default
-        kd=tfrecompilearg(kd,rep1,irtc)
-        if(irtc /= 0)then
-          return
-        endif
-        rep=rep .or. rep1
-        if(rep)then
-          kx=kxpcopyss(k1,pat%head,pat%sym%alloc,kd)
-        endif
-      endif
-      return
-      end function
 
       subroutine tfclearmemberobject(isp1,kx,irtc)
       use objsym
@@ -835,3 +697,43 @@ c      call tfdebugprint(kx,'==>',3)
       end
 
       end module tfcx
+
+      subroutine tfatt(isp1,kx,eval,irtc)
+      use tfcx
+      implicit none
+      type (sad_descriptor) ,intent(out):: kx
+      integer*4 ,intent(in):: isp1
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) k1
+      integer*4 isp0,i
+      logical*4 ,intent(in):: eval
+      if(isp == isp1+2)then
+        call tfclassmember(dtastk(isp1+1),dtastk(isp),kx,eval,irtc)
+        return
+      endif
+      k1=dtastk(isp1+1)
+      do i=isp1+2,isp
+        call tfclassmember(k1,dtastk(i),k1,eval,irtc)
+c        call tfdebugprint(k1,'tfatt',1)
+c        write(*,*)'with: ',irtc,i
+        if(irtc /= 0)then
+          go to 10
+        endif
+      enddo
+      kx=k1
+      return
+ 10   if(irtc > 0)then
+        return
+      endif
+      isp=isp+1
+      isp0=isp
+      ktastk(isp)=ktfoper+mtfatt
+      isp=isp+1
+      dtastk(isp)=k1
+      dtastk(isp+1:isp+isp0-i)=dtastk(i:isp0-1)
+      isp=isp+isp0-1
+      kx=kxcompose(isp0)
+      isp=isp0-1
+      irtc=0
+      return
+      end

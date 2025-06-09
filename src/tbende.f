@@ -391,7 +391,7 @@ c      endif
         if(ak == 0.d0)then
           call tsteee(trans,cod,beam,srot,al0,-phib,dx,dy,theta,enarad,
      $         apsi1,apsi2,
-     $         fb1,fb2,mfring,fringe,next,l)
+     $         fb1,fb2,mfring,fringe,eps0,next,l)
         elseif(phib == phi0)then
           call tquade(trans,cod,beam,srot,al0,ak,0.d0,
      1     dx,dy,theta,enarad,fringe,0.d0,0.d0,0.d0,0.d0,0,eps0,
@@ -448,16 +448,17 @@ c      write(*,'(a,1p10g12.4)')'tbende-2 ',cod(1:5)
       rbc=1.d0-(f1r+f2r)/al0
       phic=phi0*rbc
       eps=merge(epsbend,epsbend*eps0,eps0 == 0.d0)
-      epsr1=merge(epsrad,epsrad*eps0,eps0 == 0.d0)
       drhob=rhob-rho0
       aind=rho0/phi0*ak
       b=brhoz/rhob
       b1=b*aind/rhob
       ndiv=merge(1,1+int(abs(phic/eps)),ak == 0.d0)
       if(enarad)then
+        epsr1=merge(epsrad,epsrad*eps0,eps0 == 0.d0)
         nrad=1+int(abs(al0*rbc/epsr1*crad*(h0*b)**2))
         ndiv=max(ndiv,int(nrad*emidiv*emidib),
      $       1+int(abs(phib*h0*anrad)/epsr1/1.d6*emidiv*emidib))
+c        write(*,*)'tbende ',ndiv,nrad,phib,b,epsrad,crad
       endif
       if(calpol)then
         ndiv=max(ndiv,1+int(max(abs(phic),1.d-6)*h0*gspin/dphipol))

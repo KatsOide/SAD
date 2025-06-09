@@ -1903,7 +1903,7 @@ c        if(ka1 > 0 .and. ktfrealq(k2))then
       use tfshare
       use tfcsi,only:cssetlfno,icslfno,icslfnm
       use findr,only:tffindroot,tffit
-      use tfcx,only:tfatt,tfsolvemember,tfreplacemember
+      use tfcx,only:tfsolvemember,tfreplacemember
       use objsym, only:tfobjectsymbol
       use mathfun
       use eexpr
@@ -4191,7 +4191,7 @@ c            dtastk(isp0+i)=merge(list%dbody(i),dlist(kai+j),kai == ktfref)
       use tfstk
       use funs
       use eeval
-      use tfcx,only:tfatt,tfsolvemember
+      use tfcx,only:tfsolvemember
       use sameq,only:tfrefq
       implicit none
       type (sad_descriptor) kx,k1,tfefun1,tfpuref

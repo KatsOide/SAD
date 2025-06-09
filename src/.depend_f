@@ -296,7 +296,7 @@ tfdapert.o: tfdapert.f tffs.o tfstk.o toplvl.o trackd.o
 tfdbun.o: tfdbun.f tffs.o
 tfdisp.o: tfdisp.f initb1.o tffs.o tfstk.o tgfun.o tgrot.o toplvl.o
 tfdot.o: tfdot.f itfmaloc.o tfloor.o tfstk.o
-tfdset.o: tfdset.f itfpmat.o tfeeval.o tffuns.o tfreplace.o tfsameq.o tfsolvemember.o tfstk.o
+tfdset.o: tfdset.f itfpmat.o tfeeval.o tffuns.o tfreplace.o tfsameq.o tfstk.o
 tfearray.o: tfearray.f
 tfecmplx.o: tfecmplx.f tfstk.o
 tfeeval.o: tfeeval.f tffuns.o tfstk.o tfstrbuf.o toplvl.o

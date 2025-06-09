@@ -961,7 +961,6 @@ c          endif
       use tfcode
       use repl,only:tfsortsymbolstk
       use sameq,only:tfsymbollistqo
-      use tfcx,only:tfrecompilearg
       implicit none
       type (sad_descriptor) kx
       type (sad_deftbl) dtbl
@@ -1164,6 +1163,104 @@ c     $       iand(-lmemberlist-1,klx%attr),member)
       endif
       return
       end
+
+      recursive function tfrecompilearg(k,rep,irtc) result(kx)
+      use tfcode
+      implicit none
+      type (sad_descriptor) kx,k,k1,k2,kd
+      type (sad_dlist), pointer :: list,klx
+      type (sad_rlist), pointer :: klr
+      type (sad_pat), pointer :: pat
+      type (sad_symbol), pointer :: sym2
+      integer*8 ka1
+      integer*4 irtc,i,m,isp1
+      logical*4 rep,rep1,rep2
+      irtc=0
+      rep=.false.
+      kx=k
+      if(ktflistq(k,list))then
+        if(iand(list%attr,lmemberlist) == 0)then
+          return
+        endif
+        k1=list%head
+        if(k1%k == ktfoper+mtfhold)then
+          return
+        endif
+        k1=tfrecompilearg(k1,rep,irtc)
+        if(ktfreallistq(list))then
+          if(rep)then
+            m=list%nl
+            kx=kxavaloc(-1,m,klr)
+            klr%rbody(1:m)=list%rbody(1:m)
+c            call tmov(rlist(ka+1),rlist(kax+1),m)
+            klr%attr=ior(larglist,list%attr)
+            klr%head=dtfcopy(k1)
+          endif
+          return
+        endif
+        isp1=isp
+        isp=isp+1
+        dtastk(isp)=k1
+        rep2=.false.
+        do i=1,list%nl
+          isp=isp+1
+          dtastk(isp)=tfrecompilearg(list%dbody(i),rep1,irtc)
+          if(irtc /= 0)then
+            isp=isp1
+            return
+          endif
+          rep2=rep2 .or. rep1
+        enddo
+        if(list%head%k == ktfoper+mtfatt)then
+          if(isp == isp1+3)then
+            k2=dtastk(isp1+2)
+            if(ktfsymbolq(k2,sym2))then
+              if(sym2%override /= 0)then
+                if(iand(sym2%attr,iattrdynamic) /= 0)then
+                  go to 120
+                endif
+              endif
+c              call tfdebugprint(ktastk(isp1+1),'rcmparg',3)
+              call tfatt(isp1+1,kx,.false.,irtc)
+              if(irtc > 0)then
+                isp=isp1
+                return
+              elseif(irtc == 0)then
+c                call tfdebugprint(kx,'==>',3)
+                isp=isp1
+                rep=.true.
+                return
+              endif
+              irtc=0
+            endif
+          endif
+        endif
+ 120    if(rep .or. rep2)then
+          kx%k=ktflist+ktfcompose(isp1+1,klx)
+          klx%attr=ior(larglist,list%attr)
+          rep=.true.
+        endif
+        isp=isp1
+      elseif(ktfpatq(k,pat))then
+        k1=pat%expr
+        if(ktfrefq(k1,ka1) .and. ka1 > 3)then
+          k1=tfrecompilearg(k1,rep,irtc)
+          if(irtc /= 0)then
+            return
+          endif
+        endif
+        kd=pat%default
+        kd=tfrecompilearg(kd,rep1,irtc)
+        if(irtc /= 0)then
+          return
+        endif
+        rep=rep .or. rep1
+        if(rep)then
+          kx=kxpcopyss(k1,pat%head,pat%sym%alloc,kd)
+        endif
+      endif
+      return
+      end function
 
       integer*8 function ktfrehash(kad0,iup)
       use tfcode

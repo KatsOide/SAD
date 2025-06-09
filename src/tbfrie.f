@@ -5,48 +5,31 @@
       use temw,only:tmulbs
       implicit none
       integer*4 i
-      real*8 trans(6,12),cod(6),beam(42),trans1(6,6),
-     $     yi,pr,rho,ak,rhob,pxi
-      logical*4 ent
+      real*8 ,intent(inout)::trans(6,12),cod(6),beam(42)
+      real*8 ,intent(in):: rhob,ak
+      logical*4 ,intent(in):: ent
+      real*8 trans1(6,6),yi,pr,rho,pxi
       yi=cod(3)
       pr=1.d0+cod(6)
       rho=rhob*pr
+      trans1=0.d0
       if(ent)then
         trans1(1,1)=1.d0
-        trans1(1,2)=0.d0
         trans1(1,3)=yi/rho
-        trans1(1,4)=0.d0
-        trans1(1,5)=0.d0
         trans1(1,6)=-(yi/pr)**2/rhob*.5d0
         trans1(2,1)=-ak
         trans1(2,2)=1.d0
         trans1(2,3)=-ak*trans1(1,3)
-        trans1(2,4)=0.d0
-        trans1(2,5)=0.d0
         trans1(2,6)=-ak*trans1(1,6)
-        trans1(3,1)=0.d0
-        trans1(3,2)=0.d0
         trans1(3,3)=1.d0
-        trans1(3,4)=0.d0
-        trans1(3,5)=0.d0
-        trans1(3,6)=0.d0
-        trans1(4,1)=0.d0
         trans1(4,2)=-trans1(1,3)
         trans1(4,3)=ak-cod(2)/rho
         trans1(4,4)=1.d0
-        trans1(4,5)=0.d0
         trans1(4,6)=yi*cod(2)/rho/pr
-        trans1(5,1)=0.d0
         trans1(5,2)=trans1(1,6)
         trans1(5,3)=-trans1(4,6)
-        trans1(5,4)=0.d0
         trans1(5,5)=1.d0
         trans1(5,6)=(yi/pr)**2*cod(2)/rho
-        trans1(6,1)=0.d0
-        trans1(6,2)=0.d0
-        trans1(6,3)=0.d0
-        trans1(6,4)=0.d0
-        trans1(6,5)=0.d0
         trans1(6,6)=1.d0
         do i=1,irad
           trans(4,i)=trans1(4,2)*trans(2,i)+trans1(4,3)*trans(3,i)
@@ -67,40 +50,21 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-1 ',trans1
       else
         pxi=min(pr,max(-pr,cod(2)-ak*cod(1)))
         trans1(1,1)=1.d0
-        trans1(1,2)=0.d0
         trans1(1,3)=yi/rho
-        trans1(1,4)=0.d0
-        trans1(1,5)=0.d0
         trans1(1,6)=-(yi/pr)**2/rhob*.5d0
         trans1(2,1)=-ak
         trans1(2,2)=1.d0
-        trans1(2,3)=0.d0
-        trans1(2,4)=0.d0
-        trans1(2,5)=0.d0
-        trans1(2,6)=0.d0
-        trans1(3,1)=0.d0
-        trans1(3,2)=0.d0
         trans1(3,3)=1.d0
-        trans1(3,4)=0.d0
-        trans1(3,5)=0.d0
-        trans1(3,6)=0.d0
         trans1(4,2)=-trans1(1,3)
         trans1(4,1)=-ak*trans1(4,2)
         trans1(4,3)=ak-pxi/rho
         trans1(4,4)=1.d0
-        trans1(4,5)=0.d0
         trans1(4,6)=yi*pxi/rho/pr
         trans1(5,2)=trans1(1,6)
         trans1(5,1)=-ak*trans1(5,2)
         trans1(5,3)=-trans1(4,6)
-        trans1(5,4)=0.d0
         trans1(5,5)=1.d0
         trans1(5,6)=(yi/pr)**2*pxi/rho
-        trans1(6,1)=0.d0
-        trans1(6,2)=0.d0
-        trans1(6,3)=0.d0
-        trans1(6,4)=0.d0
-        trans1(6,5)=0.d0
         trans1(6,6)=1.d0
         do i=1,irad
           trans(4,i)=trans1(4,1)*trans(1,i)+trans1(4,2)*trans(2,i)
@@ -126,11 +90,13 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       use ffs_flag
       use tmacro
       use temw,only:tmulbs
+c      use kradlib, only:tradke
       use sad_basics
       implicit none
-      real*8 trans0(6,12),cod(6),beam(42),phib,psi,al,
-     $     trans(6,6),trans1(6,6),rhob
-      logical*4 ent
+      real*8 ,intent(inout):: trans0(6,12),cod(6),beam(42)
+      real*8 ,intent(in):: phib,psi,al
+      logical*4 ,intent(in):: ent
+      real*8 trans(6,6),trans1(6,6),rhob,srot(3,9)
       rhob=al/phib
       if(ent)then
         if(psi == 0.d0)then
@@ -155,16 +121,17 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       endif
       call tmultr5(trans0,trans,irad)
       call tmulbs(beam,trans,.true.)
+c      call tradke(trans0,cod,beam,srot,0.d0,0.d0,0.d0)
       return
       end
 
-      subroutine tbedgebody(trans,cod,rhob,psi)
+      pure subroutine tbedgebody(trans,cod,rhob,psi)
       use mathfun, only:asinz
       implicit none
-      real*8 trans(6,6),rhob,cod(6),pr,psi,cosp,sinp,
-     $     sinsq,pxi,pyi,s,dpzi,pzi,phsq,px0,dpz0,pz0,
-     $     xi,pxf,pzf,dpzf,a,b,theta,aa,c,ddpz,s1,
-     $     sqrs,sqrs1
+      real*8 ,intent(inout):: trans(6,6),cod(6)
+      real*8 ,intent(in):: rhob,psi
+      real*8 pr,cosp,sinp,sinsq,pxi,pyi,s,dpzi,pzi,phsq,px0,dpz0,pz0,
+     $     xi,pxf,pzf,dpzf,a,b,theta,aa,c,ddpz,s1,sqrs,sqrs1
       real*8, parameter :: ampmin=1.d-6,ampmax=1.d0-ampmin
       pr=1.d0+cod(6)
       cosp=cos(psi)
@@ -196,42 +163,27 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       theta=asinz(min(ampmax,max(-ampmax,a/phsq)))
       cod(3)=cod(3)-rhob*theta*pyi
       cod(5)=cod(5)+rhob*theta*pr
+      trans=0.d0
       trans(1,1)=cosp-pxf/pzf*sinp
       trans(1,2)=-rhob/pzi/pzf*a
-      trans(1,3)=0.d0
       trans(1,4)=-pyi*rhob/pzi/pzf*b
-      trans(1,5)=0.d0
       trans(1,6)= pr*rhob/pzi/pzf*b
       trans(2,1)=sinp/rhob
       trans(2,2)=pz0/pzi
-      trans(2,3)=0.d0
       trans(2,4)=pyi/pzi*sinp
-      trans(2,5)=0.d0
       trans(2,6)=-pr/pzi*sinp
       trans(3,1)=-pyi/pzf*sinp
       trans(3,2)=pyi*rhob/pzi/pzf*(dpzf-dpz0)
       trans(3,3)=1.d0
       trans(3,4)=-rhob*(pyi**2*c+theta)
-      trans(3,5)=0.d0
       trans(3,6)=pr*pyi*rhob*c
-      trans(4,1)=0.d0
-      trans(4,2)=0.d0
-      trans(4,3)=0.d0
       trans(4,4)=1.d0
-      trans(4,5)=0.d0
-      trans(4,6)=0.d0
       trans(5,1)=trans(2,1)*trans(1,6)-trans(1,1)*trans(2,6)
       trans(5,2)=trans(2,2)*trans(1,6)-trans(1,2)*trans(2,6)
-      trans(5,3)=0.d0
       trans(5,4)=trans(2,4)*trans(1,6)-trans(1,4)*trans(2,6)
      $     +trans(3,6)
       trans(5,5)=1.d0
       trans(5,6)=rhob*(theta-pr**2*c)
-      trans(6,1)=0.d0
-      trans(6,2)=0.d0
-      trans(6,3)=0.d0
-      trans(6,4)=0.d0
-      trans(6,5)=0.d0
       trans(6,6)=1.d0
       return
       end
@@ -258,41 +210,21 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       cod(1)=cod(1)+bf*pr
       cod(4)=min(pr,max(-pr,cod(4)-af*pxi))
       cod(5)=cod(5)-bf*pxi
+      trans=0.d0
       trans(1,1)=1.d0
       trans(1,2)=3.d0*bf*pr**2*pxi/pvi2
       trans(1,3)=af*pr**2/pvi2
-      trans(1,4)=0.d0
-      trans(1,5)=0.d0
       trans(1,6)=-bf*pr*(pr**2+2.d0*pxi**2)/pvi2
-      trans(2,1)=0.d0
       trans(2,2)=1.d0
-      trans(2,3)=0.d0
-      trans(2,4)=0.d0
-      trans(2,5)=0.d0
-      trans(2,6)=0.d0
-      trans(3,1)=0.d0
-      trans(3,2)=0.d0
       trans(3,3)=1.d0
-      trans(3,4)=0.d0
-      trans(3,5)=0.d0
-      trans(3,6)=0.d0
-      trans(4,1)=0.d0
       trans(4,2)=-trans(1,3)
       trans(4,3)=-c*pxi/rhob/pvi
       trans(4,4)=1.d0
-      trans(4,5)=0.d0
       trans(4,6)=af*pr*pxi/pvi2
-      trans(5,1)=0.d0
       trans(5,2)=trans(1,6)
       trans(5,3)=-trans(4,6)
-      trans(5,4)=0.d0
       trans(5,5)=1.d0
       trans(5,6)=bf*pxi*(2.d0*pr**2+pxi**2)/pvi2
-      trans(6,1)=0.d0
-      trans(6,2)=0.d0
-      trans(6,3)=0.d0
-      trans(6,4)=0.d0
-      trans(6,5)=0.d0
       trans(6,6)=1.d0
       return
       end
@@ -300,8 +232,9 @@ c        write(*,'(a/,6(1p6g12.5/))')'tbfrie-2 ',trans1
       subroutine tbedgedrift(trans,cod,psi)
       use mathfun, only:pxy2dpz,xsincos
       implicit none
-      real*8 trans(6,6),psi,cod(6),cosp,sinp,sxp,dcp,
-     $     s,pr,f,dpzi,pzi,sx,phsq,sxa,pxi,pyi
+      real*8 ,intent(inout):: trans(6,6),cod(6)
+      real*8 ,intent(in):: psi
+      real*8 cosp,sinp,sxp,dcp,s,pr,f,dpzi,pzi,sx,phsq,sxa,pxi,pyi
       real*8, parameter ::ampmin=1.d-6
       pr=1.d0+cod(6)
       call xsincos(psi,sinp,sxp,cosp,dcp)
@@ -456,9 +389,9 @@ c      write(*,'(a,l2,1p10g12.4)')'tbfrme ',ent,dxfrx,dyfrx,dyfrax,dxfry,dyfry,d
       use temw,only:tmulbs
       use sad_basics
       implicit none
-      real*8 trans(6,6),cod(6),beam(42),trans1(6,6),
-     $     dxfrx,dyfrx,dyfrax,
-     $     dxfry,dyfry,dxfray,dpx,dpy,pr,xi,yi,dz
+      real*8 ,intent(inout):: trans(6,6),cod(6),beam(42)
+      real*8 ,intent(in)::dxfrx,dyfrx,dyfrax,dxfry,dyfry,dxfray
+      real*8 trans1(6,6),dpx,dpy,pr,xi,yi,dz
       trans1=0.d0
       pr=1.d0+cod(6)
       xi=cod(1)+dxfrx*cod(6)/pr

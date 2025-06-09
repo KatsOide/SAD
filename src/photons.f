@@ -1372,7 +1372,7 @@ c$$$            endif
      $       dtheta(6),danp(6),dbeam(21),dpxi(6),dpyi(6),
      $       c1,dpx,dpy,ddpx,ddpy,pxr0,ct,pz00,das,bt,
      $       pr,px,py,pz,pz0,xpx,xpy,xpz,xpa,theta,th,
-     $       p,h1,al1,anp,uc,dg,g,pr1,pxi,pyi,
+     $       p,h1,al1,anp,uc,uct,dg,g,pr1,pxi,pyi,
      $       p2,h2,dee,cp,sp,b,pxm,pym,gi,dh1r,
      $       pxh,pyh,pzh,xpzb,btx,bty,btz,dct,sinu,cosu,dcosu,xsinu,
      $       gx,gy,gz,blx,bly,blz,
@@ -1405,7 +1405,9 @@ c     codr0 has canonical momenta!
         h1=p2h(p)
         al1=al-cod(5)+codr0(5)
         anp=anrad*h1*theta
-        uc=cuc*h1**3/p0*theta/al1
+        uct=cuc*h1**3/p0/al1
+        uc=uct*theta
+c        write(*,'(a,1p10g12.4)')'tradke ',theta,al1,uct,uc
         dg=-cave*anp*uc
         u0=u0-dg
         g=max(gmin,gi+dg)
@@ -1456,7 +1458,8 @@ c          call tmultr(transi,trans(:,1:6),6)
             dtheta=dxpa*das
             danp=anrad*h1*dtheta
             danp(6)=danp(6)+anp*dh1r
-            duc=uc*(dtheta/theta-dal/al1)
+c            duc=uc*(dtheta/theta-dal/al1)
+            duc=uct*dtheta-uc*dal/al1
             duc(6)=duc(6)+3.d0*uc*dh1r
             ddg=-cave*(danp*uc+anp*duc)
             dddpx=.5d0*((tr2(2,:)-dpxr0)*dg+ddpx*ddg)
