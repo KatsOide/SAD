@@ -90,7 +90,7 @@ itfdepth.o: itfdepth.f itfpmat.o tfstk.o
 itfgetbuf.o: itfgetbuf.f
 itfgetbuf_PPC.o: itfgetbuf_PPC.f
 itfgetbuf_f90.o: itfgetbuf_f90.f
-itfgeto (from backup).o: itfgeto (from backup).f (from backup).f itfgeto tfstk.o toplvl.o
+itfgeto (from backup).o: itfgeto (from backup).f backup).f (from itfgeto tfstk.o toplvl.o
 itfgeto.o: itfgeto.f tfstk.o toplvl.o
 itfmaloc.o: itfmaloc.f tfstk.o toplvl.o
 itfmessage.o: itfmessage.f tfdset.o tfeeval.o tfstk.o tfstrbuf.o toplvl.o
@@ -182,7 +182,7 @@ prnflg.o: prnflg.f tfstk.o toplvl.o
 pstati.o: pstati.f tffs.o tfstk.o toplvl.o
 pstati1.o: pstati1.f inc/common.inc tffs.o tfstk.o
 pstati2.o: pstati2.f
-pstati3.o: pstati3.f inc/TFMACRO.inc inc/TFMACRO1.inc tffs.o tfstk.o
+pstati3.o: pstati3.f inc/TFMACRO1.inc inc/TFMACRO.inc tffs.o tfstk.o
 psub.o: psub.f
 ptimes.o: ptimes.f
 ptol.o: ptol.f inc/common.inc tffs.o tfstk.o
@@ -291,7 +291,7 @@ tfcanvasclip.o: tfcanvasclip.f tfconvstr.o tfloor.o tfstk.o tfstrbuf.o
 tfchgv.o: tfchgv.f tffs.o tfstk.o toplvl.o
 tfchro.o: tfchro.f initb1.o tffs.o tfstk.o
 tfconvstr.o: tfconvstr.f tfeeval.o tfreplace.o tfstk.o tfstrbuf.o
-tfcoup.o: tfcoup.f tffs.o tffsa.o tfstk.o toplvl.o
+tfcoup.o: tfcoup.f tffsa.o tffs.o tfstk.o toplvl.o
 tfdapert.o: tfdapert.f tffs.o tfstk.o toplvl.o trackd.o
 tfdbun.o: tfdbun.f tffs.o
 tfdisp.o: tfdisp.f initb1.o tffs.o tfstk.o tgfun.o tgrot.o toplvl.o
@@ -302,7 +302,7 @@ tfecmplx.o: tfecmplx.f tfstk.o
 tfeeval.o: tfeeval.f tffuns.o tfstk.o tfstrbuf.o toplvl.o
 tfeexpr.o: tfeexpr.f tfefun.o tfstk.o
 tfefun.o: tfefun.f gamma.o itfmessage.o tfconvstr.o tfdot.o tfdset.o tfecmplx.o tfeeval.o tfeval1.o tffindroot.o tffuns.o tfloor.o tfmodule.o tfpart.o tfreplace.o tfsameq.o tfsolvemember.o tfstk.o tftable.o tftake.o toplvl.o
-tfefun1.o: tfefun1.f tfbeamline.o tffs.o tffsa.o tftrack.o
+tfefun1.o: tfefun1.f tfbeamline.o tffsa.o tffs.o tftrack.o
 tfefun2.o: tfefun2.f tfstk.o
 tfefun3ep.o: tfefun3ep.f tfeeval.o tfefun.o tfstk.o
 tfematrix.o: tfematrix.f tfstk.o
@@ -312,24 +312,24 @@ tfestk.o: tfestk.f itfpmat.o tfconvstr.o tfeeval.o tfefun.o tfmodule.o tfsolveme
 tfetok.o: tfetok.f tfconvstr.o tffs.o tfstk.o tfstrbuf.o toplvl.o
 tfeval.o: tfeval.f tfeeval.o tfstk.o toplvl.o
 tfeval1.o: tfeval1.f tfecmplx.o tfeeval.o tfstk.o
-tffamsetup.o: tffamsetup.f tfeeval.o tffs.o tffscalc.o tfstk.o toplvl.o
-tffile.o: tffile.f itfgeto.o tffs.o tffsa.o toplvl.o
+tffamsetup.o: tffamsetup.f tfeeval.o tffscalc.o tffs.o tfstk.o toplvl.o
+tffile.o: tffile.f itfgeto.o tffsa.o tffs.o toplvl.o
 tffindroot.o: tffindroot.f gamma.o itfmaloc.o tfeeval.o tfmodule.o tfpart.o tfreplace.o tfsameq.o tfstk.o
 tffs.o: tffs.f initb1.o itfmaloc.o tfefun.o tfloor.o tfstk.o toplvl.o
-tffsa.o: tffsa.f INTGRL.o itfgeto.o tfbeamline.o tfeeval.o tffs.o tffscalc.o tffsmatch.o tfmodule.o tfsetparam.o tfstk.o tgrot.o toplvl.o
+tffsa.o: tffsa.f INTGRL.o itfgeto.o tfbeamline.o tfeeval.o tffscalc.o tffsmatch.o tffs.o tfmodule.o tfsetparam.o tfstk.o tgrot.o toplvl.o
 tffscalc.o: tffscalc.f qcell.o qdcell.o tfeeval.o tffs.o tfloor.o tfstk.o toplvl.o
 tffsfreefix.o: tffsfreefix.f tffs.o tfstk.o toplvl.o
-tffsmatch.o: tffsmatch.f initb1.o qcell.o qdcell.o tfeeval.o tffindroot.o tffs.o tffscalc.o tfstk.o toplvl.o
-tffswake.o: tffswake.f itfmaloc.o qcell.o tfeeval.o tffs.o tffscalc.o tfstk.o
+tffsmatch.o: tffsmatch.f initb1.o qcell.o qdcell.o tfeeval.o tffindroot.o tffscalc.o tffs.o tfstk.o toplvl.o
+tffswake.o: tffswake.f itfmaloc.o qcell.o tfeeval.o tffscalc.o tffs.o tfstk.o
 tffuns.o: tffuns.f tfstk.o
-tfgeo.o: tfgeo.f initb1.o photons.o tffs.o tffsa.o tfloor.o tfstk.o tgrot.o toplvl.o
+tfgeo.o: tfgeo.f initb1.o photons.o tffsa.o tffs.o tfloor.o tfstk.o tgrot.o toplvl.o
 tfgeti.o: tfgeti.f
 tfgetm.o: tfgetm.f tffs.o tfstk.o
 tfgetr.o: tfgetr.f
 tfgetv.o: tfgetv.f tffs.o tfstk.o toplvl.o
 tfif.o: tfif.f itfgeto.o
 tfinit.o: tfinit.f initb1.o tffs.o tfstk.o toplvl.o
-tfinitn.o: tfinitn.f MAIN.o itfmessage.o tfefun.o tfstk.o toplvl.o
+tfinitn.o: tfinitn.f itfmessage.o MAIN.o tfefun.o tfstk.o toplvl.o
 tfkwrd.o: tfkwrd.f tfstk.o toplvl.o
 tflag.o: tflag.f tffs.o tfstk.o
 tflifetrack.o: tflifetrack.f tfstk.o
@@ -417,11 +417,11 @@ tquad.o: tquad.f inc/TENT.inc inc/TEXIT.inc initb1.o photons.o tdrift.o tffs.o t
 tquade.o: tquade.f photons.o tdrife.o tffs.o tfstk.o toplvl.o tsol.o
 tquads.o: tquads.f photons.o tffs.o tfloor.o tfstk.o toplvl.o tsol.o
 tquase.o: tquase.f photons.o tffs.o tfstk.o toplvl.o tsol.o
-track.o: track.f temit.o tffs.o tffsa.o tfstk.o toplvl.o
+track.o: track.f temit.o tffsa.o tffs.o tfstk.o toplvl.o
 tracka.o: tracka.f tfeeval.o tffs.o tfstk.o toplvl.o trackd.o
-trackb.o: trackb.f tffs.o tffsa.o tfstk.o
+trackb.o: trackb.f tffsa.o tffs.o tfstk.o
 trackd.o: trackd.f tffs.o tfstk.o tftrack.o toplvl.o
-tracke.o: tracke.f tffs.o tffsa.o tfstk.o
+tracke.o: tracke.f tffsa.o tffs.o tfstk.o
 trad.o: trad.f photons.o tffs.o tfloor.o tfstk.o toplvl.o
 trade.o: trade.f tffs.o tfloor.o toplvl.o
 trcoda.o: trcoda.f tffs.o tfstk.o

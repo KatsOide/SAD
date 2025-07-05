@@ -96,7 +96,7 @@ c      use kradlib, only:tradke
       real*8 ,intent(inout):: trans0(6,12),cod(6),beam(42)
       real*8 ,intent(in):: phib,psi,al
       logical*4 ,intent(in):: ent
-      real*8 trans(6,6),trans1(6,6),rhob,srot(3,9)
+      real*8 trans(6,6),trans1(6,6),rhob
       rhob=al/phib
       if(ent)then
         if(psi == 0.d0)then
@@ -121,7 +121,6 @@ c      use kradlib, only:tradke
       endif
       call tmultr5(trans0,trans,irad)
       call tmulbs(beam,trans,.true.)
-c      call tradke(trans0,cod,beam,srot,0.d0,0.d0,0.d0)
       return
       end
 
