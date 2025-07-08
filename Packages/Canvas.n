@@ -46,7 +46,7 @@ CanvasGraphics=Class[{},
     EPS=1e-300,
     CanvasObject,
     TkAngle=Times@@(Tk$Version>={8,6}),RotSym=`Angle,
-    LTfs=1.7,LTfmin=5},
+    LTfs=2,LTfmin=5},
 
   {DPI=72,
     Canvas$PlotRange={{0,1},{0,1}},
@@ -718,7 +718,7 @@ CanvasGraphics=Class[{},
 
   EffectiveStringLength[s_,m_]:=(EffectiveStringLength[s,m]=
     If[`$HaveLaTeX<=>"",
-      Round[CanvasTextSize[s,DefaultFont][[1]]/GetFontSize[DefaultFont]],
+      CanvasTextSize[s,DefaultFont][[1]]/GetFontSize[DefaultFont],
       Module[{p=StringPosition[s,"\n"],s1,l,q,d},
         s1=If[p==={},
           s,
@@ -2085,13 +2085,13 @@ CanvasGraphics=Class[{},
           DrawText[tx,{x0+dx+d1,y},
             Anchor->"w",
             Font->TextFont[DefaultFont,
-              Round[LegendFontScale*Min[15*StandardScale,(wy-d2*2-3)/(Length[l]+1)/1.7]]],
+              Round[LegendFontScale*Min[12*StandardScale,(wy-d2*2-3)/(Length[l]+1)/1.7]]],
               legtag],
           _List,
           {txfont,txsize,txcol}={TextFont,TextSize,PlotColor}/.Rest[tx]/.txdef;
           DrawText[First[tx],{x0+dx+d1,y},
             Anchor->"w",Fill->txcol,
-            Font->TextFont[Null@@txfont,DefaultFont,Round[15*txsize*StandardScale*LegendFontScale]],
+            Font->TextFont[Null@@txfont,DefaultFont,Round[12*txsize*StandardScale*LegendFontScale]],
             legtag]
           ];
         y += (CanvasWidget[BBox[ls]][[4]] - y)*2;
