@@ -37,8 +37,8 @@ c            kap=mapalloc8(rlist(0), n, 8, irtc)
           else
             kap=ktaloc(n)
           endif
-          rlist(kap:kap+n-1)=kl%rbody(1:n)
-c          call tmov(rlist(ka+1),rlist(kap),n)
+          call tfcopyarrayd(kl%dbody(1:n),dlist(kap:kap+n-1),n)
+c          rlist(kap:kap+n-1)=kl%rbody(1:n)
           ktfmalocp=kap
           irtc=0
           return
@@ -264,10 +264,6 @@ c          enddo
           kap=ktaloc(n*2)
           rlist(kap:kap+2*n-2:2)=kl%rbody(1:n)
           rlist(kap+1:kap+2*n-1:2)=0.d0
-c          do i=1,n
-c            rlist(kap+i*2-2)=kl%rbody(i)
-c            rlist(kap+i*2-1)=0.d0
-c          enddo
           ktfcmaloc=kap
           return
         elseif(tfnumberq(kl%dbody(1)))then

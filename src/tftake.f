@@ -125,7 +125,8 @@
         call descr_sad(kx,klx)
         if(take)then
           if(ktfreallistq(kl))then
-            klr%rbody(1:mx)=kl%rbody(n1:n1+mx-1)
+            call tfcopyarrayd(kl%dbody(n1:n1+mx-1),klr%dbody(1:mx),mx)
+c            klr%rbody(1:mx)=kl%rbody(n1:n1+mx-1)
             klr%attr=ior(kl%attr,kconstarg)
           else
             d=.false.
@@ -140,8 +141,10 @@
           endif
         else
           if(ktfreallistq(kl))then
-            klr%rbody(1:n1-1)=kl%rbody(1:n1-1)
-            klr%dbody(n1:m+n1-n2-1)=kl%dbody(n2+1:m)
+            call tfcopyarray(kl%rbody(1:n1-1),klr%rbody(1:n1-1),n1-1)
+c            klr%rbody(1:n1-1)=kl%rbody(1:n1-1)
+            call tfcopyarray(kl%dbody(n2+1:m),klr%dbody(n1:m+n1-n2-1),m-n2)
+c            klr%dbody(n1:m+n1-n2-1)=kl%dbody(n2+1:m)
             klr%attr=ior(kl%attr,kconstarg)
           else
             d=.false.
@@ -199,15 +202,13 @@
       endif
       if(iand(list%attr,lnonreallist) == 0)then
         call loc_sad(ktavaloc(-1,m),listx)
-c        do i=1,m
-        listx%dbody(m:1:-1)=list%dbody(1:m)
-c        enddo
+        call tfcopyarray(list%dbody(1:m),listx%dbody(m:1:-1),m)
+c        listx%dbody(m:1:-1)=list%dbody(1:m)
       else
         call loc_sad(ktadaloc(-1,m),listx)
-c        do i=1,m
         call ktfcopym(list%body(1:m))
-        listx%dbody(m:1:-1)=list%dbody(1:m)
-c        enddo
+        call tfcopyarray(list%dbody(1:m),listx%dbody(m:1:-1),m)
+c        listx%dbody(m:1:-1)=list%dbody(1:m)
       endif
       listx%head=dtfcopy(list%head)
       listx%attr=list%attr

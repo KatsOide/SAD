@@ -104,7 +104,8 @@
           m=kl%nl
           kx=kxavaloc(-1,m,klr)
           klr%head=dtfcopy(k1)
-          klr%rbody(1:m)=kl%rbody(1:m)
+          call tfcopyarray(kl%rbody(1:m),klr%rbody(1:m),m)
+c          klr%rbody(1:m)=kl%rbody(1:m)
         else
           isp1=isp
           isp=isp+1
@@ -236,7 +237,8 @@ c     call tfdebugprint(ktflist+ktfaddr(k),'repsymstk',3)
         if(ktfreallistq(kl))then
           if(rep)then
             kx=kxavaloc(-1,m,klr)
-            klr%rbody(1:m)=kl%rbody(1:m)
+            call tfcopyarray(kl%rbody(1:m),klr%rbody(1:m),m)
+c            klr%rbody(1:m)=kl%rbody(1:m)
             klr%head=dtfcopy(k1)
           endif
         else
