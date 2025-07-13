@@ -199,7 +199,8 @@ c        write(*,*)na,isp-isp0
                   isp=isp+2
                   rtastk(isp-1:isp)=anint(z0)
                   kaxi=ktavaloc(-1,isp-isp3)
-                  klist(kaxi+1:kaxi+isp-isp3)=ktastk(isp3+1:isp)
+                  call tfcopyarray(ktastk(isp3+1:isp),klist(kaxi+1:kaxi+isp-isp3),isp-isp3)
+c                  klist(kaxi+1:kaxi+isp-isp3)=ktastk(isp3+1:isp)
                   isp3=isp3+1
                   ktastk(isp3)=ktflist+kaxi
                   isp=isp3
@@ -233,7 +234,8 @@ c        write(*,*)na,isp-isp0
           if(dash > 0.d0)then
             if(isp > isp3)then
               kaxi=ktavaloc(-1,isp-isp3)
-              klist(kaxi+1:kaxi+isp-isp3)=ktastk(isp3+1:isp)
+              call tfcopyarray(ktastk(isp3+1:isp),klist(kaxi+1:kaxi+isp-isp3),isp-isp3)
+c              klist(kaxi+1:kaxi+isp-isp3)=ktastk(isp3+1:isp)
               isp3=isp3+1
               ktastk(isp3)=ktflist+kaxi
             endif
@@ -250,7 +252,8 @@ c        write(*,*)na,isp-isp0
           kx=dxnulll
         else
           kx=kxavaloc(-1,na,klr)
-          klr%rbody(1:na)=rtastk(isp0+1:isp0+na)
+          call tfcopyarray(rtastk(isp0+1:isp0+na),klr%rbody(1:na),na)
+c          klr%rbody(1:na)=rtastk(isp0+1:isp0+na)
         endif
       endif
       isp=isp0

@@ -1,8 +1,11 @@
       subroutine tspect(isp1,n,cx)
       use tfstk
       use tmacro
+      use ftr
+      use iso_c_binding
       implicit real*8 (a-h,o-z)
       dimension cx(2)
+      complex*16,pointer:: cd(:)
       lpa=itastk(2,lspect+isp1)
       if(n .lt. ilist(1,lpa+2))then
         return
@@ -18,7 +21,9 @@
         return
       endif
       ilist(1,lp+1)=0
-      call tcftr(rlist(ioffa),nd,.false.)
+      call c_f_pointer(c_loc(rlist(ioffa)),cd,[klistlen/2])
+      call tcftr(cd(1:nd),nd,.false.)
+c      call tcftr(rlist(ioffa),nd,.false.)
       ilist(1,lp+2)=0
       joff=itastk(1,lspect+isp1)+1
       do 50 j=0,nd-1

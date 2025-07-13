@@ -812,6 +812,7 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       use ffs
       use ffs_pointer
       use tffitcode
+      use solv
       use iso_c_binding
       implicit none
       type (ffs_bound) fbound
@@ -960,7 +961,7 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
           trans1(2,2)=trans1(2,2)-1.d0
           trans1(3,3)=trans1(3,3)-1.d0
           trans1(4,4)=trans1(4,4)-1.d0
-          call tsolvg(trans1,cod,cod0,4,4,4)
+          call tsolvg(trans1,cod,cod0)
         endif
       enddo
       cod=cod0

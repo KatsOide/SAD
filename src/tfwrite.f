@@ -234,7 +234,8 @@ c      call tfdebugprint(dtastk(isp1+1),'mapfile',1)
       isp0=isp
       isp=isp+1
       rtastk(isp)=lfno
-      ktastk(isp+1:isp+isp0-isp1)=ktastk(isp1+1:isp0)
+      call tfcopyarray(ktastk(isp1+1:isp0),ktastk(isp+1:isp+isp0-isp1))
+c      ktastk(isp+1:isp+isp0-isp1)=ktastk(isp1+1:isp0)
       isp=isp+isp0-isp1
 c      do i=1,isp0-isp1
 c        isp=isp+1
@@ -571,10 +572,8 @@ c      call tfdebugprint(kx,'tfget-r',1)
         do i=1,nrpt
           ktastk(isp0+1)=ktastk(isp1+1)
           ktastk(isp0+2)=ktastk(isp1+2)
-          ktastk(isp0+3:isp0+narg-1)=ktastk(isp1+4:isp1+narg)
-c          do j=4,narg
-c            ktastk(isp0+j-1)=ktastk(isp1+j)
-c          enddo
+          call tfcopyarray(ktastk(isp1+4:isp1+narg),ktastk(isp0+3:isp0+narg-1))
+c          ktastk(isp0+3:isp0+narg-1)=ktastk(isp1+4:isp1+narg)
           isp=isp0+narg-1
           call tfskip(isp0,kx,irtc)
           isp=isp0

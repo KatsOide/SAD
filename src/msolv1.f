@@ -71,7 +71,7 @@ c         d(l)=d(l)-s
             print *,' ?? Too few variables. (MSOLVG)'
           endif
         else
-          call tsolvg(c1,d,xc,nc,m,nc)
+          call tsolvg(c1,d,xc)
         endif
         do 23 l=1,na
           s=0d0
@@ -96,7 +96,8 @@ c         d(l)=d(l)-s
 c         b(l)=b(l)-t(i)*d(i)
    28   continue
         if(.not.micado) then
-          call tsolva(a,b,x,na,m,nd,eptsol)
+c          call tsolva(a,b,x,na,m,nd,eptsol)
+          call tsolva(a,b,x,eptsol)
         endif
         do 29 i=1,m
           x(i)=x(i)+xc(i)
@@ -104,7 +105,8 @@ c         b(l)=b(l)-t(i)*d(i)
       elseif(micado) then
         call pmicad(a,b,x,nx,na,m,nd,norm,eptsol,svd,.true.)
       else
-        call tsolva(a,b,x,na,m,nd,eptsol)
+c        call tsolva(a,b,x,na,m,nd,eptsol)
+        call tsolva(a,b,x,eptsol)
       endif
 c*** check **********************************************
 c     call msolvcheck(a,b,d,x,nd,na,nc,m,.false.)

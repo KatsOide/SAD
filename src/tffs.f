@@ -1920,8 +1920,7 @@ c     begin initialize for preventing compiler warning
         if(l == nelvx(-i)%ival)then
           if(tfreallistq(dlist(ia),klr))then
             tfkeyv=kxavaloc(-1,klr%nl,kld)
-            kld%rbody(1:klr%nl)=klr%rbody(1:klr%nl)
-     $           /rlist(iferrk+(kl-1)*2)
+            kld%rbody(1:klr%nl)=klr%rbody(1:klr%nl)/rlist(iferrk+(kl-1)*2)
           else
             tfkeyv=dlist(ia)
           endif

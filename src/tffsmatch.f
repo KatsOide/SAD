@@ -22,6 +22,7 @@
       use tffitcode
       use cellm,only:qcell,nmes,nmmax
       use dfun
+      use solv
       use tfshare
       use findr,only:fmincube
       use iso_c_binding
@@ -912,12 +913,13 @@ c        call tfdebugprint(kx,'varfun:',1)
 
       subroutine tfsolv(qu,quw,df,dval,wlimit,nqcol,nvar,
      $     iqcol,kfitp,mfitp,dg,wexponent,eps)
-      use tfstk
+      use solv
       implicit none
       integer*4 ,intent(in):: nqcol,nvar
-      real*8 ,intent(in):: qu(nqcol,nvar),df(nqcol),
-     $     wexponent,wlimit(nvar),eps
-      real*8 ,intent(out):: quw(nqcol,nvar),dval(nvar),dg
+c      real*8 ,intent(in):: qu(nqcol,nvar),df(nqcol),wexponent,wlimit(nvar),eps
+      real*8 ,intent(in):: qu(:,:),df(:),wexponent,wlimit(:),eps
+c      real*8 ,intent(out):: quw(nqcol,nvar),dval(nvar),dg
+      real*8 ,intent(out):: quw(:,:),dval(:),dg
       integer*4 ,intent(in):: iqcol(*),kfitp(*),mfitp(*)
       real*8 ,allocatable,dimension(:)::b
       real*8 s
@@ -942,7 +944,8 @@ c        call tfdebugprint(kx,'varfun:',1)
           b(nj)=df(i)
         endif
       enddo
-      call tsolva(quw,b,dval,nj,nvar,nqcol,eps)
+c      call tsolva(quw,b,dval,nj,nvar,nqcol,eps)
+      call tsolva(quw,b,dval,eps)
       call resetnan(dval)
       again=.false.
       dg=0.d0

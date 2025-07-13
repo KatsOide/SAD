@@ -245,26 +245,28 @@ With[{def={PlotStyle->ColumnPlot,Orientation->Vertical,
       ]
     ]];
 
-FP$StackLabel[s0_,m_String,cw_]:=Module[{s=s0,ls=StringLength[s0[[-1]]],lm=StringLength[m]},
-  If[s[[-1]][-1]==="\n",
+FP$StackLabel[s0_,m_String,cw_]:=Module[{
+  s=s0,ls=StringLength[s0[[-1]]],lm=StringLength[m],cr=If[`$HaveLaTeX<=>"","\\\\","\n"]},
+  If[s[[-1]][-1]===cr[-1],
     Append[s,m],
     If[ls+lm+2>cw,
-      s[[-1]]=s[[-1]]//",\n";
+      s[[-1]]=s[[-1]]//","//cr;
       Append[s,m],
       s[[-1]]=s[[-1]]//If[StringLength[s[[-1]]],", ",""]//m;
       s]]];
 
 With[{def={Weight->None,TextSize->1,FunctionLabel->Default,
   ResultLabel->Default,Columns->3,PlotRange->Automatic,RaiseFit->False,
-  FrameLabel->{"","","",""}},cw=80},
+  FrameLabel->{"","","",""}},cw0=80},
   FitPlot[data_,fun_,x_,par0__]:=
-    Module[{s,g1,g,fun1,dy=0.28,xl,yl,dx,d,dm,x0,y0,lsym,
+    Module[{s,g1,g,fun1,dy=0.28,xl,yl,dx,d,dm,x0,y0,lsym,cw,
       {opt,par}=SwitchCases[{par0},{_Rule|_RuleDelayed,_}],
-      x1,x2,ci,g3,xa=data[[,1]]},
+      x1,x2,ci,g3,xa=data[[,1]],hl=`HaveLaTeX<=>""},
       {{sc,ts,fn,re,col,pr,rf,fl}=
         {Weight,TextSize,FunctionLabel,ResultLabel,Columns,PlotRange,RaiseFit,FrameLabel}/.opt/.def,
         lp=Length[par]},
 !      If[res=(Head[re]===List),{x0,y0}=re];
+      cw=cw0*(1+hl*0.2);
       s=Which[
         sc===Signal,
         d=Thread[data];
@@ -304,22 +306,22 @@ With[{def={Weight->None,TextSize->1,FunctionLabel->Default,
           ci=ConfidenceInterval/.s;
           lsym=Min[Max[StringLength[SymbolNameRoot[#]]&/@par[[,1]]],8];
           fl=Take[Join[fl,{"","","",""}],4];
-          fl3={""};
-          StandardForm[
+          StandardForm[$FORM="C7.4";
             If[fn===Default,
-              fl3=FP$StackLabel[fl3,
-                If[`$HaveLaTeX<=>"","\\@\\centering ",""]//
+              fl3={
+                If[hl,"\\@\\centering ",""]//
                   "Fit function: "//fun//
-                If[`$HaveLaTeX<=>"","\\\\\n","\n"],cw]];
+                If[hl,",\\\\",",\n"]},
+              fl3={fn}];
             If[re===Default,
-              $FORM="C8.5";
-              fl3=FP$StackLabel[fl3,If[`$HaveLaTeX<=>"","$\\chi^2="//(ChiSquare/.s)//"$",
+              $FORM="C7.4";
+              fl3=FP$StackLabel[fl3,If[hl,"$\\chi^2="//(ChiSquare/.s)//"$",
                 "`fc`n`u2`n ="//(ChiSquare/.s)],cw];
               fl3=FP$StackLabel[fl3,"Goodness ="//(GoodnessOfFit/.s)//
-                If[`$HaveLaTeX<=>"","\\\\\n","\n"],cw];
+                If[hl,",\\\\",",\n"],cw];
               Do[
-                fl3=FP$StackLabel[fl3,SymbolNameRoot[par[[i,1]]]//" = "//(par[[i,1]]/.s)//
-                  If[`$HaveLaTeX<=>""," $\\pm$ ","\261 "]//ci[[i]],cw],
+                fl3=FP$StackLabel[fl3,If[hl,"$",""]//($FORM="C7.4";SymbolNameRoot[par[[i,1]]]//" = "//(par[[i,1]]/.s))//
+                  If[hl,"\\pm","\261 "]//($FORM="C6.3";ci[[i]]//If[hl,"$",""]),cw],
                 {i,Length[par]}]]
             ];
           fl[[3]]=If[fl[[3]]<=>"",fl[[3]]//"\n",""]//(StringJoin@@fl3)

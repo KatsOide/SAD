@@ -37,7 +37,7 @@ c            kap=mapalloc8(rlist(0), n, 8, irtc)
           else
             kap=ktaloc(n)
           endif
-          call tfcopyarrayd(kl%dbody(1:n),dlist(kap:kap+n-1),n)
+          call tfcopyarray(kl%dbody(1:n),dlist(kap:kap+n-1),n)
 c          rlist(kap:kap+n-1)=kl%rbody(1:n)
           ktfmalocp=kap
           irtc=0
@@ -83,16 +83,14 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
         do i=1,n
           i0=ktfaddr(kl%dbody(i)%k)
           ip0=kap+(i-1)*m-1
-          rlist(ip0+1:ip0+m)=rlist(i0+1:i0+m)
+          call tfcopyarray(rlist(i0+1:i0+m),rlist(ip0+1:ip0+m),m)
+c          rlist(ip0+1:ip0+m)=rlist(i0+1:i0+m)
         enddo
       else
         do i=1,n
           i0=ktfaddr(kl%dbody(i)%k)
-          rlist(kap+i-1:kap+(m-1)*n+i-1:n)=rlist(i0+1:i0+m)
-c          do j=1,m
-c            ip=kap+(j-1)*n+i-1
-c            rlist(ip)=rlist(i0+j)
-c          enddo
+          call tfcopyarray(rlist(i0+1:i0+m),rlist(kap+i-1:kap+(m-1)*n+i-1:n),m)
+c          rlist(kap+i-1:kap+(m-1)*n+i-1:n)=rlist(i0+1:i0+m)
         enddo
       endif
       irtc=0
@@ -133,7 +131,8 @@ c          enddo
       if(trans)then
         do i=1,m
           call loc_sad(ktfaddr(kl%dbody(i)%k),kli)
-          a(:,i)=kli%rbody(1:n)
+          call tfcopyarray(kli%rbody(1:n),a(1:n,i),n)
+c          a(:,i)=kli%rbody(1:n)
         enddo
       else
         do i=1,n
@@ -343,12 +342,8 @@ c            enddo
         do i=1,n
           call loc_sad(ktfaddr(kl%dbody(i)%k),kli)
           if(ktfreallistq(kli))then
-            rlist(kap+i*2-2:kap+2*((m-1)*n+i-1))=kli%rbody(1:m)
-c            do j=1,m
-c              ip0=kap+(j-1)*2*n+i*2-2
-c              rlist(ip0  )=kli%rbody(j)
-c              rlist(ip0+1)=0.d0
-c            enddo
+            call tfcopyarray(kli%rbody(1:m),rlist(kap+i*2-2:kap+2*((m-1)*n+i-1)),m)
+c            rlist(kap+i*2-2:kap+2*((m-1)*n+i-1))=kli%rbody(1:m)
           else
             do j=1,m
               kj=kli%dbody(j)%k
@@ -399,11 +394,39 @@ c            enddo
       return
       end
 
-      integer*8 function ktfc2l(cx,n)
+      integer*8 function ktfc2l(cx,m) result(kax)
       implicit none
-      integer*4 ,intent(in)::n
-      complex*16 ,intent(in):: cx(n)
-      ktfc2l=ktfcm2l(cx,0,n,1,.false.,.false.)
+      integer*4 ,intent(in)::m
+      complex*16 ,intent(in):: cx(:)
+      type (sad_dlist), pointer :: klx,klxi
+      type (sad_rlist), pointer :: klj,kl
+      integer*8 kai,kc
+      integer*4 i
+      logical*4 c
+      kc=0
+      kax=ktaaloc(-1,m,klx)
+      c=.false.
+      do i=1,m
+        if(imag(cx(i)) == 0.d0)then
+          klx%rbody(i)=dble(cx(i))
+          if(kc /= 0)then
+            kai=kc+(i-1)*6
+            call tflocal1(kai)
+          endif
+        else
+          if(kc == 0)then
+            kc=ktcalocm(m-i+1)-(i-1)*6
+          endif
+          kai=kc+(i-1)*6
+          call loc_sad(kai,kl)
+          kl%rbody(1)=dble(cx(i))
+          kl%rbody(2)=imag(cx(i))
+          klx%dbody(i)%k=ktflist+kai
+          c=.true.
+        endif
+      enddo
+      klx%attr=merge(lconstlist+lnonreallist,lconstlist,c)
+c      ktfc2l=ktfcm2l(cx,0,n,1,.false.,.false.)
       return
       end
 
@@ -433,7 +456,7 @@ c            enddo
       logical*4 ,intent(in)::trans,conj
       logical*4 c
       real*8 imag_sign
-      complex*16, intent(in):: a(nd,m)
+      complex*16, intent(in):: a(:,:)
       imag_sign=merge(-1.d0,1.d0,conj)
       kc=0
       if(n == 0)then

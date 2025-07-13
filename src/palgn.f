@@ -483,8 +483,8 @@ c       ... weight factor
             rlist(l)=rlist(l)*fact
   128   continue
         if(nmo.lt.npair+nquad) then
-          call tsolvg(rlist(ia),rlist(ib),rlist(ix),nmo,npair+nquad,
-     *                                                       nmo)
+c          call tsolvg(rlist(ia),rlist(ib),rlist(ix),nmo,npair+nquad,nmo)
+          call tsolvg(rlist(ia),rlist(ib),rlist(ix))
         else
           iu=italoc(nmo*(npair+nquad))
           iw=italoc(npair+nquad)
@@ -1240,6 +1240,7 @@ c.... solve .....
         nvari=2*nsex
       endif
 c     call tsolva(a,b,x,ia,nvari,ia,eptsol)
+      call tsolva(a,b,x,eptsol)
       if(micado) then
         call msolvg(a,b,x,ia,nvari,ia,0,
      &       .false.,.true.,nmicad,.true.,.true.)
@@ -1247,7 +1248,7 @@ c     call tsolva(a,b,x,ia,nvari,ia,eptsol)
           ex(i)=b(i)
         enddo
       else
-        call tsvd(a,b,x,ia,nvari,ia,eptsol,.true.)
+        call tsvd(a,b,x,eptsol,.true.)
         do i=1,nvari
           err=0d0
           do j=1,nvari
@@ -1257,7 +1258,7 @@ c     call tsolva(a,b,x,ia,nvari,ia,eptsol)
           ex(i)=err
         enddo
       endif
-c     call psolva(a,b,x,ia,nvari,ia,eptsol)
+c      call psolva(a,b,x,ia,nvari,ia,eptsol)
 c     print *,'Input number of variable:'
       la=1
       do 220 ldep=1,ndat,2
@@ -2095,7 +2096,8 @@ c       write(*,'(a/(1p,6e11.4))') ' df',(df(i),i=1,nc)
         endif
         call tmov(rlist(iqu),qu,nfc*nstr)
 c       write(*,'(a/(1p,5e11.4))')' qu',((qu(i,j),i=1,nc),j=1,nstr)
-        call tsolvg(qu,df,dval,nc,nstr,nfc)
+c        call tsolvg(qu,df,dval,nc,nstr,nfc)
+        call tsolvg(qu,df,dval)
         call pcset(latt,mult,dval,istr,estr,nstr,-1d0,.false.,lfno)
         call pqcell(latt,twiss,gammab,0,dp0+1d0,stab)
   200 continue
@@ -2399,6 +2401,7 @@ c     write(lfno,*)'TITLE 8 8.5 ''',dat,  ''''
       use tfstk
       use ffs
       use tffitcode
+      use ftr
       implicit real*8 (a-h,o-z)
       parameter (ier=6)
       integer*8 latt(nlat)

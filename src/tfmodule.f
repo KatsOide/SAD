@@ -578,7 +578,8 @@ c                lg=lgeneration
         elseif(rep)then
           kx=kxavaloc(-1,list%nl,klr)
           klr%head=dtfcopy(dtastk(isp0))
-          klr%dbody(1:list%nl)=list%dbody(1:list%nl)
+          call tfcopyarray(list%dbody(1:list%nl),klr%dbody(1:list%nl),list%nl)
+c          klr%dbody(1:list%nl)=list%dbody(1:list%nl)
         endif
         isp=isp0-1
       elseif(ktfpatq(k,pat))then

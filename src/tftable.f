@@ -426,7 +426,6 @@ c        call tfcatchreturn(0,kx,irtc)
       integer*4 ,intent(in):: isp1
       integer*4 i,n
       logical*4 nr,re
-      integer*4 ,parameter :: nmax=1000000
       if(isp1 .ge. isp)then
         kxlistcopied=dxnulll
       else
@@ -452,12 +451,11 @@ c        call tfcatchreturn(0,kx,irtc)
           kxlistcopied=kxavaloc(-1,n,klr)
           call descr_sad(kxlistcopied,klx)
         endif
-        call tfcopyarrayd(dtastk(isp1+1:isp1+n),klx%dbody(1:n),n)
+        call tfcopyarray(dtastk(isp1+1:isp1+n),klx%dbody(1:n),n)
 c        klx%dbody(1:n)=dtastk(isp1+1:isp1+n)
 c        do i=0,int(n/nmax)
 c          klx%dbody(i*nmax+1:min(n,(i+1)*nmax))=dtastk(isp1+i*nmax+1:isp1+min(n,(i+1)*nmax))
 c        enddo
-c        write(*,*)'kxlistcopied-9 ',nr,n,isp1,isp
       endif
       return
       end

@@ -619,12 +619,10 @@ c        i=merge(merge(2,3,ktastk(isp1+1) /= 0),0,ktfrealq(ktastk(isp1+1)))
       k1=list%dbody(1)
       rep=.false.
       if(tflistq(k1,kl1))then
-        ktastk(ispa+1:ispa+nrule*2)=ktastk(ispr+1:ispr+nrule*2)
-        ktastk2(ispa+1:ispa+nrule*2)=ktastk2(ispr+1:ispr+nrule*2)
-c        do i=1,nrule*2
-c          ktastk(ispa+i)=ktastk(ispr+i)
-c          ktastk2(ispa+i)=ktastk(ivstkoffset+ispr+i)
-c        enddo
+        call tfcopyarray(ktastk(ispr+1:ispr+nrule*2),ktastk(ispa+1:ispa+nrule*2),nrule*2)
+c        ktastk(ispa+1:ispa+nrule*2)=ktastk(ispr+1:ispr+nrule*2)
+        call tfcopyarray(ktastk2(ispr+1:ispr+nrule*2),ktastk2(ispr+1:ispr+nrule*2),nrule*2)
+c        ktastk2(ispa+1:ispa+nrule*2)=ktastk2(ispr+1:ispr+nrule*2)
         isp=isp+nrule*2
         ispb=isp
         ka1=ktfaddrd(k1)
@@ -970,12 +968,14 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
           ki=dtastk(i)
           if(tfruleq(ki%k,lri))then
             j=i+i-isp1
-            dtastk(j-1:j)=lri%dbody(1:2)
+            dtastk(j-1)=lri%dbody(1)
+            dtastk(j  )=lri%dbody(2)
             ivstk2(2,j-1)=merge(1,0,.not. tfconstpatternq(ktastk(j-1)))
             symbol=symbol .and.
      $           iand(ktfmask,ktastk(j-1)) == ktfsymbol
           elseif(ki%k == ktfoper+mtfnull)then
-            ktastk(i+i-isp1-1:isp+nrule-2)=ktastk(i+i-isp1+1:isp+nrule)
+            call tfcopyarray(ktastk(i+i-isp1+1:isp+nrule),ktastk(i+i-isp1-1:isp+nrule-2),isp*nrule-i-i+isp1)
+c            ktastk(i+i-isp1-1:isp+nrule-2)=ktastk(i+i-isp1+1:isp+nrule)
             nrule=nrule-1
           else
             irtc=itfmessage(9,'General::wrongtype',
@@ -1039,6 +1039,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
         isp=isp+1
         itastk(1,isp)=ipf0
         itastk(2,isp)=nap0
+c        call tfdebugprint(kf%dbody(1),'tfpuref-1',1)
         kx=tfeevalref(kf%dbody(1),irtc)
         ipurefp=ipf0
         napuref=nap0
@@ -1086,10 +1087,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
         endif
         kx=kf%dbody(2)
         if(narg /= 0)then
-c          call tfdebugprint(kb,'puref-1',1)
           kx=tfreplacesymbolstk(kx,isp1+narg,narg,.true.,rep,irtc)
-c          call tfdebugprint(kx,'puref-2',1)
-c          write(*,*)irtc
           if(irtc /= 0)then
             isp=isp1+narg
             return

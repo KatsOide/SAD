@@ -421,7 +421,7 @@
       real*8, allocatable :: a(:,:)
       allocate (a(n,n))
       call tfl2m(kl,a,n,n,.false.)
-      kx=dfromr(tdet(a,n,n))
+      kx=dfromr(tdet(a))
       deallocate (a)
       return
       end
@@ -440,13 +440,14 @@
         deallocate(c)
         return
       endif
-      cx=tcdet(c,n,n)
+      cx=tcdet(c)
       kx=kxcalocc(-1,cx)
       deallocate(c)
       return
       end
 
       subroutine tfsingularvalues(isp1,kx,irtc)
+      use solv
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -525,6 +526,8 @@
       end
 
       subroutine tsvdma(kl,kux,kvx,kwx,n,m,eps,inv)
+      use tfstk
+      use solv
       implicit none
       type (sad_dlist) ,intent(in)::kl
       integer*8,intent(out):: kux,kvx,kwx
@@ -536,12 +539,13 @@
       ndim=max(n,m-1)
       allocate (a(ndim,m),w(m),u(n,n))
       call tfl2m1(kl,a,n,m,ndim,.false.)
-      call tsvdm(a,u,w,n,m,ndim,n,eps,inv)
+      call tsvdm(a,u,w,n,n,eps,inv)
       mn=min(m,n)
       kux=ktfaddr(kxm2l(u,mn,n,n,.false.))
       kvx=ktfaddr(kxm2l(a,mn,m,ndim,.false.))
       kwx=ktavaloc(-1,mn)
-      rlist(kwx+1:kwx+mn)=w(1:mn)
+      call tfcopyarray(w(1:mn),rlist(kwx+1:kwx+mn))
+c      rlist(kwx+1:kwx+mn)=w(1:mn)
       deallocate(a,w,u)
       return
       end
@@ -603,7 +607,9 @@
       return
       end
 
+
       subroutine tflsolve(kl,klb,kx,n,m,mb,mx,eps)
+      use solv
       implicit none
       type (sad_descriptor) , intent(out)::kx
       type (sad_dlist) , intent(in)::kl,klb
@@ -617,7 +623,7 @@
       else
         call tfl2m(klb,b,n,mb,.true.)
       endif
-      call tsolvm(a,b,x,n,m,mx,n,n,m,eps,.true.)
+      call tsolvm(a,b,x,n,eps,.true.)
       if(mb == 0)then
         kx=kxm2l(x,0,m,1,.false.)
       else
@@ -813,6 +819,7 @@
         irtc=itfmessage(9,'General::wrongtype','"List"')
         return
       endif
+c      call tfdebugprint(k,'tffourier',3)
       m=kl%nl
       irtc=-1
       if(m == 0)then
@@ -827,13 +834,13 @@
         go to 9000
       endif
       return
- 9000 irtc=itfmessage(9,'General::wrongtype',
-     $       '"Numerical Square Matrix"')
+ 9000 irtc=itfmessage(9,'General::wrongtype','"Numerical Square Matrix"')
       return
       end
 
       subroutine tffft(kl,m,kx,inv,irtc)
       use macmath
+      use ftr
       use iso_c_binding
       implicit none
       type (sad_descriptor) ,intent(out):: kx
@@ -890,10 +897,6 @@
             a(1:m)=f*a(1:m)
             a(m*2-1:m+3:-2)= a(3:m-1:2)
             a(m*2:  m+4:-2)=-a(4:m:  2)
-c            do i=1,m/2-1
-c              a((m-i)*2+1)= a(i*2+1)
-c              a((m-i)*2+2)=-a(i*2+2)
-c            enddo
             a(m+1)=a(2)
             a(m+2)=0.d0
             a(2  )=0.d0
@@ -926,18 +929,10 @@ c            enddo
         a(2  )=0.d0
         a(3:m-1:2)= a(m*2-1:m+3:-2)
         a(4:m:  2)=-a(m*2:m+4:-2)        
-c        do i=1,m/2-1
-c          a(i*2+1)= a((m-i)*2+1)
-c          a(i*2+2)=-a((m-i)*2+2)
-c        enddo
       else
         f=1.d0/sqrt(dble(m))
         a(1:2*m-1:2)=f*kl%rbody(1:m)
         a(2:2*m  :2)=0.d0
-c        do i=1,m
-c          a(i*2-1)=f*kl%rbody(i)
-c          a(i*2  )=0.d0
-c        enddo
         if(inv)then
           call zfftw(ca,m,-1,ay)
         else
@@ -945,6 +940,7 @@ c        enddo
         endif
       endif
  1000 kx%k=ktflist+ktfc2l(ca,m)
+c      call tfdebugprint(kx,'tffft-9',3)
       irtc=0
       return
       end
@@ -1086,19 +1082,20 @@ c        enddo
       return
       end
 
-      real*8 function tdet(a,n,ndim)
+      real*8 function tdet(a)
       use mathfun, only:p2h
       implicit none
-      integer*4 ,intent(in)::n,ndim
+      integer*4 n
       integer*4 i,j,k
-      real*8 ,intent(inout)::a(ndim,n)
+      real*8 ,intent(inout)::a(:,:)
       real*8 d,di,p,x,u
+      n=size(a,2)
       d=1.d0
       do i=1,n-1
         di=a(i,i)
         do j=i+1,n
-          if(a(j,i) .ne. 0.d0)then
-            if(di .eq. 0.d0)then
+          if(a(j,i) /= 0.d0)then
+            if(di == 0.d0)then
               do k=i+1,n
                 x=a(j,k)
                 a(j,k)=a(i,k)
@@ -1119,7 +1116,7 @@ c              u=1.d0/sqrt(1.d0+p**2)
           endif
         enddo
         d=d*di
-        if(d .eq. 0.d0)then
+        if(d == 0.d0)then
           tdet=0.d0
           return
         endif
@@ -1128,19 +1125,19 @@ c              u=1.d0/sqrt(1.d0+p**2)
       return
       end function
 
-      complex*16 function tcdet(a,n,ndim)
+      complex*16 function tcdet(a)
       implicit none
-      integer*4 ,intent(in)::n,ndim
-      integer*4 i,j,k
+      integer*4 i,j,k,n
       real*8 u
-      complex*16 ,intent(inout)::a(ndim,n)
+      complex*16 ,intent(inout)::a(:,:)
       complex*16 d,di,p,x,pc
+      n=size(a,2)
       d=(1.d0,0.d0)
       do i=1,n-1
         di=a(i,i)
         do j=i+1,n
-          if(a(j,i) .ne. (0.d0,0.d0))then
-            if(di .eq. (0.d0,0.d0))then
+          if(a(j,i) /= (0.d0,0.d0))then
+            if(di == (0.d0,0.d0))then
               do k=i+1,n
                 x=a(j,k)
                 a(j,k)=a(i,k)
@@ -1161,7 +1158,7 @@ c              u=1.d0/sqrt(1.d0+p**2)
           endif
         enddo
         d=d*di
-        if(d .eq. 0.d0)then
+        if(d == 0.d0)then
           tcdet=0.d0
           return
         endif
@@ -1432,4 +1429,3 @@ C---------------ZFTWTR -----------------
       ENDDO
       RETURN
       END
-

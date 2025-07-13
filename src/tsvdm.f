@@ -1,4 +1,4 @@
-      subroutine tsvdm(a,b,x,n,m,ndim,ndimb,epslon,inv)
+      subroutine tsvdm(a,b,x,n,m,epslon,inv)
 c
 c   Singular Value Decomposition
 c
@@ -15,9 +15,9 @@ c
 c      use omp_lib
       implicit none
       integer*4 ,parameter ::itmax=256
-      integer*4 ,intent(in):: n,m,ndim,ndimb
-      real*8 ,intent(inout):: a(ndim,m),b(ndimb,n)
-      real*8 ,intent(out):: x(m)
+      integer*4 ,intent(in):: n,m
+      real*8 ,intent(inout):: a(:,:),b(:,:)
+      real*8 ,intent(out):: x(:)
       real*8 ,intent(in):: epslon
       real*8 ,allocatable::v(:),aa(:),bb(:)
       integer*4 ,allocatable::lsep(:)

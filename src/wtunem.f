@@ -1,10 +1,11 @@
       subroutine wtunem(zbuf,r,lsp,f1,fa,nfre)
+      use ftr
       implicit none
       integer*4 lsp,i,j,k,l,nfre,i1,i2
       real*8 a,ri,f1(3,nfre),fa(3,nfre),r(lsp),xi,b,fi,r1,r2,r3,rl
       complex*16 zbuf(lsp,3)
       do 110 k=1,3
-        call tcftr(zbuf(1,k),lsp,.false.)
+        call tcftr(zbuf(:,k),lsp,.false.)
         r1=dble(zbuf(lsp,k))**2+imag(zbuf(lsp,k))**2
         r2=dble(zbuf(1  ,k))**2+imag(zbuf(1  ,k))**2
         rl=(dble(zbuf(lsp-1,k))**2+imag(zbuf(lsp-1,k))**2

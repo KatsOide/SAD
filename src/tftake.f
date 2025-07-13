@@ -125,7 +125,7 @@
         call descr_sad(kx,klx)
         if(take)then
           if(ktfreallistq(kl))then
-            call tfcopyarrayd(kl%dbody(n1:n1+mx-1),klr%dbody(1:mx),mx)
+            call tfcopyarray(kl%dbody(n1:n1+mx-1),klr%dbody(1:mx),mx)
 c            klr%rbody(1:mx)=kl%rbody(n1:n1+mx-1)
             klr%attr=ior(kl%attr,kconstarg)
           else
@@ -258,8 +258,10 @@ c        listx%dbody(m:1:-1)=list%dbody(1:m)
       if(ktfreallistq(kl))then
         kx=kxavaloc(-1,m,klr)
         call descr_sad(kx,klx)
-        klr%rbody(1:n)=kl%rbody(m-n+1:m)
-        klr%rbody(n+1:m)=kl%rbody(1:m-n)
+        call tfcopyarray(kl%rbody(m-n+1:m),klr%rbody(1:n),n)
+c        klr%rbody(1:n)=kl%rbody(m-n+1:m)
+        call tfcopyarray(kl%rbody(1:m-n),klr%rbody(n+1:m),m-n)
+c        klr%rbody(n+1:m)=kl%rbody(1:m-n)
       else
         kx=kxadaloc(-1,m,klx)
         do i=1,n

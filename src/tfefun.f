@@ -28,10 +28,12 @@
       enddo
       isp2=isp
       isp3=isp+isp1-isp0-1
-      ktastk(isp+1:isp3)=ktastk(isp0+1:isp1-1)
+      call tfcopyarray(ktastk(isp0+1:isp1-1),ktastk(isp+1:isp3))
+c      ktastk(isp+1:isp3)=ktastk(isp0+1:isp1-1)
       isp=isp3+1
       dtastk(isp)=ki
-      ktastk(isp+1:isp+isp2-isp1+1)=ktastk(isp1:isp2)
+      call tfcopyarray(ktastk(isp1:isp2),ktastk(isp+1:isp+isp2-isp1+1))
+c      ktastk(isp+1:isp+isp2-isp1+1)=ktastk(isp1:isp2)
       isp=isp+isp2-isp1+1
       kx=kxcrelistm(isp-isp2,ktastk(isp2+1:isp),kl%head)
       isp=isp0
@@ -508,7 +510,10 @@ c          listx%dbody(2:m+1)=list%dbody(1:m)
         endif
       elseif(ov .and. mode == 2 .and. kl%lenp > 0)then
         call loc_sad(ktfaddr(k1)-1,klr)
-        klr%dbody(-3:0)=kl%dbody(-3:0)
+        klr%dbody(-3)=kl%dbody(-3)
+        klr%dbody(-2)=kl%dbody(-2)
+        klr%dbody(-1)=kl%dbody(-1)
+        klr%dbody(0 )=kl%dbody(0 )
         klr%lenp=klr%lenp-1
         klr%nl=n+1
         klr%dbody(1)%k=0
@@ -3813,10 +3818,8 @@ c        call tfbesself(dtastk(isp1+1),dtastk(isp),kx,cbesselj,irtc)
           endif
         enddo
       elseif(kh%k == ktfoper+nfununeval)then
-        ktastk(isp1+1:isp1+isp-isp2)=ktastk(isp2+1:isp)
-c        do i=1,isp-isp2
-c          ktastk(isp1+i)=ktastk(isp2+i)
-c        enddo
+        call tfcopyarray(ktastk(isp2+1:isp),ktastk(isp1+1:isp1+isp-isp2))
+c        ktastk(isp1+1:isp1+isp-isp2)=ktastk(isp2+1:isp)
         irtc=0
       else
         isp0=isp
@@ -3919,8 +3922,7 @@ c        enddo
             if(m < mth)then
               do j=1,n
                 klx%dbody(j)=kxavaloc(0,m,klj)
-                call tfcopyarray(rlist(ktastk(isp3+1:isp3+m)+j),klj%rbody(1:m),m)
-c                klj%rbody(1:m)=rlist(ktastk(isp3+1:isp3+m)+j)
+                klj%rbody(1:m)=rlist(ktastk(isp3+1:isp3+m)+j)
                 klj%head=dtfcopy(kf)
                 klj%attr=ior(klj%attr,lconstlist)
               enddo
@@ -3930,8 +3932,7 @@ c                klj%rbody(1:m)=rlist(ktastk(isp3+1:isp3+m)+j)
                 m1=1
                 m2=mth
                 do while (m1 < m)
-                  call tfcopyarray(rlist(ktastk(isp3+m1:isp3+m2)+j),klj%rbody(m1:m2),m2-m1+1)
-c                  klj%rbody(m1:m2)=rlist(ktastk(isp3+m1:isp3+m2)+j)
+                  klj%rbody(m1:m2)=rlist(ktastk(isp3+m1:isp3+m2)+j)
                   m1=m1+mth
                   m2=min(m2+mth,m)
                 enddo

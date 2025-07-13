@@ -50,9 +50,11 @@
           call tfsavevar(i,ntou)
           if(lt == icMARK)then
             if(l == 1)then
-              rlist(j+1:j+ntwissfun)=cmp%value(1:ntwissfun)
+              call tfcopyarray(cmp%value(1:ntwissfun),rlist(j+1:j+ntwissfun))
+c              rlist(j+1:j+ntwissfun)=cmp%value(1:ntwissfun)
             else
-              rlist(j+1:j+ntwissfun)=twiss(l,0,1:ntwissfun)
+              call tfcopyarray(rlist(j+1:j+ntwissfun),twiss(l,0,1:ntwissfun))
+c              rlist(j+1:j+ntwissfun)=twiss(l,0,1:ntwissfun)
               if(direlc(l) .lt. 0.d0)then
                 rlist(j+mfitax)=-rlist(j+mfitax)
                 rlist(j+mfitay)=-rlist(j+mfitay)
@@ -149,7 +151,8 @@
           call loc_comp(j,cmps)
           if(lt == icMARK)then
             if(l == 1)then
-              cmp%value(1:ntwissfun)=cmps%value(1:ntwissfun)
+              call tfcopyarray(cmps%value(1:ntwissfun),cmp%value(1:ntwissfun))
+c              cmp%value(1:ntwissfun)=cmps%value(1:ntwissfun)
             endif
           else
             if(all)then

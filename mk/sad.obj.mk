@@ -103,7 +103,7 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      tmultr.o    tnorm.o     \
      tquade.o    track.o     tracka.o     tsconv.o     tsgeo.o \
      tshow.o     tsol.o      tsole.o      tsolvg.o \
-     tsolvm.o    tspac.o     tspini.o     tsteee.o   tsteer.o     tsvdm.o \
+     tspac.o     tspini.o     tsteee.o   tsteer.o \
      tthine.o    ttinit.o    ttstat.o     tcsvdm.o \
      tturne.o    txcalc.o    wjfit.o      wtunem.o     \
      tturn.o     tbend.o     tquad.o      tflifetrack.o \

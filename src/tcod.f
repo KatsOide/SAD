@@ -36,6 +36,7 @@
       use ffs, only:mfitddp
       use tmacro
       use temw, only:iaez
+      use solv
       use sad_basics
       use mathfun,only:asinz
       implicit none
@@ -171,7 +172,7 @@ c        dcod1(5)=0.d0
       endif
       dcod0=dcod
       ddp=dcod1(6)
-      call tsolvg(trs,dcod1,dcod,im,6,6)
+      call tsolvg(trs(1:im,:),dcod1,dcod)
       if(radcod)then
         codi(5)=codi(5)-dz-dtrf0*v0
         alambdarf=pi2/wrfeff

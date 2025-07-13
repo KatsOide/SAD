@@ -54,6 +54,7 @@
       use temw
       use codm
       use tmacro
+      use solv
       use gfun
       use sad_basics
       implicit none
@@ -160,7 +161,7 @@ c          dcod=cod0(1:4)-cod(1:4)
 c          do k=1,4
 c            tra(k,k)=tra(k,k)-1.d0
 c          enddo
-c          call tsolva(tra,dcod,cod,4,4,4,1.d-10)
+c          call tsolva(tra,dcod,cod,1.d-10)
 c          cod(1:4)=cod(1:4)+cod0(1:4)-codin(1:4)
 c      h0+x == h1+tr1.x
 c      h0-h1 == (tr1-1).x
@@ -587,6 +588,7 @@ c      write(*,*)'tevdif-9 ',bc(1,1,1:4)
      $     ndp,mphi2,mphi,nd,
      $     dj,damp0,sige)
       use tfstk,only:ktfenanq,resetnan
+      use solv
       implicit none
       integer*4 ndp,mphi2,mphi,nd
       real*8 bfb(nd*2*mphi2),bfx(nd*2*mphi2),bb(nd,mphi2,ndp),
@@ -765,7 +767,8 @@ c            call tclr(bfb,2*nsb)
           bfb(mc+1:mc+nd)= cmu(m)*dcb+smu(m)*dsb
           bfb(ms+1:ms+nd)=-smu(m)*dcb+cmu(m)*dsb
         enddo
-        call tsolva(bff,bfb,bfx,2*nsb,2*nsb,2*nsb,1.d-20)
+c        call tsolva(bff,bfb,bfx,2*nsb,2*nsb,2*nsb,1.d-20)
+        call tsolva(bff,bfb,bfx,1.d-20)
 c        if(nd .eq. 4 .and. bfx(1) .gt. 1.d10)then
 c          write(*,'(a,1p10g11.3)')'tesolvd-8 ',j,nsb,bfx(1),bfb(1)
 c        endif

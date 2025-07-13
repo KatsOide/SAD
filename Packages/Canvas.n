@@ -758,7 +758,7 @@ CanvasGraphics=Class[{},
           fl=Max[fl,bl[[4]]]],
         {i,0,Canvas$Frame}];
     Round[FontScale*FScale[FrameFontScale,3]
-      *Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,(pos[[2]]-fl-1)/NLines[t]/1.2,size*1.3]]]];
+      *Max[9,size*0.7,Min[w/EffectiveStringLength[t,16]*FSFontScale,(pos[[2]]-fl-1)/NLines[t]/1.4,size*1.0]]]];
   DefaultSize[t_,w_,size_,pos_,"n"]:=Module[{bl,fl=CanvasWidget[Height]},
     Do[bl=CanvasWidget[BBox[{"LF$X2"//i,"FL$X2"//i,"F$X2"//i}]];
       If[bl<=>{} && bl[[2]]>pos[[2]] && bl[[1]]<=pos[[1]]<=bl[[3]],

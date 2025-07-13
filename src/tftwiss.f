@@ -38,6 +38,19 @@
       return
       end function tflinek
 
+      subroutine tfgetdref(ft,ft0,r)
+      use ffs
+      use tffitcode
+      implicit none
+      real*8 ,intent(in):: ft(:),ft0(:)
+      real*8 ,intent(out):: r(:)
+      r=ft-ft0
+      r(mfitbx)=r(mfitbx)/ft0(mfitbx)
+      r(mfitby)=r(mfitby)/ft0(mfitby)
+      r(mfitbz)=r(mfitbz)/ft0(mfitbz)
+      return
+      end subroutine tfgetdref
+
       end module
 
       subroutine tftwiss(isp1,kx,ref,irtc)
@@ -198,7 +211,8 @@
      $               twiss(1:nlat,0,kt)-twiss(1:nlat,-1,kt)
               end select
             elseif(ref)then
-              kll%rbody(1:nlat)=twiss(1:nlat,icol,kt)
+              call tfcopyarray(twiss(1:nlat,icol,kt),kll%rbody(1:nlat),nlat)
+c              kll%rbody(1:nlat)=twiss(1:nlat,icol,kt)
             else
               itoff=((2*ndim+1)*(kt-1)+ndim*(icol+1))*nlat+iftwis
                 klist(kax+1:kax+nlat)=
@@ -287,8 +301,8 @@ c                    kll%rbody(i)=twiss(itastk(2,isp0+i),icol,kt)
               kx=dtastk(isp)
               if(ktflistq(kx,klx))then
                 nd=min(klx%nl,nlat)
-                twiss(1:nd,icol,kt)=klx%rbody(1:nd)
-c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
+                call tfcopyarray(klx%rbody(1:nd),twiss(1:nd,icol,kt),nd)
+c                twiss(1:nd,icol,kt)=klx%rbody(1:nd)
                 return
               endif
             endif
@@ -298,19 +312,6 @@ c                rlist(itoff:itoff+nd-1)=klx%rbody(1:nd)
       return
  9000 irtc=itfmessage(9,'General::wrongval',
      $     '"Fractional component # not supported"')
-      return
-      end
-
-      subroutine tfgetdref(ft,ft0,r)
-      use ffs
-      use tffitcode
-      implicit none
-      real*8 ,intent(in):: ft(ntwissfun),ft0(ntwissfun)
-      real*8 ,intent(out):: r(ntwissfun)
-      r=ft-ft0
-      r(mfitbx)=r(mfitbx)/ft0(mfitbx)
-      r(mfitby)=r(mfitby)/ft0(mfitby)
-      r(mfitbz)=r(mfitbz)/ft0(mfitbz)
       return
       end
 

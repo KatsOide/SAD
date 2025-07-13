@@ -242,6 +242,7 @@ c          endif
       use tmacro
       use tffitcode
       use tspin, only:spnorm,srequpol
+      use solv
       use eigen
       use sad_basics
       use macmath
@@ -443,7 +444,7 @@ c     enddo
           endif
         enddo
 c        write(*,'(a,1p5G15.7)')'tecalc-3 ',btr(1,1),btr(1,3),btr(3,3),beam(1),beam(3)
-        call tsolva(btr,beam,emitn,21,21,21,1d-8)
+        call tsolva(btr,beam(1:21),emitn,1d-8)
         do i=1,5,2
           k1=iaidx(i,i)
           k2=iaidx(i+1,i+1)

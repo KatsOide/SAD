@@ -431,6 +431,7 @@ c            klr%rbody(1:m)=list%rbody(1:m)
       integer*4 isp0,m
       logical*4 av
       isp0=isp
+c      call tfdebugprint(k,'evalwitharg',1)
       kx=tfevalwitharg1(k,ks,m,kh,av,irtc)
       call tfunsetpattbl(dtbl)
       if(irtc /= 0)then
@@ -750,8 +751,7 @@ c            klr%rbody(1:m)=list%rbody(1:m)
               endif
             endif
           endif
-          dtastk(isp1+1)=kxcrelistm(isp-isp1-1,
-     $         ktastk(isp1+2:isp),kh)
+          dtastk(isp1+1)=kxcrelistm(isp-isp1-1,ktastk(isp1+2:isp),kh)
           isp=isp1+1
           irtc=0
           lx=.true.
@@ -1196,7 +1196,6 @@ c     $       iand(-lmemberlist-1,klx%attr),member)
             kx=kxavaloc(-1,m,klr)
             call tfcopyarray(list%rbody(1:m),klr%rbody(1:m),m)
 c            klr%rbody(1:m)=list%rbody(1:m)
-c            call tmov(rlist(ka+1),rlist(kax+1),m)
             klr%attr=ior(larglist,list%attr)
             klr%head=dtfcopy(k1)
           endif
