@@ -125,7 +125,7 @@
         call descr_sad(kx,klx)
         if(take)then
           if(ktfreallistq(kl))then
-            call tfcopyarray(kl%dbody(n1:n1+mx-1),klr%dbody(1:mx),mx)
+            call tfcopyarray(kl%rbody(n1:n1+mx-1),klr%rbody(1:mx))
 c            klr%rbody(1:mx)=kl%rbody(n1:n1+mx-1)
             klr%attr=ior(kl%attr,kconstarg)
           else
@@ -141,9 +141,9 @@ c            klr%rbody(1:mx)=kl%rbody(n1:n1+mx-1)
           endif
         else
           if(ktfreallistq(kl))then
-            call tfcopyarray(kl%rbody(1:n1-1),klr%rbody(1:n1-1),n1-1)
+            call tfcopyarray(kl%rbody(1:n1-1),klr%rbody(1:n1-1))
 c            klr%rbody(1:n1-1)=kl%rbody(1:n1-1)
-            call tfcopyarray(kl%dbody(n2+1:m),klr%dbody(n1:m+n1-n2-1),m-n2)
+            call tfcopyarray(kl%dbody(n2+1:m),klr%dbody(n1:m+n1-n2-1))
 c            klr%dbody(n1:m+n1-n2-1)=kl%dbody(n2+1:m)
             klr%attr=ior(kl%attr,kconstarg)
           else
@@ -202,12 +202,12 @@ c            klr%dbody(n1:m+n1-n2-1)=kl%dbody(n2+1:m)
       endif
       if(iand(list%attr,lnonreallist) == 0)then
         call loc_sad(ktavaloc(-1,m),listx)
-        call tfcopyarray(list%dbody(1:m),listx%dbody(m:1:-1),m)
+        call tfcopyarray(list%dbody(1:m),listx%dbody(m:1:-1))
 c        listx%dbody(m:1:-1)=list%dbody(1:m)
       else
         call loc_sad(ktadaloc(-1,m),listx)
         call ktfcopym(list%body(1:m))
-        call tfcopyarray(list%dbody(1:m),listx%dbody(m:1:-1),m)
+        call tfcopyarray(list%dbody(1:m),listx%dbody(m:1:-1))
 c        listx%dbody(m:1:-1)=list%dbody(1:m)
       endif
       listx%head=dtfcopy(list%head)
@@ -258,9 +258,9 @@ c        listx%dbody(m:1:-1)=list%dbody(1:m)
       if(ktfreallistq(kl))then
         kx=kxavaloc(-1,m,klr)
         call descr_sad(kx,klx)
-        call tfcopyarray(kl%rbody(m-n+1:m),klr%rbody(1:n),n)
+        call tfcopyarray(kl%rbody(m-n+1:m),klr%rbody(1:n))
 c        klr%rbody(1:n)=kl%rbody(m-n+1:m)
-        call tfcopyarray(kl%rbody(1:m-n),klr%rbody(n+1:m),m-n)
+        call tfcopyarray(kl%rbody(1:m-n),klr%rbody(n+1:m))
 c        klr%rbody(n+1:m)=kl%rbody(1:m-n)
       else
         kx=kxadaloc(-1,m,klx)

@@ -934,7 +934,6 @@ c          endif
           codfnd=.true.
           return
         endif
-c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
         it=it+1
         if(r > r0)then
           if(fact < factmin)then
@@ -961,7 +960,7 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
           trans1(2,2)=trans1(2,2)-1.d0
           trans1(3,3)=trans1(3,3)-1.d0
           trans1(4,4)=trans1(4,4)-1.d0
-          call tsolvg(trans1,cod,cod0)
+          call tsolvg(trans1,cod(1:4),cod0(1:4))
         endif
       enddo
       cod=cod0

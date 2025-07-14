@@ -155,7 +155,7 @@ c      call tfresetpat(karg)
           if(rep)then
             kx=kxavaloc(-1,m,klr)
             klr%head=dtfcopy(dtastk(isp))
-            call tfcopyarray(list%rbody(1:m),klr%rbody(1:m),m)
+            call tfcopyarray(list%rbody(1:m),klr%rbody(1:m))
 c            klr%rbody(1:m)=list%rbody(1:m)
           elseif(.not. sym)then
             list%attr=ior(lnodefsymbol,list%attr)
@@ -660,7 +660,7 @@ c      call tfdebugprint(k,'evalwitharg',1)
           if(rep)then
             m=list%nl
             kx=kxavaloc(-1,m,klr)
-            call tfcopyarray(list%rbody(1:m),klr%rbody(1:m),m)
+            call tfcopyarray(list%rbody(1:m),klr%rbody(1:m))
 c            klr%rbody(1:m)=list%rbody(1:m)
             klr%head=dtfcopy(kh)
           endif
@@ -1072,7 +1072,7 @@ c          endif
         m=list%nl
         if(rep .and. ktfreallistq(list))then
           kx=kxavaloc(-1,m,klr)
-          call tfcopyarray(list%rbody(1:m),klr%rbody(1:m),m)
+          call tfcopyarray(list%rbody(1:m),klr%rbody(1:m))
 c          klr%rbody(1:m)=list%rbody(1:m)
           klr%attr=ior(larglist,list%attr)
           klr%head=dtfcopy(k1)
@@ -1194,7 +1194,7 @@ c     $       iand(-lmemberlist-1,klx%attr),member)
           if(rep)then
             m=list%nl
             kx=kxavaloc(-1,m,klr)
-            call tfcopyarray(list%rbody(1:m),klr%rbody(1:m),m)
+            call tfcopyarray(list%rbody(1:m),klr%rbody(1:m))
 c            klr%rbody(1:m)=list%rbody(1:m)
             klr%attr=ior(larglist,list%attr)
             klr%head=dtfcopy(k1)

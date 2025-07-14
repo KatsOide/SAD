@@ -380,7 +380,7 @@
         return
       endif
       if(ktfreallistq(list))then
-        call tfcopyarray(list%dbody(i0:m),dtastk(isp+i0:isp+m),m-i0+1)
+        call tfcopyarray(list%dbody(i0:m),dtastk(isp+i0:isp+m))
 c        dtastk(isp+i0:isp+m)=list%dbody(i0:m)
         isp=isp+m-i0+1
       else
@@ -508,7 +508,7 @@ c        dtastk(isp+i0:isp+m)=list%dbody(i0:m)
             isp=isp+1
             isp3=isp
             dtastk(isp)=kl%head
-            call tfcopyarray(kl%dbody(kai+1:kai+ne),dtastk(isp+1:isp+ne),ne)
+            call tfcopyarray(kl%dbody(kai+1:kai+ne),dtastk(isp+1:isp+ne))
 c            dtastk(isp+1:isp+ne)=kl%dbody(kai+1:kai+ne)
             isp=isp+ne
             call tfefunrefstk(isp3,isp3,irtc)

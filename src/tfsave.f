@@ -53,7 +53,7 @@
               call tfcopyarray(cmp%value(1:ntwissfun),rlist(j+1:j+ntwissfun))
 c              rlist(j+1:j+ntwissfun)=cmp%value(1:ntwissfun)
             else
-              call tfcopyarray(rlist(j+1:j+ntwissfun),twiss(l,0,1:ntwissfun))
+              call tfcopyarray(twiss(l,0,1:ntwissfun),rlist(j+1:j+ntwissfun))
 c              rlist(j+1:j+ntwissfun)=twiss(l,0,1:ntwissfun)
               if(direlc(l) .lt. 0.d0)then
                 rlist(j+mfitax)=-rlist(j+mfitax)

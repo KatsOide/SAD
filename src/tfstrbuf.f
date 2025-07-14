@@ -930,7 +930,7 @@ c            write(*,*)'strbuftostr ',m,n,kbuf,ispbase,mstk+ispbase
 c            write(*,*)'strbuftostr-ka ',ka
             ilist(2,ka-3)=-1
             ilist(1,ka)=n
-            call tfcopyarray(dlist(kbuf+1:kbuf+m),dlist(ka+1:ka+m),m)
+            call tfcopyarray(klist(kbuf+1:kbuf+m),klist(ka+1:ka+m))
 c            klist(ka+1:ka+m)=klist(kbuf+1:kbuf+m)
             klist(ka+m+1)=0
             do i=m*8+1,n

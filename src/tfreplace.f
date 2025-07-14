@@ -104,7 +104,7 @@
           m=kl%nl
           kx=kxavaloc(-1,m,klr)
           klr%head=dtfcopy(k1)
-          call tfcopyarray(kl%rbody(1:m),klr%rbody(1:m),m)
+          call tfcopyarray(kl%rbody(1:m),klr%rbody(1:m))
 c          klr%rbody(1:m)=kl%rbody(1:m)
         else
           isp1=isp
@@ -237,7 +237,7 @@ c     call tfdebugprint(ktflist+ktfaddr(k),'repsymstk',3)
         if(ktfreallistq(kl))then
           if(rep)then
             kx=kxavaloc(-1,m,klr)
-            call tfcopyarray(kl%rbody(1:m),klr%rbody(1:m),m)
+            call tfcopyarray(kl%rbody(1:m),klr%rbody(1:m))
 c            klr%rbody(1:m)=kl%rbody(1:m)
             klr%head=dtfcopy(k1)
           endif
@@ -619,9 +619,9 @@ c        i=merge(merge(2,3,ktastk(isp1+1) /= 0),0,ktfrealq(ktastk(isp1+1)))
       k1=list%dbody(1)
       rep=.false.
       if(tflistq(k1,kl1))then
-        call tfcopyarray(ktastk(ispr+1:ispr+nrule*2),ktastk(ispa+1:ispa+nrule*2),nrule*2)
+        call tfcopyarray(ktastk(ispr+1:ispr+nrule*2),ktastk(ispa+1:ispa+nrule*2))
 c        ktastk(ispa+1:ispa+nrule*2)=ktastk(ispr+1:ispr+nrule*2)
-        call tfcopyarray(ktastk2(ispr+1:ispr+nrule*2),ktastk2(ispr+1:ispr+nrule*2),nrule*2)
+        call tfcopyarray(ktastk2(ispr+1:ispr+nrule*2),ktastk2(ispr+1:ispr+nrule*2))
 c        ktastk2(ispa+1:ispa+nrule*2)=ktastk2(ispr+1:ispr+nrule*2)
         isp=isp+nrule*2
         ispb=isp
@@ -974,7 +974,7 @@ c        ilist(2,ktfaddr(k2)-3)=ior(ilist(2,ktfaddr(k2)-3),kmodsymbol)
             symbol=symbol .and.
      $           iand(ktfmask,ktastk(j-1)) == ktfsymbol
           elseif(ki%k == ktfoper+mtfnull)then
-            call tfcopyarray(ktastk(i+i-isp1+1:isp+nrule),ktastk(i+i-isp1-1:isp+nrule-2),isp*nrule-i-i+isp1)
+            call tfcopyarray(ktastk(i+i-isp1+1:isp+nrule),ktastk(i+i-isp1-1:isp+nrule-2))
 c            ktastk(i+i-isp1-1:isp+nrule-2)=ktastk(i+i-isp1+1:isp+nrule)
             nrule=nrule-1
           else

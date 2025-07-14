@@ -211,7 +211,7 @@
      $               twiss(1:nlat,0,kt)-twiss(1:nlat,-1,kt)
               end select
             elseif(ref)then
-              call tfcopyarray(twiss(1:nlat,icol,kt),kll%rbody(1:nlat),nlat)
+              call tfcopyarray(twiss(1:nlat,icol,kt),kll%rbody(1:nlat))
 c              kll%rbody(1:nlat)=twiss(1:nlat,icol,kt)
             else
               itoff=((2*ndim+1)*(kt-1)+ndim*(icol+1))*nlat+iftwis
@@ -301,7 +301,7 @@ c                    kll%rbody(i)=twiss(itastk(2,isp0+i),icol,kt)
               kx=dtastk(isp)
               if(ktflistq(kx,klx))then
                 nd=min(klx%nl,nlat)
-                call tfcopyarray(klx%rbody(1:nd),twiss(1:nd,icol,kt),nd)
+                call tfcopyarray(klx%rbody(1:nd),twiss(1:nd,icol,kt))
 c                twiss(1:nd,icol,kt)=klx%rbody(1:nd)
                 return
               endif

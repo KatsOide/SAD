@@ -65,7 +65,7 @@ c      ktastk(isp+1:isp+isp2-isp1+1)=ktastk(isp1:isp2)
       listx%attr=list%attr
       if(ktfreallistq(list))then
         if(mode == 0)then
-          call tfcopyarray(list%dbody(1:m),listx%dbody(1:m),m)
+          call tfcopyarray(list%dbody(1:m),listx%dbody(1:m))
 c          listx%dbody(1:m)=list%dbody(1:m)
           if(ktfrealq(k))then
             listx%dbody(m+1)=k
@@ -74,7 +74,7 @@ c          listx%dbody(1:m)=list%dbody(1:m)
             listx%attr=ior(listx%attr,lnonreallist)
           endif
         else
-          call tfcopyarray(list%dbody(1:m),listx%dbody(2:m+1),m)
+          call tfcopyarray(list%dbody(1:m),listx%dbody(2:m+1))
 c          listx%dbody(2:m+1)=list%dbody(1:m)
           if(ktfrealq(k))then
             listx%dbody(1)=k
@@ -526,7 +526,7 @@ c          listx%dbody(2:m+1)=list%dbody(1:m)
         kr%k=ktaalocsp(n+1,kl%lenp,nextra,klr)
         if(ktfreallistq(kl))then
           klr%head=dtfcopy(kl%head)
-          call tfcopyarray(kl%dbody(1:n),klr%dbody(1:n),n)
+          call tfcopyarray(kl%dbody(1:n),klr%dbody(1:n))
 c          klr%dbody(1:n)=kl%dbody(1:n)
         else
           klr%attr=lnonreallist
@@ -540,7 +540,7 @@ c          klr%dbody(1:n)=kl%dbody(1:n)
         kr%k=ktaalocsp(n+1,nextra,kl%lena,klr)
         klr%head=dtfcopy(kl%head)
         if(ktfreallistq(kl))then
-          call tfcopyarray(kl%dbody(1:n),klr%dbody(2:n+1),n)
+          call tfcopyarray(kl%dbody(1:n),klr%dbody(2:n+1))
 c          klr%dbody(2:n+1)=kl%dbody(1:n)
         else
           klr%attr=lnonreallist
@@ -1883,7 +1883,7 @@ c        if(ka1 > 0 .and. ktfrealq(k2))then
       enddo
       ka1=ktaloc(m)
       ilist(2,ka1-1)=m
-      call tfcopyarray(ktastk(isp0+1:isp0+m),klist(ka1:ka1+m-1),m)
+      call tfcopyarray(ktastk(isp0+1:isp0+m),klist(ka1:ka1+m-1))
 c      klist(ka1:ka1+m-1)=ktastk(isp0+1:isp0+m)
       isp=isp0
       call tfree(itfcontextpath)

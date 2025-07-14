@@ -37,7 +37,7 @@ c            kap=mapalloc8(rlist(0), n, 8, irtc)
           else
             kap=ktaloc(n)
           endif
-          call tfcopyarray(kl%dbody(1:n),dlist(kap:kap+n-1),n)
+          call tfcopyarray(kl%rbody(1:n),rlist(kap:kap+n-1))
 c          rlist(kap:kap+n-1)=kl%rbody(1:n)
           ktfmalocp=kap
           irtc=0
@@ -83,13 +83,13 @@ c        kap=mapalloc8(rlist(0), m*n, 8, irtc)
         do i=1,n
           i0=ktfaddr(kl%dbody(i)%k)
           ip0=kap+(i-1)*m-1
-          call tfcopyarray(rlist(i0+1:i0+m),rlist(ip0+1:ip0+m),m)
+          call tfcopyarray(rlist(i0+1:i0+m),rlist(ip0+1:ip0+m))
 c          rlist(ip0+1:ip0+m)=rlist(i0+1:i0+m)
         enddo
       else
         do i=1,n
           i0=ktfaddr(kl%dbody(i)%k)
-          call tfcopyarray(rlist(i0+1:i0+m),rlist(kap+i-1:kap+(m-1)*n+i-1:n),m)
+          call tfcopyarray(rlist(i0+1:i0+m),rlist(kap+i-1:kap+(m-1)*n+i-1:n))
 c          rlist(kap+i-1:kap+(m-1)*n+i-1:n)=rlist(i0+1:i0+m)
         enddo
       endif

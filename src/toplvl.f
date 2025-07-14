@@ -513,7 +513,7 @@ c        call tfdebugprint(k,'recallshared',3)
         m=kl%nl
         if(kl%ref == 0)then
           kax=ktavaloc(-1,m)
-          call tfcopyarray(kl%dbody(1:m),dlist(kax+1:kax+m),m)
+          call tfcopyarray(kl%dbody(1:m),dlist(kax+1:kax+m))
 c          dlist(kax+1:kax+m)=kl%dbody(1:m)
         else
           kax=ktadaloc(-1,m)
@@ -572,7 +572,7 @@ c          dlist(kax+1:kax+m)=kl%dbody(1:m)
         ilist(2,kap)=m
         if(ktfreallistq(ka))then
           ilist(1,kap)=0
-          calltfcopyarray(rlist(ka+1:ka+m),rlist(kap+2:kap+m+1),m)
+          calltfcopyarray(rlist(ka+1:ka+m),rlist(kap+2:kap+m+1))
 c          rlist(kap+2:kap+m+1)=rlist(ka+1:ka+m)
         else
           ilist(1,kap)=1
