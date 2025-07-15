@@ -53,8 +53,7 @@
               call tfcopyarray(cmp%value(1:ntwissfun),rlist(j+1:j+ntwissfun))
 c              rlist(j+1:j+ntwissfun)=cmp%value(1:ntwissfun)
             else
-              call tfcopyarray(twiss(l,0,1:ntwissfun),rlist(j+1:j+ntwissfun))
-c              rlist(j+1:j+ntwissfun)=twiss(l,0,1:ntwissfun)
+              rlist(j+1:j+ntwissfun)=twiss(l,0,1:ntwissfun)
               if(direlc(l) .lt. 0.d0)then
                 rlist(j+mfitax)=-rlist(j+mfitax)
                 rlist(j+mfitay)=-rlist(j+mfitay)
@@ -154,6 +153,9 @@ c              rlist(j+1:j+ntwissfun)=twiss(l,0,1:ntwissfun)
               call tfcopyarray(cmps%value(1:ntwissfun),cmp%value(1:ntwissfun))
 c              cmp%value(1:ntwissfun)=cmps%value(1:ntwissfun)
             endif
+            if(all)then
+              call tfvcopycmpall(cmps,cmp,kytbl(kwMAX,lt)-1)
+            endif
           else
             if(all)then
               call tfvcopycmpall(cmps,cmp,kytbl(kwMAX,lt)-1)
@@ -216,6 +218,9 @@ c              cmp%value(ival(i))=rlist(j+ival(i))*errk(1,l)
         call compelc(l,cmp)
         call loc_comp(j,cmps)
         call tfvcopycmpall(cmps,cmp,kytbl(kwMAX,lt)-1)
+        if(l == 1)then
+          write(*,*)'resetall ',cmps%value(40),cmp%value(40)
+        endif
         cmp%update=cmp%nparam .le. 0
         if(nelvx(l)%ival .gt. 0)then
           cmp%value(nelvx(l)%ival)=cmp%value(nelvx(l)%ival)*errk(1,l)

@@ -3930,7 +3930,7 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         ilist(1,l)=leng
         klist(l+nw-1)=0
         n=(min(leng,ilist(1,ka))+7)/8
-        call tfcopyarray(dlist(ka+1:ka+n),dlist(l+1:l+n),n)
+        call tfcopyarray(klist(ka+1:ka+n),klist(l+1:l+n))
 c        klist(l+1:l+n)=klist(ka+1:ka+n)
         kxscopy%k=ktfstring+l
  10     if(present(str))then
@@ -4631,7 +4631,7 @@ c        type (sad_symbol), pointer, intent(out) :: symx
           listc%attr=list%attr
           if(ktfreallistq(list))then
             listc%head=dtfcopy(list%head)
-            call tfcopyarray(list%dbody(1:list%nl),listc%dbody(1:list%nl),list%nl)
+            call tfcopyarray(list%dbody(1:list%nl),listc%dbody(1:list%nl))
 c            listc%dbody(1:list%nl)=list%dbody(1:list%nl)
           else
             do i=0,list%nl
@@ -4652,7 +4652,7 @@ c            listc%dbody(1:list%nl)=list%dbody(1:list%nl)
         listc%attr=list%attr
         if(ktfreallistq(list))then
           listc%head=dtfcopy(list%head)
-          call tfcopyarray(list%dbody(1:list%nl),listc%dbody(1:list%nl),list%nl)
+          call tfcopyarray(list%dbody(1:list%nl),listc%dbody(1:list%nl))
 c          listc%dbody(1:list%nl)=list%dbody(1:list%nl)
         else
           do i=0,list%nl
@@ -4670,14 +4670,14 @@ c          listc%dbody(1:list%nl)=list%dbody(1:list%nl)
         logical*4 noseq
         m=list%nl
         if(iand(list%attr,lnoseqlist) /= 0)then
-          call tfcopyarray(list%dbody(1:m),dtastk(isp+1:isp+m),m)
+          call tfcopyarray(list%body(1:m),ktastk(isp+1:isp+m))
 c          ktastk(isp+1:isp+m)=list%body(1:m)
           isp=isp+m
           return
         endif
         noseq=.true.
         if(ktfreallistq(list))then
-          call tfcopyarray(list%dbody(1:m),dtastk(isp+1:isp+m),m)
+          call tfcopyarray(list%dbody(1:m),dtastk(isp+1:isp+m))
 c          dtastk(isp+1:isp+m)=list%dbody(1:m)
           isp=isp+m
         else
@@ -4706,14 +4706,14 @@ c          dtastk(isp+1:isp+m)=list%dbody(1:m)
         logical*4 noseq
         m=list%nl
         if(iand(list%attr,lnoseqlist) /= 0)then
-          call tfcopyarray(list%dbody(1:m),dtastk(isp+1:isp+m),m)
+          call tfcopyarray(list%body(1:m),ktastk(isp+1:isp+m))
 c          ktastk(isp+1:isp+m)=list%body(1:m)
           isp=isp+m
           return
         endif
         noseq=.true.
         if(ktfreallistq(list))then
-          call tfcopyarray(list%dbody(1:m),dtastk(isp+1:isp+m),m)
+          call tfcopyarray(list%dbody(1:m),dtastk(isp+1:isp+m))
 c          dtastk(isp+1:isp+m)=list%dbody(1:m)
           isp=isp+m
         else
@@ -4872,7 +4872,7 @@ c          dtastk(isp+1:isp+m)=list%dbody(1:m)
         real*8 , intent(in)::a(nd,m)
         if(n == 0)then
           kx=kxavaloc(-1,m,klr)
-          call tfcopyarray(a(1:m,1),klr%rbody(1:m),m)
+          call tfcopyarray(a(1:m,1),klr%rbody(1:m))
 c          klr%rbody(1:m)=a(1:m,1)
           klr%attr=ior(klr%attr,lconstlist)
         else
@@ -4880,7 +4880,7 @@ c          klr%rbody(1:m)=a(1:m,1)
             kx=kxadaloc(-1,m,klx)
             do i=1,m
               ki=kxavaloc(0,n,klri)
-              call tfcopyarray(a(1:n,i),klri%rbody(1:n),n)
+              call tfcopyarray(a(1:n,i),klri%rbody(1:n))
 c              klri%rbody(1:n)=a(1:n,i)
               klri%attr=ior(lconstlist,klri%attr)
               klx%dbody(i)=ki
@@ -4910,7 +4910,7 @@ c              klri%rbody(1:n)=a(1:n,i)
         kxcopylist=kxaaloc(-1,m,klx)
         if(ktfreallistq(kl))then
           klx%head=dtfcopy(kl%head)
-          call tfcopyarray(kl%body(1:m),klx%body(1:m),m)
+          call tfcopyarray(kl%body(1:m),klx%body(1:m))
 c          klx%body(1:m)=kl%body(1:m)
         else
           do i=0,m

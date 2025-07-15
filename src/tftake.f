@@ -202,13 +202,11 @@ c            klr%dbody(n1:m+n1-n2-1)=kl%dbody(n2+1:m)
       endif
       if(iand(list%attr,lnonreallist) == 0)then
         call loc_sad(ktavaloc(-1,m),listx)
-        call tfcopyarray(list%dbody(1:m),listx%dbody(m:1:-1))
-c        listx%dbody(m:1:-1)=list%dbody(1:m)
+        listx%dbody(m:1:-1)=list%dbody(1:m)
       else
         call loc_sad(ktadaloc(-1,m),listx)
         call ktfcopym(list%body(1:m))
-        call tfcopyarray(list%dbody(1:m),listx%dbody(m:1:-1))
-c        listx%dbody(m:1:-1)=list%dbody(1:m)
+        listx%dbody(m:1:-1)=list%dbody(1:m)
       endif
       listx%head=dtfcopy(list%head)
       listx%attr=list%attr

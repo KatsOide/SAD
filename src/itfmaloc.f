@@ -89,8 +89,7 @@ c          rlist(ip0+1:ip0+m)=rlist(i0+1:i0+m)
       else
         do i=1,n
           i0=ktfaddr(kl%dbody(i)%k)
-          call tfcopyarray(rlist(i0+1:i0+m),rlist(kap+i-1:kap+(m-1)*n+i-1:n))
-c          rlist(kap+i-1:kap+(m-1)*n+i-1:n)=rlist(i0+1:i0+m)
+          rlist(kap+i-1:kap+(m-1)*n+i-1:n)=rlist(i0+1:i0+m)
         enddo
       endif
       irtc=0

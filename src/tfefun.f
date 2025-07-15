@@ -3355,7 +3355,7 @@ c        go to 6001
               isp2=isp+1
               dtastk(isp2)=kl1%head
               dtastk(isp2+1)=kl1%dbody(1)
-              call tfcopyarray(dtastk(isp1+1:isp),dtastk(isp2+2:isp2+isp-isp1+1),isp-isp1)
+              call tfcopyarray(dtastk(isp1+1:isp),dtastk(isp2+2:isp2+isp-isp1+1))
 c              dtastk(isp2+2:isp2+isp-isp1+1)=dtastk(isp1+1:isp)
               isp=isp+isp2-isp1+1
               kx=tfefunref(isp2,upvalue,irtc)
@@ -3371,7 +3371,7 @@ c              dtastk(isp2+2:isp2+isp-isp1+1)=dtastk(isp1+1:isp)
               dtastk(isp2+1)=dtastk(isp1+1)
               dtastk(isp2+2)=kl1%dbody(1)
               if(isp > isp1+1)then
-                call tfcopyarray(dtastk(isp1+2:isp),dtastk(isp2+3:isp2+isp-isp1+1),isp-isp1-1)
+                call tfcopyarray(dtastk(isp1+2:isp),dtastk(isp2+3:isp2+isp-isp1+1))
 c                dtastk(isp2+3:isp2+isp-isp1+1)=dtastk(isp1+2:isp)
               endif
               isp=isp2+isp-isp1+1

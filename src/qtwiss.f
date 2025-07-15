@@ -927,6 +927,7 @@ c          endif
         dcod=cod-cod0
         r=dcod(1)**2/bx+bx*(dcod(2)+ax/bx*dcod(1))**2
      $       +dcod(3)**2/by+by*(dcod(4)+ay/by*dcod(3))**2
+c        write(*,*)'qcod ',r,r0,cod(1:6)
         if(ktfenanq(r))then
           r=1.d300
         endif
@@ -960,7 +961,7 @@ c          endif
           trans1(2,2)=trans1(2,2)-1.d0
           trans1(3,3)=trans1(3,3)-1.d0
           trans1(4,4)=trans1(4,4)-1.d0
-          call tsolvg(trans1,cod(1:4),cod0(1:4))
+          call tsolvg(trans1(:,1:4),cod(1:4),cod0(1:4))
         endif
       enddo
       cod=cod0

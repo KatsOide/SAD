@@ -44,6 +44,7 @@ c      use tfshare, only:tfresetsharedmap,tmunmapp
       use geolib
       use modul,only:tfunblocksym
       use beamline,only:tfbeamline,tfsetbeamlinename
+      use kyparam
       use iso_c_binding
       implicit none
       integer*4 maxrpt,hsrchz
@@ -106,6 +107,7 @@ c     end   initialize for preventing compiler warning
         iorgr=1
         geo0(:,:)=geoini
         chi0=0.d0
+        call tffsinitparam
         if(geocal .or. chguse)then
           geocal0=geocal
           geocal=.true.
@@ -115,11 +117,11 @@ c     end   initialize for preventing compiler warning
         if(lfnb <= 0)then
           go to 8900
         endif
-        call tffsinitparam
 c     kikuchi ... next 1 line added     (11/13/'91)
 c        call corinit(newcor,nster,nmon,itstr,itestr,itmon,itemon)
 c     
-        flv%measp=nlat
+c        call tfevals(
+c     $       'Write[6,"tffsa-1: ",LINE[{"EMITX","EMITY","EMITZ","SIGMAZ","SIGE"},1]];',kx,irtc)
         mfpnt=nlat
         mfpnt1=nlat
         flv%nfc=0
@@ -886,8 +888,6 @@ c End of the lines added by N. Yamamoto Apr. 25, '93
       elseif(word == 'DRAW')then
         call tfsetparam
         call tfevalb('System`CANVASDRAW[]',kx,irtc)
-c        call tfdebugprint(kx,'CANVASDRAW[]',1)
-c        write(*,'(i8)')irtc
         if(irtc /= 0 .or. ktfnonstringq(kx%k))then
 c          title=Tfgetstrv('TITLE')
 c          case=Tfgetstrv('CASE')
@@ -1184,7 +1184,6 @@ c        enddo
       nwakep=0
       if(wake)then
         call tffssetupwake(icslfnm(),irtc)
-c        write(*,*)'tffsa-setupwake-done ',nwakep
         if(irtc /= 0)then
           call termes('?Error in WakeFunction.',' ')
           go to 8810
