@@ -40,18 +40,14 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
         if(word(:lw) == nlist(i) .or. word(:l+1) == name1)then
           maxfit=word == name1
           if(mfpnt /= mfpnt1)then
-            if(i .gt. mfit .or.
-     $           i == mfittrx .or. i == mfittry)then
-              call termes(
-     $             'Invalid function for range fitting: ',word)
+            if(i > mfit .or. i == mfittrx .or. i == mfittry)then
+              call termes('Invalid function for range fitting: ',word)
               err=.true.
               return
             endif
           endif
-          if((i == mfittrx .or. i == mfittry)
-     $         .and. mfpnt /= nlat)then
-            call termes(
-     $           'Trace fit is only valid at the end of line.',' ')
+          if((i == mfittrx .or. i == mfittry) .and. mfpnt /= nlat)then
+            call termes('Trace fit is only valid at the end of line.',' ')
             err=.true.
             return
           endif
@@ -94,7 +90,7 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
               word='@'
             endif
             if(idtypecx(mfpnt) == icMARK)then
-              if(i .le. ntwissfun)then
+              if(i <= ntwissfun)then
                 realv=.true.
                 x1=rlist(idvalc(mfpnt)+i)*sig
                 kx1%x(1)=x1
@@ -152,6 +148,7 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
           exist=.true.
           ix2=int(max(-1.d0,getva(exist1)))
           do j=1,nfc
+c            write(*,*)'tgetfv ',j,ifitp(j),ifitp1(j),mfpnt,mfpnt1,nfc
             if(ifitp(j) == mfpnt .and. ifitp1(j) == mfpnt1)then
               if(kfit(j) == i)then
                 kp=j
@@ -218,17 +215,17 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
           mfitp(kp)=merge(-abs(mfitp(kp)),abs(mfitp(kp)),maxfit)
           if(mfitp(kp) == 0 .and. mfpnt /= mfpnt1)then
             call txcalc(icalc,ncalc,mfpnt,mfpnt1,i,.false.,err1)
-          elseif(mfitp(kp) /= 0 .and. i .le. mfit .and.
+          elseif(mfitp(kp) /= 0 .and. i <= mfit .and.
      1       (mfpnt == mfpnt1 .or. .not. maxfit
      1        .or. i == mfitnx .or. i == mfitny .or.
-     1        (i .ge. mfitleng .and. i .le. mfitchi3)))then
+     1        (i .ge. mfitleng .and. i <= mfitchi3)))then
             call txcalc(icalc,ncalc,mfpnt,mfpnt1,i,.true.,err1)
           endif
           return
         elseif(word(:lw) == name3)then
           x=getva(exist)
           if(exist)then
-            if((i == mfitbx .or. i == mfitby) .and. x .le. 0.d0)then
+            if((i == mfitbx .or. i == mfitby) .and. x <= 0.d0)then
               call termes('Zero or negative value for ',word)
             else
               rlist(latt(1)+i)=x
@@ -240,7 +237,7 @@ c        write(*,*)'tgetfv ',i,word(:lw),nlist(i)(:l)
         elseif(word(:lw) == name4)then
           x=getva(exist)
           if(exist)then
-            if(x .le. 0.d0)then
+            if(x <= 0.d0)then
               call termes('Zero or negative scale ',word)
             else
               scale(i)=x

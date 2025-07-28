@@ -894,7 +894,7 @@ c          enddo
           return
         endif
         if(over)then
-c          write(*,'(a,2l3,1p6g15.7)')'qcod-1 ',codfnd,over,cod
+c          write(*,'(a,2l3,1p6g15.7)')'qcod-over ',codfnd,over,cod
           codfnd=.false.
           return
         endif
@@ -927,7 +927,7 @@ c          endif
         dcod=cod-cod0
         r=dcod(1)**2/bx+bx*(dcod(2)+ax/bx*dcod(1))**2
      $       +dcod(3)**2/by+by*(dcod(4)+ay/by*dcod(3))**2
-c        write(*,*)'qcod ',r,r0,cod(1:6)
+c        write(*,'(a,i5,1p10g12.4)')'qcod ',it,r,r0,cod(1:4),dcod(1:4)
         if(ktfenanq(r))then
           r=1.d300
         endif

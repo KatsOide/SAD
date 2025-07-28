@@ -1,10 +1,11 @@
       module track_tt
         integer*8 itt1,itt2,itt3,itt4,itt5,itt6
-      end module
+      end module track_tt
 
       module ffsa
       use tfstk
       use tfcsi
+      use wbuf
       integer*8 ::idum=-1
 
       contains
@@ -125,6 +126,7 @@ c     $       'Write[6,"tffsa-1: ",LINE[{"EMITX","EMITY","EMITZ","SIGMAZ","SIGE"
         mfpnt=nlat
         mfpnt1=nlat
         flv%nfc=0
+        flv%measp=nlat
         call tfinitcalc
         call tmast
         call twmov(1,twiss,nlat,ndim,.true.)
@@ -515,12 +517,13 @@ c$$$          endif
           endif
           call getwdl2(word,wordp)
           mfpnta=ielme(wordp,exist,lfno)
-          mfpnt1=mfpnt
           if(exist)then
-            mfpnt=mfpnta
+c            write(*,*)'tffsa-FIT-mfpnta ',exist,mfpnt,mfpnta,mfpnt1,wordp(1:len_trim(wordp))
+            mfpnt1=mfpnta
 c            mfpnt1=max(mfpnt,mfpnta)
 c            mfpnt=min(mfpnt,mfpnta)
           else
+            mfpnt1=mfpnt
             go to 12
           endif
         endif
@@ -1827,4 +1830,4 @@ c$$$      flv%mfitp(flv%nfc)=mfc
       return
       end
 
-      end module
+      end module ffsa

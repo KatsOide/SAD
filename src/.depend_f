@@ -316,7 +316,7 @@ tffamsetup.o: tffamsetup.f tfeeval.o tffs.o tffscalc.o tfstk.o toplvl.o
 tffile.o: tffile.f itfgeto.o tffs.o tffsa.o toplvl.o
 tffindroot.o: tffindroot.f gamma.o itfmaloc.o tfeeval.o tfmodule.o tfpart.o tfreplace.o tfsameq.o tfstk.o tsolvg.o
 tffs.o: tffs.f initb1.o itfmaloc.o tfefun.o tfloor.o tfstk.o toplvl.o
-tffsa.o: tffsa.f INTGRL.o itfgeto.o tfbeamline.o tfeeval.o tffs.o tffscalc.o tffsmatch.o tfmodule.o tfsetparam.o tfstk.o tgrot.o toplvl.o
+tffsa.o: tffsa.f INTGRL.o initb1.o itfgeto.o tfbeamline.o tfeeval.o tffs.o tffscalc.o tffsmatch.o tfmodule.o tfsetparam.o tfstk.o tftype.o tgrot.o toplvl.o
 tffscalc.o: tffscalc.f qcell.o qdcell.o tfeeval.o tffs.o tfloor.o tfstk.o toplvl.o
 tffsfreefix.o: tffsfreefix.f tffs.o tfstk.o toplvl.o
 tffsmatch.o: tffsmatch.f initb1.o qcell.o qdcell.o tfeeval.o tffindroot.o tffs.o tffscalc.o tfstk.o toplvl.o tsolvg.o
@@ -371,7 +371,6 @@ tftrad.o: tftrad.f tfstk.o
 tftrak.o: tftrak.f tffs.o
 tftrb.o: tftrb.f tffs.o
 tftwiss.o: tftwiss.f itfgeto.o tfefun.o tffs.o tfreplace.o tfstk.o tgfun.o tgrot.o toplvl.o
-tftyp1.o: tftyp1.f initb1.o tffs.o tfstk.o tfstrbuf.o toplvl.o
 tftype.o: tftype.f initb1.o tffs.o tfstk.o tfstrbuf.o toplvl.o
 tfvars.o: tfvars.f tfeeval.o tffs.o tfstk.o toplvl.o
 tfvectorize.o: tfvectorize.f tfstk.o
@@ -456,7 +455,6 @@ ttstat.o: ttstat.f tffs.o tfstk.o
 tturn.o: tturn.f initb1.o photons.o tdrift.o tffs.o tfloor.o tfstk.o toplvl.o txwake.o
 tturne.o: tturne.f initb1.o itfmaloc.o tdrife.o temit.o tffs.o tfloor.o tfstk.o toplvl.o
 tvcorr.o: tvcorr.f tcftr.o tfstk.o
-twbuf.o: twbuf.f tffs.o
 twelm.o: twelm.f tffs.o
 twinil.o: twinil.f
 twinit.o: twinit.f

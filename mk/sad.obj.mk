@@ -59,7 +59,7 @@ OBJ4=defglb.o     \
      prSad.o     tvcorr.o    doflag.o     \
      prelem.o    title.o     doline.o    prelm0.o \
      tcav.o      dolist.o    prexln.o \
-     tcave.o     tltrm.o     twbuf.o         prkwdv.o \
+     tcave.o     tltrm.o     prkwdv.o \
      prline.o    tchge.o     tluma.o     doprin.o \
      doread.o prnGlb.o tmast.o dorvrs.o prnflg.o \
      twinil.o    dostop.o        tconv.o     synradcl.o \
