@@ -199,7 +199,6 @@ c            write(*,*)'tgetfv ',j,ifitp(j),ifitp1(j),mfpnt,mfpnt1,nfc
               call tflocald(fitval(kp))
               fitval(kp)%x(1)=x1
             elseif(obj)then
-              call tfdebugprint(kx1,'tgetfv',1)
               call tflocald(fitval(kp))
               fitval(kp)=dtfcopy(kx1)
             endif

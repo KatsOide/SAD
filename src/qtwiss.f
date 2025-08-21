@@ -1001,6 +1001,10 @@ c        write(*,'(a,i5,1p10g12.4)')'qcod ',it,r,r0,cod(1:4),dcod(1:4)
       logical*4 , intent(in)::cgeo
       logical*4 , intent(out)::over
       logical*4 sol,rt,chg,cp0,normal
+      if(l < 1 .or. l > nlat)then
+        gv=0.d0
+        return
+      endif
       if(calc6d)then
         cp0=codplt
         codplt=.false.

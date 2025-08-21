@@ -517,8 +517,8 @@
       endif
       call tcsvdm(ca,cu,w,n,m,n,n,eps,inv)
       mn=min(m,n)
-      kux=ktfcm2l(cu,mn,n,n,.false.,.false.)
-      kvx=ktfcm2l(ca,mn,m,n,.false.,.false.)
+      kux=ktfcm2l(cu,mn,n,.false.,.false.)
+      kvx=ktfcm2l(ca,mn,m,.false.,.false.)
       kwx=ktavaloc(-1,mn)
       rlist(kwx+1:kwx+mn)=w(1:mn)
       deallocate(ca,cu,w)
@@ -738,7 +738,7 @@ c      rlist(kwx+1:kwx+mn)=w(1:mn)
         call tftclupdate(3)
       endif
       call tceigen(c,cw,ce,m,m)
-      kvx=ktfcm2l(c,m,m,m,.true.,.false.)
+      kvx=ktfcm2l(c,m,m,.true.,.false.)
       kex=ktfc2l(ce,m)
       deallocate (c,cw,ce)
       return

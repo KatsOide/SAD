@@ -3,7 +3,7 @@
       use ffs
       use tffitcode
       use ffs_fit, only:nlist
-      use ffs_pointer, only:latt,idelc,idtypec,pnamec,compelc,direlc,twiss
+      use ffs_pointer, only:latt,idelc,idtypec,pnamec,compelc,direlc,twiss,pos
       use sad_main
       use tflinepcom
       use gfun
@@ -50,6 +50,88 @@
       r(mfitbz)=r(mfitbz)/ft0(mfitbz)
       return
       end subroutine tfgetdref
+
+      subroutine tfsposition(d,kx,irtc)
+      implicit none
+      integer*4 ,intent(out):: irtc
+      type (sad_descriptor) ,intent(in):: d
+      type (sad_descriptor) ,intent(out):: kx
+      type (sad_rlist) ,pointer :: kl
+      integer*4 i,i0,i1,isp0,itfmessage
+      real*8 s
+      irtc=0
+c      call tfdebugprint(d,'tfsposition',1)
+      if(ktfrealq(d,s))then
+        i0=(nlat+1)/2
+        kx=dfromr(tfspos1(s,i0,i1))
+      elseif(ktfreallistq(d,kl))then
+        isp0=isp
+        i0=(nlat+1)/2
+        do i=1,kl%nl
+          isp=isp+1
+          dtastk(isp)=dfromr(tfspos1(kl%rbody(i),i0,i1))
+          i0=i1
+        enddo
+        kx=kxmakelist(isp0)
+      else
+        irtc=itfmessage(9,'General::wrongtype','"s or a list of s for #2"')
+      endif
+      return
+      end subroutine
+
+      real*8 function tfspos1(s,i0,ir) result(x)
+      implicit none
+      real*8 ,intent(in):: s
+      integer*4 ,intent(in):: i0
+      integer*4 ,intent(out):: ir
+      real*8 s1,circ,s0
+      integer*4 i1,i2,ia
+      s1=s
+      circ=pos(nlat)-pos(1)
+      do while (s1 < pos(1))
+        s1=s1+circ
+      enddo
+      do while (s1 > pos(nlat))
+        s1=s1-circ
+      enddo
+      s0=pos(i0)
+      if(s1 == s0)then
+        ir=i0
+        x=dble(i0)
+        return
+      elseif(s1 < s0)then
+        i1=1
+        i2=i0
+      else
+        i1=i0
+        i2=nlat
+      endif
+      do
+        ia=(i1+i2)/2
+c        write(*,*)'tfspos1 ',i1,i2,ia,s1,pos(1),pos(nlat)
+        if(s1 == pos(ia))then
+          ir=ia
+          x=dble(ia)
+          return
+        elseif(s1 > pos(ia))then
+          if(s1 < pos(ia+1))then
+            ir=ia
+            x=dble(ia)+(s1-pos(ia))/(pos(ia+1)-pos(ia))
+            return
+          endif
+          i1=ia+1
+          cycle
+        else
+          if(s1 > pos(ia-1))then
+            ir=ia-1
+            x=dble(ia-1)+(s1-pos(ia-1))/(pos(ia)-pos(ia-1))
+            return
+          endif
+          i2=ia-1
+        endif
+      enddo
+      return
+      end function
 
       end module
 
@@ -647,6 +729,7 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
       use ffs
       use tffitcode
       use ffs_pointer, only:latt,icomp
+      use twissf
       implicit none
       type (sad_descriptor) ,intent(out):: kx
       integer*4 ,intent(in):: isp1
@@ -658,8 +741,7 @@ c            write(*,*)'elementstk',i,nele,pname(idelc(ilist(i,ifklp)))
       narg=isp-isp1
       keyword=tfgetstrs(ktastk(isp1+1),nc)
       if(nc <= 0)then
-        irtc=itfmessage(9,'General::wrongtype',
-     $       '"Keyword for #1"')
+        irtc=itfmessage(9,'General::wrongtype','"Keyword for #1"')
         return
       endif
       irtc=0
@@ -689,6 +771,15 @@ c              k=ilist(ie,ifklp)
           endif
         enddo
         kx%k=ktfoper+mtfnull
+      elseif(keyword == 'SPOSITION')then
+        kx%k=ktfoper+mtfnull
+        if(narg /= 2)then
+          irtc=itfmessage(9,'General::narg','"1"')
+        elseif(.not. ref)then
+          irtc=itfmessage(9,'General::invset','"1"')
+        else
+          call tfsposition(dtastk(isp1+2),kx,irtc)
+        endif
       else
         call tflinestk(dtastk(isp),narg,isp0,irtc)
         if(irtc /= 0)then

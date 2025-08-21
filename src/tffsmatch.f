@@ -3,7 +3,7 @@
       real*8 , parameter :: flim1=-4.d0,flim2=-3.d0,aimp1=-1.8d0,
      $     aimp2=-.8d0,badc1=-3.5d0,badc2=-2.5d0,amedc1=-2.3d0,
      $     amedc2=-1.3d0,alit=0.75d0,wlmin=0.009d0,eps=1.d-5,
-     $     eps1=1.d-8,rtol=1.05d0,rtol1=1.05d0,tstol=1.d-6,amtol=1.d-9
+     $     eps1=1.d-8,rtol=1.05d0,rtol1=1.02d0,tstol=1.d-6,amtol=1.d-9
       real*8, parameter :: aloadmax=2.d4
       type (sad_descriptor) , save ::ifvr,ifvw
       data ifvr%k/0/
@@ -134,7 +134,7 @@ c     end   initialize for preventing compiler warning
 c          write(*,'(a,i5,7l2,i5,1p8g12.4)')'tffsmatch-20 ',iter,chgmod,newton,wcal,zcal,chgini,inicond,parallel,r%nstab,r%r,r0%r
           call tffscalc(flv%kdp,df,flv%iqcol,flv%lfp,nqcol,nqcol1,ibegin,
      $         r,residual,zcal,wcal,parallel,lout,error)
-c          write(*,'(a,i5,7l2,i5,1p8g12.4)')'tffsmatch-21 ',iter,chgmod,newton,wcal,zcal,chgini,inicond,parallel,r%nstab,r%r,r0%r
+c          write(*,'(a,i5,9l2,i5,1p8g12.4)')'tffsmatch-21 ',iter,error,fitflg,chgmod,newton,wcal,zcal,chgini,inicond,parallel,r%nstab,r%r,r0%r
           if(error)then
             if(irtc == 20001)then
               exit do9000
@@ -166,8 +166,7 @@ c          write(*,'(a,i5,7l2,i5,1p8g12.4)')'tffsmatch-21 ',iter,chgmod,newton,w
             exit do9000
           elseif(.not. fitflg)then
             if(r%nstab == 0)then
-              write(lfno,9501)' Residual =',r%r,' ',
-     $             dpmax,dp01,wexponent,ch,offmw,sexp
+              write(lfno,9501)' Residual =',r%r,' ',dpmax,dp01,wexponent,ch,offmw,sexp
               exit do9000
             else
               write(lfno,9502)'Unstable = ',r%nstab,' Residual =',r%r,' ',
@@ -177,10 +176,10 @@ c          write(*,'(a,i5,7l2,i5,1p8g12.4)')'tffsmatch-21 ',iter,chgmod,newton,w
      $           '  ExponentOfResidual =',f4.1,a,' OffMomentumWeight =',f8.3,a)
             endif
           else
-            if(chgini .and. cell)then
-              call twmov(1,twisss,1,0,.true.)
-            endif
-c            chgini=.true.
+c            if(chgini .and. cell)then
+c              call twmov(1,twisss,1,0,.true.)
+c            endif
+            chgini=.true.
             do1082: do kkkk=1,1
               iter=iter+1
               if(chgmod)then
@@ -193,11 +192,12 @@ c            chgini=.true.
                 r0=r
                 rp0=r%r
                 r00=r0
+                bestval(1:nvar)=nvevx(1:nvar)%valvar
                 ra=r0%r*(1.d0+amtol)
                 if(cell)then
                   call twmov(1,twisss,1,0,.true.)
                 endif
-cs                write(*,'(a,1p10g12.4)')'tffsmatch-chmod ',r%r,r0%r,r00%r
+c                write(*,'(a,1p10g12.4)')'tffsmatch-chmod0 ',r%r,r0%r,r00%r
               else
                 imprv=resle(r,r0)
                 if(imprv)then
@@ -205,7 +205,7 @@ c                  write(*,'(a,1p10g12.4)')'tffsmatch-imprv ',r%r,r0%r,r00%r
                   if(resle(r,r00,rtol1))then
                     lout=lfno
                     if(outt)then
-                      write(lfno,*)'Iterations Unstable Residual    Method     Reduction  Variables'
+c                      write(lfno,*)'Iterations Unstable Residual    Method     Reduction  Variables'
                       outt=.false.
                     endif
                     if(newton)then
@@ -243,6 +243,7 @@ c                  write(*,'(a,1p10g12.4)')'tffsmatch-imprv ',r%r,r0%r,r00%r
                 if(newton)then
                   chgmod=max(smallf,badcnv,min(alate,amedcv)) > .5d0
                 else
+c                  write(*,'(a,2i5,1p10g12.4)')'itmax ',iter,nretry,aimprv,smallf,badcnv,alate,amedcv
                   if(iter > flv%itmax*10)then
                     fitflg=.false.
                     chgmod=.true.
@@ -261,6 +262,7 @@ c                  write(*,'(a,1p10g12.4)')'tffsmatch-imprv ',r%r,r0%r,r00%r
                   endif
                 endif
                 if(chgmod)then
+c                  write(*,'(a,l2,3i5,1p10g12.4)')'match-chmod ',fitflg,r%nstab,r0%nstab,r00%nstab,r%r,r0%r,r00%r
                   r=r0
                   newton=.not. newton
                   fact=1.d0

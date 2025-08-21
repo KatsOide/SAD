@@ -36,6 +36,7 @@
       use tparastat
       use temw, only:nparams
       use geto
+      use fshow
       use tfrbuf
       use calc,only:twmov
 c      use tfshare, only:tfresetsharedmap,tmunmapp

@@ -1,5 +1,9 @@
       module calc
       use tfstk
+      use ffs_flag
+      use ffs_pointer
+      use ffs_fit
+      use tffitcode
       real*8 ,parameter :: coum0=1.d-3
       type (sad_descriptor) ,save::kfv
       data kfv%k /0/
@@ -10,11 +14,7 @@
      $     r,residual1,zcal,wcal,parallel,lout,error)
       use maccode
       use ffs, only:ndim,nlat,flv,maxcond,ffs_bound,nvevx,nelvx,tsetintm
-      use ffs_flag
-      use ffs_pointer
-      use ffs_fit
       use ffs_wake
-      use tffitcode
       use cellm
       use dfun
       use tfshare
@@ -414,9 +414,6 @@ c      call tfevals('Print["PROF: ",LINE["PROFILE","Q1"]]',kxx,irtc)
       
       subroutine twfit(kfit,ifitp,kfitp,kdp,nqcola,iqcol,maxf,wcal)
       use ffs, only:emx,emy,dpmax,coumin,emminv
-      use ffs_pointer
-      use ffs_fit
-      use tffitcode
       use eeval
       use tfcsi,only:icslfnm
       implicit none
@@ -541,14 +538,12 @@ c          endif
 
       subroutine twmov(l,twiss,n1,n2,right)
       use ffs
-      use tffitcode
       use sad_main
-      use ffs_pointer,only:direlc,compelc
       implicit none
       type (sad_comp), pointer::cmp
       integer*4 ,intent(in):: n1,n2,l
       integer*4 ntfun
-      real*8 ,intent(out):: twiss(n1,-n2:n2,1:ntwissfun)
+      real*8 ,intent(inout):: twiss(n1,-n2:n2,1:ntwissfun)
       logical*4 ,intent(in):: right
 c
       call compelc(l,cmp)
@@ -592,8 +587,6 @@ c
 
       subroutine tffssetutwiss(idp,fbound,beg,begin,end)
       use ffs, only:ffs_bound,nlat
-      use ffs_pointer
-      use tffitcode
       use mackw
       implicit none
       type (ffs_bound) ,intent(in):: fbound

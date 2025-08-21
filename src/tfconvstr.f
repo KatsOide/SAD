@@ -125,8 +125,7 @@
         if(iand(ktrmask,ktastk(i)) /= ktfnr)then
           call tfconvbase(strb,rtastk(i),base)
         else
-          call tfconvstrb(strb,dtastk(i),
-     $         nc1,.false.,.false.,-1,'*',irtc)
+          call tfconvstrb(strb,dtastk(i),nc1,.false.,.false.,-1,'*',irtc)
           if(irtc /= 0)then
             go to 10
           endif
@@ -625,6 +624,7 @@ c      include 'DEBUG.inc'
       integer*4 ,intent(out):: nc
       character*(*) ,intent(in):: form
       character*(len(tfconvstr)) buff
+c      call tfdebugprint(k,'convstr',1)
       call tfconvstrs(buff,k,nc,.false.,form)
       nc=min(nc,len(tfconvstr))
       tfconvstr=buff(1:nc)
@@ -753,8 +753,7 @@ c      include 'DEBUG.inc'
         endif
       endif
       if(ktfsymbolq(k,sym))then
-        if(gens .or. sym%gen <= 0
-     $       .or. sym%gen == maxgeneration)then
+        if(gens .or. sym%gen <= 0 .or. sym%gen == maxgeneration)then
           call sym_namtbl(sym,loc)
           ic=loc%cont
           do icp=itfcontextpath,

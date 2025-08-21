@@ -1,53 +1,68 @@
       module dfun
       use tfstk
 
+      type fitvx
+      sequence
+      real*8 x(1:0)
+      real*8 fmin,fmax
+      end type
+
       contains
 
-      recursive subroutine tgetfvx(fitval,fmin,fmax,fitv,fitminmax,rec)
-      use eeval,only:tfeevalref
+      real*8 recursive function tdlfun(fv,f,type) result(x)
       implicit none
-      type (sad_descriptor) ,intent(in):: fitval
-      real*8 ,intent(out):: fmin,fmax
-      logical*4 ,intent(in):: rec
-      logical*4 ,intent(out):: fitv,fitminmax
-      type (sad_dlist),pointer:: kl
-      type (sad_descriptor) :: ev
-      integer*4 irtc
-      fitv=.false.
-      fitminmax=.false.
-      if(ktfrealq(fitval,fmin))then
-        fitv=.true.
-        fmax=fmin
-      elseif(tflistq(fitval,kl))then
-        if(kl%nl == 1)then
-          call tgetfvx(kl%dbody(1),fmin,fmax,fitv,fitminmax,rec)
-          return
-        elseif(kl%nl == 2)then
-          if(ktfreallistq(fitval))then
-            fitv=.true.
-            fitminmax=.true.
-            fmin=kl%rbody(1)
-            fmax=kl%rbody(2)
-            return
-          endif
+      type (fitvx) ,intent(in):: fv
+      real*8 ,intent(in):: f
+      integer*4 ,intent(in),optional::type
+      real*8 fmid
+      type (fitvx) fv1
+      if(present(type))then
+        select case (type)
+        case (1)
+          fv1%x(1:2)=log(fv%x(1:2))
+          x=tdlfun(fv1,log(f))
+        case (2)
+          fv1%x(1:2)=atan(fv%x(1:2))
+          x=tdlfun(fv1,atan(f))
+        case default
+          x=tdlfun(fv,f)
+        end select
+      elseif(fv%fmin == fv%fmax)then
+        x=fv%fmin-f
+      elseif(fv%fmin < fv%fmax)then
+        if(f < fv%fmin)then
+          x=fv%fmin-f
+        elseif(f > fv%fmax)then
+          x=fv%fmax-f
+        else
+          x=0.d0
         endif
-      endif
-      if(rec)then
-        ev=tfeevalref(fitval,irtc)
-        if(irtc > 0)then
-          if(ierrorprint /= 0)then
-            call tferrorhandle(fitval,irtc)
-          else
-            call tfdebugprint(fitval,'... in',3)
-          endif
-        elseif(irtc < 0)then
-          return
+      else
+        fmid=(fv%fmin+fv%fmax)*.5d0
+        if(f > fmid .and. f < fv%fmin)then
+          x=fv%fmin-f
+        elseif(f < fmid .and. f < fv%fmax)then
+          x=fv%fmax-f
+        else
+          x=0.d0
         endif
-        call tgetfvx(ev,fmin,fmax,fitv,fitminmax,.false.)
-        return
       endif
       return
-      end
+      end function tdlfun
+
+      real*8 function trdfun(kf,vb,ve) result(r)
+      use tffitcode
+      implicit none
+      integer*4 ,intent(in):: kf
+      real*8 ,intent(in):: vb,ve
+      select case (kf)
+      case (mfitbx,mfitby,mfitbz,mfitgmx,mfitgmy,mfitgmz)
+        r=ve/vb
+      case default
+        r=ve-vb
+      end select
+      return
+      end function trdfun
 
       subroutine tdfun(iqcol,lfp,nqcola,nqcola1,kdp,df1,error)
       use ffs
@@ -61,40 +76,12 @@
       integer*4 ,parameter::npeak=10
       integer*4 ,intent(out):: nqcola,nqcola1,iqcol(*),lfp(2,maxcond),kdp(*)
       real*8 ,intent(out):: df1(*)
-      real*8 vpeak(npeak),vf,vb,ve,v,vf1
       logical*4 ,intent(out):: error
-      integer*4 ipeak(npeak),j,i,ka,kf,kp,kp1,mp,idp,kpb,kpe,
-     $     k,ip,irtc,m
+      type (sad_rlist),pointer :: klf
+      type (fitvx) vf,vf1
+      real*8 vpeak(npeak),vb,ve,v
+      integer*4 ipeak(npeak),j,i,ka,kf,kp,kp1,mp,idp,kpb,kpe,k,ip,irtc,m
       logical*4 maxfit,ttrans(-nfam:nfam),tftype1fit
-c      do j=1,nfcol
-c        if(flv%kfit(flv%kfitp(j)) == mfitnx .or.
-c     $       flv%kfit(flv%kfitp(j)) == mfitny)then
-c          do m=nfam1,nfam
-c            detr0=utwiss(mfitr1,m,1)*utwiss(mfitr4,m,1)
-c     $           -utwiss(mfitr2,m,1)*utwiss(mfitr3,m,1)
-c            ttrans(m)=.false.
-c            if(detr0 < 1.d0)then
-c              do i=2,nut
-c                if(utwiss(mfitr1,m,i)*utwiss(mfitr4,m,i)
-c     $               -utwiss(mfitr2,m,i)*utwiss(mfitr3,m,i)
-c     1               >= 1.d0)then
-c                  ttrans(m)=.true.
-c                  exit
-c                endif
-c              enddo
-c            else
-c              do i=2,nut
-c                if(utwiss(mfitr1,m,i)*utwiss(mfitr4,m,i)
-c     $               -utwiss(mfitr2,m,i)*utwiss(mfitr3,m,i)
-c     1               < 1.d0)then
-c                  ttrans(m)=.true.
-c                  exit
-c                endif
-c              enddo
-c            endif
-c          enddo
-c          exit
-c        endif
       do m=-nfam,nfam
         ttrans(m)=.false.
       enddo
@@ -110,8 +97,15 @@ c        endif
         kp1=flv%ifitp1(ka)
         if(flv%mfitp(ka) /= 0)then
           mp=(abs(flv%mfitp(ka))-1)/2
-          do20:     do idp=nfam1,nfam
-            vf=flv%fitval(ka)%x(1)
+          do20: do idp=nfam1,nfam
+            if(ktfrealq(flv%fitval(ka),vf%fmin))then
+              vf%fmax=vf%fmin
+            elseif(ktfreallistq(flv%fitval(ka),klf) .and. klf%nl == 2)then
+              vf%x(1:2)=klf%rbody(1:2)
+            else
+              vf%fmin=flv%fitval(ka)%x(1)
+              vf%fmax=vf%fmin
+            endif
             if((kfam(idp) == 0 .and. idp >= -mp .and. idp <= mp)
      $           .or. jfam(idp) >= -mp .and. jfam(idp) <= mp)then
               if(kf >= mfitdx .and. kf <= mfitdpy .and.
@@ -125,10 +119,10 @@ c     $             .or. inicond .and. idp /= 0))then
                 if(kp == nlat)then
                   if(idp >= -1 .and. idp <= 1)then
                     if(kf == mfitnx)then
-                      vf=vf+(dp(idp)-dp0)*xixf
+                      vf%x(1:2)=vf%x(1:2)+(dp(idp)-dp0)*xixf
                     endif
                     if(kf == mfitny)then
-                      vf=vf+(dp(idp)-dp0)*xiyf
+                      vf%x(1:2)=vf%x(1:2)+(dp(idp)-dp0)*xiyf
                     endif
                   endif
                 endif
@@ -138,16 +132,16 @@ c     $             .or. inicond .and. idp /= 0))then
                   kpb=min(kp,kp1)
                   kpe=max(kp,kp1)
                   if(maxfit)then
-                    if(kf <= mfitdpy
-     $                   .or. kf >= mfitpex .and.
-     $                   kf <= mfitgmz)then
+                    if(kf <= mfitdpy .or.
+     $                   kf >= mfitpex .and. kf <= mfitgmz)then
                       call tfpeak(idp,kf,kpb,kpe,ipeak,vpeak,npeak)
                       do k=1,npeak
                         ip=ipeak(k)
                         if(ip <= 0)then
                           cycle do20
                         endif
-                        df1(i)=tdfun1(vf,vpeak(k),kf,maxfit,idp,ttrans(idp))
+                        df1(i)=tdfun1(vf,vpeak(k),kf,maxfit,ttrans(idp))
+c                        write(*,'(a,i5,1p10g12.4)')'tdfun-maxfit ',k,vf%x(1:2),vpeak(k),df1(i)
                         if(df1(i) /= 0.d0)then
                           iqcol(i)=j
                           lfp(1,i)=ip
@@ -162,43 +156,39 @@ c     $             .or. inicond .and. idp /= 0))then
                       enddo
                     endif
                   else
-                    if(kf <= mfitbmagz .or.
-     $                   (kf >= mfitleng .and. kf <= mfitchi3))then
+                    if(kf <= mfitbmagz .or. (kf >= mfitleng .and. kf <= mfitchi3))then
                       maxfit=flv%mfitp(ka) < 0
                       select case (kf)
                       case (mfitbmagx,mfitbmagy,mfitbmagz)
                         ve=tgetbmagu2(kpb,kpe,idp,kf)
-                        vb=vf
+                        vb=vf%fmin
                       case default
                         vb=tgfun(kf,kpb,idp)
                         ve=tgfun(kf,kpe,idp)
                       end select
-                      vf1=vb
-                      call tfgetfitval(nlist(kf),kpb,kpe,dp(idp),
+                      call tfgetfitval(nlist(kf),kf,kpb,kpe,dp(idp),
      $                     iuid(idp),kfam(idp),vb,ve,vf,vf1,irtc)
-c                      write(*,'(a,3i5,1p10g12.4)')'tdfun-3 ',kpb,kpe,idp,dp(idp),vb,ve,vf,vf1
                       if(irtc == -1)then
                         cycle
                       endif
-                      if(maxfit)then
-                        ve=ve-vf1
-                        vf1=vf
-                      endif
-c                      write(*,'(a,2l2,2i5,1p10g12.4)')'tdfun-4 ',maxfit,ttrans(idp),idp,kf,vf1,ve
-                      df1(i)=tdfun1(vf1,ve,kf,maxfit,idp,ttrans(idp))
-c                      write(*,'(a,l2,3i5,1p10g12.4)')'tdfun-5 ',maxfit,i,ka,nfc0,df1(i),ve,vf1
+c                      if(maxfit)then
+c                        ve=ve-vb
+c                      endif
+                      df1(i)=tdfun1(vf1,trdfun(kf,vb,ve),kf,maxfit,ttrans(idp))
+c                      df1(i)=tdfun1(vf1,ve-vb,kf,maxfit,twopfit,idp,ttrans(idp))
+c                      write(*,'(a,2i5,1p10g12.4)')'tdfun-5 ',i,kf,vf1%x(1:2)/scale(kf),vb/scale(kf),ve/scale(kf),trdfun(kf,vb,ve)/scale(kf),df1(i)/scale(kf)
                       if(cell .and. ka > nfc0 .and. ka <= nfc0+2 .and. abs(df1(i)) < abmax)then
                         cycle
                       endif
-                      if(.not. maxfit)then
-                        select case (kf)
-                        case (mfitbx,mfitby,mfitbz,mfitgmx,mfitgmy,mfitgmz)
-                          df1(i)=df1(i)+log(vf)
-                        case (mfitbmagx,mfitbmagy,mfitbmagz)
-                        case default
-                          df1(i)=df1(i)+vf
-                        end select
-                      endif
+c                      if(.not. maxfit)then
+c                        select case (kf)
+c                        case (mfitbx,mfitby,mfitbz,mfitgmx,mfitgmy,mfitgmz)
+c                          df1(i)=df1(i)+log(vf%fmax)
+c                        case (mfitbmagx,mfitbmagy,mfitbmagz)
+c                        case default
+c                          df1(i)=df1(i)+vf%fmin
+c                        end select
+c                      endif
                       iqcol(i)=j
                       lfp(1,i)=kpe
                       lfp(2,i)=kpb
@@ -213,12 +203,14 @@ c                      write(*,'(a,l2,3i5,1p10g12.4)')'tdfun-5 ',maxfit,i,ka,nfc
                 else
                   v=tgfun(kf,kp,idp)
                   vf1=vf
-                  call tfgetfitval(nlist(kf),kp,0,dp(idp),
-     $                 iuid(idp),kfam(idp),vf,v,vf,vf1,irtc)
+                  call tfgetfitval(nlist(kf),kf,kp,0,dp(idp),
+     $                 iuid(idp),kfam(idp),0.d0,v,vf,vf1,irtc)
+c                  write(*,'(a,i5,1p10g12.4)')'evalfitval ',irtc,vf%x(1:2),vf1%x(1:2),v
                   if(irtc == -1)then
                     cycle
                   endif
-                  df1(i)=tdfun1(vf1,v,kf,maxfit,idp,ttrans(idp))
+                  df1(i)=tdfun1(vf1,v,kf,maxfit,ttrans(idp))
+c                  write(*,'(a,1p10g12.4)')'evalfitval-1 ',df1(i)
                   if(maxfit .and. df1(i) == 0.d0)then
                     cycle
                   endif
@@ -243,7 +235,7 @@ c                      write(*,'(a,l2,3i5,1p10g12.4)')'tdfun-5 ',maxfit,i,ka,nfc
       return
       end
 
-      subroutine tfgetfitval(funname,kp,kp1,dp,iuid,kfam,vf,v,vf0,vf1,irtc)
+      subroutine tfgetfitval(funname,kf,kp,kp1,dp,iuid,kfam,vb,ve,vf,vf1,irtc)
       use tfstk
       use ffs
       use ffs_pointer, only:mult
@@ -252,24 +244,26 @@ c                      write(*,'(a,l2,3i5,1p10g12.4)')'tdfun-5 ',maxfit,i,ka,nfc
       use eeval
       use tfcsi, only:icslfnm
       implicit none
-      integer*4 ,intent(in):: kp,kp1,iuid,kfam
+      integer*4 ,intent(in):: kp,kp1,iuid,kfam,kf
       integer*4 ,intent(out):: irtc
-      real*8 ,intent(in):: dp,vf,v,vf0
+      type (fitvx) ,intent(in):: vf
+      type (fitvx) ,intent(out):: vf1
+      real*8 ,intent(in):: dp,vb,ve
       character*8 ,intent(in):: funname
       type (sad_descriptor) kx
       type (sad_dlist),pointer,save::klv,klv1
-      type (sad_rlist),pointer,save::klid
+      type (sad_rlist),pointer,save::klid,klfv
       integer*4 lenw
-      real*8 vf1
       logical retry,retry1
       character*(MAXPNAME+8) name,name1
       integer*4 level,ln,ln1
-      type (sad_descriptor) ,save::kfv,kfv1,kfid
+      type (sad_descriptor) ,save::kfv,kfv1,kfid,kffv
       integer*8 ifvloc,ifvfun,ifvloc1
       save ifvloc,ifvfun,ifvloc1
       data kfv%k /0/
       if(kfv%k == 0)then
         kfid=kxavaloc(0,2,klid)
+        kffv=kxavaloc(0,2,klfv)
         kfv =kxadaloc(0,5,klv)
         klv%head=dtfcopy(kxsymbolz('`FitValue',9))
         ifvloc=ktsalocb(0,'                ',MAXPNAME+8)
@@ -293,18 +287,27 @@ c                      write(*,'(a,l2,3i5,1p10g12.4)')'tdfun-5 ',maxfit,i,ka,nfc
       klid%rbody(2)=dp
       call elname(kp,name)
       ln=lenw(name)
-c      write(*,'(a,i5,1p10g12.4)')'getfitval ',kp1,vf0,vf,v
       if(kp1 == 0)then
         retry1=.false.
-        klv%rbody(4)=vf
-        klv%rbody(5)=v
+        if(vf%fmin == vf%fmax)then
+          klv%rbody(4)=vf%fmin
+        else
+          klv%dbody(4)=dtfcopy(kffv)
+          klfv%rbody(1:2)=vf%x(1:2)
+        endif
+        klv%rbody(5)=ve
       else
         call elname(kp1,name1)
         ln1=lenw(name1)
         retry1=kp1 /= nlat
-        klv1%rbody(5)=vf0
-        klv1%rbody(6)=vf
-        klv1%rbody(7)=v
+        klv1%rbody(6)=vb
+        klv1%rbody(7)=ve
+        if(vf%fmin == vf%fmax)then
+          klv1%rbody(5)=vf%fmin
+        else
+          klv1%dbody(5)=dtfcopy(kffv)
+          klfv%rbody(1:2)=vf%x(1:2)
+        endif
       endif
       retry=kp /= nlat
  100  call tfpadstr(name,ifvloc+1,ln)
@@ -316,21 +319,22 @@ c      write(*,'(a,i5,1p10g12.4)')'getfitval ',kp1,vf0,vf,v
       call tclrfpe
       levele=itfuplevel()
       if(kp1 == 0)then
-c        call tfdebugprint(kfv,'FitValue-1',1)
+c        call tfdebugprint(kfv,'getfitval',1)
         kx=tfleval(klv,.true.,irtc)
       else
-c        call tfdebugprint(kfv1,'FitValue-2',1)
         kx=tfleval(klv1,.true.,irtc)
       endif
-c      call tfdebugprint(kx,'==> ',1)
       level=itfdownlevel()
  110  if(irtc /= 0)then
         if(ierrorprint /= 0)then
           call tfaddmessage(' ',0,icslfnm())
         endif
-        call termes('Error in FitValue '//
-     $       funname//' at '//name,' ')
-      elseif(ktfrealq(kx,vf1))then
+        call termes('Error in FitValue '//funname//' at '//name,' ')
+      elseif(ktfrealq(kx,vf1%fmin))then
+        if(kp1 /= 0)then
+          vf1%fmin=vf%fmin+trdfun(kf,vb,vf1%fmin)
+        endif
+        vf1%fmax=vf1%fmin
       elseif(kx%k == ktfoper+mtfnull)then
         irtc=-1
       elseif(retry)then
@@ -435,98 +439,97 @@ c      call tfmemcheckprint('FitFunction-end',.true.,irtc)
       return
       end
 
-      real*8 function tdfun1(vf,v,kf,maxfit,kdp,ttrans)
+      real*8 recursive function tdfun1(vf,v,kf,maxfit,ttrans) result(r)
       use macmath
       use tffitcode
       implicit none
       real*8 ,parameter::factor=1.d0
-      integer*4 ,intent(in):: kf,kdp
-      real*8 ,intent(in):: vf,v
+      type (fitvx) ,intent(in):: vf
+      integer*4 ,intent(in):: kf
+      real*8 ,intent(in):: v
       logical*4 ,intent(in):: maxfit,ttrans
       real*8 vfa
       select case (kf)
       case (mfitbx,mfitby,mfitbz,mfitgmx,mfitgmy,mfitgmz)
         if(maxfit)then
-          if(v > vf)then
-            tdfun1=log(vf*factor/v)
+          if(v > vf%fmax)then
+            r=log(vf%fmax*factor/v)
           else
-            tdfun1=0.d0
+            r=0.d0
           endif
         else
-          tdfun1=log(vf/v)
+          r=tdlfun(vf,v,1)
         endif
 
       case (mfitax,mfitay,mfitaz)
         if(maxfit)then
-          vfa=abs(vf)
+          vfa=abs(vf%fmin)
           if(v > vfa)then
-            tdfun1=atan(vfa*factor)-atan(v)
+            r=atan(vfa*factor)-atan(v)
           elseif(v < -vfa)then
-            tdfun1=-atan(vfa*factor)-atan(v)
+            r=-atan(vfa*factor)-atan(v)
           else
-            tdfun1=0.d0
+            r=0.d0
           endif
         else
-          tdfun1=atan(vf)-atan(v)
+          r=tdlfun(vf,v,2)
         endif
 
       case (mfitex,mfitey)
         if(maxfit)then
-          vfa=abs(vf)
+          vfa=abs(vf%fmax)
           if(v > vfa)then
-            tdfun1=vfa-v
+            r=vfa-v
           else
-            tdfun1=max(-vfa-v,0.d0)
+            r=max(-vfa-v,0.d0)
           endif
         else
-          tdfun1=merge(-vf,vf,kdp < 0)-v
+          r=tdlfun(vf,v)
         endif
         return
 
       case (mfitchi1,mfitchi2,mfitchi3)
         if(maxfit)then
-          vfa=abs(vf)
+          vfa=abs(vf%fmin)
           if(v > vfa)then
-            tdfun1=vfa-v
+            r=vfa-v
           else
-            tdfun1=max(-vfa-v,0.d0)
+            r=max(-vfa-v,0.d0)
           endif
         else
-          tdfun1=vf-v
+          r=tdlfun(vf,v)
         endif
-        do while(tdfun1 < -pi)
-          tdfun1=tdfun1+pi2
+        do while(r < -pi)
+          r=r+pi2
         enddo
-        do while(tdfun1 > pi)
-          tdfun1=tdfun1-pi2
+        do while(r > pi)
+          r=r-pi2
         enddo
         
       case (mfitnx,mfitny,mfitnz)
-c     vf1=pi2*(anint(vf/pi2)+sign(.5d0*sin(.5d0*vf)**2,sin(vf)))
-c     v1=pi2*(anint(v/pi2)+sign(.5d0*sin(.5d0*v)**2,sin(v)))
         if(maxfit)then
-          tdfun1=min(0.d0,vf-v)
+          r=min(0.d0,vf%fmin-v)
         else
-          tdfun1=vf-v
+          r=tdlfun(vf,v)
         endif
         if(ttrans)then
-          tdfun1=tdfun1-anint(tdfun1/pi2)*pi2
+          r=r-anint(r/pi2)*pi2
         endif
-c        write(*,'(a,1p10g12.4)')'tdfun-n ',vf,v,tdfun1
+c        write(*,'(a,1p10g12.4)')'tdfun-n ',vf,v,r
 
 c      case (mfitbmagx,mfitbmagy,mfitbmagz)
-c        tdfun1=sqrt(vf-1.d0)-sqrt(v-1.d0)
+c        r=sqrt(vf-1.d0)-sqrt(v-1.d0)
 c
       case default
         if(maxfit)then
-          vfa=abs(vf)
+          vfa=abs(vf%fmin)
           if(v > vfa)then
-            tdfun1=vfa-v
+            r=vfa-v
           else
-            tdfun1=max(-vfa-v,0.d0)
+            r=max(-vfa-v,0.d0)
           endif
         else
-          tdfun1=vf-v
+          r=tdlfun(vf,v)
         endif
       end select
       return
@@ -1547,4 +1550,4 @@ c      call tfdebugprint(km,'coupmatrix',1)
       return
       end subroutine
 
-      end module
+      end module dfun

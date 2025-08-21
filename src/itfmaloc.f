@@ -397,8 +397,8 @@ c            rlist(kap+i*2-2:kap+2*((m-1)*n+i-1))=kli%rbody(1:m)
       implicit none
       integer*4 ,intent(in)::m
       complex*16 ,intent(in):: cx(:)
-      type (sad_dlist), pointer :: klx,klxi
-      type (sad_rlist), pointer :: klj,kl
+      type (sad_dlist), pointer :: klx
+      type (sad_rlist), pointer :: kl
       integer*8 kai,kc
       integer*4 i
       logical*4 c
@@ -445,12 +445,12 @@ c      ktfc2l=ktfcm2l(cx,0,n,1,.false.,.false.)
       return
       end
 
-      integer*8 function ktfcm2l(a,n,m,nd,trans,conj)
+      integer*8 function ktfcm2l(a,n,m,trans,conj)
       implicit none
       type (sad_dlist), pointer :: klx,klxi
       type (sad_rlist), pointer :: klj,kl
       integer*8 kax,kaxi,kai,kc,kaj
-      integer*4,intent(in):: n,m,nd
+      integer*4,intent(in):: n,m
       integer*4 i,j
       logical*4 ,intent(in)::trans,conj
       logical*4 c
