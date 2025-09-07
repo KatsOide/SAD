@@ -1,7 +1,7 @@
       subroutine track(latt,iparam)
       use tfstk
       use ffs
-      use ffsa, only:tffs
+      use ffsa, only:tffs,kxffs
       use touschek_table, only: initialize_tampl
       use trackbypass, only: bypasstrack, lattuse
       use tffitcode
@@ -147,6 +147,7 @@ c      use tfcsi, only:ipoint,lrecl,lfni
         if(np0 == 0)then
           trpt=.false.
           rfsw=.true.
+          kxffs=dxnullo
           call tffs
           title='FFS'
           go to 8001

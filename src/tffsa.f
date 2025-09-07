@@ -7,14 +7,15 @@
       use tfcsi
       use wbuf
       integer*8 ::idum=-1
+      type (sad_descriptor) kxffs
 
       contains
       subroutine tffs
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) kffs
       integer*4 irtc
       logical*4 err
-      call tffsa(1,lfni,kx,irtc)
+      call tffsa(1,lfni,kffs,irtc)
       if(irtc /= 0 .and. ierrorprint /= 0)then
         call tfreseterror
       endif
@@ -1218,7 +1219,10 @@ c        enddo
       call tfevalb('Reset$FF[]',kx,irtc)
       nqcol=nqcol-int(kx%x(1))
       flv%nfc=nfc0
-      call tfshow(cellstab,df,mfpnt,mfpnt1,kffs,irtcffs,lfnb > 1,lfno)
+c      call tfshow(cellstab,df,mfpnt,mfpnt1,kffs,irtcffs,lfnb > 1,lfno)
+      call tfshow(cellstab,df,mfpnt,mfpnt1,kffs,irtcffs,.true.,lfno)
+      kxffs=kffs
+c      call tfdebugprint(kffs,'show',1)
       call tmunmapp(flv%iut)
       call tffsclearcouple
       if(cell)then

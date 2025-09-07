@@ -86,8 +86,8 @@ c        f=merge(-dg/(s+b),(s-b)/3.d0/a,b > 0.d0)
       used=.true.
       ispv=isp
       if(isp >= isp1+3)then
-        if(tfreallistq(dtastk(isp),klo)
-     $       .and. klo%nl >= 4)then
+        if(tfreallistq(dtastk(isp),klo) .and. klo%nl >= 4)then
+c          call tfdebugprint(dtastk(isp),'findroot',1)
           ispv=isp-1
           maxi=int(klo%rbody(1))
           eps=klo%rbody(2)
@@ -118,11 +118,12 @@ c        f=merge(-dg/(s+b),(s-b)/3.d0/a,b > 0.d0)
       kdl(1:nvar)%k=ktfoper+mtfnull
       if(used)then
         call tfderiv(ke,nvar,sav,kdl,irtc)
+c        call tfdebugprint(ke,'tffindroot-deriv',1)
+c        call tfdebugprint(kdl(1),'tffindroot-deriv',1)
         if(irtc /= 0)then
           call tflocal1(ke%k)
           go to 9000
         endif
-c     call tfdebugprint(ke,'tffindroot-deriv',1)
       endif
       call tfnewton(ke%k,sav,v0,d0,kdl,
      $     vmin,vmax,neq,nvar,maxi,eps,trace,frac,irtc)

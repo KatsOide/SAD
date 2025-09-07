@@ -39,7 +39,7 @@ c      include 'DEBUG.inc'
       integer*4 ,allocatable,dimension(:)::kdpa1,kdpa2,iqcol0,iqcola1,iqcola2
       integer*4 nretry
       type (ffs_res),allocatable::residuala1(:)
-      type (ffs_res) ra1,r0,r00
+      type (ffs_res) ra1,r0,r0print
       real*8 ,allocatable,dimension(:)::dval,df0,df1,df2,ddf1,ddf2,bestval,wvar,wlimit
       integer*4 ,allocatable,dimension(:,:)::lfpa1,lfpa2
       logical*4 ,allocatable,dimension(:)::free
@@ -48,7 +48,7 @@ c      include 'DEBUG.inc'
       real*8 v00,rl,fuzz,a,b,x,crate,aimprv,fact,ra,alate,
      $     smallf,badcnv,amedcv,vl1,vl2,aitm1,aitm2,
      $     dg,f1,f2,g1,g2,valvar0,rp0,dv,vl,dvkc
-      real*8 twisss(ntwissfun)
+      real*8 twsave(ntwissfun)
       real*8 , pointer :: qu(:,:),quw(:,:)
       logical*4 chgmod,newton,imprv,limited,over,wcal,parallel,nderiv,outt,nderiv0,dlim
       integer*4 kkk,kkkk,npa
@@ -75,7 +75,7 @@ c     begin initialize for preventing compiler warning
       aitm1=0
       aitm2=0
       r0=ffs_res(0.d0,0)
-      r00=r0
+      r0print=r0
       ra=0.d0
       aimprv=0.d0
       crate=1.d0
@@ -97,7 +97,7 @@ c     end   initialize for preventing compiler warning
       rl=abs(rlist(iconvergence))*max(nfcol,1)
       zcal=.true.
       if(cell)then
-         call twmov(1,twisss,1,0,.true.)
+         call twmov(1,twsave,1,0,.true.)
       endif
       ibegin=1
       chgmod=.true.
@@ -106,6 +106,7 @@ c     end   initialize for preventing compiler warning
      $       iqcola2(maxcond),lfpa1(2,maxcond),lfpa2(2,maxcond),bestval(flv%nvar),
      $       wvar(flv%nvar),wlimit(flv%nvar),free(nele))
         call tffssetlimit(nvar,dlim)
+        r0=ffs_res(1.d300,10000)
         fact=1.d0
         iter=0
         newton=.true.
@@ -141,9 +142,9 @@ c          write(*,'(a,i5,9l2,i5,1p8g12.4)')'tffsmatch-21 ',iter,error,fitflg,ch
             else
               fitflg=.false.
               irtc=20001
-              bestval(1:nvar)=nvevx(1:nvar)%valvar
+              nvevx(1:nvar)%valvar=bestval(1:nvar)
               if(cell)then
-                call twmov(1,twisss,1,0,.false.)
+                call twmov(1,twsave,1,0,.false.)
               endif
               exit do200
             endif
@@ -177,7 +178,7 @@ c          write(*,'(a,i5,9l2,i5,1p8g12.4)')'tffsmatch-21 ',iter,error,fitflg,ch
             endif
           else
 c            if(chgini .and. cell)then
-c              call twmov(1,twisss,1,0,.true.)
+c              call twmov(1,twsave,1,0,.true.)
 c            endif
             chgini=.true.
             do1082: do kkkk=1,1
@@ -189,20 +190,22 @@ c            endif
                 chgmod=.false.
                 aimprv=0.d0
                 crate=1.d0
-                r0=r
-                rp0=r%r
-                r00=r0
-                bestval(1:nvar)=nvevx(1:nvar)%valvar
-                ra=r0%r*(1.d0+amtol)
-                if(cell)then
-                  call twmov(1,twisss,1,0,.true.)
+                if(resle(r,r0))then
+                  r0=r
+                  rp0=r%r
+                  r0print=r0
+                  bestval(1:nvar)=nvevx(1:nvar)%valvar
+                  ra=r0%r*(1.d0+amtol)
+                  if(cell)then
+                    call twmov(1,twsave,1,0,.true.)
+                  endif
                 endif
-c                write(*,'(a,1p10g12.4)')'tffsmatch-chmod0 ',r%r,r0%r,r00%r
+c                write(*,'(a,1p10g12.4)')'tffsmatch-chmod0 ',r%r,r0%r,r0print%r
               else
                 imprv=resle(r,r0)
                 if(imprv)then
-c                  write(*,'(a,1p10g12.4)')'tffsmatch-imprv ',r%r,r0%r,r00%r
-                  if(resle(r,r00,rtol1))then
+c                  write(*,'(a,1p10g12.4)')'tffsmatch-imprv ',r%r,r0%r,r0print%r
+                  if(resle(r,r0print,rtol1))then
                     lout=lfno
                     if(outt)then
 c                      write(lfno,*)'Iterations Unstable Residual    Method     Reduction  Variables'
@@ -215,7 +218,7 @@ c                      write(lfno,*)'Iterations Unstable Residual    Method     
                       write(lfno,9701)iter,r%nstab,r%r,'  (DESCEND) ',fact,nvara
                     endif
                     nmes=0
-                    r00=r
+                    r0print=r
                   endif
                   aimprv=fuzz(log10((ra-r%r)/ra),aimp1,aimp2)
                   crate=(r0%r-r%r)/r0%r
@@ -228,7 +231,7 @@ c                      write(lfno,*)'Iterations Unstable Residual    Method     
                   g1=r%r
                   bestval(1:nvar)=nvevx(1:nvar)%valvar
                   if(cell)then
-                    call twmov(1,twisss,1,0,.true.)
+                    call twmov(1,twsave,1,0,.true.)
                   endif
                   rp0=r%r
                   r0=r
@@ -262,13 +265,13 @@ c                  write(*,'(a,2i5,1p10g12.4)')'itmax ',iter,nretry,aimprv,small
                   endif
                 endif
                 if(chgmod)then
-c                  write(*,'(a,l2,3i5,1p10g12.4)')'match-chmod ',fitflg,r%nstab,r0%nstab,r00%nstab,r%r,r0%r,r00%r
+c                  write(*,'(a,l2,3i5,1p10g12.4)')'match-chmod ',fitflg,r%nstab,r0%nstab,r0print%nstab,r%r,r0%r,r0print%r
                   r=r0
                   newton=.not. newton
                   fact=1.d0
                   nvevx(1:nvar)%valvar=bestval(1:nvar)
                   if(cell)then
-                    call twmov(1,twisss,1,0,.false.)
+                    call twmov(1,twsave,1,0,.false.)
                   endif
                   exit do200
                 elseif(.not. imprv)then
@@ -283,7 +286,7 @@ c                  write(*,'(a,l2,3i5,1p10g12.4)')'match-chmod ',fitflg,r%nstab,
                     fact=fact*.5d0
                   endif
                   if(cell)then
-                    call twmov(1,twisss,1,0,.false.)
+                    call twmov(1,twsave,1,0,.false.)
                   endif
                   if(nvara == nvar)then
                     a=fact/f1
@@ -410,7 +413,7 @@ c     $             .and. dble(nvar*nfam*nlat) < aloadmax
                     if(nqcol > nqcol1)then
                       nvevx(kc)%valvar=nvevx(kc)%valvar+eps1/wvar(kc)
                       if(cell)then
-                        call twmov(1,twisss,1,0,.false.)
+                        call twmov(1,twsave,1,0,.false.)
                       endif
                       call tfsetv(nvar)
                       call twmov(1,twiss,nlat,ndim,.true.)
