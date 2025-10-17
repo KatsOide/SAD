@@ -105,12 +105,8 @@ Linux)
 #           hpc-be)
 #               cc_vers="_7"
 #               ;;
-            *)
-              cd arch/
-              if [[ -e /usr/include/tk/tk.h ]]
-              then
-                ln -s 
-                ;;
+#           *)
+#               ;;
     esac
 #    fi
     ;;
