@@ -144,6 +144,7 @@
    $LTPDF["$R_2^*$ (orig.)"]:="tmp__00092967.rSXSkc.pdf",$LTPDF["$R_2^*$ (corr.)"]:="tmp__00092967.SkfkTP.pdf",
    $LTPDF["$R_4^*$ (orig.)"]:="tmp__00092967.3jlLQW.pdf",$LTPDF["$R_4^*$ (corr.)"]:="tmp__00092967.iNqJMg.pdf",
    $LTPDF["$G_{z,{\\rm orb}}$ ($\\muup$m)"]:="tmp__00040514.LupiQA.pdf",$LTPDF["X/\\sigma_X"]:="tmp__00032389.5vIRjU.pdf",
+   $LTPDF["$\\varDelta x$, \\@$\\varDelta y$ (fm)"]:="tmp__00031929.Y8UsCG.pdf",
    $LTPDF["$\\varepsilon_y\\,{\\rm pm}$"]:="tmp__00072566.5K08Aq.pdf",
    $LTPDF["$\\varDelta\\varepsilon_y\\,{\\rm (pm)}$"]:="tmp__00062373.XFGmKy.pdf",
    $LTPDF["$\\varDelta\\delta\\eta_{y{\\rm P}}$ (m)"]:="tmp__00000561.MJOQWM.pdf",

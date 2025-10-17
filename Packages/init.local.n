@@ -4,36 +4,11 @@ Environment@@[{
   {"UNIX95",""},
   {"TCL_LIBRARY",""},
   {"TK_LIBRARY",""},
-  {"KBFRAMEDIR",Environment["SAD_ROOTPATH"]//"/KBFrame"},
-  {"PYTHONPATH",Environment["SAD_ROOTPATH"]//"/Packages/"},
-  {"TLPATH",Environment["SAD_ROOTPATH"]//"/contrib/texlive/bin"}
+  {"KBFRAMEDIR","/home/tmori/work/accelerator/github/SAD/KBFrame"},
+  {"PYTHONPATH","/home/tmori/work/accelerator/github/SAD/Packages/"}
   },{1}];
 
-If[`$HaveLaTeX==="",
-  SetHL[];
-  Environment["PATH",Environment["TLPATH"]//":"//Environment["PATH"]]];
-!`$HaveLaTeX="";
-
-DocumentsDirectory=Environment["SAD_ROOTPATH"]//"/Documents/";
-ExamplesDirectory=Environment["SAD_ROOTPATH"]//"/script/";
-
-SetNPARA[]:=Module[{np=ToExpression[Environment["SLURM_CPUS_ON_NODE"]],f},
-  NPARA=If[RealQ[np],
-    np,
-    f=OpenRead["!sysctl -n hw.ncpu"];
-    np=Read[f];
-    Close[f];
-    If[RealQ[np],
-      Max[4,np],
-      8]];
-!  Print["NPARA: ",NPARA];
-  ];
-SetNPARA[];
-
-KBF$ScreenShotDirectory = "/Volumes/afsad/ldata/KEKB/KCG/ScrShot";
-
-!Get[PackagesDirectory//"init.kekb.n"];
-
-!TimeZoneOffset=Block[{f=OpenRead["!date +\"%z\""]},{Read[f]*0.6,Close[f]}[[1]]]; (* Use local time *)
+DocumentsDirectory="/home/tmori/work/accelerator/github/SAD/Documents/";
+ExamplesDirectory="/home/tmori/work/accelerator/github/SAD/script/";
 
 ! End of File

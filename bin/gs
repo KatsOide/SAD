@@ -1,8 +1,8 @@
 #!/bin/sh
-        
+
 JOB_DIR=$(pwd)
 SAD_ROOTPATH="$(cd "$(dirname "$0")";cd ..; pwd)"
-echo $SAD_ROOTPATH
+#echo $SAD_ROOTPATH
 export SAD_ROOTPATH
 cd $JOB_DIR
 
@@ -91,11 +91,11 @@ esac
 # Set library path for dynamic link library
 case ${SAD_ARCH} in
 *-CYGWIN*)
-#    PATH=/Users/oide/SAD/oldsad/arch/${SAD_ARCH}/bin:${PATH}
+#    PATH=/home/tmori/work/accelerator/github/SAD/arch/${SAD_ARCH}/bin:${PATH}
     PATH=$SAD_ROOTPATH/obj/${SAD_ARCH}/bin:${PATH}
     ;;
 *-Darwin)
-#    DYLD_LIBRARY_PATH=/Users/oide/SAD/oldsad/arch/${SAD_ARCH}/lib ; export DYLD_LIBRARY_PATH
+#    DYLD_LIBRARY_PATH=/home/tmori/work/accelerator/github/SAD/arch/${SAD_ARCH}/lib ; export DYLD_LIBRARY_PATH
     DYLD_LIBRARY_PATH=$SAD_ROOTPATH/obj/${SAD_ARCH}/lib ; export DYLD_LIBRARY_PATH
     ;;
 *)

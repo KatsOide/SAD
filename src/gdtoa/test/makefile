@@ -1,1 +1,1 @@
-/Users/oide/SAD/oldsad/contrib/gdtoa/test/makefile
+/home/tmori/work/accelerator/github/SAD/contrib/gdtoa/test/makefile
