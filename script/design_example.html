@@ -166,8 +166,8 @@ susp;
   ABORT             ! stop SAD.
 </PRE><HR>
 <H3><A NAME=result>Results:</A></H3><PRE>
- *** Welcome to SAD Ver.1.3.8.0k64 built at 2025-10-18 03:45:47 +0900 ***
- *** Today: 03:45:48 Saturday 10/18/2025 ***
+ *** Welcome to SAD Ver.1.3.8.0k64 built at 2025-10-18 22:02:52 +0900 ***
+ *** Today: 22:02:52 Saturday 10/18/2025 ***
  OFF LOG;ON ECHO;READ 77 ;           1
 !
 !   This is an example of SAD/FFS to design a positron ring
@@ -216,7 +216,7 @@ ON ECHO;OFF CTIME;
  RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
    F     F     F     T     F     F     T     F     F     T     F     T
    Print[TimeUsed[]];! CPU Time used so far.
-.018921000882983208
+.010706000030040741
  !
  ! Defining parameters:
  !
@@ -224,7 +224,7 @@ ON ECHO;OFF CTIME;
    nxcell=0.25;      ! horizontal tune/cell
    nycell=0.25;      ! vertical tune/cell
    Print[TimeUsed[]];! CPU Time used so far.
-.01894799992442131
+.010723000392317772
  !
  !  *****  UNIT CELL MATCHING  *****
  !
@@ -251,7 +251,7 @@ $$$       f LENG  #######  #  18.000000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -290,7 +290,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -303,13 +303,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -326,7 +326,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -365,7 +365,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -378,13 +378,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -401,7 +401,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -440,7 +440,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -453,90 +453,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
- !
- ! ***** CHROMATICITY CORRECTION *****
- !                   
- !                     get the current tunes
-   {nx0, ny0}=Twiss[{"NX","NY"},"***"]/2/Pi;
-   REJ TOTAL;        ! reject all matching conditions;
-   FIT;
-   NX nx0 8;         ! set the offmomentum tunes for 8 points
-   NY ny0 8;         ! in -DP < dp/p0 < DP
-   DP=0.024;         ! set the bandwidth |dp/p0|max = DP = 0.024
-   FIX *;            ! fix all variables;
-   FREE S*;          ! set S* (SF and SD) sextupoles as variable
-   GO;
- Iterations Unstable Residual    Method     Reduction  Variables
-       2        0   6.8031E-03  (NEWTON)    1.000          2
-   SAVE;             ! save the matching result (values of QF, QD) to
-                     ! keep them after swtch the beam line.
-   Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
- !
- ! *****  DISPERSION SUPPRESSOR  *****
- !
-   unitcell=ExtractBeamLine[];   ! get the current BeamLine
- !                     define a dispersion suppressor to insert rf
-   supp=BeamLine[QSF, 8*L1, QSD, 3*L1, B, 3*L1, QRF, 3*L1, CA1, 3*L1, QRD];
-   USE Join[unitcell, supp];     ! switch the beam line with suppressor
-   INS;              ! now nonperiodic (a transport line)
-   QRD L 0.5;        ! set the thickness of QD
-   FIT; 
-   AX 0;             ! set the end of line to be a symmetry point
-   AY 0;             
-   EX 0;             ! and dispersion-free
-   EPX 0;
-   Q*F MIN 0;        ! set the lower limit of K1 of QRF, QSF
-   Q*D MAX 0;        ! set the upper limit of K1 of QRD, QSD 
-   FREE QS* QR*;
-   GO; 
- Iterations Unstable Residual    Method     Reduction  Variables
-       2        0   1.6727E+08  (NEWTON)    1.000          4
-       3        0   3.6729E+07  (NEWTON)    1.000          4
-       4        0   2.1048E+05  (NEWTON)    1.000          4
-       5        0    3.422      (NEWTON)    1.000          4
-       6        0    1.805      (NEWTON)    1.000          4
-      18        0    1.704      (NEWTON)    1.000          4
-      21        0    1.616      (NEWTON)    1.000          4
-      23        0    1.396      (NEWTON)    1.000          4
-      24        0   0.4509      (NEWTON)    1.000          4
-      25        0   8.2613E-02  (NEWTON)    1.000          4
-      26        0   2.6685E-04  (NEWTON)    1.000          4
- Matched. ( 2.1659E-11) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 $$$       f NX    #######  #    .587538
-$$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
-$$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
-   dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
-   SAVE;
-   Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
- !
- ! ***** TOTAL RING *****
- !
-   ncell=(nbends/2-2)/2;   ! number of unitcells per half ring.
- !                     Defining a half ring, removing the
- !                     first QF and IP1 markers in unitcell
-   hring=BeamLine[IP1,-supp,Rest[ncell*Rest[unitcell]],supp];
-   USE Join[hring,-hring]; ! switch to full ring
-   CELL;             ! now periodic condition again
- !  CAL NX NY;        ! set to display NX and NY after CAL (default)
-   CAL               ! calculate the optics of ring
- Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
-$$$       f LENG  #######  #  284.00000
-   dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
-   Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -555,7 +478,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -594,7 +517,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -607,13 +530,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -632,7 +555,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -671,7 +594,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -684,13 +607,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -709,7 +632,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -748,7 +671,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -761,13 +684,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -786,7 +709,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -825,7 +748,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -838,13 +761,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -863,7 +786,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -902,7 +825,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -915,13 +838,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -940,7 +863,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -979,7 +902,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -992,13 +915,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -1017,7 +940,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -1056,7 +979,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -1069,13 +992,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -1094,7 +1017,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -1133,7 +1056,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -1146,13 +1069,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -1171,7 +1094,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -1210,7 +1133,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -1223,13 +1146,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -1248,7 +1171,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -1287,7 +1210,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -1300,13 +1223,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -1325,7 +1248,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -1364,7 +1287,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -1377,13 +1300,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -1402,7 +1325,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -1441,7 +1364,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -1454,13 +1377,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -1476,11 +1399,10 @@ $$$       f LENG  #######  #  284.00000
    GO;
  Iterations Unstable Residual    Method     Reduction  Variables
        2        0   6.8031E-03  (NEWTON)    1.000          2
- *****qcod---> Closed orbit not found            1
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -1519,7 +1441,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -1532,13 +1454,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -1555,11 +1477,10 @@ $$$       f LENG  #######  #  284.00000
  Iterations Unstable Residual    Method     Reduction  Variables
        2        0   6.8031E-03  (NEWTON)    1.000          2
  *****qcod---> Closed orbit not found            1
- *****qcod---> Closed orbit not found            2
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -1598,7 +1519,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -1611,13 +1532,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -1635,11 +1556,10 @@ $$$       f LENG  #######  #  284.00000
        2        0   6.8031E-03  (NEWTON)    1.000          2
  *****qcod---> Closed orbit not found            1
  *****qcod---> Closed orbit not found            2
- *****qcod---> Closed orbit not found            3
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -1678,7 +1598,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -1691,13 +1611,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -1716,11 +1636,10 @@ $$$       f LENG  #######  #  284.00000
  *****qcod---> Closed orbit not found            1
  *****qcod---> Closed orbit not found            2
  *****qcod---> Closed orbit not found            3
- *****qcod---> Closed orbit not found            4
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -1759,7 +1678,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -1772,13 +1691,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -1801,7 +1720,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -1840,7 +1759,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -1853,13 +1772,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -1882,7 +1801,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -1921,7 +1840,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -1934,13 +1853,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -1963,7 +1882,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -2002,7 +1921,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -2015,13 +1934,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -2044,7 +1963,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -2083,7 +2002,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -2096,13 +2015,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -2125,7 +2044,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -2164,7 +2083,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -2177,13 +2096,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -2206,7 +2125,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -2245,7 +2164,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -2258,13 +2177,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -2287,7 +2206,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -2326,7 +2245,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -2339,13 +2258,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -2368,7 +2287,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -2407,7 +2326,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -2420,13 +2339,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -2449,7 +2368,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -2488,7 +2407,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -2501,13 +2420,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -2530,7 +2449,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -2569,7 +2488,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -2582,13 +2501,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -2611,7 +2530,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -2650,7 +2569,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -2663,13 +2582,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -2692,7 +2611,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -2731,7 +2650,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -2744,13 +2663,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -2773,7 +2692,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -2812,7 +2731,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -2825,13 +2744,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -2854,7 +2773,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -2893,7 +2812,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -2906,13 +2825,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -2935,7 +2854,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -2974,7 +2893,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -2987,13 +2906,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -3016,7 +2935,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -3055,7 +2974,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -3068,13 +2987,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -3097,7 +3016,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -3136,7 +3055,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -3149,13 +3068,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -3178,7 +3097,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -3217,7 +3136,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -3230,13 +3149,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -3259,7 +3178,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -3298,7 +3217,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -3311,13 +3230,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -3340,7 +3259,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -3379,7 +3298,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -3392,13 +3311,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -3421,7 +3340,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -3460,7 +3379,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -3473,13 +3392,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -3502,7 +3421,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -3541,7 +3460,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -3554,13 +3473,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -3583,7 +3502,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -3622,7 +3541,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -3635,13 +3554,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -3664,7 +3583,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -3703,7 +3622,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -3716,13 +3635,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -3745,7 +3664,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -3784,7 +3703,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -3797,13 +3716,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -3826,7 +3745,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -3865,7 +3784,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -3878,13 +3797,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -3907,7 +3826,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -3946,7 +3865,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -3959,13 +3878,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -3988,7 +3907,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -4027,7 +3946,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -4040,13 +3959,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -4069,7 +3988,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -4108,7 +4027,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -4121,13 +4040,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -4150,7 +4069,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -4189,7 +4108,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -4202,13 +4121,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -4231,7 +4150,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -4270,7 +4189,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -4283,13 +4202,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -4312,7 +4231,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -4351,7 +4270,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -4364,13 +4283,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -4393,7 +4312,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -4432,7 +4351,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -4445,13 +4364,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -4474,7 +4393,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -4513,7 +4432,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -4526,13 +4445,13 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -4555,7 +4474,7 @@ $$$       f LENG  #######  #  284.00000
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
-.3927690088748932
+.1686590015888214
  !
  ! *****  DISPERSION SUPPRESSOR  *****
  !
@@ -4594,7 +4513,7 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
 </PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
-.5376319885253906
+.2192550003528595
  !
  ! ***** TOTAL RING *****
  !
@@ -4607,13 +4526,94 @@ $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 
  !  CAL NX NY;        ! set to display NX and NY after CAL (default)
    CAL               ! calculate the optics of ring
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
 </PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
-.6087219715118408
+.24803400039672852
+ !
+ ! ***** CHROMATICITY CORRECTION *****
+ !                   
+ !                     get the current tunes
+   {nx0, ny0}=Twiss[{"NX","NY"},"***"]/2/Pi;
+   REJ TOTAL;        ! reject all matching conditions;
+   FIT;
+   NX nx0 8;         ! set the offmomentum tunes for 8 points
+   NY ny0 8;         ! in -DP < dp/p0 < DP
+   DP=0.024;         ! set the bandwidth |dp/p0|max = DP = 0.024
+   FIX *;            ! fix all variables;
+   FREE S*;          ! set S* (SF and SD) sextupoles as variable
+   GO;
+ Iterations Unstable Residual    Method     Reduction  Variables
+       2        0   6.8031E-03  (NEWTON)    1.000          2
+ *****qcod---> Closed orbit not found            1
+ *****qcod---> Closed orbit not found            2
+ *****qcod---> Closed orbit not found            3
+ *****qcod---> Closed orbit not found            4
+   SAVE;             ! save the matching result (values of QF, QD) to
+                     ! keep them after swtch the beam line.
+   Print[TimeUsed[]];! CPU Time used so far.
+.1686590015888214
+ !
+ ! *****  DISPERSION SUPPRESSOR  *****
+ !
+   unitcell=ExtractBeamLine[];   ! get the current BeamLine
+ !                     define a dispersion suppressor to insert rf
+   supp=BeamLine[QSF, 8*L1, QSD, 3*L1, B, 3*L1, QRF, 3*L1, CA1, 3*L1, QRD];
+   USE Join[unitcell, supp];     ! switch the beam line with suppressor
+   INS;              ! now nonperiodic (a transport line)
+   QRD L 0.5;        ! set the thickness of QD
+   FIT; 
+   AX 0;             ! set the end of line to be a symmetry point
+   AY 0;             
+   EX 0;             ! and dispersion-free
+   EPX 0;
+   Q*F MIN 0;        ! set the lower limit of K1 of QRF, QSF
+   Q*D MAX 0;        ! set the upper limit of K1 of QRD, QSD 
+   FREE QS* QR*;
+   GO; 
+ Iterations Unstable Residual    Method     Reduction  Variables
+       2        0   1.6727E+08  (NEWTON)    1.000          4
+       3        0   3.6729E+07  (NEWTON)    1.000          4
+       4        0   2.1048E+05  (NEWTON)    1.000          4
+       5        0    3.422      (NEWTON)    1.000          4
+       6        0    1.805      (NEWTON)    1.000          4
+      18        0    1.704      (NEWTON)    1.000          4
+      21        0    1.616      (NEWTON)    1.000          4
+      23        0    1.396      (NEWTON)    1.000          4
+      24        0   0.4509      (NEWTON)    1.000          4
+      25        0   8.2613E-02  (NEWTON)    1.000          4
+      26        0   2.6685E-04  (NEWTON)    1.000          4
+ Matched. ( 2.1659E-11) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 $$$       f NX    #######  #    .587538
+$$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
+$$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
+   dr;               ! draw suppressor
+</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
+   SAVE;
+   Print[TimeUsed[]];! CPU Time used so far.
+.2192550003528595
+ !
+ ! ***** TOTAL RING *****
+ !
+   ncell=(nbends/2-2)/2;   ! number of unitcells per half ring.
+ !                     Defining a half ring, removing the
+ !                     first QF and IP1 markers in unitcell
+   hring=BeamLine[IP1,-supp,Rest[ncell*Rest[unitcell]],supp];
+   USE Join[hring,-hring]; ! switch to full ring
+   CELL;             ! now periodic condition again
+ !  CAL NX NY;        ! set to display NX and NY after CAL (default)
+   CAL               ! calculate the optics of ring
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  3.775E-15 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -3.55E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f LENG  #######  #  284.00000
+   dr;               ! draw ring
+</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
+   Print[TimeUsed[]];! CPU Time used so far.
+.24803400039672852
  !
  ! ***** CHROMATICITY CORRECTION *****
  !                   
@@ -4634,5 +4634,86 @@ $$$       f LENG  #######  #  284.00000
  *****qcod---> Closed orbit not found            3
  *****qcod---> Closed orbit not found            4
  Residual = 6.8031E-03  DP = 0.02400  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+expected integer but got "neue"
+    (processing "-font" option)
+    invoked from within
+".5.1v.2f create text  0 0   -font "helvetica neue"   -altfont "-*-symbol-medium-r-normal-*-14-*-*-*-*-*-*-*"   -altscriptfont "-*-
+symbol-medium-r-norm..."
+            DP                 -.024000  -.018000  -.012000  -.006000   .000000   .006000   .012000   .018000   .024000
+            Res.                .003056 5.5927E-4 6.3408E-5 1.7650E-6   .000000 2.4822E-5 2.1144E-4 7.9750E-4   .002089
+$$$       f AX    #######  #  3.438E-11 1.416E-11 -4.37E-14 9.770E-15 3.775E-15 2.598E-14 2.027E-12 1.585E-11 6.542E-11
+$$$       f BX    #######  #  12.922419 11.646218 11.303774 11.240548 11.291350 11.377437 11.443252 11.437883 11.305979
+$$$       f NX   3.83697   8   3.868539  3.848145  3.839472  3.836339  3.836969  3.840563  3.846671  3.855022  3.865474
+$$$       f AY    #######  #  4.849E-13 6.548E-11 -2.18E-12 -1.30E-13 -3.55E-15 -1.81E-13 -1.16E-11 -6.73E-11 -2.09E-10
+$$$       f BY    #######  #  130.99888 116.56285 107.71422 100.98552 95.005631 89.035383 82.736458 76.068926 69.171817
+$$$       f NY   4.63574   8   4.678050  4.655364  4.642920  4.636841  4.635740  4.638858  4.645674  4.655773  4.668789
+$$$       f LENG  #######  #  284.00000
+   FITP 1;           ! set the off-momentum points to 1 (on-momentum only).
+     !
+     ! Define Functions to display tunes as functions of dp/p0
+   nx[dp_]:=(DP0=dp;FFS["CALC"];Twiss["NX","***"]/2/Pi);
+   ny[dp_]:=(DP0=dp;FFS["CALC"];Twiss["NY","***"]/2/Pi);
+     !
+     ! Plot tunes -3% < dp/p0 < 3%.
+   Plot[{nx[dp],ny[dp]}, {dp, -0.03, 0.03},
+     PlotRange->{3.7,4.8},
+     PlotLabel->"Tune Chromaticity",
+     FrameLabel->{{"`fD`np/p`d0`n","F   X X"},{"`fn`n`dx`n, `fn`n`dy`n","GX X  GX X"}}];
+???Tkinter::tclerror:  Error in Tcl: 1501 in Tcl[".5.1v.2f create text  0 0   -font \"helvetica neue\"   -altfont \"-*-symbol-mediu
+m-r-normal-*-14-*-*-*-*-*-*-*\"   -altscriptfont \"-*-symbol-medium-r-normal-*-12-*-*-*-*-*-*-*\"   -scriptfont \"-*-helvetica-medi
+um-r-normal-*-10-*-*-*-*-*-*-*\"   -tags \"dummytag\"   -text \"`fD`np/p`d0`n\"   "]
+... in StandardForm[TclEval[".5.1v.2f create text "//
+   TclArgFontReplace[{{0,0},Text->"`fD`np/p`d0`n",Tags->"dummytag",
+     Font->"helvetica neue"}]]]
+... in If[0,
+ Module[{{op1,op2}=SwitchCases[{Tags->"dummytag",Font->"helvetica neue"},
+     {Rule|RuleDelayed[Angle|Font|Justify|UseBG|Fill,_],_}],
+ ...
+... in CanvasGraphics`o2P$["`fD`np/p`d0`n",{0,0},Tags->"dummytag",
+ Font->"helvetica neue"]
+... in Module[{bb},
+ CanvasGraphics`o2P$["`fD`np/p`d0`n",{0,0},Tags->"dummytag",Font->
+    "helvetica neue"];
+ ...
+... in CanvasGraphics`o3l$["`fD`np/p`d0`n","helvetica neue"]
+... in If[1,
+ Round[(CanvasGraphics`o3l$["`fD`np/p`d0`n",CanvasGraphics`oZ$][[1]] 
+   GetFontSize[CanvasGraphics`oZ$]^-1)],
+ ...
+... in CanvasGraphics`o3j$["`fD`np/p`d0`n",16]
+... in Module[{bl,fl=CanvasGraphics`oO$[Height]},
+ Do[bl=CanvasGraphics`oO$[BBox[{"LF$X2"//i,"FL$X2"//i,"F$X2"//i}]];
+    If[bl<=>{}&&bl[[2]]>653&&bl[[1]]<=536<=bl[[3]],fl=Min[fl,bl[[2]]]],
+ ...
+... in CanvasGraphics`o3f$["`fD`np/p`d0`n",756.1846153846154,
+ 18.516125132405637,{536,653},"n"]
+... in Module[{{pos,w,anc}=CanvasGraphics`o30$["BOTTOM"],sz,it=0},
+ While[Not[RealQ[w]],
+   If[it++>10,Return[]];Sleep[.3];{pos,w,anc}=CanvasGraphics`o30$["BOTTOM"]];
+ ...
+... in CanvasGraphics`o2h$["`fD`np/p`d0`n",18.516125132405637,"BOTTOM"]
+... in CanvasGraphics`o2h$[{"`fD`np/p`d0`n","F   X X"},18.516125132405637,
+ "BOTTOM"]
+... in If[1,CanvasGraphics`o2h$[#,Restrict[#3,9,28],#2]]
+... in If[""<=>#<=>{"",""},CanvasGraphics`o2h$[#,Restrict[#3,9,28],#2]]&
+ [{"`fD`np/p`d0`n","F   X X"},"BOTTOM",18.516125132405637]
+... in ScanThread[If[""<=>#<=>{"",""},
+   CanvasGraphics`o2h$[#,Restrict[#3,9,28],#2]]&,
+ {{{"`fD`np/p`d0`n","F   X X"},{"`fn`n`dx`n, `fn`n`dy`n","GX X  GX X"},"",""},
+ ...
+... in If[1,
+ ft$1=CanvasGraphics`o2c$[ft$1];ts$1=Take[Flatten[{ts$1,ts$1}],2];{wsfx$1,
+    wsfy$1}=
+ ...
+... in If[1,
+ If[fr$1<=>0,ft$1=CanvasGraphics`o2c$[ft$1];ts$1=Take[Flatten[{ts$1,ts$1}],2];
+   {wsfx$1,wsfy$1}=
+ ...
+... in Module[{fl,pl,ft,wsx,wsy,wsfx,wsfy,det,wc,fr,tag,t1,t2,addtag,enc,
+  glist,ws,pr,id,l1,align,up,ts,frid,fclk,dr,plr,sca,gr,ib,tkf,frt,frt1,rmo,
+  op=
+ ...
+... in StandardForm[Module[{fl,pl,ft,wsx,wsy,wsfx,wsfy,det,wc,fr,tag,t1,t2,
+   addtag,enc,glist,ws,pr,id,l1,align,up,ts,frid,fclk,dr,plr,sca,gr,ib,tkf,
 </PRE><HR>
 </BODY>
