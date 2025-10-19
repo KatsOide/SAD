@@ -1,3 +1,36 @@
+      module fshow
+      use tfstk
+      integer*4, parameter :: lvout=14
+
+      contains
+      recursive subroutine tgetfvx(fitval,fvx,fitv,fitminmax,rec)
+      use dfun
+      use eeval,only:tfeevalref
+      implicit none
+      type (sad_descriptor) ,intent(in):: fitval
+      type (fitvx) ,intent(out):: fvx
+      logical*4 ,intent(in):: rec
+      logical*4 ,intent(out):: fitv,fitminmax
+      type (sad_rlist),pointer:: kl
+      fitv=.false.
+      fitminmax=.false.
+      if(ktfrealq(fitval,fvx%fmin))then
+        fitv=.true.
+        fvx%fmax=fvx%fmin
+      elseif(ktfreallistq(fitval,kl))then
+        if(kl%nl == 1)then
+          call tgetfvx(kl%dbody(1),fvx,fitv,fitminmax,rec)
+          return
+        elseif(kl%nl == 2)then
+          fitv=.true.
+          fitminmax=kl%rbody(1) /= kl%rbody(2)
+          fvx%x(1:2)=kl%rbody(1:2)
+          return
+        endif
+      endif
+      return
+      end
+
       subroutine tfshow(stab,df,mfpnta,mfpnta1,kx,irtc,ret,lfno)
       use dfun
       use ffs
@@ -13,31 +46,40 @@
       real*8 ,intent(in):: df(nqcol)
       integer*8 kax,kax1,kax2,kax3,kax4,kax3i,kaxi,kaxi4
       integer*4 ,parameter :: namel=11,lcf=20
-      integer*4 lw,lf,lfs,lfv,nn,mf,m,i,k,l,jshowi,ncc,iq,kpa,kpb,
+      integer*4 lw,lf,lfs,nn,mf,m,i,k,l,jshowi,ncc,iq,kpa,kpb,
      $     jm,lfs1,ln,mm,lb,ip,j,nf,nl
       integer*4 icalc1(3,ndim1),jshow(64),itfgetrecl
-      real*8 fm,ftv1(flv%nfc),ftv2(flv%nfc)
+      real*8 fm
+      type (fitvx) ftv(flv%nfc)
       character*5 fun,form,forms
       character*31 name
       character*15 name1,namea
       character*10 autofg
-      character*11 vout
+      character*(lvout) vout
       character*256 buf0,buf1,buf2
       character*3 famlabel
       logical*4 trx,try,tftype1fit,err,fmm,fvi(flv%nfc),fmmi(flv%nfc)
       external trim
       fmm=.false.
       do i=1,flv%nfc
-        call tgetfvx(flv%fitval(i),ftv1(i),ftv2(i),fvi(i),fmmi(i),.true.)
-        fmm=fmm .or. fmmi(i)
+        if(flv%mfitp(i) /= 0)then
+          call tgetfvx(flv%fitval(i),ftv(i),fvi(i),fmmi(i),.false.)
+          fmm=fmm .or. fmmi(i)
+        endif
       enddo
       lw=max(79,min(256,itfgetrecl()))
       lf=max(6,min(10,(lw-lcf)/(2*nfam+2)))
       if(lf > 6)then
         lfs=max(6,min(8,lf,lw-lf*(2*nfam+1)-lcf-2))
+        if(fmm)then
+          lfs=lfs+4
+        endif
         nn=(lw-lcf-2-lfs)/lf
       else
         lfs=max(6,min(8,lf,lw-lf*(2*nfam+1)-lcf))
+        if(fmm)then
+          lfs=lfs+4
+        endif
         nn=(lw-lcf-lfs)/lf
       endif        
       write(form,'(i2,''.'',i1,1x)')lfs,min(6,lfs-3)
@@ -239,7 +281,7 @@ c      write(*,'(2a,10i5)')'tfshow ',form(1:len_trim(form)),lf,lw,nfam,lfs,nn
               endif
             endif
           enddo
- 21       if(jm == 0)then
+          if(jm == 0)then
             vout=' #######'
             vout(lfs+1:lfs+3)='  #'
             nl=len_trim(nlist(k))
@@ -248,20 +290,20 @@ c      write(*,'(2a,10i5)')'tfshow ',form(1:len_trim(form)),lf,lw,nfam,lfs,nn
             lfs1=lfs+1
             write(vout(lfs1:lfs1+2),'(I3)')abs(flv%mfitp(jm))-1
             if(flv%mfitp(jm) > 0)then
-c              write(*,'(a,10i6)')'tfshow-fitval ',lfs
               if(flv%ifitp(jm) /= flv%ifitp1(jm))then
-                if(k == mfitbx .or. k == mfitby .or. k == mfitbz)then
-                  vout(1:lfs)=autofg(flv%fitval(jm)%x(1),forms)
+                if(k == mfitbx .or. k == mfitby .or. k == mfitbz .or.
+     $               k == mfitgmx .or. k == mfitgmy .or. k == mfitgmz)then
+                  vout(1:lfs)=voutfv(flv%fitval(jm),1.d0,forms,'S7.5')
                 else
-                  vout(1:lfs)=autofg(flv%fitval(jm)%x(1)/scale(k),forms)
+                  vout(1:lfs)=voutfv(flv%fitval(jm),scale(k),forms,'S7.5')
                 endif
               else
-                vout(1:lfs)=autofg(flv%fitval(jm)%x(1)/scale(k),forms)
+                vout(1:lfs)=voutfv(flv%fitval(jm),scale(k),forms,'S7.5')
               endif
               nl=len_trim(nlist(k))
               fun=nlist(k)(1:nl)
             else
-              vout(1:lfs)=autofg(flv%fitval(jm)%x(1)/scale(k),forms)
+              vout(1:lfs)=voutfv(flv%fitval(jm),scale(k),forms,'S7.5')
               nl=len_trim(nlist(k))
               fun=nlist(k)(1:nl)//'M'
             endif
@@ -392,6 +434,35 @@ c            endif
       endif
       return
       end
+
+      character*(lvout) function voutfv(fv,scale,form,form1) result(s)
+      use dfun
+      implicit none
+      type (sad_descriptor),intent(in):: fv
+      real*8 ,intent(in):: scale
+      character*(*) ,intent(in):: form,form1
+      type (sad_rlist), pointer :: kfv
+      type (sad_descriptor),save::kx
+      type (sad_rlist), pointer,save :: kxl
+      character*(len(s)) tfconvstr
+      integer*4 nc1
+      data kx%k /0/
+      real*8 f
+      if(kx%k == 0)then
+        kx=kxavaloc(0,2,kxl)
+      endif
+      if(ktfrealq(fv,f))then
+        s=tfconvstr(dfromr(f/scale),nc1,form)
+      elseif(tfreallistq(fv,kfv) .and. kfv%nl == 2)then
+        kxl%rbody(1:2)=kfv%rbody(1:2)/scale
+        s=tfconvstr(kx,nc1,form1)
+      else
+        s=" ?????"
+      endif
+      return
+      end
+
+      end module fshow
 
       logical*4 function tftype1fit(k)
       use tffitcode

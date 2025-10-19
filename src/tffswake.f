@@ -62,7 +62,7 @@
           do i=nfam1,nfam
             ii=min(1,abs(i))
             twiss(ibound%lb,ii,:)=utwiss(:,i,itp1)
-            call qcell1(ibound,ii,optstat(i),i /= 0,.true.,0)
+            call qcell1(ibound,ii,optstat(i),i /= 0,0)
             call tffssetutwiss(i,ibound,beg,
      $           ibound%lb == fbound%lb,ibound%le == fbound%le)
           enddo
@@ -112,7 +112,7 @@ c     $           utwiss(1,nfam1,iutp),npf)
           do i=nfam1,nfam
             ii=min(1,abs(i))
             twiss(ibound1%lb,ii,:)=utwiss1(:,i)
-            call qcell1(ibound1,ii,optstat(i),i /= 0,.true.,0)
+            call qcell1(ibound1,ii,optstat(i),i /= 0,0)
             utwiss1(:,i)=twiss(ibound1%le,ii,:)
           enddo
           iutp1=itwissp(ibound1%le)

@@ -812,6 +812,7 @@ c      write(*,*)'qtrans ',la,lb,la1,lb1,fra,frb
       use ffs
       use ffs_pointer
       use tffitcode
+      use solv
       use iso_c_binding
       implicit none
       type (ffs_bound) fbound
@@ -893,7 +894,7 @@ c          enddo
           return
         endif
         if(over)then
-c          write(*,'(a,2l3,1p6g15.7)')'qcod-1 ',codfnd,over,cod
+c          write(*,'(a,2l3,1p6g15.7)')'qcod-over ',codfnd,over,cod
           codfnd=.false.
           return
         endif
@@ -926,6 +927,7 @@ c          endif
         dcod=cod-cod0
         r=dcod(1)**2/bx+bx*(dcod(2)+ax/bx*dcod(1))**2
      $       +dcod(3)**2/by+by*(dcod(4)+ay/by*dcod(3))**2
+c        write(*,'(a,i5,1p10g12.4)')'qcod ',it,r,r0,cod(1:4),dcod(1:4)
         if(ktfenanq(r))then
           r=1.d300
         endif
@@ -933,7 +935,6 @@ c          endif
           codfnd=.true.
           return
         endif
-c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
         it=it+1
         if(r > r0)then
           if(fact < factmin)then
@@ -960,7 +961,7 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
           trans1(2,2)=trans1(2,2)-1.d0
           trans1(3,3)=trans1(3,3)-1.d0
           trans1(4,4)=trans1(4,4)-1.d0
-          call tsolvg(trans1,cod,cod0,4,4,4)
+          call tsolvg(trans1(:,1:4),cod(1:4),cod0(1:4))
         endif
       enddo
       cod=cod0
@@ -1000,6 +1001,10 @@ c        write(*,'(a,i5,1p7g14.6)')'qcod ',it,r,r0,fact,cod0(1:4)
       logical*4 , intent(in)::cgeo
       logical*4 , intent(out)::over
       logical*4 sol,rt,chg,cp0,normal
+      if(l < 1 .or. l > nlat)then
+        gv=0.d0
+        return
+      endif
       if(calc6d)then
         cp0=codplt
         codplt=.false.

@@ -44,7 +44,7 @@ c     end   initialize for preventing compiler warning
       irtc=0
       eol=.false.
  1    continue
-c      write(*,*)'eval-1 ',string(istart:l)
+c      write(*,*)'eval-1 ',istart,l,string(max(1,l-50):l)
       call tfetok(string(istart:l),istop,kx,itfcontext,irt)
       istop=min(l+1,istop+istart-1)
       if(irt >= 0)then
@@ -381,8 +381,7 @@ c
       go to 8900
  8040 irtc=itfmessage(9999,'General::clquote','""')
       go to 8900
- 8050 irtc=itfmessage(9999,'General::mismatch',
-     $     '"'//opcode(mopc)//'"')
+ 8050 irtc=itfmessage(9999,'General::mismatch','"'//opcode(mopc)//'"')
       go to 8900
  8110 irtc=itfmessage(9999,'General::stack','""')
       go to 8900

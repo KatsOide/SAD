@@ -299,7 +299,8 @@ c              call tfgetllstkall(klist(kai-3))
       n=kl%nl
       if(kl%head%k .eq. ktfoper+mtflist)then
         if(ktfreallistq(kl))then
-          rtastk(isp+1:isp+n)=kl%rbody(1:n)
+          call tfcopyarray(kl%rbody(1:n),rtastk(isp+1:isp+n))
+c          rtastk(isp+1:isp+n)=kl%rbody(1:n)
           isp=isp+n
         else
           do i=1,n

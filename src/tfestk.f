@@ -36,11 +36,13 @@ c        write(*,*)'with ',isp,isp0,iop,iop1
                 endif
               enddo
             endif
+            write(*,*)'tfestk -mismatch-1 '
             go to 9010
           elseif(iop1 == mtfcomma .or. iop1 == mtfleftbra)then
             do i=isp1,isp0,-1
               if(itastk2(1,i) == mtfleftparen
      $             .or. itastk2(1,i) == mtflist)then
+                write(*,*)'tfestk -mismatch-2 ',i,itastk2(1,i)
                 go to 9010
               elseif(itastk2(1,i) == mtfpart)then
                 return
@@ -58,6 +60,7 @@ c        write(*,*)'with ',isp,isp0,iop,iop1
                 go to 1010
               endif
             enddo
+            write(*,*)'tfestk -mismatch-3 ',iop1
             go to 9010
           elseif(iop1 == mtfpart)then
             return
@@ -67,6 +70,7 @@ c        write(*,*)'with ',isp,isp0,iop,iop1
             if(itastk2(1,i) == mtfleftparen
      $           .or. itastk2(1,i) == mtfleftbra
      $           .or. itastk2(1,i) == mtfpart)then
+              write(*,*)'tfestk -mismatch-4 ',iop1
               go to 9010
             elseif(itastk2(1,i) == mtflist)then
               isp1=i
@@ -75,6 +79,7 @@ c        write(*,*)'with ',isp,isp0,iop,iop1
               go to 1010
             endif
           enddo
+          write(*,*)'tfestk -mismatch-5 ',iop,iop1
           go to 9010
         elseif(iop == mtfrightparen .and. iop1 == mtfleftparen)then
           ktastk(isp1)=ktastk(isp)
@@ -139,8 +144,7 @@ c            call tfdebugprint(kx,'estk-eexpr-end',1)
         dtastk(isp)=kx
       enddo
       return
- 9010 irtc=itfmessage(9999,'General::mismatch',
-     $     '"'//opcode(iop)//'"')
+ 9010 irtc=itfmessage(9999,'General::mismatch','"'//opcode(iop)//'"')
       return
  9020 irtc=itfmessage(9999,'General::incomplete','""')
       return

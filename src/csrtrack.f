@@ -129,6 +129,8 @@ c
       end
 
       subroutine csrhaissin(rho,zl,nr,aw,dz,sigz,irtc)
+      use ftr
+      use solv
       implicit none
       integer*4 nr,i,k,imax,irtc,nr1,m,iter
       real*8 rho(nr),zl(nr),zi(nr),f(0:nr/2),g(0:nr/2,0:nr/2),
@@ -201,7 +203,7 @@ c        write(*,*)'CSRHi ',i,iter,sdf,du0,du(0)
           fact=min(1.d0,fact*2.d0)
           f(0)=0.d0
           g(0,0)=0.d0
-          call tsolvg(g,f,du,nr1+1,nr1+1,nr1+1)
+          call tsolvg(g,f,du)
           ulast=u
         endif
  10     iter=iter+1
@@ -405,6 +407,7 @@ c        write(*,*)'CSRHi ',i,iter,sdf,du0,du(0)
       end
 
       subroutine csrwake(rho,zl,nr)
+      use ftr
       implicit none
       integer*4 ,intent(in):: nr
       integer*4 i,i2

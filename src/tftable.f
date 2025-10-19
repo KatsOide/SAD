@@ -321,6 +321,7 @@ c                      enddo
                     elseif(irtc == -3)then
                       irtc=0
                       lv=itfdownlevel()
+c                      write(*,*)'tftable-break ',levele,isp,mstk
                       exit
                     endif
                     go to 9100
@@ -333,9 +334,6 @@ c                      enddo
                       call tfgetllstkall(klj)
                       call tflocal1d(kj)
                       call ktfcopym(ktastk(isp0+1:isp))
-c                      do i=isp0+1,isp
-c                        ktastk(i)=ktfcopy(ktastk(i))
-c                      enddo
                     else
                       isp=isp+1
                       dtastk(isp)=kj
@@ -368,9 +366,6 @@ c                      enddo
                       call tfgetllstkall(klj)
                       call tflocal1d(kj)
                       call ktfcopym(ktastk(isp0+1:isp))
-c                      do i=isp0+1,isp
-c                        ktastk(i)=ktfcopy(ktastk(i))
-c                      enddo
                     else
                       isp=isp+1
                       dtastk(isp)=kj
@@ -441,22 +436,26 @@ c        call tfcatchreturn(0,kx,irtc)
           if(ktfrealq(dtastk(i)))then
             re=.true.
             if(nr)then
-              go to 10
+              exit
             endif
           else
             nr=.true.
             if(re)then
-              go to 10
+              exit
             endif
           endif
         enddo
- 10     if(nr)then
+        if(nr)then
           kxlistcopied=kxadaloc(-1,n,klx)
         else
           kxlistcopied=kxavaloc(-1,n,klr)
           call descr_sad(kxlistcopied,klx)
         endif
-        klx%dbody(1:n)=dtastk(isp1+1:isp1+n)
+        call tfcopyarray(dtastk(isp1+1:isp1+n),klx%dbody(1:n))
+c        klx%dbody(1:n)=dtastk(isp1+1:isp1+n)
+c        do i=0,int(n/nmax)
+c          klx%dbody(i*nmax+1:min(n,(i+1)*nmax))=dtastk(isp1+i*nmax+1:isp1+min(n,(i+1)*nmax))
+c        enddo
       endif
       return
       end

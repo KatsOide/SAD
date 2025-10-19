@@ -1,5 +1,6 @@
       subroutine pgsolvcond(isp1,kx,irtc)
       use tfstk
+      use solv
       use maloc,only:ktfmaloc
       use iso_c_binding
       implicit none
@@ -125,6 +126,7 @@ c
       subroutine pgsolvcond1(a,b,x,n,m,na,c,d,nc,
      $     cond,nx,norm,eps,svd)
       use maccbk
+      use solv
       implicit none
       logical cond,micado,norm,svd
       integer*4,intent(in):: nx,n,m,na,nc
@@ -165,13 +167,15 @@ c      write(*,*)'pgsolvcond1 ',micado,cond,nc,nx
       elseif(micado)then
         call pmicad(a,b,x,nx,n,m,na,norm,eps,svd,.true.)
       else
-        call tsolva(a,b,x,n,m,na,eps)
+c        call tsolva(a,b,x,n,m,na,eps)
+        call tsolva(a,b,x,eps)
       endif
       return
       end
 c
       subroutine psvdcond(a,b,x,n,m,na,c,d,nc,eps,
      $     xc,t,u,c1)
+      use solv
       implicit none
       real*8 epsc
       parameter (epsc=1d-13)
@@ -213,7 +217,8 @@ c
           u(l)=s
         endif
  17   continue
-      call tsolvg(c1,d,xc,nc,m,nc)
+c      call tsolvg(c1,d,xc,nc,m,nc)
+      call tsolvg(c1,d,xc)
       do 23 l=1,n
         s=0d0
         do 22 k=1,m
@@ -236,7 +241,8 @@ c
  27     continue
 c     b(l)=b(l)-t(i)*d(i)
  28   continue
-      call tsolva(a,b,x,n,m,na,eps)
+c      call tsolva(a,b,x,n,m,na,eps)
+      call tsolva(a,b,x,eps)
       do 29 i=1,m
         x(i)=x(i)+xc(i)
  29   continue

@@ -463,7 +463,8 @@ c        call tfstk2l(listx,listx)
           if(rep)then
             call loc_sad(ktavaloc(-1,n),klx)
             klx%head=dtfcopy(dtastk(isp0))
-            klx%dbody(1:n)=kl%dbody(1:n)
+            call tfcopyarray(kl%dbody(1:n),klx%dbody(1:n))
+c            klx%dbody(1:n)=kl%dbody(1:n)
             kx=sad_descr(klx)
           endif
           isp=isp0-1
@@ -730,7 +731,8 @@ c        write(*,*)'with: ',irtc,i
       ktastk(isp)=ktfoper+mtfatt
       isp=isp+1
       dtastk(isp)=k1
-      dtastk(isp+1:isp+isp0-i)=dtastk(i:isp0-1)
+      call tfcopyarray(dtastk(i:isp0-1),dtastk(isp+1:isp+isp0-i))
+c      dtastk(isp+1:isp+isp0-i)=dtastk(i:isp0-1)
       isp=isp+isp0-1
       kx=kxcompose(isp0)
       isp=isp0-1

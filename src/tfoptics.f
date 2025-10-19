@@ -82,7 +82,7 @@
       else
         calc6d=.true.
       endif
-      call qcell1(fbound,0,optstat,.false.,.true.,lout)
+      call qcell1(fbound,0,optstat,.false.,lout)
       calc6d=calc6d0
       cell=cell0
       kax=ktadaloc(-1,3,klx)

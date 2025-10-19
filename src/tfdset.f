@@ -155,7 +155,8 @@ c      call tfresetpat(karg)
           if(rep)then
             kx=kxavaloc(-1,m,klr)
             klr%head=dtfcopy(dtastk(isp))
-            klr%rbody(1:m)=list%rbody(1:m)
+            call tfcopyarray(list%rbody(1:m),klr%rbody(1:m))
+c            klr%rbody(1:m)=list%rbody(1:m)
           elseif(.not. sym)then
             list%attr=ior(lnodefsymbol,list%attr)
           endif
@@ -430,6 +431,7 @@ c      call tfresetpat(karg)
       integer*4 isp0,m
       logical*4 av
       isp0=isp
+c      call tfdebugprint(k,'evalwitharg',1)
       kx=tfevalwitharg1(k,ks,m,kh,av,irtc)
       call tfunsetpattbl(dtbl)
       if(irtc /= 0)then
@@ -658,7 +660,8 @@ c      call tfresetpat(karg)
           if(rep)then
             m=list%nl
             kx=kxavaloc(-1,m,klr)
-            klr%rbody(1:m)=list%rbody(1:m)
+            call tfcopyarray(list%rbody(1:m),klr%rbody(1:m))
+c            klr%rbody(1:m)=list%rbody(1:m)
             klr%head=dtfcopy(kh)
           endif
  10       isp=isp1+1
@@ -748,8 +751,7 @@ c      call tfresetpat(karg)
               endif
             endif
           endif
-          dtastk(isp1+1)=kxcrelistm(isp-isp1-1,
-     $         ktastk(isp1+2:isp),kh)
+          dtastk(isp1+1)=kxcrelistm(isp-isp1-1,ktastk(isp1+2:isp),kh)
           isp=isp1+1
           irtc=0
           lx=.true.
@@ -1070,7 +1072,8 @@ c          endif
         m=list%nl
         if(rep .and. ktfreallistq(list))then
           kx=kxavaloc(-1,m,klr)
-          klr%rbody(1:m)=list%rbody(1:m)
+          call tfcopyarray(list%rbody(1:m),klr%rbody(1:m))
+c          klr%rbody(1:m)=list%rbody(1:m)
           klr%attr=ior(larglist,list%attr)
           klr%head=dtfcopy(k1)
           if(member)then
@@ -1191,8 +1194,8 @@ c     $       iand(-lmemberlist-1,klx%attr),member)
           if(rep)then
             m=list%nl
             kx=kxavaloc(-1,m,klr)
-            klr%rbody(1:m)=list%rbody(1:m)
-c            call tmov(rlist(ka+1),rlist(kax+1),m)
+            call tfcopyarray(list%rbody(1:m),klr%rbody(1:m))
+c            klr%rbody(1:m)=list%rbody(1:m)
             klr%attr=ior(larglist,list%attr)
             klr%head=dtfcopy(k1)
           endif

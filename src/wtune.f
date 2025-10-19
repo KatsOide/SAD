@@ -1,4 +1,5 @@
       real*8 function wtune(zbuf,zwork,lsp)
+      use ftr
       implicit none
       integer*4 lsp,i,im,im1,im2
       real*8 a,am,a1,a2

@@ -544,6 +544,7 @@ c 32: Er -> Ey
 
       subroutine csr2dpoisson1(phix,phiy,psi,xc,yc,tx,ty,
      $     xp1,xp2,yp1,cs,nphi,nm)
+      use solv
       implicit none
       integer*4 nphi,i,j,k,nv,nm
       real*8 phix(0:nphi),phiy(0:nphi),tx(nphi),ty(nphi),
@@ -592,7 +593,7 @@ c 32: Er -> Ey
         b1(1,i)= -yp1(i)+yc(i)
         b1(1,nm+i)= yc(i)
       enddo
-      call tsolvm(a1,b1,er1,nphi-1,nv,nm*2,nphi-1,nphi-1,nv,eps,.true.)
+      call tsolvm(a1,b1,er1,nphi-1,eps,.true.)
       do k=1,nm
         xf=xc(k)
         yf=yc(k)
@@ -631,6 +632,7 @@ c 32: Er -> Ey
       subroutine csr2dpoisson(phix,phiy,kex,key,dx,dy,
      $     pipe,nphi,ic,mx,my,rho0,iter)
       use tfstk
+      use solv
       implicit none
       type (sad_descriptor) kex,key
       integer*4 nphi,mx,my,i,j,k,l,ic,it
@@ -691,7 +693,8 @@ c 32: Er -> Ey
         enddo
         b(nphi-1)=0.5d0
 c        call tsolvg(a,b,rho,nphi-1,nphi-1,nphi-1)
-        call tsolva(a,b,rho,nphi-1,2*nphi-3,nphi-1,eps)
+c        call tsolva(a,b,rho,nphi-1,2*nphi-3,nphi-1,eps)
+        call tsolva(a,b,rho,eps)
         do k=1,mx
           xf=dx*(k-ic-0.5d0)
           do l=1,int(pipe(k))

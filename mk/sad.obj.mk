@@ -59,7 +59,7 @@ OBJ4=defglb.o     \
      prSad.o     tvcorr.o    doflag.o     \
      prelem.o    title.o     doline.o    prelm0.o \
      tcav.o      dolist.o    prexln.o \
-     tcave.o     tltrm.o     twbuf.o         prkwdv.o \
+     tcave.o     tltrm.o     prkwdv.o \
      prline.o    tchge.o     tluma.o     doprin.o \
      doread.o prnGlb.o tmast.o dorvrs.o prnflg.o \
      twinil.o    dostop.o        tconv.o     synradcl.o \
@@ -103,7 +103,7 @@ OBJAUTO=         abbrev.o    cputix.o     csinit.o     \
      tmultr.o    tnorm.o     \
      tquade.o    track.o     tracka.o     tsconv.o     tsgeo.o \
      tshow.o     tsol.o      tsole.o      tsolvg.o \
-     tsolvm.o    tspac.o     tspini.o     tsteee.o   tsteer.o     tsvdm.o \
+     tspac.o     tspini.o     tsteee.o   tsteer.o \
      tthine.o    ttinit.o    ttstat.o     tcsvdm.o \
      tturne.o    txcalc.o    wjfit.o      wtunem.o     \
      tturn.o     tbend.o     tquad.o      tflifetrack.o \

@@ -2371,7 +2371,7 @@ LOSSAMPL is the transverse amplitude beyond which a particle is judged to have b
 
      {"LOSSDZ",
       "\
-LOSSDZ is the longitudinal position z beyond which a particle is judged to have been lost. The default is 100 m. Accessible in MAIN. LOSSDZ is effective only when SPAC is ON.",
+LOSSDZ is the longitudinal position z beyond which a particle is judged to have been lost. The default is 100 m. Accessible in MAIN.",
       "LOSSAMPL APERT SPAC",
       {}},
 

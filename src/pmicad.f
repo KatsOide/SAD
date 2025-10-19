@@ -1,10 +1,11 @@
-      subroutine pmicad(a,b,x,nx0,m,n,mdim,norm,eps,svd,solv)
+      subroutine pmicad(a,b,x,nx0,m,n,mdim,norm,eps,svd,solvf)
 c --- solve A.x=b  using "Best Corrector Method" ----------
+      use solv
       implicit real*8 (a-h,o-z)
 c     parameter (nmax=1000,prec=1d-2)
       parameter (nmax=1000,prec=1d-6)
       dimension a(mdim,n),b(m),x(n),iw(nmax)
-      logical norm,svd,solv
+      logical norm,svd,solvf
 c     begin begin initialize for preventing compiler warning
       tm=0.d0
       small=0.d0
@@ -106,14 +107,14 @@ c       print *,'l=',l,' iw=',iw(l),' Residual rms: ',sngl(s)
   100 continue
 c     call cputime(ctime1,irtc)
 c     call tsolva(a,b,x,nx,nx,mdim,eps)
-      if(solv)then
-        call tsvd(a,b,x,nx,nx,mdim,eps,svd)
+      if(solvf)then
+        call tsvd(a,b,x,eps,svd)
       endif
 c     call cputime(ctime2,irtc)
 c     print *,'ctime(Htrans)=',sngl(1d-6*(ctime1-ctime0))
 c    1       ,'ctime(Tsolvg)=',sngl(1d-6*(ctime2-ctime1))
 c
-      if(svd .and. solv) then
+      if(svd .and. solvf) then
         do i=1,nx
           err=0d0
           do j=1,nx
@@ -131,7 +132,7 @@ c
       do 101 i=nx+1,n
         x(i)=0d0
   101 continue
-      if(.not.solv)then
+      if(.not.solvf)then
         do i=1,nx
           x(i)=1.d0
         enddo

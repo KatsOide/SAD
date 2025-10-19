@@ -252,12 +252,15 @@ c        call tfdebugprint(kx,'temap',1)
         ka=ka0+ipn+2
         do i=1,n-1
           call descr_rlist(kzl%dbody(i),kzi)
-          rlist(ka+(i-1)*npz:ka+(i-1)*npz+np-1)=kzi%rbody(1:np)
+          call tfcopyarray(kzi%rbody(1:np),rlist(ka+(i-1)*npz:ka+(i-1)*npz+np-1))
+c          rlist(ka+(i-1)*npz:ka+(i-1)*npz+np-1)=kzi%rbody(1:np)
         enddo
         call descr_rlist(kzl%dbody(n),kzi)
-        rlist(ka+8*npz:ka+8*npz+np-1)=kzi%rbody(1:np)
+        call tfcopyarray(kzi%rbody(1:np),rlist(ka+8*npz:ka+8*npz+np-1))
+c        rlist(ka+8*npz:ka+8*npz+np-1)=kzi%rbody(1:np)
         ka=ka0+9*npz+2+npri*nprm
-        rlist(ka:ka+nprm-1)=kpl%rbody(1:nprm)
+        call tfcopyarray(kpl%rbody(1:nprm),rlist(ka:ka+nprm-1))
+c        rlist(ka:ka+nprm-1)=kpl%rbody(1:nprm)
       endif
       kx=kxadaloc(-1,3,kxl)
       kxl%rbody(1)=dble(ipn)
@@ -307,13 +310,15 @@ c        call tfdebugprint(kx,'temap',1)
       ka=ka0+ipn+2
       do i=1,n
         kzl%dbody(i)=kxavaloc(0,np,kzi)
-        kzi%rbody(1:np)=rlist(ka+(i-1)*npz:ka+(i-1)*npz+np-1)
+        call tfcopyarray(rlist(ka+(i-1)*npz:ka+(i-1)*npz+np-1),kzi%rbody(1:np))
+c        kzi%rbody(1:np)=rlist(ka+(i-1)*npz:ka+(i-1)*npz+np-1)
       enddo
       kzl%dbody(n+1)=kxavaloc(0,np,kzi)
-      kzi%rbody(1:np)=rlist(ka+8*npz:ka+8*npz+np-1)
-c      write(*,*)'unmap ',ipn,n,np,kzi%rbody(4)
+      call tfcopyarray(rlist(ka+8*npz:ka+8*npz+np-1),kzi%rbody(1:np))
+c      kzi%rbody(1:np)=rlist(ka+8*npz:ka+8*npz+np-1)
       ka=ka0+9*npz+2+npr*nprm
-      kpl%rbody(1:nprm)=rlist(ka:ka+nprm-1)
+      call tfcopyarray(rlist(ka:ka+nprm-1),kpl%rbody(1:nprm))
+c      kpl%rbody(1:nprm)=rlist(ka:ka+nprm-1)
       irtc=0
       return
       end

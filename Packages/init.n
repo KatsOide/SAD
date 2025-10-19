@@ -277,12 +277,15 @@ On[x_]:=Hold[x];
 On[x__]:=Scan[On,Hold[x]];
 SetAttributes[MessageString,HoldRest];
 MessageString[a_]:=a;
+CompressMessage[s_,l_]:=Module[{ls=StringLength[s],lh},
+  If[ls<=l,Return[s]];
+  lh=Floor[(l-5)/2];
+  s[1,lh]//" ... "//s[l-lh-5,-1]];
 MessageString[a_,`arg__]:=Module[
-  {`al,`r,`pw=PageWidth/2},
-  arg00={arg};
+  {`al,`r,`pw2=PageWidth/2},
   StandardForm[
     al=Function[{b},ToString[b,HoldForm]]/@Hold[`arg];
-    al=If[StringLength[#]>pw,#[1,pw-4]//" ...",#]&/@al;
+    al=CompressMessage[#,pw2]&/@al;
     r=Table["`"//i//"`"->al[[i]],{i,Length[al]}];
     StringReplace[a,r]]];
 SetAttributes[Message,HoldAll];
@@ -290,6 +293,7 @@ Message[level_Real:9,a_::b_,`arg___]:=Module[
   {l=Add$Message[{level,Hold[a::b],ToString[Unevaluated$[a::b],HoldForm],
     Hold[MessageString[a::b,`arg]]}],
     f=$FORM},
+  `l00=l;
   If[Head[l]===List,
     $ErrorCount++;
     $FORM="";

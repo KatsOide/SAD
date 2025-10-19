@@ -279,11 +279,6 @@
               ktastk(isp+1:isp+ma)=ka
               itastk2(1,isp+1:isp+ma)=[(i,i=1,ma)]
               isp=isp+ma
-c              do i=1,ma
-c                isp=isp+1
-c                ktastk(isp)=ka
-c                itastk2(1,isp)=i
-c              enddo
             else
               call tfgetllstkall(lar)
             endif
@@ -385,7 +380,8 @@ c              enddo
         return
       endif
       if(ktfreallistq(list))then
-        dtastk(isp+i0:isp+m)=list%dbody(i0:m)
+        call tfcopyarray(list%dbody(i0:m),dtastk(isp+i0:isp+m))
+c        dtastk(isp+i0:isp+m)=list%dbody(i0:m)
         isp=isp+m-i0+1
       else
         LOOP_I: do i=i0,m
@@ -512,7 +508,8 @@ c              enddo
             isp=isp+1
             isp3=isp
             dtastk(isp)=kl%head
-            dtastk(isp+1:isp+ne)=kl%dbody(kai+1:kai+ne)
+            call tfcopyarray(kl%dbody(kai+1:kai+ne),dtastk(isp+1:isp+ne))
+c            dtastk(isp+1:isp+ne)=kl%dbody(kai+1:kai+ne)
             isp=isp+ne
             call tfefunrefstk(isp3,isp3,irtc)
             if(irtc /= 0)then

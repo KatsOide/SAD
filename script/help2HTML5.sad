@@ -202,7 +202,10 @@ eqs img{\n\
  The FFS commands are shown in uppercases. The minimum abbreviated form of each command is enclosed in (). Each command can be shorten down to that. The optional arguments for the commands are usually shown in []. The notation ===> reads \"equivalent to\" below.",HH@col]//"\
 </pre><a href=\"/SAD/\"><h4><img src=\"SADHelp_img/SAD.jpg\" align=\"middle\" alt=\"SAD\" width=90>Back to SAD Home Page</h4></a>\n\
 <a href=\"/SAD/how-to-use-sad/sad-ffs-examples/\">\n\
-<h4>SAD/FFS Examples</h4></a><hr>\n"];
+<h4>SAD/FFS Examples</h4></a>\n\
+<a href=\"https://github.com/KatsOide/SAD\">\n\
+<h4>GitHub</h4></a><hr>\n"
+];
  HH@WriteHTMLIndex[0,HH@help[[1]],""];
 Write[f,"<pre>"];
  HH@WriteHTMLIndex[f,HH@help[[1]],""];

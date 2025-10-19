@@ -86,8 +86,8 @@ c        f=merge(-dg/(s+b),(s-b)/3.d0/a,b > 0.d0)
       used=.true.
       ispv=isp
       if(isp >= isp1+3)then
-        if(tfreallistq(dtastk(isp),klo)
-     $       .and. klo%nl >= 4)then
+        if(tfreallistq(dtastk(isp),klo) .and. klo%nl >= 4)then
+c          call tfdebugprint(dtastk(isp),'findroot',1)
           ispv=isp-1
           maxi=int(klo%rbody(1))
           eps=klo%rbody(2)
@@ -116,14 +116,14 @@ c        f=merge(-dg/(s+b),(s-b)/3.d0/a,b > 0.d0)
       endif
       ke=dtfcopy(ke)
       kdl(1:nvar)%k=ktfoper+mtfnull
-c     write(*,*)'findroot-D ',used
       if(used)then
         call tfderiv(ke,nvar,sav,kdl,irtc)
+c        call tfdebugprint(ke,'tffindroot-deriv',1)
+c        call tfdebugprint(kdl(1),'tffindroot-deriv',1)
         if(irtc /= 0)then
           call tflocal1(ke%k)
           go to 9000
         endif
-c     call tfdebugprint(ke,'tffindroot-deriv',1)
       endif
       call tfnewton(ke%k,sav,v0,d0,kdl,
      $     vmin,vmax,neq,nvar,maxi,eps,trace,frac,irtc)
@@ -148,6 +148,7 @@ c     call tfdebugprint(ke,'tffindroot-deriv',1)
       subroutine tfnewton(ke,sav,v0,d0,kdl,vmin,vmax,
      $     neq,nvar,maxi,eps,trace,frac,irtc)
       use eeval
+      use solv
       implicit none
       type (sad_dlist), pointer :: klx
       type (symv) sav(nvar)
@@ -226,7 +227,7 @@ c     enddo
       enddo
       a0=a
       f=-f0
-      call tsolva(a,f,dv,neq,nvar,neq,svdtol)
+      call tsolva(a,f,dv,svdtol)
       dg=0.d0
       do i=1,neq
 c     s=0.d0
@@ -595,13 +596,13 @@ c     endif
           if(cutoff /= 0.d0)then
             v0(1:nvar)=max(vmin(1:nvar),min(vmax(1:nvar),v0(1:nvar)))
             v0s(1:nvar)=v0(1:nvar)
-            call tffit1(datap,n,m,ke,symdv,nvar,sav,v0,
+            call tffit1(datap(1:n,1:m),n,m,ke,symdv,nvar,sav,v0,
      $           kdl,vmin,vmax,r,kdm,kcv,kci,eps0,maxi,0.d0,irtc)
             cut=sqrt(r/max(1,m-nvar))*cutoff
           endif
         endif
         v0(1:nvar)=max(vmin(1:nvar),min(vmax(1:nvar),v0(1:nvar)))
-        call tffit1(datap,n,m,ke,symdv,nvar,sav,v0,
+        call tffit1(datap(1:n,1:m),n,m,ke,symdv,nvar,sav,v0,
      $       kdl,vmin,vmax,r,kdm,kcv,kci,eps0,maxi,cut,irtc)
       endif
       v0(1:nvar)=max(vmin(1:nvar),min(vmax(1:nvar),v0(1:nvar)))
@@ -639,15 +640,15 @@ c     call tfdebugprint(kx,'tffit-8',3)
       return
       end
 
-      subroutine tfcovmat(c,ca,m,n,ndim)
+      subroutine tfcovmat(c,ca,m)
       implicit none
-      integer*4 ,intent(in):: n,ndim,m
-      integer*4 i,j
-      real*8 ,intent(in):: c(ndim,n)
-      real*8 ,intent(out):: ca(n,n)
+      integer*4 ,intent(in):: m
+      integer*4 i,j,n
+      real*8 ,intent(in):: c(:,:)
+      real*8 ,intent(out):: ca(:,:)
       real*8 s
       real*8, save:: rnan=0.d0
-c     write(*,*)'covmat ',n,m,ndim
+      n=size(c,2)
       if(rnan == 0.d0)then
         rnan=rtfnan
       endif
@@ -663,20 +664,21 @@ c     write(*,*)'covmat ',n,m,ndim
 
       subroutine tffit1(data,n,m,ke,symdv,nvar,sav,v0,
      $     kdl,vmin,vmax,d0,kdm,kcv,kci,eps,maxi,cut,irtc)
+      use solv
       use gammaf
       implicit none
       type (sad_symdef) ,intent(inout):: symdv
       integer*4 ,intent(in):: n,m,nvar,maxi
       integer*4 ,intent(out):: irtc
       integer*4 iter,i,j
-      type (symv) ,intent(in):: sav(nvar)
+      type (symv) ,intent(inout):: sav(nvar)
       type (sad_descriptor) ,intent(out):: kdm,kcv,kci
       type (sad_descriptor) ,intent(in):: ke,kdl(nvar)
       type (sad_rlist) , pointer :: klci
       integer*8 kaxvec
-      real*8 ,intent(in):: data(n,m)
+      real*8 ,intent(in):: data(:,:)
       real*8 ,intent(inout):: v0(nvar)
-      real*8 , allocatable :: a0(:,:),a(:,:),abest(:,:),
+      real*8 , allocatable :: a0(:,:),a(:,:),abest(:,:),b(:,:),
      $     df(:),df0(:),v00(:),w(:),cv(:,:),vbest(:),dv(:),df2(:)
       real*8 ,intent(in):: eps,cut
       real*8 ,intent(out):: d0
@@ -688,7 +690,7 @@ c     write(*,*)'covmat ',n,m,ndim
      $     svmin=1.d-7,svdeps=1.d-4
       logical*4 newton,acalc
       allocate (a0(m,nvar),a(m,nvar),abest(m,nvar),df(m),
-     $     df0(m),v00(nvar),w(nvar),cv(nvar,nvar),
+     $     df0(m),v00(nvar),w(nvar),cv(nvar,nvar),b(2,2),
      $     vbest(nvar),dv(nvar),df2(m))
       kdm%k=0
       kcv%k=0
@@ -702,7 +704,7 @@ c     write(*,*)'covmat ',n,m,ndim
       klist(kaxvec+1)=ktflist+ktavaloc(0,m)
       klist(kaxvec)=ktfcopy1(kxvect)
  21   v0=max(vmin,min(vmax,v0))
-      call tfevalfit(df0,d0,data,n,m,ke,symdv,nvar,sav,v0,
+      call tfevalfit(df0,d0,data,ke,symdv,nvar,sav,v0,
      $     kaxvec,.false.,cut,irtc)
       if(irtc /= 0)then
         deallocate(a0,a,abest,df,df0,v00,w,cv,vbest,dv,df2)
@@ -725,7 +727,7 @@ c     write(*,*)'covmat ',n,m,ndim
       if(iter <= maxi)then
         v=v0
         do i=1,nvar
-          call tfevalfit(df2,db,data,n,m,kdl(i),symdv,nvar,sav,v,
+          call tfevalfit(df2,db,data,kdl(i),symdv,nvar,sav,v,
      $         kaxvec,.true.,0.d0,irtc)
           if(irtc == 0)then
             a(:,i)=df2
@@ -738,7 +740,7 @@ c     write(*,*)'covmat ',n,m,ndim
               svi=max(-svi,(vmin(i)-v0(i))*.5d0)
             endif
             v(i)=v0(i)+svi
-            call tfevalfit(df2,db,data,n,m,ke,symdv,nvar,sav,v,
+            call tfevalfit(df2,db,data,ke,symdv,nvar,sav,v,
      $           kaxvec,.false.,0.d0,irtc)
             if(irtc /= 0)then
               deallocate(a0,a,abest,df,df0,v00,w,cv,vbest,dv,df2)
@@ -766,7 +768,7 @@ c     write(*,*)'covmat ',n,m,ndim
         endif
         if(newton)then
           df=-df0
-          call tsolva(a,df,dv,m,nvar,m,svdeps)
+          call tsolva(a,df,dv,svdeps)
         else
           do i=1,nvar
             dv(i)=-sum(df0(1:m)*a0(1:m,i))
@@ -792,7 +794,7 @@ c     write(*,*)'covmat ',n,m,ndim
           endif          
         endif
  2      v=min(vmax,max(vmin,v0+dv*fact))
-        call tfevalfit(df0,d,data,n,m,ke,symdv,nvar,sav,v,
+        call tfevalfit(df0,d,data,ke,symdv,nvar,sav,v,
      $       kaxvec,.false.,cut,irtc)
         if(irtc /= 0)then
           deallocate(a0,a,abest,df,df0,v00,w,cv,vbest,dv,df2)
@@ -854,7 +856,7 @@ c     enddo
           endif
         enddo
       endif
-      call tsvdm(a0,0.d0,w,m,nvar,m,0,svdeps,.true.)
+      call tsvdm(a0,b,w,m,0,svdeps,.true.)
       if(n == 2)then
         sigma=sqrt(d0/max(1,m-nvar))
         do i=1,nvar
@@ -867,7 +869,7 @@ c     enddo
       endif
       call tflocal1(kaxvec)
       kdm=kxm2l(abest,m,nvar,m,.false.)
-      call tfcovmat(a0,cv,m,nvar,m)
+      call tfcovmat(a0,cv,m)
       kcv=kxm2l(cv,nvar,nvar,nvar,.false.)
       kci=kxraaloc(-1,nvar,klci)
       chin=tinvgr(dble(nvar))
@@ -879,7 +881,7 @@ c     enddo
       return
       end
 
-      subroutine tfevalfit(df,r,a,n,m,ke,symdv,nvar,sav,v,
+      subroutine tfevalfit(df,r,a,ke,symdv,nvar,sav,v,
      $     kaxvec,deriv,cutoff,irtc)
       use eeval
       implicit none
@@ -887,14 +889,16 @@ c     enddo
       type (sad_dlist), pointer :: klx,kl1
       type (sad_descriptor) k1,ke,kx
       integer*4 ,intent(out):: irtc
-      integer*4 ,intent(in):: n,m,nvar
-      integer*4 i,l,itfmessage
-      type (symv) sav(nvar)
+      integer*4 ,intent(in):: nvar
+      integer*4 i,l,itfmessage,n,m
+      type (symv) ,intent(out):: sav(nvar)
       integer*8 kavvec,kaxvec
-      real*8 ,intent(out):: df(m),r
-      real*8 ,intent(in):: a(n,m),v(nvar),cutoff
+      real*8 ,intent(out):: df(:),r
+      real*8 ,intent(in):: a(:,:),v(:),cutoff
       real*8 vx
       logical*4 deriv
+      n=size(a,1)
+      m=size(a,2)
       l=itfuplevel()
       do i=1,nvar
         sav(i)%p%value=dfromr(v(i))
@@ -1095,7 +1099,6 @@ c     call tfdebugprint(kd,'==>',2)
       enddo
       irtc=0
       isp=isp0
-c     write(*,*)'tfderiv-end'
       return
       end
 

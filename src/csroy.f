@@ -221,6 +221,7 @@ c
      $ rho,zl,wi,aj,omega,zjn,dpjn,
      $ rhoj,
      $ aw,r56,r65,dz,nr,nj,mphi,zspan,dt,irtc)
+      use ftr
       implicit none
       integer*4 nr,i,nrh,mphi,nj,i1,irtc
       real*8 rho(nr),zl(nr),zi(nr),wi(nr),aw,dz,

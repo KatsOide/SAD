@@ -766,6 +766,7 @@ c$$$c     $
 
         subroutine spnorm(srot,sps,smu,sdamp)
         use temw, only:gintd
+        use solv
         use mathfun, only:outer
         use macmath, only:m_2pi
         implicit none
@@ -805,7 +806,7 @@ c        s=abs(dcmplx(srot(1,2),abs(dcmplx(srot(2,2),srot(3,2)))))
         a(1,1)=a(1,1)-1.d0
         a(2,2)=a(2,2)-1.d0
         a(3,3)=a(3,3)-1.d0
-        call tsolvg(a,dr,dsps,3,3,3)
+        call tsolvg(a,dr,dsps)
         sps(:,1)=sps(:,1)+dsps
 c        s=abs(dcmplx(sps(1,1),abs(dcmplx(sps(2,1),sps(3,1)))))
         s=norm2(sps(:,1))
@@ -907,6 +908,7 @@ c        write(*,'(a,1p10g12.4)')'spdepol2 ',damp,amu,smu
 
         subroutine srequpol(srot,sps,params,demit,sdamp,rm1,equpol)
         use temw,only:ipdampx,nparams,ipdampz,ipemx,ipemz,ipnup,ipnx,ipnz,r
+        use solv
         use macmath
         implicit none
         real*8 , intent(in)::srot(3,9),demit(21),sps(3,3),
@@ -963,7 +965,7 @@ c        do i=1,3
           rm=rm1
           rm(1,1)=rm(1,1)-sdamp
           b=(/-sdamp*pst,0.d0,0.d0/)
-          call tsolva(rm,b,epol(:,i),3,3,3,min(1.d-8,sdamp/100.d0))
+          call tsolva(rm,b,epol(:,i),min(1.d-8,sdamp/100.d0))
         enddo
 c        rm1(1,1)=rm1(1,1)-sdamp
 c        equpol=epol(1,:)

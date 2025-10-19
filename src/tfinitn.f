@@ -988,5 +988,6 @@ c      i=itfunaloc('TclSetResult',1036,1,map,ieval,0)
       i=itfunaloc('BBBrem1',1047,2,map,ieval,0)
       i=itfunaloc('MapParticles',1048,3,map,ieval,0)
       i=itfunaloc('UnmapParticles',1049,2,map,ieval,0)
+      i=itfunaloc('FFSCalc',1050,0,map,ieval,0)
       return
       end
