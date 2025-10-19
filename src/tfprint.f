@@ -69,7 +69,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
                 ipoint=next1
                 exist=word0(1:1) == ' '
                 exit
-              elseif(l .gt. nc)then
+              elseif(l > nc)then
                 if(word0(1:nc) == word1 .and.
      $               (word0(nc+1:nc+1) == '{' .or.
      $               word0(nc+1:nc+1) == '(' .or.
@@ -117,22 +117,22 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
       real*8 al
       real*8 ,intent(in):: amaxline
       al=rlist(iaxline)+1.d0
-      rlist(iaxline)=al
-      karg=kxavaloc(-1,1,klarg)
-      klarg%head%k=ktfsymbol+ktfcopy1(iaxout)
-      klarg%rbody(1)=al
-      call loc_symdef(iaxout,sdout)
-      kad=sdout%downval
-      if(kad == 0)then
-        kad=ktdhtaloc(iaxout-5,i00,15)
-      endif
-      ilist(2,kad-1)=ior(ilist(2,kad-1),1)
-      kh=itfhasharg(karg,ilist(2,kad+2))+kad+3
-      kan=ktdaloc(i00,kh,klist(kh),dfromk(ktfref),karg,kx,karg,.false.)
-      rlist(kan+7)=1.d100
-      if(lfno .gt. 0)then
+      if(lfno > 0 .or. al <= 1.d0)then
+        rlist(iaxline)=al
+        karg=kxavaloc(-1,1,klarg)
+        klarg%head%k=ktfsymbol+ktfcopy1(iaxout)
+        klarg%rbody(1)=al
+        call loc_symdef(iaxout,sdout)
+        kad=sdout%downval
+        if(kad == 0)then
+          kad=ktdhtaloc(iaxout-5,i00,15)
+        endif
+        ilist(2,kad-1)=ior(ilist(2,kad-1),1)
+        kh=itfhasharg(karg,ilist(2,kad+2))+kad+3
+        kan=ktdaloc(i00,kh,klist(kh),dfromk(ktfref),karg,kx,karg,.false.)
+        rlist(kan+7)=1.d100
         call tfprintout(amaxline,irtc)
-        if(irtc .gt. 0 .and. ierrorprint /= 0)then
+        if(irtc > 0 .and. ierrorprint /= 0)then
           call tfreseterror
         endif
       endif
@@ -158,7 +158,7 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
       type (sad_descriptor),save:: iaxshort
       data iaxshort%k /0/
       al=rlist(iaxline)
-      if(al .gt. 0.d0)then
+      if(al > 0.d0)then
         if(iaxshort%k == 0)then
           iaxshort=tfsyeval(kxsymbolf('System`Short',12,.true.),irtc)
         endif

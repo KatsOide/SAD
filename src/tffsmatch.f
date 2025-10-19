@@ -39,15 +39,15 @@ c      include 'DEBUG.inc'
       integer*4 ,allocatable,dimension(:)::kdpa1,kdpa2,iqcol0,iqcola1,iqcola2
       integer*4 nretry
       type (ffs_res),allocatable::residuala1(:)
-      type (ffs_res) ra1,r0,r0print
-      real*8 ,allocatable,dimension(:)::dval,df0,df1,df2,ddf1,ddf2,bestval,wvar,wlimit
+      type (ffs_res) ra1,rbest,rprint
+      real*8 ,allocatable,dimension(:)::dval,df0,df1,df2,ddf1,ddf2,wvar,wlimit,bestval,beforecal
       integer*4 ,allocatable,dimension(:,:)::lfpa1,lfpa2
       logical*4 ,allocatable,dimension(:)::free
       logical*4 zcal,error,error2,limited1,wcal1,zcal1
       integer*4 iter,ii,j,kc,nvara, i,ip,ipr,istep,npr(nparallel)
       real*8 v00,rl,fuzz,a,b,x,crate,aimprv,fact,ra,alate,
      $     smallf,badcnv,amedcv,vl1,vl2,aitm1,aitm2,
-     $     dg,f1,f2,g1,g2,valvar0,rp0,dv,vl,dvkc
+     $     dg,f1,f2,g1,g2,valvarbest,rp0,dv,vl,dvkc
       real*8 twsave(ntwissfun)
       real*8 , pointer :: qu(:,:),quw(:,:)
       logical*4 chgmod,newton,imprv,limited,over,wcal,parallel,nderiv,outt,nderiv0,dlim
@@ -68,14 +68,15 @@ c     begin initialize for preventing compiler warning
         iconvergence=ktfsymbolz('CONVERGENCE',11)-4
       endif
       allocate(dval(flv%nvar),df0(maxcond),df1(maxcond),df2(maxcond),
-     $     ddf1(maxcond),ddf2(maxcond),residuala1(-ndimmax:ndimmax))
+     $     ddf1(maxcond),ddf2(maxcond),residuala1(-ndimmax:ndimmax),
+     $     bestval(flv%nvar),beforecal(flv%nvar))
       nmes=0
       nderiv0=rlist(inumderiv) /= 0.d0
       nvara=0
       aitm1=0
       aitm2=0
-      r0=ffs_res(0.d0,0)
-      r0print=r0
+      rbest=ffs_res(0.d0,0)
+      rprint=rbest
       ra=0.d0
       aimprv=0.d0
       crate=1.d0
@@ -101,17 +102,17 @@ c     end   initialize for preventing compiler warning
       endif
       ibegin=1
       chgmod=.true.
+      bestval(1:nvar)=nvevx(1:nvar)%valvar
       if(fitflg)then
         allocate(kdpa1(maxcond),kdpa2(maxcond),iqcol0(maxcond),iqcola1(maxcond),
-     $       iqcola2(maxcond),lfpa1(2,maxcond),lfpa2(2,maxcond),bestval(flv%nvar),
+     $       iqcola2(maxcond),lfpa1(2,maxcond),lfpa2(2,maxcond),
      $       wvar(flv%nvar),wlimit(flv%nvar),free(nele))
         call tffssetlimit(nvar,dlim)
-        r0=ffs_res(1.d300,10000)
+        rbest=ffs_res(1.d300,10000)
         fact=1.d0
         iter=0
         newton=.true.
         imprv=.true.
-        bestval(1:nvar)=nvevx(1:nvar)%valvar
         free=.false.
         free(nvevx(1:nvar)%ivarele)=.true.
         aitm1=flv%itmax*alit
@@ -120,7 +121,6 @@ c     end   initialize for preventing compiler warning
       else
         iter=flv%itmax
       endif
-      chgini=.true.
       if(cell)then
         nretry=1
       else
@@ -132,10 +132,20 @@ c     end   initialize for preventing compiler warning
           call tftclupdate(int(rlist(intffs)))
           dp01=rlist(latt(1)+mfitddp)
           wcal=chgmod
-c          write(*,'(a,i5,7l2,i5,1p8g12.4)')'tffsmatch-20 ',iter,chgmod,newton,wcal,zcal,chgini,inicond,parallel,r%nstab,r%r,r0%r
+          if(.not. fitflg)then
+            nvevx(1:nvar)%valvar=bestval(1:nvar)
+          endif
+          beforecal(1:nvar)=nvevx(1:nvar)%valvar
           call tffscalc(flv%kdp,df,flv%iqcol,flv%lfp,nqcol,nqcol1,ibegin,
      $         r,residual,zcal,wcal,parallel,lout,error)
-c          write(*,'(a,i5,9l2,i5,1p8g12.4)')'tffsmatch-21 ',iter,error,fitflg,chgmod,newton,wcal,zcal,chgini,inicond,parallel,r%nstab,r%r,r0%r
+c          if(.not. fitflg .and. .not. resle(r,rbest))then
+c            write(*,'(a,i5,8l2,i5,1p8g12.4)')'tffsmatch-21 ',iter,error,fitflg,chgmod,newton,wcal,zcal,inicond,parallel,r%nstab,r%r,rbest%r
+c            do i=1,min(nvar,10)
+c              if(beforecal(i) /= bestval(i))then
+c                write(*,'(a,i5,1p10g12.4)'),'r> rbest: ',i,beforecal(i),bestval(i),beforecal(i)-bestval(i)
+c              endif
+c            enddo
+c          endif
           if(error)then
             if(irtc == 20001)then
               exit do9000
@@ -150,7 +160,7 @@ c          write(*,'(a,i5,9l2,i5,1p8g12.4)')'tffsmatch-21 ',iter,error,fitflg,ch
             endif
           endif
           convgo=res2r(r) <= rl
-          fitflg=fitflg .and. nqcol > 0
+c          fitflg=fitflg .and. nqcol > 0
           if(calexp)then
             sexp='  CALEXP'
           else
@@ -166,6 +176,10 @@ c          write(*,'(a,i5,9l2,i5,1p8g12.4)')'tffsmatch-21 ',iter,error,fitflg,ch
             endif
             exit do9000
           elseif(.not. fitflg)then
+c            if(.not. resle(r,rbest))then
+c              write(*,'(a,3l2,3(i5,1pg12.4))')'match r > rbest?',
+c     $             wcal,zcal,chgmod,r%nstab,r%r,rbest%nstab,rbest%r,rprint%nstab,rprint%r
+c            endif
             if(r%nstab == 0)then
               write(lfno,9501)' Residual =',r%r,' ',dpmax,dp01,wexponent,ch,offmw,sexp
               exit do9000
@@ -177,10 +191,9 @@ c          write(*,'(a,i5,9l2,i5,1p8g12.4)')'tffsmatch-21 ',iter,error,fitflg,ch
      $           '  ExponentOfResidual =',f4.1,a,' OffMomentumWeight =',f8.3,a)
             endif
           else
-c            if(chgini .and. cell)then
+c            if(cell)then
 c              call twmov(1,twsave,1,0,.true.)
 c            endif
-            chgini=.true.
             do1082: do kkkk=1,1
               iter=iter+1
               if(chgmod)then
@@ -190,22 +203,22 @@ c            endif
                 chgmod=.false.
                 aimprv=0.d0
                 crate=1.d0
-                if(resle(r,r0))then
-                  r0=r
+                if(resle(r,rbest))then
+                  rbest=r
                   rp0=r%r
-                  r0print=r0
-                  bestval(1:nvar)=nvevx(1:nvar)%valvar
-                  ra=r0%r*(1.d0+amtol)
+                  rprint=rbest
+                  bestval(1:nvar)=beforecal(1:nvar)
+                  ra=rbest%r*(1.d0+amtol)
                   if(cell)then
                     call twmov(1,twsave,1,0,.true.)
                   endif
                 endif
-c                write(*,'(a,1p10g12.4)')'tffsmatch-chmod0 ',r%r,r0%r,r0print%r
+c                write(*,'(a,1p10g12.4)')'tffsmatch-chmod0 ',r%r,rbest%r,rprint%r
               else
-                imprv=resle(r,r0)
+                imprv=resle(r,rbest)
                 if(imprv)then
-c                  write(*,'(a,1p10g12.4)')'tffsmatch-imprv ',r%r,r0%r,r0print%r
-                  if(resle(r,r0print,rtol1))then
+c                  write(*,'(a,1p10g12.4)')'tffsmatch-imprv ',r%r,rbest%r,rprint%r
+                  if(resle(r,rprint,rtol1))then
                     lout=lfno
                     if(outt)then
 c                      write(lfno,*)'Iterations Unstable Residual    Method     Reduction  Variables'
@@ -218,10 +231,10 @@ c                      write(lfno,*)'Iterations Unstable Residual    Method     
                       write(lfno,9701)iter,r%nstab,r%r,'  (DESCEND) ',fact,nvara
                     endif
                     nmes=0
-                    r0print=r
+                    rprint=r
                   endif
                   aimprv=fuzz(log10((ra-r%r)/ra),aimp1,aimp2)
-                  crate=(r0%r-r%r)/r0%r
+                  crate=(rbest%r-r%r)/rbest%r
                   if(newton)then
                     fact=min(1.d0,fact*4.d0)
                   else
@@ -229,15 +242,15 @@ c                      write(lfno,*)'Iterations Unstable Residual    Method     
                   endif
                   f1=0.d0
                   g1=r%r
-                  bestval(1:nvar)=nvevx(1:nvar)%valvar
+                  bestval(1:nvar)=beforecal(1:nvar)
                   if(cell)then
                     call twmov(1,twsave,1,0,.true.)
                   endif
                   rp0=r%r
-                  r0=r
+                  rbest=r
                 else
                   aimprv=0.d0
-                  crate=(r0%r-r%r)/r0%r
+                  crate=(rbest%r-r%r)/rbest%r
                 endif
                 alate=fuzz(dble(iter),aitm1,aitm2)
                 smallf=1.d0-fuzz(log10(fact),flim1,flim2)
@@ -249,7 +262,7 @@ c                      write(lfno,*)'Iterations Unstable Residual    Method     
 c                  write(*,'(a,2i5,1p10g12.4)')'itmax ',iter,nretry,aimprv,smallf,badcnv,alate,amedcv
                   if(iter > flv%itmax*10)then
                     fitflg=.false.
-                    chgmod=.true.
+                    chgmod=.false.
                   elseif(aimprv > .5d0)then
                     chgmod=.true.
                   elseif(max(smallf,badcnv,min(alate,amedcv)) > .5d0)then
@@ -257,16 +270,16 @@ c                  write(*,'(a,2i5,1p10g12.4)')'itmax ',iter,nretry,aimprv,small
                     if(nretry > 0)then
                       nretry=nretry-1
                     else
-                      chgini=.true.
                       fitflg=.false.
+                      chgmod=.false.
                     endif
                   else
                     chgmod=.false.
                   endif
                 endif
-                if(chgmod)then
-c                  write(*,'(a,l2,3i5,1p10g12.4)')'match-chmod ',fitflg,r%nstab,r0%nstab,r0print%nstab,r%r,r0%r,r0print%r
-                  r=r0
+                if(chgmod .or. .not. fitflg)then
+c                  write(*,'(a,l2,3i5,1p10g12.4)')'match-chmod ',fitflg,r%nstab,rbest%nstab,rprint%nstab,r%r,rbest%r,rprint%r
+                  r=rbest
                   newton=.not. newton
                   fact=1.d0
                   nvevx(1:nvar)%valvar=bestval(1:nvar)
@@ -292,6 +305,7 @@ c                  write(*,'(a,l2,3i5,1p10g12.4)')'match-chmod ',fitflg,r%nstab,
                     a=fact/f1
                     nvevx(1:nvar)%valvar=nvevx(1:nvar)%valvar*a
      $                   +bestval(1:nvar)*(1.d0-a)
+c                    write(*,'(a,1p10g12.4)')'nvara == nvar ',a
                     exit do200
                   else
                     nqcol=nqcol0
@@ -321,7 +335,6 @@ c              nderiv=nderiv .or.
 c     $             cell .and. r%nstab > 0
 c     $             .and. dble(nvar*nfam*nlat) < aloadmax
               npa=min(nvar,nparallel)
-              chgini=(r%nstab == 0) .or. nderiv
               if(nderiv)then
                 call tffssetupqu(ifqu,ifquw,nqumax,nqcol,nvar)
                 ipr=-1
@@ -353,18 +366,18 @@ c     $             .and. dble(nvar*nfam*nlat) < aloadmax
                 zcal1=zcal
                 do kc=ip,nvar,istep
                   dvkc=max(abs(nvevx(kc)%valvar)*eps,abs(eps1/wvar(kc)))
-                  valvar0=nvevx(kc)%valvar
-                  nvevx(kc)%valvar=valvar0+dvkc
+                  valvarbest=nvevx(kc)%valvar
+                  nvevx(kc)%valvar=valvarbest+dvkc
                   call tfsetv(nvar)
                   call tffscalc(kdpa1,df1,iqcola1,lfpa1,
      $                 nqcola1,nqcol1a1,ibegin,
      $                 ra1,residuala1,zcal1,wcal1,.false.,lfno,error)
-                  nvevx(kc)%valvar=valvar0-dvkc
+                  nvevx(kc)%valvar=valvarbest-dvkc
                   call tfsetv(nvar)
                   call tffscalc(kdpa2,df2,iqcola2,lfpa2,
      $                 nqcola2,nqcol1a2,ibegin,
      $                 ra1,residuala1,zcal1,wcal1,.false.,lfno,error2)
-                  nvevx(kc)%valvar=valvar0
+                  nvevx(kc)%valvar=valvarbest
                   if(error .or. error2)then
                     ddf1(1:nqcol)=0.d0
                     ddf2(1:nqcol)=0.d0

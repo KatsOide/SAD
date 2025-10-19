@@ -9,8 +9,7 @@
       data kfv%k /0/
 
       contains
-      subroutine tffscalc(kdp,df,iqcol,lfp,
-     $     nqcola,nqcola1,ibegin,
+      subroutine tffscalc(kdp,df,iqcol,lfp,nqcola,nqcola1,ibegin,
      $     r,residual1,zcal,wcal,parallel,lout,error)
       use maccode
       use ffs, only:ndim,nlat,flv,maxcond,ffs_bound,nvevx,nelvx,tsetintm
@@ -107,7 +106,7 @@ c      call tfmemcheckprint('tffscalc-before-prolog',.true.,irtc)
       if(wake)then
         call tffswake(ibound,beg)
       else
-        call qcell1(ibound,0,optstat(0),.false.,chgini,lout)
+        call qcell1(ibound,0,optstat(0),.false.,lout)
         call tffssetutwiss(0,fbound,beg,.true.,.true.)
         if(cell)then
           anux0=aint(twiss(nlat,0,mfitnx)/pi2)
@@ -116,8 +115,7 @@ c      call tfmemcheckprint('tffscalc-before-prolog',.true.,irtc)
           anuy0h=aint(twiss(nlat,0,mfitny)/pi)
           anusum0=aint((twiss(nlat,0,mfitnx)+twiss(nlat,0,mfitny))/pi2)
           anudiff0=tfloor((twiss(nlat,0,mfitnx)-twiss(nlat,0,mfitny))/pi2)
-          if(optstat(0)%stabx .and. optstat(0)%staby
-     $         .and. optstat(0)%stabz .or. chgini)then
+          if(optstat(0)%stabx .and. optstat(0)%staby .and. optstat(0)%stabz)then
             call twmov(1,twiss,nlat,ndim,.false.)
           endif
         endif
@@ -193,7 +191,7 @@ c                write(*,'(a,2i5,2l2)')'tffscalc-iniorb ',ix,i2,fam,inicond
                   twiss(fbound%lb,1,1:ntfun)=twiss(1,1,1:ntfun)
                 endif
               endif
-              call qcell1(ibound,1,optstat(ix),fam,chgini,lout)
+              call qcell1(ibound,1,optstat(ix),fam,lout)
               call tffssetutwiss(ix,fbound,beg,.true.,.true.)
             endif
             if(cell)then
@@ -350,13 +348,15 @@ c                write(*,'(a,2i5,2l2)')'tffscalc-iniorb ',ix,i2,fam,inicond
           rw=rw+drw
           residual1(kdp(i))%r=residual1(kdp(i))%r+drw
         endif
+c        if(abs(df(i)) > 1.d0)then
+c          write(*,'(a,3i5,1p10g12.4)')'calc-rw ',i,flv%kfit(flv%kfitp(iqcol(i))),mfitbmagx,df(i),drw,rw
+c        endif
       enddo
       if(rw > 0.d0)then
         r=ffs_res(wsum*(max(rw,1.d-50)/wsum)**(2.d0/wexponent),0)
       else
         r=ffs_res(0.d0,0)
       endif
-c      write(*,*)'tffscalc ',r%nstab,r%r
       if(cell)then
         cellstab=.true.
         zerores=.true.
@@ -380,6 +380,7 @@ c      write(*,*)'tffscalc ',r%nstab,r%r
             cellstab=cellstab .and. optstat(i)%stabx .and. optstat(i)%staby
           enddo
         endif
+c        write(*,'(a,2l2,1p10g12.4)')'tffscalc-cell ',zerores,cellstab,r%nstab,r%r
       else
         do i=nfam1,nfam
           if(.not. optstat(i)%stabx)then

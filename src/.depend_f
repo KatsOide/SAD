@@ -365,6 +365,7 @@ tftrad.o: tftrad.f tfstk.o
 tftrak.o: tftrak.f tffs.o
 tftrb.o: tftrb.f tffs.o
 tftwiss.o: tftwiss.f itfgeto.o tfefun.o tffs.o tfreplace.o tfstk.o tgfun.o tgrot.o toplvl.o
+tftyp1.o: tftyp1.f initb1.o tffs.o tfstk.o tfstrbuf.o toplvl.o
 tftype.o: tftype.f initb1.o tffs.o tfstk.o tfstrbuf.o toplvl.o
 tfvars.o: tfvars.f tfeeval.o tffs.o tfstk.o toplvl.o
 tfvectorize.o: tfvectorize.f tfstk.o
@@ -449,6 +450,7 @@ ttstat.o: ttstat.f tffs.o tfstk.o
 tturne.o: tturne.f initb1.o itfmaloc.o tdrife.o temit.o tffs.o tfloor.o tfstk.o toplvl.o
 tturn.o: tturn.f initb1.o photons.o tdrift.o tffs.o tfloor.o tfstk.o toplvl.o txwake.o
 tvcorr.o: tvcorr.f tcftr.o tfstk.o
+twbuf.o: twbuf.f tffs.o
 twelm.o: twelm.f tffs.o
 twinil.o: twinil.f
 twinit.o: twinit.f

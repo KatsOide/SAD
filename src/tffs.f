@@ -1616,7 +1616,7 @@ c        write(*,*)'setndivelm ',ia,ltyp,ndiv
      $     dfam(4,-ndimmax:ndimmax),
      $     uini(ntwissfun,-ndimmax:ndimmax),wfit(maxcond),
      $     wiq(maxcond)
-      logical*4 fitflg,geomet,inicond,chgini
+      logical*4 fitflg,geomet,inicond
       integer*4 nut,nfam,nfam1,nfr,nqcol,nqcol1,nfcol,nfc0
       real*8 wexponent,offmw,etamax,avebeta,wsum
       character*8 , save :: nlist(1:mfit1)=(/

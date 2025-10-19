@@ -20,18 +20,18 @@
       fb%fb=0.d0
       fb%fe=0.d0
       lfno=0
-      call qcell1(fb,idp,optstat,fam,.true.,lfno)
+      call qcell1(fb,idp,optstat,fam,lfno)
       return
       end
 
-      subroutine qcell1(fbound,idp,optstat,fam,chgini,lfno)
+      subroutine qcell1(fbound,idp,optstat,fam,lfno)
       implicit none
       type (ffs_bound) , intent(in)::fbound
       type (ffs_stat) , intent(out)::optstat
       real*8 ,parameter:: bmin=1.d-16,bmax=1.d16,amax=1.d16
       integer*4 ,parameter :: itmax=63
       integer*4 , intent(in) :: idp,lfno
-      logical*4 , intent(in)::fam,chgini
+      logical*4 , intent(in)::fam
       real*8 ftwiss(ntwissfun),
      $     r1,r2,r3,r4,c1,
      $     s11,s12,s13,s14,s21,s22,s23,s24,
@@ -69,6 +69,7 @@
         codfnd=fam
         cod=twiss(fbound%lb,idp,mfitdx:mfitddp)
         call qcod(idp,fbound,trans,cod,codfnd,optstat%over)
+c        write(*,'(a,l2,1p12g12.4)')'qcell-cod ',codfnd,optstat%over,cod
         if(optstat%over)then
           if(lfno > 0 .and. nmes < nmmax)then
             nmes=nmes+1
@@ -246,17 +247,14 @@ c     print *,tmd41,tmd42
           endif
         endif
         sinmux=sign(sqrt(1.d0-cosmux**2),a12)
-        if(chgini)then
-          twiss(fbound%lb,idp,mfitax)=(a11-cosmux)/sinmux
-          twiss(fbound%lb,idp,mfitbx)=a12/sinmux
-        endif
+        twiss(fbound%lb,idp,mfitax)=(a11-cosmux)/sinmux
+        twiss(fbound%lb,idp,mfitbx)=a12/sinmux
         amux=atan2(sinmux,cosmux)
         dcosmux=2.d0*sin(.5d0*amux)**2
+c        write(*,'(a,l2,1p12g10.4)')'qcell-x ',twiss(fbound%lb,idp,mfitax),twiss(fbound%lb,idp,mfitbx)
         sinmuy=sign(sqrt(1.d0-cosmuy**2),b12)
-        if(chgini)then
-          twiss(fbound%lb,idp,mfitay)=(b11-cosmuy)/sinmuy
-          twiss(fbound%lb,idp,mfitby)=b12/sinmuy
-        endif
+        twiss(fbound%lb,idp,mfitay)=(b11-cosmuy)/sinmuy
+        twiss(fbound%lb,idp,mfitby)=b12/sinmuy
         amuy=atan2(sinmuy,cosmuy)
         dcosmuy=2.d0*sin(.5d0*amuy)**2
 C--   deb
@@ -271,21 +269,13 @@ c     (Note) Disperdion is defined in 2*2 world
         a23=s22*tm25+s23*tm35+s24*tm45
         b13=s31*tm15+s32*tm25+s33*tm35
         b23=s41*tm15+s42*tm25+s44*tm45
-        if(chgini .or. optstat%stabx)then
-          if( dcosmux/=0.d0 ) then
-            twiss(fbound%lb,idp,mfitex) =
-     $           0.5d0*(a13+a12*a23-a22*a13)/dcosmux
-            twiss(fbound%lb,idp,mfitepx) =
-     $           0.5d0*(a23+a21*a13-a11*a23)/dcosmux
-          endif
+        if(optstat%stabx .and. dcosmux/=0.d0)then
+          twiss(fbound%lb,idp,mfitex) = 0.5d0*(a13+a12*a23-a22*a13)/dcosmux
+          twiss(fbound%lb,idp,mfitepx) = 0.5d0*(a23+a21*a13-a11*a23)/dcosmux
         endif
-        if(chgini .or. optstat%staby)then
-          if( dcosmuy/=0.d0 ) then
-            twiss(fbound%lb,idp,mfitey) =
-     $           0.5d0*(b13+b12*b23-b22*b13)/dcosmuy
-            twiss(fbound%lb,idp,mfitepy)=
-     $           0.5d0*(b23+b21*b13-b11*b23)/dcosmuy
-          end if
+        if(optstat%staby .and. dcosmuy/=0.d0)then
+          twiss(fbound%lb,idp,mfitey) = 0.5d0*(b13+b12*b23-b22*b13)/dcosmuy
+          twiss(fbound%lb,idp,mfitepy)= 0.5d0*(b23+b21*b13-b11*b23)/dcosmuy
         endif
       endif
  1    continue

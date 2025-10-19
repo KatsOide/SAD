@@ -272,7 +272,7 @@ c        write(*,*)'tphysdisp ',kf
       return
       end
 
-      real*8 pure function tgetbmagu(i,idp,kt) result(v)
+      real*8 function tgetbmagu(i,idp,kt) result(v)
       use ffs_pointer, only:twiss,utwiss,itwissp
       use tffitcode
       implicit none
@@ -288,6 +288,9 @@ c        write(*,*)'tphysdisp ',kf
         v=.5d0*(utwiss(mfitby,idp,l)/twiss(i,-1,mfitby)+twiss(i,-1,mfitby)/utwiss(mfitby,idp,l)
      $       +(utwiss(mfitay,idp,l)*twiss(i,-1,mfitby)-twiss(i,-1,mfitay)*utwiss(mfitby,idp,l))**2
      $       /utwiss(mfitby,idp,l)/twiss(i,-1,mfitby))
+c        if(i == 1 .and. idp == -8 .and. l == 1)then
+c          write(*,'(a,3i5,1p10g12.4)')'getbmagu ',i,idp,l,v,utwiss(mfitay,idp,l),utwiss(mfitby,idp,l)
+c        endif
       case (mfitbmagz)
         v=.5d0*(utwiss(mfitbz,idp,l)/twiss(i,-1,mfitbz)+twiss(i,-1,mfitbz)/utwiss(mfitbz,idp,l)
      $       +(utwiss(mfitaz,idp,l)*twiss(i,-1,mfitbz)-twiss(i,-1,mfitaz)*utwiss(mfitbz,idp,l))**2
