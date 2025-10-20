@@ -48,3 +48,4 @@ Library/lib/*
 Library/lib/App/*
 Library/lib/App/LogBrowser/*
 src/*.f_*
+Documents/LaTeX/tmp__*
