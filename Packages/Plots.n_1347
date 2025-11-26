@@ -1,4 +1,4 @@
-Scolorfunction(* Plots 11/26/2025 *)
+(* Plots 11/22/2025 *)
 Show;
 
 Off[General::unprotconst];
@@ -379,7 +379,6 @@ CP$ColorScale[cs_,cf_,cfs_,pr_,ar_,ncs_,opt___]:=
       {0,1},
       pr];
     dcr=cr[[2]]-cr[[1]];
-    Print["CPCS: ",{cr,pr,ar,ncs}];
     Rectangle[{0,0},{1/ncs,1},
       ListDensityPlot[
         {(Range[ncs+1]-1)*dcr/ncs+cr[[1]]},
@@ -394,8 +393,9 @@ CP$ColorScale[cs_,cf_,cfs_,pr_,ar_,ncs_,opt___]:=
         BelowFrame->False,
         TickSize->-0.1,
         MeshRange->{Default,pr},
+        Position->Right[],
         opt,
-        FrameLabel->{"",""}],Position->Right[]]];
+        FrameLabel->{"",""}]]];
 
 CP$PlotRangeG[Automatic]={Automatic,Automatic};
 CP$PlotRangeG[pr:{_Real|Automatic,_Real|Automatic}]:={Automatic,pr};
@@ -537,16 +537,17 @@ CP$FindContour[l_,pr_,n_,cf_,cfs_,lc_,bf_]:=Module[
     i1,j1,f0,f1,f2,f3},
   With[{l1=Restrict[(l-pr[[1]])/(pr[[2]]-pr[[1]])*n+0.5,0.5,n+0.5]},
     {l1f=Floor[l1]},
-    Block[{contl,contb,
-      q0:={i,j+(k-l1[[i,j]])/(l1[[i,j1]]-l1[[i,j]])},
-      q1:={i+(k-l1[[i,j1]])/(l1[[i1,j1]]-l1[[i,j1]]),j1},
-      q2:={i+(k-l1[[i,j]])/(l1[[i1,j]]-l1[[i,j]]),j},
-      q3:={i1,j+(k-l1[[i1,j]])/(l1[[i1,j1]]-l1[[i1,j]])}},
+    Block[{contl,contb},
       contl[_][_]={{}};
       contb[_][_]={};
       Table[
         i1=i+1;
         j1=j+1;
+        k=.;
+        q0={i,j+(k-l1[[i,j]])/(l1[[i,j1]]-l1[[i,j]])};
+        q1={i+(k-l1[[i,j1]])/(l1[[i1,j1]]-l1[[i,j1]]),j1};
+        q2={i+(k-l1[[i,j]])/(l1[[i1,j]]-l1[[i,j]]),j};
+        q3={i1,j+(k-l1[[i1,j]])/(l1[[i1,j1]]-l1[[i1,j]])};
         {min,max}=MinMax[{f0,f1,f2,f3}={l1f[[i,j]],l1f[[i,j1]],l1f[[i1,j]],l1f[[i1,j1]]}];
         {m0,m1,m2,m3}={{i,j},{i,j1},{i1,j},{i1,j1}};
         If[cf<=>Null,
@@ -601,7 +602,7 @@ fc[0,1,0,0]:={{m1,q1,q0}};
 fc[1,1,0,0]:={{m0,q1,q2}};
 fc[0,0,1,0]:={{m2,q2,q3}};
 fc[1,0,1,0]:={{m2,q0,q3}};
-fc[0,1,1,0]:={{m1,q1,q0},{m2,q2,q3}};
+fc[0,1,1,0]:={{m1,q1,q0}(*,{m2,q2,q3}*)};
 fc[1,1,1,0]:={{m2,q1,q3}};
 fc[0,0,0,1]:={{m3,q3,q1}};
 fc[1,0,0,1]:={{m0,q0,q2},{m3,q3,q1}};

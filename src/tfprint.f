@@ -116,8 +116,11 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
       integer*4 irtc
       real*8 al
       real*8 ,intent(in):: amaxline
-      al=rlist(iaxline)+1.d0
-      if(lfno > 0 .or. al <= 1.d0)then
+      al=rlist(iaxline)
+      if(lfno > 0)then
+        al=al+1.d0
+      endif
+
         rlist(iaxline)=al
         karg=kxavaloc(-1,1,klarg)
         klarg%head%k=ktfsymbol+ktfcopy1(iaxout)
@@ -131,11 +134,12 @@ c       write(*,*)'tfprint-1 ',lfni,ios,itx,ipoint,next,lrecl
         kh=itfhasharg(karg,ilist(2,kad+2))+kad+3
         kan=ktdaloc(i00,kh,klist(kh),dfromk(ktfref),karg,kx,karg,.false.)
         rlist(kan+7)=1.d100
-        call tfprintout(amaxline,irtc)
-        if(irtc > 0 .and. ierrorprint /= 0)then
-          call tfreseterror
+        if(lfno > 0)then
+          call tfprintout(amaxline,irtc)
+          if(irtc > 0 .and. ierrorprint /= 0)then
+            call tfreseterror
+          endif
         endif
-      endif
       return
       end
 

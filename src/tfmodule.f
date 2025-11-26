@@ -82,7 +82,9 @@ c          call tfdebugprint(kxl1,'==>',2)
         return
       endif
  9200 do i=isp,isp0+2,-2
-c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
+c        if(.not. module)then
+c          call tfdebugprint(dtastk(i),'tfmodule-delete',1)
+c        endif
         call descr_sad(dtastk(i),symdi)
         call tfdelete(symdi,.true.,.true.)
       enddo
@@ -102,6 +104,7 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
       integer*8 ka1,ka10,kp1,kadi,kadi0,kp0
       integer*4 i,kk,irtc,isp0,lgen0
       logical*4 ,intent(in):: del,unset
+      integer*4 ,parameter::lendef=6
       if(unset)then
         if(def%upval /= 0)then
           isp0=isp
@@ -165,11 +168,13 @@ c        call tfdebugprint(dtastk(i),'tfmodule-delete',1)
           enddo
           loc%str%gen=lgen0
         endif
+c        call tfdebugprint(sad_descr(def%sym),'tfdelete',1)
         def%sym%override=0
-        def%sym%attr=def%len-6
-        def%len=6
-        call tfree(sad_loc(def%next))
+        def%sym%attr=def%len-lendef
+        def%len=lendef
         call tflocal1(sad_loc(def%sym%loc))
+        call tfree(sad_loc(def%next))
+!        call tfmemcheckprint('tfdelete',1,.false.,irtc)
       else
         def%value=dtfcopy1(sad_descr(def%sym))
       endif

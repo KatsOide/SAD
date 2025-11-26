@@ -1,4 +1,4 @@
-Scolorfunction(* Plots 11/26/2025 *)
+(* Plots 11/22/2025 *)
 Show;
 
 Off[General::unprotconst];
@@ -379,7 +379,6 @@ CP$ColorScale[cs_,cf_,cfs_,pr_,ar_,ncs_,opt___]:=
       {0,1},
       pr];
     dcr=cr[[2]]-cr[[1]];
-    Print["CPCS: ",{cr,pr,ar,ncs}];
     Rectangle[{0,0},{1/ncs,1},
       ListDensityPlot[
         {(Range[ncs+1]-1)*dcr/ncs+cr[[1]]},

@@ -11,6 +11,7 @@
       integer*8 ka1,ka10,kp1,kadi,kadi0,kp0
       integer*4 i,kk,irtc,isp0
       logical*4 ,intent(in):: del,unset
+      integer*4 ,parameter:: lendef=6
       if(unset)then
         if(def%upval /= 0)then
           isp0=isp
@@ -64,10 +65,10 @@
         endif
         klist(kp0)=kp1
         def%sym%override=0
-        def%sym%attr=def%len-6
-        def%len=6
-        call tfree(sad_loc(def%next))
+        def%sym%attr=def%len-lendef
+        def%len=lendef
         call tflocal1(sad_loc(def%sym%loc))
+        call tfree(sad_loc(def%next))
       else
         def%value=dtfcopy1(sad_descr(def%sym))
       endif

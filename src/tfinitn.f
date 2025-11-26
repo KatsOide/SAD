@@ -218,6 +218,8 @@ c          call tfresetsharedmap()
         elseif(ktastk(isp) == ktfoper+mtfnull)then
 c          call tfresetsharedmap()
           call exit(0)
+        else
+          call exit(-1)
         endif
       endif
       kx%k=ktfoper+mtfnull

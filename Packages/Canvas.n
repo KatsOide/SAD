@@ -1,4 +1,4 @@
-(* Canvas 6/28/2023 *)
+(* Canvas 11/26/2025 *)
 
 SetAttributes[{OutLine,Outline,UseBG,Permanent,Redraw},Constant];
 
@@ -348,11 +348,8 @@ CanvasGraphics=Class[{},
     AppendTo[WindowList,Canvas$Window];
     Abs[{wx2-wx1,wy2-wy1}/$DefaultWindowWidth]];
 
-  WindowRatio[w_]:=With[{rw=Canvas$RawWindow,pr=Canvas$PlotRegion},
-    {{w[[1,1]]-rw[[1,1]],w[[1,2]]-rw[[1,1]]},
-     {w[[2,1]]-rw[[2,1]],w[[2,2]]-rw[[2,1]]}}/
-       {rw[[1,2]]-rw[[1,1]],rw[[2,2]]-rw[[2,1]]}/{pr[[1,2]]-pr[[1,1]],pr[[2,2]]-pr[[2,1]]}
-    +pr[[,1]]];
+  WindowRatio[w_]:=With[{trw=Thread[Canvas$RawWindow],tpr=Thread[Canvas$PlotRegion]},
+    ((w-trw[[1]])/(trw[[2]]-trw[[1]])-tpr[[1]])/(tpr[[2]]-tpr[[1]])];
 
   MakeWindow[{{x1_,y1_},{x2_,y2_}},ar_]:=Module[
     {wxc,wyc,
@@ -1891,7 +1888,9 @@ CanvasGraphics=Class[{},
         {Canvas$Axes,Canvas$PlotRegion,Canvas$PlotRange,Canvas$Window}];
 
   RectPosition[min_,max_,Default|Null]:={min,max};
-  RectPosition[min_,max_,Right[sep_:0]]:=With[{w=WindowRatio[Canvas$Window]},
+  RectPosition[min_,max_,Right[sep_:0]]:=With[{
+    w=WindowRatio[Canvas$Window]
+    },
     {{w[[1,2]]+sep,w[[2,1]]},{w[[1,2]]+sep+max[[1]]-min[[1]],w[[2,2]]}}];
 
   RectPosition[min_,max_,Left[sep_:0]]:=With[{w=WindowRatio[Canvas$Window]},

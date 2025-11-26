@@ -9,7 +9,7 @@ BeginPackage[Optimize`,Global`]
 Begin[Optimize`];
 
 Simplex=Class[{},{},{CurrentSimplex,Status="Stop",prolog=Identity,
-  limit,n,lo,tol,per,minq,exp,cont,quick,exl,cl,rr={1,-1},wexp},
+  limit,n,lo,tol,per,minq,exp,cont,quick,exl,cl,rr={1,-1},wexp,nupd=1},
 
   Amoebar[p_,f_,r_,kr_]:=Module[
     {pr,fr,tp=Take[p[[,2]],rr]},
@@ -71,26 +71,30 @@ Simplex=Class[{},{},{CurrentSimplex,Status="Stop",prolog=Identity,
       ExtendLevel->1,ContractLevel->1,ReflectRange->{1,-1},
       Output->6,MinimumSize->0,ExpansionRatio->2,TryReflect->1,
       WeightExponent->0,Prolog->Identity,
+      Saturation->100,
       Tolerance->1e-6,Persistence->1,QuickShrink->0},
-      lo,p=Sort[p0],nc=Floor[(PageWidth-3)/22],we,lrr},
-    {limit,n,lo,tol,per,minq,exp,cont,quick,exl,cl,rr,we,prolog}=
+      lo,p=Sort[p0],nc=Floor[(PageWidth-3)/22],we,lrr,nsat=0,nsmax},
+    {limit,n,lo,tol,per,minq,exp,cont,quick,exl,cl,rr,we,prolog,satr}=
       {VariableRange,MaxIteration,Output,
         Tolerance,Persistence,MinimumSize,ExpansionRatio,TryReflect,QuickShrink,
-        ExtendLevel,ContractLevel,ReflectRange,WeightExponent,Prolog}/.{opt}/.def;
+        ExtendLevel,ContractLevel,ReflectRange,WeightExponent,Prolog,Saturation}/.{opt}/.def;
     Write[lo,"DownhillSimplex {limit, Option}: ",{limit,opt}];
+    nsmax=Length[p]*satr;
     lrr=Length[Take[p,rr]];
     wexp=Exp[-(we/lrr)*Range[lrr]];
     wexp/=(Plus@@wexp);
     CurrentSimplex=p;
     exl=Restrict[exl,1,Length[p]];
     cont=Restrict[cont,1,Length[p]];
+    plast=p[[1,1]];
     Check[
       Catch[
         Do[CurrentSimplex=p=Amoeba[p,f];
           If[lo > 0, StandardForm[
             $FORM='10.6';
             Write[lo,Drop[p,{nc+1,Length[p0]-nc}][[,1]]]]];
-          If[(p[[-1,1]]-p[[1,1]])/(1e-100+Abs[p[[-1,1]]]+Abs[p[[1,1]]]) < tol,
+          If[p[[1,1]] == plast,nsat++,nsat=0];
+          If[nsat >= nsmax || (p[[-1,1]]-p[[1,1]])/(1e-100+Abs[p[[-1,1]]]+Abs[p[[1,1]]]) < tol,
             Break[]],
           {n}]],];
     Status="Stop";
