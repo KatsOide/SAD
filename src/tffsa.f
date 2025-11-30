@@ -76,7 +76,7 @@ c      use tfshare, only:tfresetsharedmap,tmunmapp
       character*(MAXPNAME+8) name
       character*16 autofg
       character*20 str
-      integer*4 irtc,nc,nrpt(maxrpt),irptp(maxrpt)
+      integer*4 irtc,nc,isp0,nrpt(maxrpt),irptp(maxrpt)
       real*8 chi0(3),trdtbl(3,6),df(maxcond)
       logical*4 err,new,cmd,open98,abbrev,ftest,
      $     frefix,exist,init,expnd,chguse,visit,byeall,geocal0,busy
@@ -366,8 +366,7 @@ c        call tfresetsharedmap()
           expnd=.true.
         endif
         it=itfpeeko(kx,next)
-c        call tfdebugprint(kx,'USE ',1)
-        call tfbeamline(kx,iuse,ename,irtc)
+        call tfbeamline(kx,iuse,ename,.true.,irtc)
         if(iuse == 0)then
           if(ktfstringq(kx) .or. ktfsymbolq(kx))then
             word=tfgetstrs(kx,nc)
@@ -429,7 +428,6 @@ c        call tfdebugprint(kx,'USE ',1)
           ename=pname(iuse)
           call c_f_pointer(c_loc(flv%blname),pename)
           pename=ename
-c          call tmovb(ename,flv%blname,MAXPNAME)
           call tfsetbeamlinename(ename)
           chguse=.true.
           go to 101
@@ -1222,7 +1220,6 @@ c        enddo
 c      call tfshow(cellstab,df,mfpnt,mfpnt1,kffs,irtcffs,lfnb > 1,lfno)
       call tfshow(cellstab,df,mfpnt,mfpnt1,kffs,irtcffs,.true.,lfno)
       kxffs=kffs
-c      call tfdebugprint(kffs,'show',1)
       call tmunmapp(flv%iut)
       call tffsclearcouple
       if(cell)then
@@ -1566,7 +1563,6 @@ c      endif
       if(irtc /= 0)then
         go to 9010
       endif
-c      call tfdebugprint(kx,'setupcoup',3)
       if(.not. tflistq(kx,klx))then
         if(ktfsymbolqdef(kx%k,symd) .and. symd%value%k == kx%k)then
           return

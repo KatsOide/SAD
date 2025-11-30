@@ -1,3 +1,5 @@
+(* beamline 11/29/2025 *)
+`$DUMMARK=0;
 BeamLine[x___,BeamLine[y___],z___]^:=
   BeamLine@@Flatten[{x,y,z},Infinity,BeamLine];
 !BeamLine[x___,(n_Real?(#<>-1&))*y_,z___]:=
@@ -6,6 +8,12 @@ BeamLine[x__]:=ExpandBeamLine[x];
 -BeamLine[x__]^:=BeamLine@@(-Reverse[{x}]);
 (n_?(#>=0&))*BeamLine[x__]^:=BeamLine@@Flatten[Table[{x},{n}]];
 n_*BeamLine[x__]^:=Abs[n]*BeamLine@@(-Reverse[{x}]);
+
+BeamLine2Use[x__]:=Module[{b=BeamLine[x],n},
+  If[SetElement[b[[1]]][[2]]<=>"MARK",
+    SetElement[n="DUM$MARK"//++$DUMMARK,"MARK",{"AX"->0,"BX"->1,"AY"->0,"BY"->1}];
+    PrependTo[b,Symbol[n]],
+    b]];
 
 PrintBeamLine[x___]:=WriteBeamLine[$Output,x];
 WriteBeamLine[f_,b_List,opt___]:=
@@ -49,4 +57,4 @@ Fill$String[s_,n_]:=(s//"                     "[1,n])[1,
 
 Remove$Paren[s_]:=If[StringMatchQ[s,"(*)"],s[2,-2],s,s];
 
-Protect[BeamLine,WriteBeamLine,WriteBeamLine1,PrintBeamLine,Fill$String,Remove$Paren];
+Protect[BeamLine,BeamLine2Use,WriteBeamLine,WriteBeamLine1,PrintBeamLine,Fill$String,Remove$Paren];

@@ -13,7 +13,7 @@ eqs img{
 <body>
 <center><h2>Welcome to SAD/FFS & SADScript
 </h2></center>
-<center> SAD/FFS SADScript Version: 1.4.0.0k64,      Updated: 07/14/2025</center>
+<center> SAD/FFS SADScript Version: 1.4.5k64,      Updated: 11/30/2025</center>
 
 <pre> Please use browser's search to find an item.
 
@@ -6310,7 +6310,7 @@ is 1 m. Accessible in MAIN.</pre>
 <LI>
 <h3><a name=L%special-variables%LOSSDZ>LOSSDZ</a></h3>
 <pre>LOSSDZ is the longitudinal position z beyond which a particle is judged to have been lost. The default
-is 100 m. Accessible in MAIN. LOSSDZ is effective only when SPAC is ON.</pre>
+is 100 m. Accessible in MAIN.</pre>
 <pre>See also:
  <a href=#L%special-variables%LOSSAMPL>LOSSAMPL</a> <a href=#L%elements%APERT>APERT</a> <a href=#L%flags%SPAC>SPAC</a></pre>
 <LI>
@@ -6578,8 +6578,10 @@ switches the beam line used in FFS to the beam line given by beam-line. beam-lin
 object or the name of a beam line defined in MAIN. All information specific to the current beam line,
 such as matching conditions is lost. If the keyword EXPAND is given (default), the new beam line
 is expanded, i.e., the values of components are refreshed to the saved values.
-   If a BeamLine object is used by USE or VISIT, the new beam line becomes a
-new LINE in the MAIN level, with a name which is created automatically.</pre>
+   If a BeamLine object is used by USE or VISIT, the new beam line becomes a new LINE in the MAIN
+level, with a name which is created automatically.
+   If the beam line's first component is not a MARK, a MARK named DUM$MARKn is automatically prepended
+to the line, where n is a number incrementing each time.</pre>
 <pre>See also:
  <a href=#L%VISIT>VISIT</a> <a href=#L%BYE>BYE</a> <a href=#L%EXPAND>EXPAND</a> <a href=#L%beam-line%beam-line-functions%BeamLine>BeamLine</a> <a href=#L%beam-line%beam-line-functions%BeamLineName>BeamLineName</a></pre>
 <h3><a name=L%VARIABLES(VAR)>VARIABLES(VAR)</a></h3>
@@ -6613,7 +6615,9 @@ such as matching conditions are reserved, and the previous beam line is restored
 is issued. If the keyword EXPAND is given (default), the new beam line is expanded, i.e., the values
 of components are refreshed to the saved values.
    If a BeamLine object is used by USE or VISIT, the new beam line becomes a new LINE in the MAIN
-level, with a name which is created automatically.</pre>
+level, with a name which is created automatically.
+   If the beam line's first component is not a MARK, a MARK named DUM$MARKn is automatically prepended
+to the line, where n is a number incrementing each time.</pre>
 <pre>See also:
  <a href=#L%USE>USE</a> <a href=#L%BYE>BYE</a> <a href=#L%EXPAND>EXPAND</a> <a href=#L%beam-line%beam-line-functions%BeamLine>BeamLine</a> <a href=#L%beam-line%beam-line-functions%BeamLineName>BeamLineName</a></pre>
 <h3><a name=L%wildcards>wildcards</a></h3>

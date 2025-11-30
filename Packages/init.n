@@ -673,7 +673,7 @@ AutoLoad[Amoebar,Amoeba,DownhillSimplex,Simplex,CalculateMatching,
 AutoLoad[Monitor,Steer,
   ReadMonitorData,ReadSteerData,WriteMonitorData,WriteSteerData,
   PackagesDirectory//"correction.n"];
-AutoLoad[BeamLine,PrintBeamLine,WriteBeamLine,
+AutoLoad[BeamLine,PrintBeamLine,WriteBeamLine,BeamLine2Use,
   PackagesDirectory//"beamline.n"];
 AutoLoad[SetCoupledElements,CouplingMatrix,`CoupledKeys,
   PackagesDirectory//"Couple.n"];

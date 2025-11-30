@@ -485,15 +485,16 @@ which corresponds to the output of the VARIABLES(VAR) command.",
    {"USE",
     "Usage: USE [[NO]EXPAND] beam-line\n\n\
 switches the beam line used in FFS to the beam line given by beam-line. beam-line can be an BeamLine object or the name of a beam line defined in MAIN. All information specific to the current beam line, such as matching conditions is lost. If the keyword EXPAND is given (default), the new beam line is expanded, i.e., the values of components are refreshed to the saved values.\n\
-   If a BeamLine object is used by USE or VISIT, the new beam line becomes a\n\
-new LINE in the MAIN level, with a name which is created automatically.",
+   If a BeamLine object is used by USE or VISIT, the new beam line becomes a new LINE in the MAIN level, with a name which is created automatically.\n\
+   If the beam line's first component is not a MARK, a MARK named DUM$MARKn is automatically prepended to the line, where n is a number incrementing each time.",
     "VISIT BYE EXPAND BeamLine BeamLineName",
     {}},
 
    {"VISIT",
     "Usage: VISIT [[NO]EXPAND] beam-line\n\n\
 switches the beam line used in FFS to the beam line given by beam-line. beam-line can be an BeamLine object or the name of a beam line defined in MAIN. All information specific to the current beam line, such as matching conditions are reserved, and the previous beam line is restored when BYE command is issued. If the keyword EXPAND is given (default), the new beam line is expanded, i.e., the values of components are refreshed to the saved values.\n\
-   If a BeamLine object is used by USE or VISIT, the new beam line becomes a new LINE in the MAIN level, with a name which is created automatically.",
+   If a BeamLine object is used by USE or VISIT, the new beam line becomes a new LINE in the MAIN level, with a name which is created automatically.\n\
+   If the beam line's first component is not a MARK, a MARK named DUM$MARKn is automatically prepended to the line, where n is a number incrementing each time.",
     "USE BYE EXPAND BeamLine BeamLineName",
     {}},
 

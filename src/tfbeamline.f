@@ -7,28 +7,54 @@
       character*(MAXPNAME) :: lname=' '
 
       contains
-      subroutine tfbeamline(k,idx,ename,irtc)
+      subroutine tfbeamline(k0,idx,ename,use,irtc)
       use mackw
-      use maccbk, only:MAXPNAME
       use geto
+      use sad_main ,only:sad_el,idcomp,loc_el
+      use efun,only:tfefunref
       implicit none
-      type (sad_descriptor) ,intent(in):: k
-      type (sad_descriptor) ki,k1
+      type (sad_descriptor) ,intent(in):: k0
+      type (sad_descriptor) ki,k1,k
       type (sad_dlist), pointer :: kl,kli
-      integer*8 kdx1
+      type (sad_symbol) ,pointer::sym
+      type (sad_el) ,pointer::el
       integer*4 ,intent(out):: idx,irtc
-      integer*4 hsrchz,n,lenw,idxi,
+      logical*4 ,intent(in):: use
+      integer*8 kdx1
+      integer*4 hsrchz,n,lenw,idxi,isp0,l,
      $     i,idir,idti,nc,itfmessage,itfmessagestr
-      character*(MAXPNAME) tfgetstrs
+      character*(MAXPNAME) tfgetstrs,word
       character*(MAXPNAME) ,intent(out):: ename
+      logical*4 ev
       type (sad_descriptor) , save:: kxbl=sad_descriptor(1,i00)
+      integer*8 , save:: kfbl2u=0,kfexbl=0
       integer*4 ,save :: lid=0
       if(kxbl%k == 0)then
         kxbl=kxsymbolz('BeamLine',8)
+        kfbl2u=ktfsymbol+ktfsymbolz('BeamLine2Use',12)
+        kfexbl=ktfsymbol+ktfsymbolz('ExtractBeamLine',15)
       endif
-      idx=0
+      k=k0
+      l=itfuplevel()
+ 1000 idx=0
       ename=' '
       if(ktfnonlistq(k,kl))then
+        if(ktfstringq(k) .or. ktfsymbolq(k))then
+          word=tfgetstrs(k%k,nc)
+          idx=hsrchz(word(1:nc))
+          if(ilist(2,idval(idx)) <= 0)then
+            call expnln(idx)
+          endif
+          call loc_el(idval(ilist(2,idval(idx))),el)
+          if(idtype(idcomp(el,1)) /= icMARK)then
+            isp0=isp
+            isp=isp+1
+            dtastk(isp)=k
+            k=tfextractbeamline(isp0,irtc)
+            isp=isp0
+            go to 1000
+          endif
+        endif
         go to 9900
       endif
       if(.not. tfsameq(kl%head,kxbl))then
@@ -54,12 +80,10 @@
                 go to 1
               endif
             endif
-            irtc=itfmessage(9,'General::wrongval',
-     $           '"element or -element is ",""')
+            irtc=itfmessage(9,'General::wrongval','"element or -element is ",""')
             go to 9000
           else
-            irtc=itfmessage(9,'General::wrongval',
-     $           '"element or -element is ",""')
+            irtc=itfmessage(9,'General::wrongval','"element or -element is ",""')
             go to 9000
           endif
         else
@@ -71,8 +95,19 @@
               irtc=itfmessagestr(9,'MAIN::wrongtype',ename(1:nc))
               go to 9000
             elseif(i == 1 .and. idti /= icMARK)then
-              irtc=itfmessage(9,'FFS::firstmark',' ')
-              go to 9000
+              if(use)then
+                isp0=isp
+                ktastk(isp0+1)=kfbl2u
+                dtastk(isp0+2)=k
+                isp=isp0+2
+                k=tfefunref(isp0+1,.false.,irtc)
+                isp=isp0
+                call tfree(kdx1)
+                go to 1000
+              else
+                irtc=itfmessage(9,'FFS::firstmark',' ')
+                go to 9000
+              endif
             endif
             ilist(1,kdx1+i)=idir
             ilist(2,kdx1+i)=idxi
@@ -95,11 +130,14 @@
       idval(idx)=kdx1
       pname(idx)=ename
       irtc=0
+      l=itfdownlevel()
       return
  9000 ilist(1,kdx1)=n+1
       call tfree(kdx1)
+      l=itfdownlevel()
       return
  9900 irtc=itfmessage(9,'General::wrongtype','"BeamLine[ ... ]"')
+      l=itfdownlevel()
       return
       end
 
@@ -450,7 +488,6 @@ c     $     ktfoperq(ktastk(isp1+1))),ktfstringq(ktastk(isp1+1)))
                 if(ktfrealq(kl%dbody(j)))then
                   if(kl%rbody(j) /= -1.d0)then
                     n=int(kl%rbody(j))
-c                    write(*,*)'expandbeamline ',j,kl%rbody(j),n
                     if(n > 0)then
                       dtastk(isp+1:isp+n)=kl%dbody(3-j)
                       isp=isp+n
