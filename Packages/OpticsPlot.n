@@ -1,7 +1,7 @@
 (* OpticsPlot 7/24/2023 *)
 
 PkgConfig$DefaultList["OpticsPlot"->{
-  "PlotDivision"->128,
+  "PlotDivision"->256,
   }];
 
 System`ListPlot;
