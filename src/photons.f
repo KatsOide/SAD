@@ -141,6 +141,9 @@
         fr=fr0+ds/al
       endif
       gv=tfgeofrac(l,fr,irtc)
+c      if(fr > 0.18d0 .and. fr < 0.2d0)then
+c        write(*,'(a,1p10g12.4)')'phrec-geofrac ',fr,fr0,al,ds,gv(:,4)
+c      endif
       if(irtc /= 0)then
         return
       endif
@@ -151,9 +154,13 @@
       pxir=pxi+( thv*ppx1+thu*ppy1)
       pyir=pyi+(-thv*ppy1+thu*ppx1)
       cod=tphchge([xi,pxir,yi,pyir,0.d0,0.d0])
+c      if(fr > 0.18d0 .and. fr < 0.2d0)then
+c        write(*,'(a,1p10g12.4)')'tphchg ',cod,xi,pxir,yi,pyir
+c      endif
       gv1=tforbitgeo(gv,cod)
-c      write(*,'(a,1p10g12.4)')'phrec ',fr,gv1(:,4),gv(:,4)
-c      write(*,'(1p10g12.4)')cod,xi,pxi,yi,pyi
+c      if(fr > 0.18d0 .and. fr < 0.2d0)then
+c        write(*,'(a,1p10g12.4)')'phrec-0 ',gv1(:,4),gv(:,4),fr,ds
+c      endif
       pzi=1.d0+pxy2dpz(cod(2),cod(4))
       dpa=dp*matmul(gv1(:,1:3),[cod(2),cod(4),pzi])
       c1=( cost*ppx1+sint*ppy1)/pp
@@ -445,8 +452,7 @@ c      write(*,*)'with ',itp,ilp
         rm%ias(im)=ia
         rm%nind=ia
         if(rm%nind > rm%maxi)then
-          write(*,*)'Insufficient matrix table ',rm%id,rm%nind,
-     $         rm%iord,ind
+          write(*,*)'Insufficient matrix table ',rm%id,rm%nind,rm%iord,ind
           stop
         endif
         rm%ind(:,ia)=ind
@@ -897,7 +903,6 @@ c        s=abs(dcmplx(sps(1,2),abs(dcmplx(sps(2,2),sps(3,2)))))
         damp=abs(params(ipdampx:ipdampz))
         amu=params(ipnx:ipnz)*m_2pi
         ssprd=sqrt(dot_product(drot(1,:)**2,[emit1(1),emit1(1),emit1(2),emit1(2),emit1(3),emit1(3)]))
-c        write(*,'(a,1p10g12.4)')'spdepol2 ',damp,amu,smu
         rmd=.5d0*(
      $        (c3**2+c4**2+c5**2+c6**2)*(dex1+dex2)/abs(cexp1(dcmplx(-damp(1),smu+amu(1))))**2
      $       +(d3**2+d4**2+d5**2+d6**2)*(dey1+dey2)/abs(cexp1(dcmplx(-damp(2),smu+amu(2))))**2
@@ -1010,7 +1015,7 @@ c        write(*,'(a,1p10g12.4)')'pols ',matmul(rm1,epol)
         real*8 , intent(in)::px00,py0,zr00,bsi,al
         real*8 dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
      $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,sx,sy,sz,
-     $       ppa,an,dph,r1,r2,px0,xr,yr,rho,de
+     $       ppa,an,dph,r1,r2,px0,xr,yr,rho,de,r
         real*8 dpr(npmax),rph(npmax)
         dpz0=pxy2dpz(px00,py0)
         px0= cphi0*px00+sphi0*(1.d0+dpz0)
@@ -1041,8 +1046,11 @@ c        ppa=hypot(ppx,hypot(ppy,ppz))
           if(photons)then
             do i=1,int(an)
               dg=dpr(i)*uc
-              xr=x-rph(i)*(px-.5d0*dpx*rph(i))*al
-              yr=y-rph(i)*(py-.5d0*dpy*rph(i))*al
+c              xr=x-rph(i)*(px-.5d0*dpx1*rph(i))*al
+c              yr=y-rph(i)*(py-.5d0*dpy *rph(i))*al
+              r=1.d0-rph(i)
+              xr=x-.5d0*al1*r*(px+px0+rph(i)*(px-px0))
+              yr=y-.5d0*al1*r*(py+py0+rph(i)*(py-py0))
               call tphrec(xr,px,yr,py,dg,
      $             ppx,ppy,p,h1,rho,al-rph(i)*al,k)
 c              call tphotonconv(xr,px,yr,py,dg,
@@ -1092,7 +1100,7 @@ c     $             dpr(i),p,h1,-rph(i)*al,k)
         integer*4 i,k
         real*8 dpx,dpy,dpz,dpz0,ppx,ppy,ppz,theta,pr,p,anp,dg,
      $       pxm,pym,al1,uc,ddpx,ddpy,h1,p2,h2,de,
-     $       ppa,an,dph,r1,r2,px0,xr,yr,rho
+     $       ppa,an,dph,r1,r2,px0,xr,yr,rho,r
         real*8 dpr(npmax),rph(npmax)
         do k=1,np
           dpz0=pxy2dpz(pxr0(k),pyr0(k))
@@ -1123,12 +1131,13 @@ c     $             dpr(i),p,h1,-rph(i)*al,k)
             if(photons)then
               do i=1,int(an)
                 dg=dpr(i)*uc
-                xr=xn(k)-rph(i)*(pxn(k)-.5d0*dpx*rph(i))*al
-                yr=yn(k)-rph(i)*(pyn(k)-.5d0*dpy*rph(i))*al
-                call tphrec(xr,pxn(k),yr,pyn(k),dg,
-     $               ppx,ppy,p,h1,rho,al-rph(i)*al,k)
-c                call tphotonconv(xr,pxn(k),yr,pyn(k),dg,
-c     $               dpr(i),p,h1,-rph(i)*al,k)
+                r=1.d0-rph(i)
+                xr=xn(k)-.5d0*al1*r*(pxn(k)+pxr0(k)+rph(i)*(pxn(k)-pxr0(k)))
+                yr=yn(k)-.5d0*al1*r*(pyn(k)+pyr0(k)+rph(i)*(pyn(k)-pyr0(k)))
+c                if(r < 0.05d0 .or. r >0.95d0)then
+c                  write(*,'(a,1p10g12.4)')'tradkfn ',al1,r,xn(k),xr,pxn(k),pxr0(k)
+c                endif
+                call tphrec(xr,pxn(k),yr,pyn(k),dg,ppx,ppy,p,h1,rho,rph(i)*al1,k)
               enddo
             endif
             de=dph*uc

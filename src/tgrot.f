@@ -173,8 +173,9 @@
       chi1i =-asinz(cod(2)/cchi2i)
       cchi1i=cos(chi1i)
       schi1i=sin(chi1i)
-c      write(*,'(a,1p10g12.4)')'tfogeo ',geo(:,4),geo(:,1),cod
       og(:,4)=geo(:,4)+geo(:,1)*cod(1)+geo(:,2)*cod(3)
+c      write(*,'(a,1p10g12.4)')'tfogeo ',og(:,4),geo(:,4),cod
+c      write(*,'(a,1p10g12.4)')': ',geo(:,1),geo(:,2)
       og(:,1)= cchi1i*geo(:,1)+schi1i*geo(:,3)
       g1     =-schi1i*geo(:,1)+cchi1i*geo(:,3)
       og(:,3)= cchi2i*g1-schi2i*geo(:,2)
