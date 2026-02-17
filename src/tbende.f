@@ -370,10 +370,10 @@ c      endif
      $     theta,dtheta,fb1,fb2,eps0,dchi2,alg,phig
       real*8 phibl,bsi1,bsi2,alx,alr,
      $     dxfr1,dyfr1,dxfr2,dyfr2,phi1,
-     $     eps,akn,tanp1,tanp2,f,
+     $     eps,akn,tanp1,tanp2,
      $     dyfra1,dyfra2,psi1,psi2,cod11,
      $     cn,sn,xsn,dcn,phin,aln,alx0,akx0,epsr1,
-     $     rbc,akc,alc,phic,f1r,f2r
+     $     rbc,akc,alc,phic,f1r,f2r,pe1,pe2,fs
       real*8 ,intent(inout):: trans(6,12),cod(6),beam(42),srot(3,9)
       complex*16 akm(0:nmult)
       logical*4 ,intent(in):: enarad,alcorr,fringe,next
@@ -445,7 +445,12 @@ c      write(*,'(a,1p10g12.4)')'tbende-2 ',cod(1:5)
       if(fb2 /= 0.d0 .and. mfring > 0 .or. mfring == -2)then
         f2r=0.5d0*fb2
       endif
-      rbc=1.d0-(f1r+f2r)/al0
+      pe1=psi1*phi0+apsi1
+      pe2=psi2*phi0+apsi2
+      tanp1=tan(pe1)
+      tanp2=tan(pe2)
+      fs=f1r+f2r
+      rbc=1.d0-fs/al0
       phic=phi0*rbc
       eps=merge(epsbend,epsbend*eps0,eps0 == 0.d0)
       drhob=rhob-rho0
@@ -458,17 +463,13 @@ c      write(*,'(a,1p10g12.4)')'tbende-2 ',cod(1:5)
         nrad=1+int(abs(al0*rbc/epsr1*crad*(h0*b)**2))
         ndiv=max(ndiv,int(nrad*emidiv*emidib),
      $       1+int(abs(phib*h0*anrad)/epsr1/1.d6*emidiv*emidib))
-c        write(*,*)'tbende ',ndiv,nrad,phib,b,epsrad,crad
       endif
       if(calpol)then
         ndiv=max(ndiv,1+int(max(abs(phic),1.d-6)*h0*gspin/dphipol))
       endif
       call setndivelm(l,ndiv)
       call tinitr(trans1)
-      tanp1=tan(psi1*phi0+apsi1)
-      tanp2=tan(psi2*phi0+apsi2)
-      f=1.d0/rho0
-      call tbedge(trans,cod,beam,al,phib,psi1*phi0+apsi1,.true.)
+      call tbedge(trans,cod,beam,al,phib,pe1,.true.)
       cod11=cod(1)
       akc=ak*rbc
       alc=al*rbc
@@ -479,28 +480,28 @@ c        write(*,*)'tbende ',ndiv,nrad,phib,b,epsrad,crad
         call xsincos(phin,sn,xsn,cn,dcn)
         bsi1=1.d0
         bsi2=0.d0
-        n1=1
-        n2=ndiv
+        n1=0
         if(f1r /= 0.d0)then
           n1=0
+        else
+          n1=1
         endif
         if(f2r /= 0.d0)then
           n2=ndiv+1
+        else
+          n2=ndiv
         endif
         do n=n1,n2
           if(n == 0)then
             call tbendef1(trans,cod,beam,srot,al0,phi0,fb1,rbl,enarad)
           elseif(n == ndiv+1)then
-            call tbendef1(trans,cod,beam,srot,al0,phi0,fb2,rbh,enarad)
+            call tbendef1(trans,cod,beam,srot,al0,phi0,fb2,rbh,.false.)
             alr=f2r
             phi1=alr*rbl/al0*phi0
           else
-            if(n == n2)then
-              bsi2=1.d0
-            endif
             call tbendebody0(trans,cod,beam,srot,aln,
      $           phin,sn,xsn,cn,dcn,aln,bsi1,bsi2,
-     $           enarad .and. n /= n2)
+     $           enarad .and. (n < ndiv .or. n2 /= ndiv) )
             alr=aln
             phi1=phin
           endif

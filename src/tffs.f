@@ -1616,7 +1616,7 @@ c        write(*,*)'setndivelm ',ia,ltyp,ndiv
      $     dfam(4,-ndimmax:ndimmax),
      $     uini(ntwissfun,-ndimmax:ndimmax),wfit(maxcond),
      $     wiq(maxcond)
-      logical*4 fitflg,geomet,inicond,chgini
+      logical*4 fitflg,geomet,inicond
       integer*4 nut,nfam,nfam1,nfr,nqcol,nqcol1,nfcol,nfc0
       real*8 wexponent,offmw,etamax,avebeta,wsum
       character*8 , save :: nlist(1:mfit1)=(/
@@ -1908,7 +1908,8 @@ c     begin initialize for preventing compiler warning
       return
  1    if(i > 0)then
         ia=elatt%comp(i)+l
-        tfkeyv=dlist(ia)
+c        tfkeyv=dlist(ia)
+        tfkeyv=cmp%dvalue(l)
         if(.not. ref)then
           call tftouch(iele1(i),l)
         endif
@@ -1920,8 +1921,7 @@ c     begin initialize for preventing compiler warning
         if(l == nelvx(-i)%ival)then
           if(tfreallistq(dlist(ia),klr))then
             tfkeyv=kxavaloc(-1,klr%nl,kld)
-            kld%rbody(1:klr%nl)=klr%rbody(1:klr%nl)
-     $           /rlist(iferrk+(kl-1)*2)
+            kld%rbody(1:klr%nl)=klr%rbody(1:klr%nl)/rlist(iferrk+(kl-1)*2)
           else
             tfkeyv=dlist(ia)
           endif
@@ -2160,13 +2160,13 @@ c     begin initialize for preventing compiler warning
             call tflocald(cmpd%dvalue(k))
           endif
           cmpd%value(k)=cmps%value(k)*coeff
+c          write(*,*)'vcopycmp ',k,cmps%value(k),coeff,cmpd%value(k)
         elseif(tflistq(cmps%dvalue(k)))then
           if(ktfnonrealq(cmpd%dvalue(k)))then
             call tflocald(cmpd%dvalue(k))
           endif
           cmpd%dvalue(k)=dtfcopy1(cmps%dvalue(k))
-          if(idtype(cmpd%id) == icMULT .and.
-     $         k == ky_PROF_MULT)then
+          if(idtype(cmpd%id) == icMULT .and. k == ky_PROF_MULT)then
             cmpd%updateseg=.false.
           endif
         endif
@@ -2187,8 +2187,7 @@ c     begin initialize for preventing compiler warning
         call compelc(id,cmpd)
         call compelc(is,cmps)
         call tfvcopycmp(cmps,cmpd,k,coeff)
-        if(idtype(cmpd%id) == icMULT .and.
-     $       k == ky_PROF_MULT)then
+        if(idtype(cmpd%id) == icMULT .and. k == ky_PROF_MULT)then
           cmpd%updateseg=.false.
         endif
         cmpd%update=cmpd%nparam <= 0
@@ -2239,8 +2238,11 @@ c     begin initialize for preventing compiler warning
           cmpd%value(i)=v
         elseif(tfreallistq(cmpd%dvalue(i),lad))then
           r0=sum(lad%rbody(1:lad%nl))
-          lad%rbody(1:lad%nl)=merge(v/r0*lad%rbody(1:lad%nl),
-     $         v/lad%nl,r0 /= 0.d0)
+          if(r0 /= 0.d0)then
+            lad%rbody(1:lad%nl)=v/r0*lad%rbody(1:lad%nl)
+          else
+            lad%rbody(1:lad%nl)=v/lad%nl
+          endif
         endif
         return
         end subroutine
@@ -2911,6 +2913,7 @@ c         enddo
       integer*8 j
       real*8 rgetgl1
       j=idvalc(1)
+c      j=elatt%comp(1)
       emx=rlist(j+ky_EMIX_MARK)
       if(emx <= 0.d0)then
         emx=rgetgl1('EMITX')

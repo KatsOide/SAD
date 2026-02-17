@@ -558,8 +558,7 @@ c      use tmacro, only:l_track
         call c_f_pointer(c_loc(rlist(iu+5*m)),uxxrr,[nx+1,ny+1,nr+1])
         call c_f_pointer(c_loc(rlist(iu+6*m)),uyyrr,[nx+1,ny+1,nr+1])
         call c_f_pointer(c_loc(rlist(iu+7*m)),uxxyyrr,[nx+1,ny+1,nr+1])
-        call twspfuinit(
-     $     u,uxx,uyy,uxxyy,urr,uxxrr,uyyrr,uxxyyrr)
+        call twspfuinit(u,uxx,uyy,uxxyy,urr,uxxrr,uyyrr,uxxyyrr)
       endif
       if(sigx .lt. sigy)then
         call twspfu0(y,x,sigy,sigx,fy,fx,fu,fxx,fyy,fxy,

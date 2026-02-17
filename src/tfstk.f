@@ -831,7 +831,8 @@ c     endif
      $     dxzero=sad_descriptor(1,int8(0)),
      $     dxnullo=sad_descriptor(1,ktfoper+mtfnull)
       integer*4 , parameter :: mbody = 2**8
-      integer*4 , parameter :: mbody1 = 2**8
+      integer*4 , parameter :: mbody1 = 4
+      integer*4 , parameter :: mbodys = 8
       real*8 ,parameter :: rtfnan=transfer(ktfnan,1.d0)
 
       type sad_object
@@ -841,7 +842,7 @@ c     endif
       integer*4 ref,nl
       integer*8 body(1:0)
       real*8 rbody(1:0)
-      type (sad_descriptor) dbody(0:mbody1)
+      type (sad_descriptor) dbody(1:0)
       end type
 
       type sad_list
@@ -941,7 +942,7 @@ c     endif
       integer*1 istr(1:0)
       integer*8 kstr(1:0)
 c size limitation due to gfortran 7 on macOS ???
-      character*(mbody1) str
+      character*(mbodys) str
       end type
 
       type sad_namtbl
@@ -1084,6 +1085,10 @@ c      equivalence (ktastk(  RBASE),ilist(1,RBASE))
       logical*4 :: tfstkinit = .false.
 
       type (sad_symdef), pointer :: redmath
+
+      interface tfcopyarray
+        module procedure tfcopyarrayd,tfcopyarrayr,tfcopyarrayk
+      end interface
 
       interface loc_sad
         module procedure loc_sym,loc_string,
@@ -3925,7 +3930,8 @@ c     write(*,*)'with ',ilist(1,ka-1),ktfaddr(klist(ka-2))
         ilist(1,l)=leng
         klist(l+nw-1)=0
         n=(min(leng,ilist(1,ka))+7)/8
-        klist(l+1:l+n)=klist(ka+1:ka+n)
+        call tfcopyarray(klist(ka+1:ka+n),klist(l+1:l+n))
+c        klist(l+1:l+n)=klist(ka+1:ka+n)
         kxscopy%k=ktfstring+l
  10     if(present(str))then
           call descr_sad(kxscopy,str)
@@ -4080,7 +4086,7 @@ c              write(*,*)'kxnaloc-1 ',kp,lg0,ipg
         type (sad_descriptor) , intent(in)::kh
         type (sad_dlist), pointer ::kl
         integer*4 , intent(in)::m
-        integer*8 , intent(in)::ks(m)
+        integer*8 , intent(in)::ks(:)
         kxcrelistm=kxaaloc(-1,m,kl)
         call tfcrelista(ks,kh,kl)
         return
@@ -4625,7 +4631,8 @@ c        type (sad_symbol), pointer, intent(out) :: symx
           listc%attr=list%attr
           if(ktfreallistq(list))then
             listc%head=dtfcopy(list%head)
-            listc%dbody(1:list%nl)=list%dbody(1:list%nl)
+            call tfcopyarray(list%dbody(1:list%nl),listc%dbody(1:list%nl))
+c            listc%dbody(1:list%nl)=list%dbody(1:list%nl)
           else
             do i=0,list%nl
               listc%dbody(i)=dtfcopy(list%dbody(i))
@@ -4645,7 +4652,8 @@ c        type (sad_symbol), pointer, intent(out) :: symx
         listc%attr=list%attr
         if(ktfreallistq(list))then
           listc%head=dtfcopy(list%head)
-          listc%dbody(1:list%nl)=list%dbody(1:list%nl)
+          call tfcopyarray(list%dbody(1:list%nl),listc%dbody(1:list%nl))
+c          listc%dbody(1:list%nl)=list%dbody(1:list%nl)
         else
           do i=0,list%nl
             listc%dbody(i)=dtfcopy(list%dbody(i))
@@ -4662,13 +4670,15 @@ c        type (sad_symbol), pointer, intent(out) :: symx
         logical*4 noseq
         m=list%nl
         if(iand(list%attr,lnoseqlist) /= 0)then
-          ktastk(isp+1:isp+m)=list%body(1:m)
+          call tfcopyarray(list%body(1:m),ktastk(isp+1:isp+m))
+c          ktastk(isp+1:isp+m)=list%body(1:m)
           isp=isp+m
           return
         endif
         noseq=.true.
         if(ktfreallistq(list))then
-          dtastk(isp+1:isp+m)=list%dbody(1:m)
+          call tfcopyarray(list%dbody(1:m),dtastk(isp+1:isp+m))
+c          dtastk(isp+1:isp+m)=list%dbody(1:m)
           isp=isp+m
         else
           do i=1,m
@@ -4696,14 +4706,15 @@ c        type (sad_symbol), pointer, intent(out) :: symx
         logical*4 noseq
         m=list%nl
         if(iand(list%attr,lnoseqlist) /= 0)then
-          ktastk(isp+1:isp+m)=list%body(1:m)
-c     call tmov(klist(ka+1),ktastk(isp+1),m)
+          call tfcopyarray(list%body(1:m),ktastk(isp+1:isp+m))
+c          ktastk(isp+1:isp+m)=list%body(1:m)
           isp=isp+m
           return
         endif
         noseq=.true.
         if(ktfreallistq(list))then
-          dtastk(isp+1:isp+m)=list%dbody(1:m)
+          call tfcopyarray(list%dbody(1:m),dtastk(isp+1:isp+m))
+c          dtastk(isp+1:isp+m)=list%dbody(1:m)
           isp=isp+m
         else
           do i=1,m
@@ -4861,14 +4872,16 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         real*8 , intent(in)::a(nd,m)
         if(n == 0)then
           kx=kxavaloc(-1,m,klr)
-          klr%rbody(1:m)=a(1:m,1)
+          call tfcopyarray(a(1:m,1),klr%rbody(1:m))
+c          klr%rbody(1:m)=a(1:m,1)
           klr%attr=ior(klr%attr,lconstlist)
         else
           if(trans)then
             kx=kxadaloc(-1,m,klx)
             do i=1,m
               ki=kxavaloc(0,n,klri)
-              klri%rbody(1:n)=a(1:n,i)
+              call tfcopyarray(a(1:n,i),klri%rbody(1:n))
+c              klri%rbody(1:n)=a(1:n,i)
               klri%attr=ior(lconstlist,klri%attr)
               klx%dbody(i)=ki
             enddo
@@ -4897,7 +4910,8 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         kxcopylist=kxaaloc(-1,m,klx)
         if(ktfreallistq(kl))then
           klx%head=dtfcopy(kl%head)
-          klx%body(1:m)=kl%body(1:m)
+          call tfcopyarray(kl%body(1:m),klx%body(1:m))
+c          klx%body(1:m)=kl%body(1:m)
         else
           do i=0,m
             klx%dbody(i)=dtfcopy(kl%dbody(i))
@@ -4906,6 +4920,54 @@ c     call tmov(klist(ka+1),ktastk(isp+1),m)
         klx%attr=kl%attr
         return
         end function
+
+        subroutine tfcopyarrayd(a,b,n)
+        implicit none
+        integer*4 ,intent(in) ,optional:: n
+        type (sad_descriptor),intent(in):: a(:)
+        type (sad_descriptor),intent(out):: b(:)
+c        integer*4 i
+c        integer*4 ,parameter :: nmax=2**19
+c        integer*8 ka,kb
+        if(present(n))then
+          b(1:n)=a(1:n)
+        else
+          b(1:size(a))=a(1:size(a))
+        endif
+c        ka=sad_loc(a(1))
+c        kb=sad_loc(b(1))
+c        dlist(kb:kb+n-1)=dlist(ka:ka+n-1)
+c        do i=0,int(n/nmax)
+c          b(i*nmax+1:min(n,(i+1)*nmax))=a(i*nmax+1:min(n,(i+1)*nmax))
+c        enddo
+        return
+        end subroutine
+
+        subroutine tfcopyarrayr(a,b,n)
+        implicit none
+        integer*4 ,intent(in),optional:: n
+        real*8 ,intent(in):: a(:)
+        real*8 ,intent(out):: b(:)
+        if(present(n))then
+          b(1:n)=a(1:n)
+        else
+          b(1:size(a))=a(1:size(a))
+        endif
+        return
+        end subroutine
+
+        subroutine tfcopyarrayk(ka,kb,n)
+        implicit none
+        integer*4 ,intent(in),optional:: n
+        integer*8 ,intent(in):: ka(:)
+        integer*8 ,intent(out):: kb(:)
+        if(present(n))then
+          kb(1:n)=ka(1:n)
+        else
+          kb(1:size(ka))=ka(1:size(ka))
+        endif
+        return
+        end subroutine
 
         type (sad_descriptor) function kxargsym(n0)
         implicit none

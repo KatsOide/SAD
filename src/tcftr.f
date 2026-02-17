@@ -1,10 +1,13 @@
+      module ftr
+
+      contains
       subroutine tcftr(ca,n,conj)
       implicit none
       integer*4 idim
       parameter (idim=30)
       integer*4 ,intent(in):: n
       integer*4 i,ln,j,l,ka,kb,k
-      complex*16 ,intent(inout):: ca(n)
+      complex*16 ,intent(inout):: ca(:)
       complex*16 ch,cw,cw1
       logical*4 ,intent(in):: conj
       integer*4 ,parameter ::m(1:idim)=[
@@ -156,3 +159,5 @@ c
       call tcftr(ca,m/2,conj)
       return
       end
+
+      end module ftr

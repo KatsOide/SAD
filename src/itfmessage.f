@@ -143,6 +143,7 @@ c      write(*,*)'itfmessage ',level,mess0,' ',arg0
         dtastk(isp)=ks
         call tfstringliststk(arg(:la))
         klhms%dbody(1)=dtfcopy1(kxcomposev(isp0+1))
+c        call tfdebugprint(klhms%dbody(1),'itfmessage',3)
         isp=isp0
         rlist(ierrorgen)=rlist(ierrorgen)+1.d0
         ierrorprint=sad_loc(klx%head%k)
@@ -235,10 +236,18 @@ c     Search '"' from string(is+1:l) with backslash escape
       character*(*) ,intent(in):: str
       integer*4 ,intent(in):: level
       character*(*) ,intent(in):: mess
-      integer*4 irtc,isp0,itfmessage
+      character*(lbuf) str1
+      integer*4 irtc,isp0,itfmessage,ls
       isp0=isp
       call getstringbuf(strb,lbuf*2,.true.)
-      call tfquotestring(strb,str,min(lbuf-1,len(str)),0,irtc)
+      ls=len_trim(str)
+      if(ls < lbuf)then
+        call tfquotestring(strb,str,ls,0,irtc)
+      else
+        str1=str(1:lbuf/2-2)//" ... "//str(ls-lbuf/2+2:ls)
+        call tfquotestring(strb,str1,len_trim(str1),0,irtc)
+      endif
+c      write(*,'(a,3i6,a,a)')'itfmessagestr ',ls,lbuf,len_trim(str1),strb%nch,strb%str(1:strb%nch)
       itfmessagestr=itfmessage(level,mess,strb%str(1:strb%nch))
       isp=isp0
       return

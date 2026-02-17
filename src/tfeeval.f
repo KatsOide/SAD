@@ -107,7 +107,8 @@
         return
       endif
       if(av)then
-        dtastk(isp+1:isp+m)=list%dbody(1:m)
+        call tfcopyarray(list%dbody(1:m),dtastk(isp+1:isp+m))
+c        dtastk(isp+1:isp+m)=list%dbody(1:m)
         isp=isp+m
       else
         select case (iaat)
@@ -338,7 +339,8 @@
       m=list%nl
       if(ktfreallistq(list))then
         isp0=isp
-        dtastk(isp0+1:isp0+m)=list%dbody(1:m)
+        call tfcopyarray(list%dbody(1:m),dtastk(isp0+1:isp0+m))
+c        dtastk(isp0+1:isp0+m)=list%dbody(1:m)
         isp=isp0+m
       elseif(m > 0)then
         ki=list%dbody(1)

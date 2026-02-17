@@ -1038,7 +1038,8 @@ c          write(*,*)'==> ',ix
                 isp=isp0
                 exit
               endif
-              ktastk(isp+1:isp+isps-isp1)=ktastk(isp1:isps-1)
+              call tfcopyarray(ktastk(isp1:isps-1),ktastk(isp+1:isp+isps-isp1))
+c              ktastk(isp+1:isp+isps-isp1)=ktastk(isp1:isps-1)
               isp=isp+isps-isp1
               ierrorth0=ierrorth
               ierrorth=10

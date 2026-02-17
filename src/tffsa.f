@@ -1,19 +1,21 @@
       module track_tt
         integer*8 itt1,itt2,itt3,itt4,itt5,itt6
-      end module
+      end module track_tt
 
       module ffsa
       use tfstk
       use tfcsi
+      use wbuf
       integer*8 ::idum=-1
+      type (sad_descriptor) kxffs
 
       contains
       subroutine tffs
       implicit none
-      type (sad_descriptor) kx
+      type (sad_descriptor) kffs
       integer*4 irtc
       logical*4 err
-      call tffsa(1,lfni,kx,irtc)
+      call tffsa(1,lfni,kffs,irtc)
       if(irtc /= 0 .and. ierrorprint /= 0)then
         call tfreseterror
       endif
@@ -35,6 +37,7 @@
       use tparastat
       use temw, only:nparams
       use geto
+      use fshow
       use tfrbuf
       use calc,only:twmov
 c      use tfshare, only:tfresetsharedmap,tmunmapp
@@ -44,6 +47,7 @@ c      use tfshare, only:tfresetsharedmap,tmunmapp
       use geolib
       use modul,only:tfunblocksym
       use beamline,only:tfbeamline,tfsetbeamlinename
+      use kyparam
       use iso_c_binding
       implicit none
       integer*4 maxrpt,hsrchz
@@ -106,6 +110,7 @@ c     end   initialize for preventing compiler warning
         iorgr=1
         geo0(:,:)=geoini
         chi0=0.d0
+        call tffsinitparam
         if(geocal .or. chguse)then
           geocal0=geocal
           geocal=.true.
@@ -115,14 +120,15 @@ c     end   initialize for preventing compiler warning
         if(lfnb <= 0)then
           go to 8900
         endif
-        call tffsinitparam
 c     kikuchi ... next 1 line added     (11/13/'91)
 c        call corinit(newcor,nster,nmon,itstr,itestr,itmon,itemon)
 c     
-        flv%measp=nlat
+c        call tfevals(
+c     $       'Write[6,"tffsa-1: ",LINE[{"EMITX","EMITY","EMITZ","SIGMAZ","SIGE"},1]];',kx,irtc)
         mfpnt=nlat
         mfpnt1=nlat
         flv%nfc=0
+        flv%measp=nlat
         call tfinitcalc
         call tmast
         call twmov(1,twiss,nlat,ndim,.true.)
@@ -513,12 +519,13 @@ c$$$          endif
           endif
           call getwdl2(word,wordp)
           mfpnta=ielme(wordp,exist,lfno)
-          mfpnt1=mfpnt
           if(exist)then
-            mfpnt=mfpnta
+c            write(*,*)'tffsa-FIT-mfpnta ',exist,mfpnt,mfpnta,mfpnt1,wordp(1:len_trim(wordp))
+            mfpnt1=mfpnta
 c            mfpnt1=max(mfpnt,mfpnta)
 c            mfpnt=min(mfpnt,mfpnta)
           else
+            mfpnt1=mfpnt
             go to 12
           endif
         endif
@@ -886,8 +893,6 @@ c End of the lines added by N. Yamamoto Apr. 25, '93
       elseif(word == 'DRAW')then
         call tfsetparam
         call tfevalb('System`CANVASDRAW[]',kx,irtc)
-c        call tfdebugprint(kx,'CANVASDRAW[]',1)
-c        write(*,'(i8)')irtc
         if(irtc /= 0 .or. ktfnonstringq(kx%k))then
 c          title=Tfgetstrv('TITLE')
 c          case=Tfgetstrv('CASE')
@@ -1184,7 +1189,6 @@ c        enddo
       nwakep=0
       if(wake)then
         call tffssetupwake(icslfnm(),irtc)
-c        write(*,*)'tffsa-setupwake-done ',nwakep
         if(irtc /= 0)then
           call termes('?Error in WakeFunction.',' ')
           go to 8810
@@ -1215,7 +1219,10 @@ c        write(*,*)'tffsa-setupwake-done ',nwakep
       call tfevalb('Reset$FF[]',kx,irtc)
       nqcol=nqcol-int(kx%x(1))
       flv%nfc=nfc0
-      call tfshow(cellstab,df,mfpnt,mfpnt1,kffs,irtcffs,lfnb > 1,lfno)
+c      call tfshow(cellstab,df,mfpnt,mfpnt1,kffs,irtcffs,lfnb > 1,lfno)
+      call tfshow(cellstab,df,mfpnt,mfpnt1,kffs,irtcffs,.true.,lfno)
+      kxffs=kffs
+c      call tfdebugprint(kffs,'show',1)
       call tmunmapp(flv%iut)
       call tffsclearcouple
       if(cell)then
@@ -1828,4 +1835,4 @@ c$$$      flv%mfitp(flv%nfc)=mfc
       return
       end
 
-      end module
+      end module ffsa

@@ -1,5 +1,6 @@
       subroutine tvcorr(cv,x0,al,n)
       use macmath
+      use ftr
       implicit none
       integer*4 n,i
       real*8 x,w,tgauss,s,x1,al,x0

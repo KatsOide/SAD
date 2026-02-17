@@ -28,10 +28,12 @@
       enddo
       isp2=isp
       isp3=isp+isp1-isp0-1
-      ktastk(isp+1:isp3)=ktastk(isp0+1:isp1-1)
+      call tfcopyarray(ktastk(isp0+1:isp1-1),ktastk(isp+1:isp3))
+c      ktastk(isp+1:isp3)=ktastk(isp0+1:isp1-1)
       isp=isp3+1
       dtastk(isp)=ki
-      ktastk(isp+1:isp+isp2-isp1+1)=ktastk(isp1:isp2)
+      call tfcopyarray(ktastk(isp1:isp2),ktastk(isp+1:isp+isp2-isp1+1))
+c      ktastk(isp+1:isp+isp2-isp1+1)=ktastk(isp1:isp2)
       isp=isp+isp2-isp1+1
       kx=kxcrelistm(isp-isp2,ktastk(isp2+1:isp),kl%head)
       isp=isp0
@@ -63,7 +65,8 @@
       listx%attr=list%attr
       if(ktfreallistq(list))then
         if(mode == 0)then
-          listx%dbody(1:m)=list%dbody(1:m)
+          call tfcopyarray(list%dbody(1:m),listx%dbody(1:m))
+c          listx%dbody(1:m)=list%dbody(1:m)
           if(ktfrealq(k))then
             listx%dbody(m+1)=k
           else
@@ -71,7 +74,8 @@
             listx%attr=ior(listx%attr,lnonreallist)
           endif
         else
-          listx%dbody(2:m+1)=list%dbody(1:m)
+          call tfcopyarray(list%dbody(1:m),listx%dbody(2:m+1))
+c          listx%dbody(2:m+1)=list%dbody(1:m)
           if(ktfrealq(k))then
             listx%dbody(1)=k
           else
@@ -506,7 +510,10 @@
         endif
       elseif(ov .and. mode == 2 .and. kl%lenp > 0)then
         call loc_sad(ktfaddr(k1)-1,klr)
-        klr%dbody(-3:0)=kl%dbody(-3:0)
+        klr%dbody(-3)=kl%dbody(-3)
+        klr%dbody(-2)=kl%dbody(-2)
+        klr%dbody(-1)=kl%dbody(-1)
+        klr%dbody(0 )=kl%dbody(0 )
         klr%lenp=klr%lenp-1
         klr%nl=n+1
         klr%dbody(1)%k=0
@@ -519,7 +526,8 @@
         kr%k=ktaalocsp(n+1,kl%lenp,nextra,klr)
         if(ktfreallistq(kl))then
           klr%head=dtfcopy(kl%head)
-          klr%dbody(1:n)=kl%dbody(1:n)
+          call tfcopyarray(kl%dbody(1:n),klr%dbody(1:n))
+c          klr%dbody(1:n)=kl%dbody(1:n)
         else
           klr%attr=lnonreallist
           do i=0,n
@@ -532,7 +540,8 @@
         kr%k=ktaalocsp(n+1,nextra,kl%lena,klr)
         klr%head=dtfcopy(kl%head)
         if(ktfreallistq(kl))then
-          klr%dbody(2:n+1)=kl%dbody(1:n)
+          call tfcopyarray(kl%dbody(1:n),klr%dbody(2:n+1))
+c          klr%dbody(2:n+1)=kl%dbody(1:n)
         else
           klr%attr=lnonreallist
           do i=1,n
@@ -1874,7 +1883,8 @@ c        if(ka1 > 0 .and. ktfrealq(k2))then
       enddo
       ka1=ktaloc(m)
       ilist(2,ka1-1)=m
-      klist(ka1:ka1+m-1)=ktastk(isp0+1:isp0+m)
+      call tfcopyarray(ktastk(isp0+1:isp0+m),klist(ka1:ka1+m-1))
+c      klist(ka1:ka1+m-1)=ktastk(isp0+1:isp0+m)
       isp=isp0
       call tfree(itfcontextpath)
       itfcontextpath=ka1
@@ -3345,7 +3355,8 @@ c        go to 6001
               isp2=isp+1
               dtastk(isp2)=kl1%head
               dtastk(isp2+1)=kl1%dbody(1)
-              dtastk(isp2+2:isp2+isp-isp1+1)=dtastk(isp1+1:isp)
+              call tfcopyarray(dtastk(isp1+1:isp),dtastk(isp2+2:isp2+isp-isp1+1))
+c              dtastk(isp2+2:isp2+isp-isp1+1)=dtastk(isp1+1:isp)
               isp=isp+isp2-isp1+1
               kx=tfefunref(isp2,upvalue,irtc)
               isp=isp2
@@ -3360,7 +3371,8 @@ c        go to 6001
               dtastk(isp2+1)=dtastk(isp1+1)
               dtastk(isp2+2)=kl1%dbody(1)
               if(isp > isp1+1)then
-                dtastk(isp2+3:isp2+isp-isp1+1)=dtastk(isp1+2:isp)
+                call tfcopyarray(dtastk(isp1+2:isp),dtastk(isp2+3:isp2+isp-isp1+1))
+c                dtastk(isp2+3:isp2+isp-isp1+1)=dtastk(isp1+2:isp)
               endif
               isp=isp2+isp-isp1+1
               kx=tfefunref(isp2,upvalue,irtc)
@@ -3806,10 +3818,8 @@ c        call tfbesself(dtastk(isp1+1),dtastk(isp),kx,cbesselj,irtc)
           endif
         enddo
       elseif(kh%k == ktfoper+nfununeval)then
-        ktastk(isp1+1:isp1+isp-isp2)=ktastk(isp2+1:isp)
-c        do i=1,isp-isp2
-c          ktastk(isp1+i)=ktastk(isp2+i)
-c        enddo
+        call tfcopyarray(ktastk(isp2+1:isp),ktastk(isp1+1:isp1+isp-isp2))
+c        ktastk(isp1+1:isp1+isp-isp2)=ktastk(isp2+1:isp)
         irtc=0
       else
         isp0=isp
@@ -3926,9 +3936,6 @@ c        enddo
                   m1=m1+mth
                   m2=min(m2+mth,m)
                 enddo
-c                do i=1,m
-c                  klj%rbody(i)=rlist(ktastk(isp3+i)+j)
-c                enddo
                 klj%head=dtfcopy(kf)
                 klj%attr=ior(klj%attr,lconstlist)
               enddo

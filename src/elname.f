@@ -30,13 +30,14 @@ c
       integer*4 ltyp,idx,l,id
       character*(MAXPNAME) buff
 c
+c      write(*,*)'elname1-0 ',comp,i
       if(i .eq. nlat)then
         name='$$$'
       else
         id=idelc(i)
         name=pname(id)
         idx=max(0,abs(mult(i)))
-c        write(*,*)'elname1 ',i,mult(i)
+c        write(*,*)'elname1 ',comp,i,mult(i)
         if(comp .and. idx .eq. 0)then
 c     Case: Force append suffix number by comp flag
           ltyp=idtype(id)
