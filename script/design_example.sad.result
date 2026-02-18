@@ -1,171 +1,3 @@
-<HEAD>
-<TITLE>
-   SAD/FFS Examples
-</TITLE>
-</HEAD>
-<BODY>
-<CENTER><H2>SAD/FFS Examples
-</H2></CENTER>
-<A HREF="http://acc-physics.kek.jp/SAD/">
-<H4>
-<IMG SRC="../sad.png" ALIGN="middle" ALT="SAD" WIDTH=45></A>
-Back to SAD Home Page</H4>
-<A HREF="../SADHelp.html">
-<H4>
-Back to SAD/FFS Commands</H4></A>
-<H3><A HREF=#result>Results</A></H3>
-<HR><PRE>
-!
-!   This is an example of SAD/FFS to design a positron ring 
-!   with unit cells and dispersion suppressors.   Chromaticity correction
-!   and also a survey of dynamic aperture are also done.
-!      The result of execution of this example is available in
-!   /SAD/doc/design_example.sad.result
-!
-MOMENTUM= 1 GEV;
-ON ECHO;OFF CTIME;
-!
-! ***** DEFINITION OF ELEMENTS IN MAIN LEVEL *****
-! 
- ;
- DRIFT  L1     = (L = 1)
- ;
- BEND   B      = (L = 2)
- ;
- QUAD   QF     = (L = 1 K1 =  0.15 )
-        QD     = (L = 1 K1 = -0.15 )
-        QSF    = (L = 1 K1 =  0.15 )
-        QSD    = (L = 1 K1 = -0.15 )
-        QRF    = (L = 1 K1 =  0.15 )
-        QRD    = (L = 1 K1 = -0.15 )
- ; 
- SEXT   SF     =(L = 1 K2 = 0.1)
-        SD     =(L = 1 K2 = -0.2)
- ;
- MARK   IP1     =(BETAX = 10   BETAY =10    EMIX = 4.0E-7
-           EMIY = 4.0E-7  DP = 0.01 )
- ;
- CAVI   CA1 = (L = 1  VOLT=1 MV HARM=100)
- ;
-!
-! ***** DEFINITION OF UNIT CELL IN MAIN LEVEL *****
-!
-!     You need at least one LINE to start FFS, but
-!     other lines can be created in FFS.
-!
- ;
- LINE   CELL = (IP1 QF L1 SF L1 B 3*L1 QD L1 SD L1 B 3*L1)
- ;
- FFS USE=CELL;
-  Print[TimeUsed[]];! CPU Time used so far.
-!
-! Defining parameters:
-!
-  nbends=24;        ! number of bends per ring
-  nxcell=0.25;      ! horizontal tune/cell
-  nycell=0.25;      ! vertical tune/cell
-  Print[TimeUsed[]];! CPU Time used so far.
-!
-!  *****  UNIT CELL MATCHING  *****
-!
-  CELL;             ! peridic condition
-  B 2*Pi/nbends;    ! settin bending angle to the BEND B
-  FIT;              ! set fit point at end of line
-  NX nxcell;        ! set fit condition NX
-  NY nycell;        ! set fit condition NY
-  FREE Q*;          ! set Q* (in this case QF and QD) as the matching
-                    ! variable
-  GO;               ! start matching
-
-!                     define dr as the drawing command (needs X-Window)
-!  dr:=FFS["OUT 'a' DRAW BX BY & EX EY {BQ}*; TERM OUT; TDR 'a';"];
-  dr:=FFS["DRAW BX BY & EX EY {BQ}*;"];
-  dr;               ! draw optics of unit cell
-  SAVE;             ! save the matching result (values of QF, QD) to
-                    ! keep them after swtch the beam line.
-  Print[TimeUsed[]];! CPU Time used so far.
-!
-! *****  DISPERSION SUPPRESSOR  *****
-!
-  unitcell=ExtractBeamLine[];   ! get the current BeamLine
-!                     define a dispersion suppressor to insert rf
-  supp=BeamLine[QSF, 8*L1, QSD, 3*L1, B, 3*L1, QRF, 3*L1, CA1, 3*L1, QRD];
-  USE Join[unitcell, supp];     ! switch the beam line with suppressor
-  INS;              ! now nonperiodic (a transport line)
-  QRD L 0.5;        ! set the thickness of QD
-  FIT; 
-  AX 0;             ! set the end of line to be a symmetry point
-  AY 0;             
-  EX 0;             ! and dispersion-free
-  EPX 0;
-  Q*F MIN 0;        ! set the lower limit of K1 of QRF, QSF
-  Q*D MAX 0;        ! set the upper limit of K1 of QRD, QSD 
-  FREE QS* QR*;
-  GO; 
-  dr;               ! draw suppressor
-  SAVE;
-  Print[TimeUsed[]];! CPU Time used so far.
-!
-! ***** TOTAL RING *****
-!
-  ncell=(nbends/2-2)/2;   ! number of unitcells per half ring.
-!                     Defining a half ring, removing the
-!                     first QF and IP1 markers in unitcell
-  hring=BeamLine[IP1,-supp,Rest[ncell*Rest[unitcell]],supp];
-  USE Join[hring,-hring]; ! switch to full ring
-  CELL;             ! now periodic condition again
-!  CAL NX NY;        ! set to display NX and NY after CAL (default)
-  CAL               ! calculate the optics of ring
-  dr;               ! draw ring
-  Print[TimeUsed[]];! CPU Time used so far.
-!
-! ***** CHROMATICITY CORRECTION *****
-!                   
-!                     get the current tunes
-  {nx0, ny0}=Twiss[{"NX","NY"},"***"]/2/Pi;
-  REJ TOTAL;        ! reject all matching conditions;
-  FIT;
-  NX nx0 8;         ! set the offmomentum tunes for 8 points
-  NY ny0 8;         ! in -DP < dp/p0 < DP
-  DP=0.024;         ! set the bandwidth |dp/p0|max = DP = 0.024
-  FIX *;            ! fix all variables;
-  FREE S*;          ! set S* (SF and SD) sextupoles as variable
-  GO;
-  FITP 1;           ! set the off-momentum points to 1 (on-momentum only).
-    !
-    ! Define Functions to display tunes as functions of dp/p0
-  nx[dp_]:=(DP0=dp;FFS["CALC"];Twiss["NX","***"]/2/Pi);
-  ny[dp_]:=(DP0=dp;FFS["CALC"];Twiss["NY","***"]/2/Pi);
-    !
-    ! Plot tunes -3% < dp/p0 < 3%.
-  Plot[{nx[dp],ny[dp]}, {dp, -0.03, 0.03},
-    PlotRange->{3.7,4.8},
-    PlotLabel->"Tune Chromaticity",
-    FrameLabel->{{"`fD`np/p`d0`n","F   X X"},{"`fn`n`dx`n, `fn`n`dy`n","GX X  GX X"}}];
-                    ! draw chromaticity
-  If[$DisplayFunction === CanvasDrawer, Update[]];
-susp;
-  TYPE;             ! print out all elements
-  PrintBeamLine[ExtractBeamLine[]];   ! print out all beam line
-  Print[TimeUsed[]];! CPU Time used so far.
-!
-! ***** EMITTANCE CALCULATION *****
-!
-  EMIOUT;           ! turn on the output of matrices by EMIT.
-  EMIT;             ! This (or Emittance[]) is necessary right before the tracking
-                    ! Do not change flags between EMIT and tracking!
-  Print[TimeUsed[]];! CPU Time used so far.
-!
-! ***** DYNAMIC APERTURE *****
-!
-!                     Dynamic aperture for 1000 turns,
-  DynamicApertureSurvey[{{0,100},{0,100},Range[-30,30,4]},
-    1000,Output->6];
-!
-  Print[TimeUsed[]];! CPU Time used so far.
-  ABORT             ! stop SAD.
-</PRE><HR>
-<H3><A NAME=result>Results:</A></H3><PRE>
  *** Welcome to SAD Ver.1.3.8.0k64 built at 2025-10-20 10:27:31 +0900 ***
  *** Today: 10:27:31 Monday 10/20/2025 ***
  OFF LOG;ON ECHO;READ 77 ;           1
@@ -247,7 +79,6 @@ $$$       f LENG  #######  #  18.000000
  !  dr:=FFS["OUT 'a' DRAW BX BY & EX EY {BQ}*; TERM OUT; TDR 'a';"];
    dr:=FFS["DRAW BX BY & EX EY {BQ}*;"];
    dr;               ! draw optics of unit cell
-</PRE><IMG SRC="cell.png" WIDTH=500><PRE>
    SAVE;             ! save the matching result (values of QF, QD) to
                      ! keep them after swtch the beam line.
    Print[TimeUsed[]];! CPU Time used so far.
@@ -287,7 +118,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -307,7 +137,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -362,7 +191,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -382,7 +210,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -437,7 +264,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -457,84 +283,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
-   Print[TimeUsed[]];! CPU Time used so far.
-.6544219851493835
- !
- ! ***** CHROMATICITY CORRECTION *****
- !                   
- !                     get the current tunes
-   {nx0, ny0}=Twiss[{"NX","NY"},"***"]/2/Pi;
-   REJ TOTAL;        ! reject all matching conditions;
-   FIT;
-   NX nx0 8;         ! set the offmomentum tunes for 8 points
-   NY ny0 8;         ! in -DP < dp/p0 < DP
-   DP=0.024;         ! set the bandwidth |dp/p0|max = DP = 0.024
-   FIX *;            ! fix all variables;
-   FREE S*;          ! set S* (SF and SD) sextupoles as variable
-   GO;
- Iterations Unstable Residual    Method     Reduction  Variables
-       2        0   6.8031E-03  (NEWTON)    1.000          2
-   SAVE;             ! save the matching result (values of QF, QD) to
-                     ! keep them after swtch the beam line.
-   Print[TimeUsed[]];! CPU Time used so far.
-.3447520136833191
- !
- ! *****  DISPERSION SUPPRESSOR  *****
- !
-   unitcell=ExtractBeamLine[];   ! get the current BeamLine
- !                     define a dispersion suppressor to insert rf
-   supp=BeamLine[QSF, 8*L1, QSD, 3*L1, B, 3*L1, QRF, 3*L1, CA1, 3*L1, QRD];
-   USE Join[unitcell, supp];     ! switch the beam line with suppressor
-   INS;              ! now nonperiodic (a transport line)
-   QRD L 0.5;        ! set the thickness of QD
-   FIT; 
-   AX 0;             ! set the end of line to be a symmetry point
-   AY 0;             
-   EX 0;             ! and dispersion-free
-   EPX 0;
-   Q*F MIN 0;        ! set the lower limit of K1 of QRF, QSF
-   Q*D MAX 0;        ! set the upper limit of K1 of QRD, QSD 
-   FREE QS* QR*;
-   GO; 
- Iterations Unstable Residual    Method     Reduction  Variables
-       2        0   1.6727E+08  (NEWTON)    1.000          4
-       3        0   3.6729E+07  (NEWTON)    1.000          4
-       4        0   2.1048E+05  (NEWTON)    1.000          4
-       5        0    3.422      (NEWTON)    1.000          4
-       6        0    1.805      (NEWTON)    1.000          4
-      18        0    1.704      (NEWTON)    1.000          4
-      21        0    1.616      (NEWTON)    1.000          4
-      23        0    1.396      (NEWTON)    1.000          4
-      24        0   0.4509      (NEWTON)    1.000          4
-      25        0   8.2613E-02  (NEWTON)    1.000          4
-      26        0   2.6685E-04  (NEWTON)    1.000          4
- Matched. ( 2.1659E-11) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 $$$       f NX    #######  #    .587538
-$$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
-$$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
-   dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
-   SAVE;
-   Print[TimeUsed[]];! CPU Time used so far.
-.5670260190963745
- !
- ! ***** TOTAL RING *****
- !
-   ncell=(nbends/2-2)/2;   ! number of unitcells per half ring.
- !                     Defining a half ring, removing the
- !                     first QF and IP1 markers in unitcell
-   hring=BeamLine[IP1,-supp,Rest[ncell*Rest[unitcell]],supp];
-   USE Join[hring,-hring]; ! switch to full ring
-   CELL;             ! now periodic condition again
- !  CAL NX NY;        ! set to display NX and NY after CAL (default)
-   CAL               ! calculate the optics of ring
- Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
-$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
-$$$       f LENG  #######  #  284.00000
-   dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -591,7 +339,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -611,7 +358,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -668,7 +414,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -688,7 +433,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -745,7 +489,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -765,7 +508,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -822,7 +564,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -842,7 +583,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -899,7 +639,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -919,7 +658,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -976,7 +714,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -996,7 +733,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -1053,7 +789,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -1073,7 +808,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -1130,7 +864,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -1150,7 +883,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -1207,7 +939,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -1227,7 +958,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -1284,7 +1014,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -1304,7 +1033,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -1361,7 +1089,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -1381,7 +1108,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -1438,7 +1164,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -1458,7 +1183,81 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
+   Print[TimeUsed[]];! CPU Time used so far.
+.6544219851493835
+ !
+ ! ***** CHROMATICITY CORRECTION *****
+ !                   
+ !                     get the current tunes
+   {nx0, ny0}=Twiss[{"NX","NY"},"***"]/2/Pi;
+   REJ TOTAL;        ! reject all matching conditions;
+   FIT;
+   NX nx0 8;         ! set the offmomentum tunes for 8 points
+   NY ny0 8;         ! in -DP < dp/p0 < DP
+   DP=0.024;         ! set the bandwidth |dp/p0|max = DP = 0.024
+   FIX *;            ! fix all variables;
+   FREE S*;          ! set S* (SF and SD) sextupoles as variable
+   GO;
+ Iterations Unstable Residual    Method     Reduction  Variables
+       2        0   6.8031E-03  (NEWTON)    1.000          2
+   SAVE;             ! save the matching result (values of QF, QD) to
+                     ! keep them after swtch the beam line.
+   Print[TimeUsed[]];! CPU Time used so far.
+.3447520136833191
+ !
+ ! *****  DISPERSION SUPPRESSOR  *****
+ !
+   unitcell=ExtractBeamLine[];   ! get the current BeamLine
+ !                     define a dispersion suppressor to insert rf
+   supp=BeamLine[QSF, 8*L1, QSD, 3*L1, B, 3*L1, QRF, 3*L1, CA1, 3*L1, QRD];
+   USE Join[unitcell, supp];     ! switch the beam line with suppressor
+   INS;              ! now nonperiodic (a transport line)
+   QRD L 0.5;        ! set the thickness of QD
+   FIT; 
+   AX 0;             ! set the end of line to be a symmetry point
+   AY 0;             
+   EX 0;             ! and dispersion-free
+   EPX 0;
+   Q*F MIN 0;        ! set the lower limit of K1 of QRF, QSF
+   Q*D MAX 0;        ! set the upper limit of K1 of QRD, QSD 
+   FREE QS* QR*;
+   GO; 
+ Iterations Unstable Residual    Method     Reduction  Variables
+       2        0   1.6727E+08  (NEWTON)    1.000          4
+       3        0   3.6729E+07  (NEWTON)    1.000          4
+       4        0   2.1048E+05  (NEWTON)    1.000          4
+       5        0    3.422      (NEWTON)    1.000          4
+       6        0    1.805      (NEWTON)    1.000          4
+      18        0    1.704      (NEWTON)    1.000          4
+      21        0    1.616      (NEWTON)    1.000          4
+      23        0    1.396      (NEWTON)    1.000          4
+      24        0   0.4509      (NEWTON)    1.000          4
+      25        0   8.2613E-02  (NEWTON)    1.000          4
+      26        0   2.6685E-04  (NEWTON)    1.000          4
+ Matched. ( 2.1659E-11) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 $$$       f NX    #######  #    .587538
+$$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
+$$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
+   dr;               ! draw suppressor
+   SAVE;
+   Print[TimeUsed[]];! CPU Time used so far.
+.5670260190963745
+ !
+ ! ***** TOTAL RING *****
+ !
+   ncell=(nbends/2-2)/2;   ! number of unitcells per half ring.
+ !                     Defining a half ring, removing the
+ !                     first QF and IP1 markers in unitcell
+   hring=BeamLine[IP1,-supp,Rest[ncell*Rest[unitcell]],supp];
+   USE Join[hring,-hring]; ! switch to full ring
+   CELL;             ! now periodic condition again
+ !  CAL NX NY;        ! set to display NX and NY after CAL (default)
+   CAL               ! calculate the optics of ring
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 $$$       f NX    #######  #   3.836969
+$$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
+$$$       f LENG  #######  #  284.00000
+   dr;               ! draw ring
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -1516,7 +1315,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -1536,7 +1334,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -1595,7 +1392,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -1615,7 +1411,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -1675,7 +1470,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -1695,7 +1489,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -1756,7 +1549,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -1776,7 +1568,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -1837,7 +1628,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -1857,7 +1647,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -1918,7 +1707,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -1938,7 +1726,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -1999,7 +1786,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -2019,7 +1805,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -2080,7 +1865,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -2100,7 +1884,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -2161,7 +1944,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -2181,7 +1963,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -2242,7 +2023,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -2262,7 +2042,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -2323,7 +2102,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -2343,7 +2121,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -2404,7 +2181,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -2424,7 +2200,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -2485,7 +2260,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -2505,7 +2279,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -2566,7 +2339,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -2586,7 +2358,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -2647,7 +2418,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -2667,7 +2437,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -2728,7 +2497,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -2748,7 +2516,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -2809,7 +2576,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -2829,7 +2595,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -2890,7 +2655,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -2910,7 +2674,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -2971,7 +2734,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -2991,7 +2753,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -3052,7 +2813,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -3072,7 +2832,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -3133,7 +2892,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -3153,7 +2911,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -3214,7 +2971,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -3234,7 +2990,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -3295,7 +3050,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -3315,7 +3069,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -3376,7 +3129,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -3396,7 +3148,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -3457,7 +3208,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -3477,7 +3227,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -3538,7 +3287,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -3558,7 +3306,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -3619,7 +3366,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -3639,7 +3385,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -3700,7 +3445,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -3720,7 +3464,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -3781,7 +3524,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -3801,7 +3543,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -3862,7 +3603,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -3882,7 +3622,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -3943,7 +3682,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -3963,7 +3701,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -4024,7 +3761,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -4044,7 +3780,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -4105,7 +3840,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -4125,7 +3859,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -4186,7 +3919,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -4206,7 +3938,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -4267,7 +3998,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -4287,7 +4017,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -4348,7 +4077,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -4368,7 +4096,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -4429,7 +4156,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -4449,7 +4175,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -4510,7 +4235,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -4530,7 +4254,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -4591,7 +4314,6 @@ $$$       f AX   0         1  1.2735E-6 $$$       f BX    #######  #  11.291325 
 $$$       f AY   0         1  4.4763E-6 $$$       f BY    #######  #  95.005438 $$$       f NY    #######  #    .797327
 $$$       f EX   0         1  2.488E-15 $$$       f EPX  0         1  -1.38E-16 $$$       f LENG  #######  #  44.500000
    dr;               ! draw suppressor
-</PRE><IMG SRC="suppressor.png" WIDTH=500><PRE>
    SAVE;
    Print[TimeUsed[]];! CPU Time used so far.
 .5670260190963745
@@ -4611,7 +4333,6 @@ $$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #  11.291350 
 $$$       f AY    #######  #  -1.78E-15 $$$       f BY    #######  #  95.005631 $$$       f NY    #######  #   4.635740
 $$$       f LENG  #######  #  284.00000
    dr;               ! draw ring
-</PRE><IMG SRC="ring.png" WIDTH=500><PRE>
    Print[TimeUsed[]];! CPU Time used so far.
 .6544219851493835
  !
@@ -4634,5 +4355,3 @@ $$$       f LENG  #######  #  284.00000
  *****qcod---> Closed orbit not found            3
  *****qcod---> Closed orbit not found            4
  Residual = 6.8031E-03  DP = 0.02400  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-</PRE><HR>
-</BODY>

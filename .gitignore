@@ -48,3 +48,7 @@ Library/lib/*
 Library/lib/App/*
 Library/lib/App/LogBrowser/*
 src/*.f_*
+Documents/LaTeX/tmp__*
+Documents/SADHelp.html
+script/design_example.html
+script/design_example.sad.result
