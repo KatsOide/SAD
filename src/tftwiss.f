@@ -26,7 +26,7 @@
         key1(1:nc)=keyword(1:nc)
       endif
       if(ia < nlat)then
-        kx=tfkeyv(int(ia),key1(1:nc),ip,cmp,ref,.false.)
+        kx=tfkeyv(int(ia),key1(1:nc),ip,cmp,.false.,.false.)
         if(.not. ref)then
           cmp%update=cmp%nparam <= 0
           kx%k=ktfref+ip

@@ -114,26 +114,23 @@ c                cmp%update=cmp%nparam .le. 0
       if(ntv == 0)then
         do i=1,nlat-1
           ie=iele1(icomp(i))
-          if(icomp(i) /= i .and. ie /= 0 .and.
-     $         nelvx(ie)%ival /= 0)then
-            call tfvcopy(icomp(i),i,nelvx(ie)%ival,
-     $           errk(1,i)*couple(i)/errk(1,icomp(i)))
+          if(icomp(i) /= i .and. ie /= 0 .and. nelvx(ie)%ival /= 0)then
+            call tfvcopy(icomp(i),i,nelvx(ie)%ival,errk(1,i)*couple(i)/errk(1,icomp(i)))
           endif
         enddo
       else
         do i=1,nlat-1
           ie=iele1(icomp(i))
           ie1=iele1(i)
-          if(ie /= 0 .and. i /= icomp(i) .and.
-     $         nelvx(ie)%ival /= 0)then
-            call tfvcopy(icomp(i),i,nelvx(ie)%ival,
-     $           errk(1,i)*couple(i)/errk(1,icomp(i)))
+          if(ie /= 0 .and. i /= icomp(i) .and. nelvx(ie)%ival /= 0)then
+            call tfvcopy(icomp(i),i,nelvx(ie)%ival,errk(1,i)*couple(i)/errk(1,icomp(i)))
           endif
           if(ite(ie1) /= 0)then
             do k=1,ntv
               j=itv(k)
-              if(nvevx(j)%itouchele == ie1 .and.
-     $             nelvx(ie1)%klp /= i)then
+              if(nvevx(j)%itouchele == ie1 .and. nelvx(ie1)%klp /= i)then
+c              write(*,'(a,10i5)'),'tffsadjust ',
+c     $             i,j,ie1,nvevx(j)%itouchele,nelvx(ie1)%klp,nvevx(j)%itouchv
                 call tfvcopy(nelvx(ie1)%klp,i,nvevx(j)%itouchv,1.d0)
               endif
             enddo

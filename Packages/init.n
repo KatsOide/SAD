@@ -75,11 +75,14 @@ EndPackage[___]:=(
   If[Length[$PackageStack]>1,$PackageStack=Drop[$PackageStack,-1]];
   $ContextPath);
 WithContext[{c__},body_]:=(
-  First[{BeginPackage[c];
+  First[{
+    BeginPackage[First[{c}]];
     Begin[First[{c}]];
+!    Print[{c,Unevaluated$[body],body,$Context,$ContextPath}];
     body,
     End[];
     EndPackage[]}]);
+!WithContext[{c__},body_]:=With[{bs=ToString[Unevaluated$[body]]},Print[bs];WithContext[{c},bs]];
 SetAttributes[WithContext,{HoldRest,Constant}];
 
 SetAttributes[{Begin,End,BeginPackage,EndPackage,ToContext,Wrap},Constant];

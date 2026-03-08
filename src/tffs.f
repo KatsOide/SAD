@@ -1861,7 +1861,7 @@ c        write(*,*)'setndivelm ',ia,ltyp,ndiv
       return
       end subroutine
 
-      type (sad_descriptor) function tfkeyv(i,keyword,ia,cmp,ref,saved)
+      type (sad_descriptor) function tfkeyv(i,keyword,ia,cmp,touch,saved)
       use tfstk
       use ffs
       use tffitcode
@@ -1875,7 +1875,7 @@ c        write(*,*)'setndivelm ',ia,ltyp,ndiv
       character*(*) keyword
       character*128 key
       logical*4 plus
-      logical*4 ,intent(in):: ref,saved
+      logical*4 ,intent(in):: touch,saved
       real*8 s
       type (sad_comp), pointer ,intent(out):: cmp
 c     begin initialize for preventing compiler warning
@@ -1910,7 +1910,8 @@ c     begin initialize for preventing compiler warning
         ia=elatt%comp(i)+l
 c        tfkeyv=dlist(ia)
         tfkeyv=cmp%dvalue(l)
-        if(.not. ref)then
+        if(touch)then
+c          write(*,'(a,10i5)')'tfkeyv ',i,iele1(i)
           call tftouch(iele1(i),l)
         endif
       elseif(saved)then
@@ -1928,7 +1929,7 @@ c        tfkeyv=dlist(ia)
         else
           tfkeyv=dlist(ia)
         endif
-        if(.not. ref)then
+        if(touch)then
           call tftouch(iele1(kl),l)
         endif
       endif
@@ -2186,6 +2187,7 @@ c          write(*,*)'vcopycmp ',k,cmps%value(k),coeff,cmpd%value(k)
         integer*4 ,intent(in):: is,id,k
         call compelc(id,cmpd)
         call compelc(is,cmps)
+c        write(*,'(a,3i5,1p10g12.4)')'tfvcopy ',is,id,k,coeff
         call tfvcopycmp(cmps,cmpd,k,coeff)
         if(idtype(cmpd%id) == icMULT .and. k == ky_PROF_MULT)then
           cmpd%updateseg=.false.
