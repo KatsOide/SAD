@@ -84,14 +84,15 @@ c      type (tzparams) tzs(np),tzs1(np)
      $       eps0,krad,fb1,fb2,mfring,fringe,rtaper)
         return
       endif
-c      write(*,'(a,1p10g12.4)')'tmulti ',al,ak(1),chi1,chi2,alg,phig
+c      if(al == 0.d0)then
+c        write(*,'(a,i5,1p10g12.4)')'tmulti-0 ',nmmax,al,ak(0),ak(1),akr(0),akr(1)
+c      endif
       b0=0.d0
       nzleng=al /= 0.d0
       spac1=.false.
       call tsolrot(np,x,px,y,py,z,g,sx,sy,sz,
      $     alg,bz,dx,dy,dz,
      $     -chi1,-chi2,theta2,bxs,bys,bzs,.true.)
-c      write(*,'(a,1p10g12.4)')'tmulti-1 ',x(1),px(1),y(1),py(1),z(1),g(1)
       akr(0)=(akr0(0)+dcmplx(bys*al,bxs*al))*rtaper
       if(nmmax == 0 .and. .not. spac .and. akr0(0) == (0.d0,0.d0))then
         call tdrift(np,x,px,y,py,z,g,dv,sx,sy,sz,
@@ -153,6 +154,8 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
               enddo
             endif
           endif
+        else
+c          write(*,'(a,2i5,1p10g12.4)')'tmult-zleng ',ndiv,nmmax,bz
         endif
         wi=1.d0/ndiv
         ak1=akr1*wi*.5d0
@@ -230,6 +233,16 @@ c     cr1 := Exp[-theta1], ak(1) = Abs[ak(1)] * Exp[2 theta1]
                 cx=(cx+akrm(n))*cx1*aninv(n)
               enddo
               cx=(cx+akrm(0))/(1.d0+g(i))
+              px(i)=px(i)-dble(cx)
+              py(i)=py(i)+imag(cx)
+c              if(i == 1)then
+c                write(*,'(a,i5,1p10g12.4)')'tmulti-thin ',nmmax,cx,akrm(1),px(1),py(1)
+c              endif
+            enddo
+          elseif(akrm(0) /= (0.d0,0.d0))then
+c            write(*,'(a,i5)')'tmulti-zero nmmax',nmmax
+            do concurrent (i=1:np)
+              cx=akrm(0)/(1.d0+g(i))
               px(i)=px(i)-dble(cx)
               py(i)=py(i)+imag(cx)
             enddo

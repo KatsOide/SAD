@@ -1410,8 +1410,8 @@ c              akk=sqrt(cmp%value(ky_K1_MULT)**2+sk1**2)/al
               exit
             endif
           enddo
-          cmp%ivalue(2,p_NM_MULT)=merge(nmmax,max(nmmax,0),al == 0.d0
-     $         .and. cmp%value(ky_VOLT_MULT) == 0.d0)
+          cmp%ivalue(2,p_NM_MULT)=merge(nmmax,max(nmmax,0),
+     $         al == 0.d0 .and. cmp%value(ky_VOLT_MULT) == 0.d0)
           cr=cr1
           do n=0,nmmax
             ck=dcmplx(cmp%value(ky_K0_MULT+n*2),

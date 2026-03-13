@@ -770,8 +770,7 @@ c     print *,'tturn l sspac2',l,sspac2
      $       cmp%value(p_THETA2_MULT),
      $       cmp%value(p_LGEO_MULT),cmp%value(p_ANGLGEO_MULT),
      $       cmp%value(ky_EPS_MULT),
-     $       rad .and. cmp%value(ky_RAD_MULT) == 0.d0 .and.
-     $       cmp%value(p_L_MULT) /= 0.d0,
+     $       rad .and. cmp%value(ky_RAD_MULT) == 0.d0 .and. cmp%value(p_L_MULT) /= 0.d0,
      $       cmp%value(ky_FRIN_MULT) == 0.d0,
      $       cmp%value(p_AKF1F_MULT)*rtaper,
      $       cmp%value(p_AKF2F_MULT)*rtaper,
@@ -782,6 +781,9 @@ c     print *,'tturn l sspac2',l,sspac2
      $       cmp%lvalue(1,p_DOFR_MULT),cmp%value(ky_RADI_MULT),rtaper,
      $       cmp%ivalue(1,p_NM_MULT),cmp%ivalue(2,p_NM_MULT),
      $       n,kptbl)
+c        if(cmp%value(p_L_MULT) == 0.d0)then
+c          write(*,'(a,3i5,1p10g12.4)')'tmult1 ',l_track,cmp%ivalue(1,p_NM_MULT),cmp%ivalue(2,p_NM_MULT),bz
+c        endif
       endif
       return
       end
